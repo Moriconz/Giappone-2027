@@ -101,8 +101,15 @@ async function sendAIMessage(userText) {
     return;
   }
 
-  if (window.state.ai?.geminiApiKey && navigator.onLine) {
-    await callGeminiAPI(userText);
+  // Routing: Gemini → Groq → offline
+  const _geminiKey = window.state.ai?.geminiApiKey
+    || (window.appConfig ? await window.appConfig.getKey('gemini') : null);
+  const _groqKey = window.appConfig ? await window.appConfig.getKey('groq') : null;
+
+  if (_geminiKey && navigator.onLine) {
+    await callGeminiAPI(userText, _geminiKey);
+  } else if (_groqKey && navigator.onLine) {
+    await callGroqAPI(userText, _groqKey);
   } else {
     const offlineResponse = getOfflineAISuggestion(userText);
     window.aiHistory.push({ role: "assistant", content: offlineResponse });
@@ -112,14 +119,15 @@ async function sendAIMessage(userText) {
   window.saveState();
 }
 
-async function callGeminiAPI(userText) {
-  // Ensure state is initialized
-  if (!window.state || !window.state.ai || !window.state.ai.geminiApiKey) {
-    console.warn('[AI] No API key available');
+async function callGeminiAPI(userText, apiKey) {
+  if (!apiKey) {
+    apiKey = window.state?.ai?.geminiApiKey
+      || (window.appConfig ? await window.appConfig.getKey('gemini') : null);
+  }
+  if (!apiKey) {
+    console.warn('[AI] No Gemini key available');
     return;
   }
-
-  const apiKey = window.state.ai.geminiApiKey;
   const model = "gemini-pro";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
@@ -168,6 +176,112 @@ async function callGeminiAPI(userText) {
   }
 
   if (window.renderAIChat) window.renderAIChat();
+}
+
+// ============================================================================
+// Phase 4: Groq API fallback
+// Endpoint: https://api.groq.com/openai/v1/chat/completions
+// Model: mixtral-8x7b-32768 (fast, 32k ctx, free tier)
+// ============================================================================
+
+async function callGroqAPI(userText, apiKey) {
+  if (!apiKey) {
+    apiKey = window.appConfig ? await window.appConfig.getKey('groq') : null;
+  }
+  if (!apiKey) {
+    console.warn('[AI] No Groq key');
+    const offlineResponse = getOfflineAISuggestion(userText);
+    window.aiHistory.push({ role: "assistant", content: offlineResponse });
+    if (window.renderAIChat) window.renderAIChat();
+    return;
+  }
+
+  let context = '';
+  if (window.state?.itinerary?.length > 0) {
+    const cities = [...new Set(window.state.itinerary.map(i => i.city))];
+    context = `\n\n[Contesto: Viaggio Giappone 2027, tappe: ${cities.join(', ')}]`;
+  }
+
+  const systemPrompt = `Sei un esperto di viaggi in Giappone, specializzato in cucina gluten-free e itinerari culturali.
+Rispondi sempre in italiano, in modo conciso e pratico. Usa emoji per rendere le risposte più leggibili.
+Se non hai informazioni sufficienti, suggerisci di usare la mappa con i filtri disponibili.`;
+
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'mixtral-8x7b-32768',
+        max_tokens: 512,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...window.aiHistory
+            .slice(-6) // ultimi 6 messaggi per contesto
+            .map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content })),
+          { role: 'user', content: userText + context },
+        ],
+      }),
+    });
+
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+    const data = await resp.json();
+    const text = data.choices?.[0]?.message?.content || 'Errore risposta Groq.';
+
+    window.aiHistory.push({ role: 'assistant', content: `[Groq] ${text}` });
+    window.state.aiCallsToday = (window.state.aiCallsToday || 0) + 1;
+    window.saveState();
+    if (window.DEBUG) console.log('[AI] Groq OK. Quota:', window.state.aiCallsToday);
+  } catch (err) {
+    console.error('[AI] Groq error:', err);
+    window.aiHistory.push({ role: 'assistant', content: `❌ Groq error: ${err.message}. Uso offline.` });
+    window.aiHistory.push({ role: 'assistant', content: getOfflineAISuggestion(userText) });
+  }
+
+  if (window.renderAIChat) window.renderAIChat();
+}
+
+async function searchPlacePhotos(poiName, city) {
+  const cacheKey = `poi_photos_${poiName}_${city}`.replace(/\s+/g, '_');
+  const cached = localStorage.getItem(cacheKey);
+  if (cached) return JSON.parse(cached);
+
+  // Leggi chiave cifrata da config.js
+  const apiKey = window.appConfig
+    ? await window.appConfig.getKey('googlePlaces')
+    : null;
+  if (!apiKey) {
+    console.warn('[Photos] No Google Places key configured');
+    return [];
+  }
+
+  try {
+    const query = `${poiName} ${city} Japan`;
+    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${apiKey}`;
+    const response = await fetch(searchUrl);
+    const data = await response.json();
+
+    if (data.results?.length > 0) {
+      const placeId = data.results[0].place_id;
+      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=photos&key=${apiKey}`;
+      const detailsData = await (await fetch(detailsUrl)).json();
+
+      if (detailsData.result?.photos) {
+        const photos = detailsData.result.photos.map(photo => ({
+          url: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photo.photo_reference}&key=${apiKey}`,
+          attribution: photo.html_attributions?.[0] || 'Google Places',
+        }));
+        localStorage.setItem(cacheKey, JSON.stringify(photos));
+        return photos;
+      }
+    }
+  } catch (err) {
+    console.warn('[Photos] API error:', err.message);
+  }
+  return [];
 }
 
 function getAllPoiData() {
@@ -264,50 +378,12 @@ function getOfflineAISuggestion(userText) {
 // ============================================================================
 
 // ============================================================================
-// BONUS: POI Photos (Google Places API)
+// BONUS: POI Photos (Google Places API) — Versione buona: usapps config.js
 // Ricerca foto per ogni POI, cache in localStorage
 // ============================================================================
 
-const GOOGLE_PLACES_API_KEY = 'AIzaSyA8bYrY9J3cNFCUFh_aJiPCnsYmqk9Ksug';
-
-async function searchPlacePhotos(poiName, city) {
-  const cacheKey = `poi_photos_${poiName}_${city}`.replace(/\s+/g, '_');
-  const cached = localStorage.getItem(cacheKey);
-  if (cached) return JSON.parse(cached);
-
-  try {
-    // Ricerca posto su Google Places API
-    const query = `${poiName} ${city} Japan`;
-    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${GOOGLE_PLACES_API_KEY}`;
-    
-    const response = await fetch(searchUrl);
-    const data = await response.json();
-    
-    if (data.results && data.results.length > 0) {
-      const place = data.results[0];
-      const placeId = place.place_id;
-      
-      // Ricerca dettagli (incluse foto)
-      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=photos&key=${GOOGLE_PLACES_API_KEY}`;
-      const detailsResponse = await fetch(detailsUrl);
-      const detailsData = await detailsResponse.json();
-      
-      if (detailsData.result && detailsData.result.photos) {
-        const photos = detailsData.result.photos.map(photo => ({
-          url: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photo.photo_reference}&key=${GOOGLE_PLACES_API_KEY}`,
-          attribution: photo.html_attributions?.[0] || 'Google Places'
-        }));
-        
-        localStorage.setItem(cacheKey, JSON.stringify(photos));
-        return photos;
-      }
-    }
-  } catch (err) {
-    console.warn('[Photos] API error:', err.message);
-  }
-  
-  return [];
-}
+// API key recuperata da config.js (cifrata) — mai hardcoded
+// searchPlacePhotos() usa await window.appConfig.getKey('googlePlaces')
 
 function getPoiPhotoUrl(poiName, city) {
   // Cache key
@@ -342,6 +418,7 @@ window.loadAIQuota = loadAIQuota;
 window.saveAIQuota = saveAIQuota;
 window.getAIQuotaStatus = getAIQuotaStatus;
 window.sendAIMessage = sendAIMessage;
+window.callGroqAPI = callGroqAPI;
 window.callGeminiAPI = callGeminiAPI;
 window.getOfflineAISuggestion = getOfflineAISuggestion;
 window.getPoiPhotoUrl = getPoiPhotoUrl;
