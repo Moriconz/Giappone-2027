@@ -1649,10 +1649,32 @@ const POIS_BASE = window.POIS_DATASET || [];
     const stars = [1,2,3,4,5].map(n =>
       `<span class="star ${n<=rating?'on':''}" data-star="${n}" data-id="${p.id}">★</span>`
     ).join('');
-    // Foto custom (singola, carousel, o fetch Google Places)
+    // Foto custom (singola, carousel, o fetch Unsplash + reverse geocoding)
+    // Helper: link "Cerca su Google Images" come fallback finale
+    const googleImagesUrl = (q, city) => {
+      const query = [q, city, 'Japan'].filter(Boolean).join(' ');
+      return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
+    };
+    const googleFallbackHtml = (label) => `
+      <div style="margin-bottom:12px;padding:14px;background:var(--surface-2);border-radius:8px;text-align:center">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📷 ${label}</div>
+        <a href="${googleImagesUrl(p.name_en || p.name, p.city)}" target="_blank" rel="noopener"
+           class="btn" style="font-size:12px">🔎 Cerca foto su Google Images</a>
+      </div>
+    `;
+
+    // Log diagnostico: quale branch viene preso?
+    console.log('[poiDetailHTML] photo branch decision:', {
+      poi: p.id,
+      hasPhotos: !!(p.photos && Array.isArray(p.photos) && p.photos.length > 0),
+      hasPhoto: !!p.photo,
+      hasFn: typeof window.getPhotosForLocation === 'function'
+    });
+
     let photoHtml = '';
     if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
       // Carousel orizzontale da p.photos
+      console.log('[poiDetailHTML] using p.photos (', p.photos.length, ')');
       const slides = p.photos.map((photo, idx) => `
         <div class="photo-slide" style="flex-shrink:0;width:100%;height:300px;overflow:hidden;border-radius:8px">
           <img src="${photo.url}" alt="${p.name} ${idx+1}" style="width:100%;height:100%;object-fit:cover">
@@ -1666,59 +1688,16 @@ const POIS_BASE = window.POIS_DATASET || [];
       `;
     } else if (p.photo) {
       // Singola foto fallback
+      console.log('[poiDetailHTML] using p.photo');
       photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${p.name}" style="width:100%;height:300px;object-fit:cover;border-radius:8px;margin-bottom:12px">`;
-    } else if (window.getPhotosForLocation) {
+    } else if (typeof window.getPhotosForLocation === 'function') {
       // Unsplash photos + Reverse Geocoding
+      console.log('[poiDetailHTML] entering getPhotosForLocation branch for', p.id);
       photoHtml = `<div id="poi-photos-container" style="margin-bottom:12px;min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">📷 Caricamento foto...</div>`;
-
-      // Async load dopo render (non blocca UI)
-      setTimeout(async () => {
-        try {
-          const container = document.getElementById('poi-photos-container');
-          if (!container) return;
-
-          // 1. Reverse geocode lat/lng to get REAL place name
-          // 2. Fallback to p.name_en if needed
-          // 3. Search Unsplash for photos
-          const photos = await window.getPhotosForLocation(
-            p.lat,
-            p.lng,
-            p.city,
-            p.name_en || p.name  // fallback
-          );
-
-          if (photos.length > 0) {
-            // Carousel di foto
-            const slides = photos.slice(0, 5).map((photo, idx) => `
-              <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
-                <a href="${photo.link}" target="_blank" rel="noopener" title="${photo.author}" style="display:block;width:100%;height:100%;text-decoration:none">
-                  <img src="${photo.url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;transition:transform .2s">
-                </a>
-              </div>
-            `).join('');
-
-            container.innerHTML = `
-              <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%;margin-bottom:6px">
-                ${slides}
-              </div>
-              <div style="font-size:11px;color:var(--muted);text-align:center">📷 Foto da Unsplash</div>
-            `;
-          } else {
-            // Nessuna foto trovata
-            container.innerHTML = `
-              <div style="color:var(--muted);font-size:12px;text-align:center;padding:12px">
-                📷 Nessuna foto disponibile
-              </div>
-            `;
-          }
-        } catch (err) {
-          console.error('[POI Photos] Error:', err.message);
-          const container = document.getElementById('poi-photos-container');
-          if (container) {
-            container.innerHTML = `<div style="color:var(--muted);font-size:12px">⚠️ Errore caricamento foto</div>`;
-          }
-        }
-      }, 100);
+    } else {
+      // Fallback assoluto: features-photos.js non caricato → mostra link Google
+      console.warn('[poiDetailHTML] window.getPhotosForLocation NOT available — showing Google fallback');
+      photoHtml = googleFallbackHtml('Foto non disponibili offline');
     }
     return `
       ${photoHtml}
@@ -1761,10 +1740,77 @@ const POIS_BASE = window.POIS_DATASET || [];
       ${bookingBtns.length ? `<div class="section"><h3>🍴 Prenotazioni</h3><div class="action-row">${bookingBtns.join('')}</div></div>`:''}
     `;
   }
+  function loadPOIPhotos(p){
+    const container = document.getElementById('poi-photos-container');
+    if (!container) {
+      console.warn('[loadPOIPhotos] container not found for', p.id);
+      return;
+    }
+    if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) return;
+    if (p.photo) return;
+    if (typeof window.getPhotosForLocation !== 'function') {
+      console.warn('[loadPOIPhotos] getPhotosForLocation not available', typeof window.getPhotosForLocation);
+      container.outerHTML = photoFallbackHtml('Foto non disponibili', p);
+      return;
+    }
+
+    const googleImagesUrl = (q, city) => {
+      const query = [q, city, 'Japan'].filter(Boolean).join(' ');
+      return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
+    };
+    const photoFallbackHtml = (label, poi) => `
+      <div style="margin-bottom:12px;padding:14px;background:var(--surface-2);border-radius:8px;text-align:center">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📷 ${label}</div>
+        <a href="${googleImagesUrl(poi.name_en || poi.name, poi.city)}" target="_blank" rel="noopener"
+           class="btn" style="font-size:12px">🔎 Cerca foto su Google Images</a>
+      </div>
+    `;
+
+    (async () => {
+      try {
+        console.log('[loadPOIPhotos] requesting photos for', p.id, p.lat, p.lng, p.city);
+        const photos = await window.getPhotosForLocation(
+          p.lat,
+          p.lng,
+          p.city,
+          p.name_en || p.name
+        );
+        console.log('[loadPOIPhotos] returned', photos?.length || 0, 'photos for', p.id);
+
+        if (photos && photos.length > 0) {
+          const slides = photos.slice(0, 5).map((photo, idx) => `
+            <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
+              <a href="${photo.link}" target="_blank" rel="noopener" title="${photo.author}" style="display:block;width:100%;height:100%;text-decoration:none">
+                <img src="${photo.url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;transition:transform .2s">
+              </a>
+            </div>
+          `).join('');
+
+          container.outerHTML = `
+            <div style="margin-bottom:12px">
+              <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%;margin-bottom:6px">
+                ${slides}
+              </div>
+              <div style="font-size:11px;color:var(--muted);text-align:center">📷 Foto da Unsplash</div>
+            </div>
+          `;
+        } else {
+          container.outerHTML = photoFallbackHtml('Nessuna foto Unsplash trovata', p);
+        }
+      } catch (err) {
+        console.error('[loadPOIPhotos] Error:', err && err.message);
+        container.outerHTML = photoFallbackHtml('Errore nel caricamento foto', p);
+      }
+    })();
+  }
+
   function openPOI(id){
     const p = allPOIs().find(x => x.id===id);
     if (!p) return;
     openSheet(p.name_en || p.name, poiDetailHTML(p));
+    if (!p.photos && !p.photo && typeof window.getPhotosForLocation === 'function') {
+      loadPOIPhotos(p);
+    }
     // Navigate btn — geo: with fallbacks
     document.getElementById('navigate-poi').onclick = () => {
       const lat = p.lat, lng = p.lng, name = p.name;
