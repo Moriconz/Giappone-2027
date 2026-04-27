@@ -2698,50 +2698,6 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
         toast(`❌ Errore: ${err.message}`);
         return null;
       }
-              {
-                role: 'system',
-                content: `Sei un esperto di celiachia e gluten-free. Analizza il menu italiano fornito e categorizza i piatti in 3 sezioni:
-1. **PIATTI SICURI** (100% senza glutine, nessun rischio contaminazione)
-2. **RISCHIO CONTAMINAZIONE** (ingredienti GF ma rischio cucina condivisa)
-3. **SCONSIGLIATO** (contiene glutine o ingredients unclear)
-
-Rispondi SOLO in JSON con questo formato (niente testo extra):
-{
-  "piatti_sicuri": ["piatto1", "piatto2"],
-  "rischi": ["piatto3 (motivo)"],
-  "sconsigliato": ["piatto4 (motivo)"]
-}
-
-Se dubbia, metti in RISCHIO (conservativo).`
-              },
-              {
-                role: 'user',
-                content: `Analizza questo menu:\n\n${menuText}`
-              }
-            ],
-            temperature: 0.3,
-            max_tokens: 500
-          })
-        });
-        
-        if (!resp.ok) {
-          const err = await resp.json();
-          toast(`❌ Groq error: ${err.error?.message || 'unknown'}`);
-          return null;
-        }
-        
-        const data = await resp.json();
-        const content = data.choices?.[0]?.message?.content || '';
-        const result = JSON.parse(content);
-        
-        this.saveToCache(hash, result);
-        toast('✅ Menu analizzato!');
-        return result;
-      } catch (err) {
-        console.error('[Groq]', err);
-        toast(`❌ Errore: ${err.message}`);
-        return null;
-      }
     },
     
     getFromCache(hash) {
