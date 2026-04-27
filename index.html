@@ -1667,56 +1667,47 @@ const POIS_BASE = window.POIS_DATASET || [];
     } else if (p.photo) {
       // Singola foto fallback
       photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${p.name}" style="width:100%;height:300px;object-fit:cover;border-radius:8px;margin-bottom:12px">`;
-    } else if (window.getPhotosForLocation) {
-      // Unsplash photos + Reverse Geocoding
+    } else if (window.searchPlacePhotos) {
+      // Fetch asincrono da Unsplash + Reverse Geocoding
       photoHtml = `<div id="poi-photos-container" style="margin-bottom:12px;min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">📷 Caricamento foto...</div>`;
-
-      // Async load dopo render (non blocca UI)
+      // Async load dopo render
       setTimeout(async () => {
         try {
+          // Prova reverse geocoding per ottenere nome corretto
+          let photos = [];
+          if (window.reverseGeocodeAndGetPhotos && p.lat && p.lng) {
+            photos = await window.reverseGeocodeAndGetPhotos(p.lat, p.lng, p.city);
+          }
+
+          // Fallback: usa nome disponibile se reverse geo non dà risultati
+          if (photos.length === 0 && window.searchPlacePhotos) {
+            photos = await window.searchPlacePhotos(p.name_en || p.name, p.city);
+          }
+
           const container = document.getElementById('poi-photos-container');
           if (!container) return;
 
-          // 1. Reverse geocode lat/lng to get REAL place name
-          // 2. Fallback to p.name_en if needed
-          // 3. Search Unsplash for photos
-          const photos = await window.getPhotosForLocation(
-            p.lat,
-            p.lng,
-            p.city,
-            p.name_en || p.name  // fallback
-          );
-
           if (photos.length > 0) {
-            // Carousel di foto
-            const slides = photos.slice(0, 5).map((photo, idx) => `
-              <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
-                <a href="${photo.link}" target="_blank" rel="noopener" title="${photo.author}" style="display:block;width:100%;height:100%;text-decoration:none">
-                  <img src="${photo.url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;transition:transform .2s">
+            const slides = photos.slice(0, 3).map((photo, idx) => `
+              <div class="photo-slide" style="flex-shrink:0;width:100%;height:300px;overflow:hidden;border-radius:8px">
+                <a href="${photo.link}" target="_blank" rel="noopener" style="display:block;width:100%;height:100%">
+                  <img src="${photo.url}" alt="${p.name} ${idx+1}" style="width:100%;height:100%;object-fit:cover">
                 </a>
               </div>
             `).join('');
-
             container.innerHTML = `
-              <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%;margin-bottom:6px">
+              <div style="overflow-x:auto;display:flex;gap:8px;padding:0 -8px;scroll-behavior:smooth;width:100%">
                 ${slides}
               </div>
-              <div style="font-size:11px;color:var(--muted);text-align:center">📷 Foto da Unsplash</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center">📷 via Unsplash</div>
             `;
           } else {
-            // Nessuna foto trovata
-            container.innerHTML = `
-              <div style="color:var(--muted);font-size:12px;text-align:center;padding:12px">
-                📷 Nessuna foto disponibile
-              </div>
-            `;
+            container.innerHTML = '<div style="color:var(--muted);font-size:12px">📷 Nessuna foto disponibile</div>';
           }
         } catch (err) {
-          console.error('[POI Photos] Error:', err.message);
+          console.warn('[POI Photos] Error:', err);
           const container = document.getElementById('poi-photos-container');
-          if (container) {
-            container.innerHTML = `<div style="color:var(--muted);font-size:12px">⚠️ Errore caricamento foto</div>`;
-          }
+          if (container) container.innerHTML = '<div style="color:var(--muted);font-size:12px">📷 Errore caricamento</div>';
         }
       }, 100);
     }
