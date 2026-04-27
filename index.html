@@ -1649,32 +1649,10 @@ const POIS_BASE = window.POIS_DATASET || [];
     const stars = [1,2,3,4,5].map(n =>
       `<span class="star ${n<=rating?'on':''}" data-star="${n}" data-id="${p.id}">★</span>`
     ).join('');
-    // Foto custom (singola, carousel, o fetch Unsplash + reverse geocoding)
-    // Helper: link "Cerca su Google Images" come fallback finale
-    const googleImagesUrl = (q, city) => {
-      const query = [q, city, 'Japan'].filter(Boolean).join(' ');
-      return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
-    };
-    const googleFallbackHtml = (label) => `
-      <div style="margin-bottom:12px;padding:14px;background:var(--surface-2);border-radius:8px;text-align:center">
-        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📷 ${label}</div>
-        <a href="${googleImagesUrl(p.name_en || p.name, p.city)}" target="_blank" rel="noopener"
-           class="btn" style="font-size:12px">🔎 Cerca foto su Google Images</a>
-      </div>
-    `;
-
-    // Log diagnostico: quale branch viene preso?
-    console.log('[poiDetailHTML] photo branch decision:', {
-      poi: p.id,
-      hasPhotos: !!(p.photos && Array.isArray(p.photos) && p.photos.length > 0),
-      hasPhoto: !!p.photo,
-      hasFn: typeof window.getPhotosForLocation === 'function'
-    });
-
+    // Foto custom (singola, carousel, o fetch Google Places)
     let photoHtml = '';
     if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
       // Carousel orizzontale da p.photos
-      console.log('[poiDetailHTML] using p.photos (', p.photos.length, ')');
       const slides = p.photos.map((photo, idx) => `
         <div class="photo-slide" style="flex-shrink:0;width:100%;height:300px;overflow:hidden;border-radius:8px">
           <img src="${photo.url}" alt="${p.name} ${idx+1}" style="width:100%;height:100%;object-fit:cover">
@@ -1688,34 +1666,29 @@ const POIS_BASE = window.POIS_DATASET || [];
       `;
     } else if (p.photo) {
       // Singola foto fallback
-      console.log('[poiDetailHTML] using p.photo');
       photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${p.name}" style="width:100%;height:300px;object-fit:cover;border-radius:8px;margin-bottom:12px">`;
-    } else if (typeof window.getPhotosForLocation === 'function') {
+    } else if (window.getPhotosForLocation) {
       // Unsplash photos + Reverse Geocoding
-      console.log('[poiDetailHTML] entering getPhotosForLocation branch for', p.id);
       photoHtml = `<div id="poi-photos-container" style="margin-bottom:12px;min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">📷 Caricamento foto...</div>`;
 
       // Async load dopo render (non blocca UI)
       setTimeout(async () => {
-        console.log('[poiDetailHTML] setTimeout fired, calling getPhotosForLocation');
-        const container = document.getElementById('poi-photos-container');
-        if (!container) {
-          console.warn('[poiDetailHTML] container not found in DOM, skipping');
-          return;
-        }
         try {
-          // 1. Reverse geocode lat/lng → real place name
-          // 2. Fallback to p.name_en or p.name
-          // 3. Search Unsplash
+          const container = document.getElementById('poi-photos-container');
+          if (!container) return;
+
+          // 1. Reverse geocode lat/lng to get REAL place name
+          // 2. Fallback to p.name_en if needed
+          // 3. Search Unsplash for photos
           const photos = await window.getPhotosForLocation(
             p.lat,
             p.lng,
             p.city,
-            p.name_en || p.name
+            p.name_en || p.name  // fallback
           );
-          console.log('[poiDetailHTML] photos returned:', photos?.length || 0);
 
-          if (photos && photos.length > 0) {
+          if (photos.length > 0) {
+            // Carousel di foto
             const slides = photos.slice(0, 5).map((photo, idx) => `
               <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
                 <a href="${photo.link}" target="_blank" rel="noopener" title="${photo.author}" style="display:block;width:100%;height:100%;text-decoration:none">
@@ -1724,28 +1697,28 @@ const POIS_BASE = window.POIS_DATASET || [];
               </div>
             `).join('');
 
-            container.outerHTML = `
-              <div style="margin-bottom:12px">
-                <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%;margin-bottom:6px">
-                  ${slides}
-                </div>
-                <div style="font-size:11px;color:var(--muted);text-align:center">📷 Foto da Unsplash</div>
+            container.innerHTML = `
+              <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%;margin-bottom:6px">
+                ${slides}
               </div>
+              <div style="font-size:11px;color:var(--muted);text-align:center">📷 Foto da Unsplash</div>
             `;
           } else {
-            // Nessuna foto trovata → fallback Google Images
-            container.outerHTML = googleFallbackHtml('Nessuna foto Unsplash trovata');
+            // Nessuna foto trovata
+            container.innerHTML = `
+              <div style="color:var(--muted);font-size:12px;text-align:center;padding:12px">
+                📷 Nessuna foto disponibile
+              </div>
+            `;
           }
         } catch (err) {
-          console.error('[POI Photos] Error:', err && err.message);
-          const c = document.getElementById('poi-photos-container');
-          if (c) c.outerHTML = googleFallbackHtml('Errore nel caricamento foto');
+          console.error('[POI Photos] Error:', err.message);
+          const container = document.getElementById('poi-photos-container');
+          if (container) {
+            container.innerHTML = `<div style="color:var(--muted);font-size:12px">⚠️ Errore caricamento foto</div>`;
+          }
         }
       }, 100);
-    } else {
-      // Fallback assoluto: features-photos.js non caricato → mostra link Google
-      console.warn('[poiDetailHTML] window.getPhotosForLocation NOT available — showing Google fallback');
-      photoHtml = googleFallbackHtml('Foto non disponibili offline');
     }
     return `
       ${photoHtml}
