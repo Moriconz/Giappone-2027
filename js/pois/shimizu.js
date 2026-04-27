@@ -1,0 +1,1 @@
+window.POIS_DATASET = window.POIS_DATASET || {};\nwindow.POIS_DATASET['shimizu'] = [{"id":"node/3293530901","name":"八雲神社","lat":35.1277525,"lng":138.4382679,"cat":"shrine","desc":"","city":"shimizu","name_en":"Yakumojinja","local":true}];

@@ -5,6 +5,20 @@
 
 console.log('[AI] Loading features...');
 
+// Safe toast wrapper - evita conflitto con elemento HTML #toast
+if (!window.toast || typeof window.toast !== 'function') {
+  window.toast = function(msg) {
+    const toastEl = document.getElementById('toast');
+    if (toastEl && typeof toastEl.textContent !== 'undefined') {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 3000);
+    } else {
+      console.log('[toast]', msg);
+    }
+  };
+}
+
 // Global AI history
 window.aiHistory = [];
 
