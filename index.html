@@ -1674,7 +1674,7 @@ const POIS_BASE = window.POIS_DATASET || [];
         try {
           const key = await window.appConfig.getKey('googlePlaces');
           if (key && window.searchPlacePhotos) {
-            const photos = await window.searchPlacePhotos(p.name, p.city);
+            const photos = await window.searchPlacePhotos(p.name_en || p.name, p.city);
             if (photos.length > 0) {
               const container = document.getElementById('poi-photos-container');
               if (container) {
@@ -1748,7 +1748,7 @@ const POIS_BASE = window.POIS_DATASET || [];
   function openPOI(id){
     const p = allPOIs().find(x => x.id===id);
     if (!p) return;
-    openSheet(p.name, poiDetailHTML(p));
+    openSheet(p.name_en || p.name, poiDetailHTML(p));
     // Navigate btn — geo: with fallbacks
     document.getElementById('navigate-poi').onclick = () => {
       const lat = p.lat, lng = p.lng, name = p.name;
