@@ -15,15 +15,28 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css" />
 <title>Giappone 2027 · Travel Companion v3</title>
 <!-- ============================================================================ -->
-<!-- MODULAR SCRIPTS — Load in order: state → features → ui → main -->
+<!-- CDN DEPENDENCIES — All external scripts -->
 <!-- ============================================================================ -->
-<script src="./js/state.js"></script>
-<script src="./js/features-gps.js"></script>
-<script src="./js/ui-helpers.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./js/chunk-parts-loader.js"></script>
-<script src="./js/group-panel.js"></script>
-<script src="./js/group-chat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.12.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+
+<!-- ============================================================================ -->
+<!-- APP MODULES — Phase 1: load order: encryption → config → state → features    -->
+<!-- ============================================================================ -->
+<script src="js/encryption.js"></script>
+<script src="js/config.js"></script>
+<!-- REMOVED: poi-loader.js -->
+<script src="js/pois_dataset.js"></script>
+<script src="js/state.js"></script>
+<script src="js/ui-helpers.js"></script>
+<script src="js/features-ai.js"></script>
+<script src="js/features-gps.js"></script>
+<script src="js/features-photos.js"></script>
+<script src="js/group-chat.js"></script>
+<script src="js/group-panel.js"></script>
 <style>
 /* ===== Design tokens ===== */
 :root{
@@ -142,10 +155,10 @@ nav.bottom button svg{width:22px;height:22px}
   border:1px solid var(--border);border-radius:8px;font:inherit}
 .form-row textarea{min-height:60px;resize:vertical}
 /* Toast */
-#toast{position:fixed;bottom:calc(80px + var(--safe-bottom));left:50%;transform:translateX(-50%);
+#toast-container{position:fixed;bottom:calc(80px + var(--safe-bottom));left:50%;transform:translateX(-50%);
   background:var(--primary);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;
   box-shadow:var(--shadow);z-index:3000;opacity:0;transition:opacity .25s;pointer-events:none}
-#toast.show{opacity:1}
+#toast-container.show{opacity:1}
 /* Offline banner */
 #offline-banner{background:var(--warning);color:#1a1a1a;padding:4px 12px;font-size:12px;
   text-align:center;font-weight:600;display:none}
@@ -288,9 +301,59 @@ body.low-tier *{animation:none!important;transition:none!important}
 .nav-badge{position:absolute;top:4px;right:8px;background:var(--accent);color:#fff;
   font-size:9px;border-radius:999px;padding:1px 5px;font-weight:700}
 nav.bottom button{position:relative}
+/* ===== Groq Menu Analyzer ===== */
+.groq-panel{display:flex;flex-direction:column;gap:12px;padding:12px}
+.groq-menu-textarea{width:100%;min-height:100px;padding:12px;background:var(--surface-2);
+  color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;resize:vertical}
+.groq-api-setup{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;margin-bottom:12px}
+.groq-api-setup input{width:100%;padding:10px;background:var(--surface);color:var(--text);
+  border:1px solid var(--border);border-radius:6px;font:inherit;margin-top:6px;margin-bottom:6px}
+.groq-api-setup p{margin:0 0 8px;font-size:12px;color:var(--muted)}
+.groq-analyze-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:0;
+  border-radius:8px;font-weight:700;font-size:14px;cursor:pointer}
+.gf-analysis-result{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.gf-result-card{border-radius:10px;padding:12px 14px;border-left:4px solid;background:var(--surface-2)}
+.gf-result-card.safe{border-left-color:var(--success);background:rgba(74,124,89,.15)}
+.gf-result-card.risk{border-left-color:var(--warning);background:rgba(232,168,56,.15)}
+.gf-result-card.avoid{border-left-color:var(--danger);background:rgba(217,83,79,.15)}
+.gf-result-card h4{margin:0 0 6px;font-size:13px;font-weight:700;display:flex;gap:6px;align-items:center}
+.gf-result-card .emoji{font-size:18px}
+.gf-result-card ul{margin:0;padding-left:18px;font-size:13px;color:var(--text)}
+.gf-result-card li{margin:4px 0}
+/* ===== GF Places Database ===== */
+.gf-places-container{display:flex;flex-direction:column;gap:12px;padding:12px}
+.gf-place-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;margin-bottom:10px}
+.gf-place-card .gpc-header{display:flex;align-items:flex-start;gap:10px}
+.gpc-name{font-weight:700;font-size:14px;flex:1}
+.gpc-city{font-size:12px;color:var(--muted)}
+.gpc-rating{margin-left:auto;color:var(--accent);font-weight:700}
+.gpc-meta{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;font-size:12px}
+.gpc-tag{background:var(--primary);color:#fff;padding:3px 8px;border-radius:4px;font-size:11px}
+.gpc-actions{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.gpc-actions button{flex:1;padding:8px 10px;background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);font-size:12px;cursor:pointer;font-weight:600}
+.gpc-actions button:active{background:var(--surface-2)}
+.gf-place-form{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;margin-bottom:12px}
+.gf-place-form .form-row{margin-bottom:10px}
+.gf-place-form label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.gf-place-form input,.gf-place-form textarea{width:100%;padding:10px;background:var(--surface);
+  color:var(--text);border:1px solid var(--border);border-radius:6px;font:inherit}
+.gf-place-form textarea{min-height:60px;resize:vertical}
+.gf-place-form .tags-input{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.gf-place-form .tag-chip{display:inline-flex;align-items:center;gap:6px;background:var(--primary);
+  color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.gf-place-form .tag-chip button{background:none;border:0;color:#fff;cursor:pointer;padding:0;font-size:12px}
+.gf-place-form .form-actions{display:flex;gap:8px;margin-top:12px}
+.gf-place-form .form-actions button{flex:1;padding:10px;background:var(--accent);color:#fff;
+  border:0;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px}
+.gf-place-form .form-actions button.secondary{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.gf-empty-state{text-align:center;padding:20px 12px;color:var(--muted);font-size:13px}
+.gf-empty-state .icon{font-size:32px;margin-bottom:8px}
+
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./js/chunk-parts-loader.js"></script>  
 </head>
 <body>
 <div id="app">
@@ -345,7 +408,15 @@ nav.bottom button{position:relative}
       </svg>
       GF
     </button>
-    
+    <button data-view="groq-menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8m3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5m-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11m3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
+      🤖 Groq
+    </button>
+    <button data-view="gf-places">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      🏪 Posti
+    </button>
+
   </nav>
 </div>
 <div class="sheet" id="sheet">
@@ -358,9 +429,7 @@ nav.bottom button{position:relative}
     <div class="sheet-body" id="sheet-body"></div>
   </div>
 </div>
-<div id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js" onerror="document.getElementById('ol-error').style.display='flex'"></script>
+<div id="toast-container"></div>
 <div id="ol-error" style="display:none;position:fixed;inset:0;z-index:9999;background:#0F1923;color:#E8EEF4;
   flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center">
   <div style="font-size:40px">🗾</div>
@@ -375,11 +444,16 @@ nav.bottom button{position:relative}
     border:0;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">🔄 Ricarica</button>
 </div>
 <script>
+console.log('[Giappone2027] App loading...');
+
 window.addEventListener("load", () => {
+  console.log('[Giappone2027] Window load fired');
   if (typeof ol === 'undefined') {
+    console.error('[Giappone2027] OpenLayers not loaded!');
     document.getElementById('ol-error').style.display = 'flex';
     return;
   }
+  console.log('[Giappone2027] OpenLayers loaded, initializing...');
 /* =========================================================
    POI DATABASE — Giappone 2027
    Fonti: Japan National Tourism Org, Tabelog, TableCheck,
@@ -388,1074 +462,12 @@ window.addEventListener("load", () => {
    ========================================================= */
   
 // POI base (fallback)
-const POIS_BASE = [
-  /* ========== SAPPORO (Hokkaido) ========== */
-  {id:'sap-01',name:'Odori Park',jp:'大通公園',city:'Sapporo',cat:'nature',lat:43.0604,lng:141.3568,
-    desc:'Parco centrale di 1.5km con fontane. A febbraio ospita il Yuki Matsuri (Festival della Neve).',
-    best:'Febbraio per Yuki Matsuri, altrimenti maggio-giugno per fioriture',
-    do:['Torre TV a est per vista panoramica','Mercato alimentare in estate'],
-    dont:['Evitare in pieno inverno senza abbigliamento adeguato (-10°C)'],
-    gf:{lvl:'none',notes:'Solo un parco — nessun pasto pianificato qui.'}},
-  {id:'sap-02',name:'Hokkaido Shrine',jp:'北海道神宮',city:'Sapporo',cat:'shrine',lat:43.0548,lng:141.3074,
-    desc:'Santuario Shinto principale di Hokkaido, splendido durante la fioritura dei ciliegi.',
-    best:'Fine aprile-inizio maggio per sakura',
-    do:['Combinarlo con Maruyama Park','Omamori (amuleti) autentici'],
-    dont:['Non fotografare i riti interni']},
-  {id:'sap-03',name:'Mt. Moiwa',jp:'藻岩山',city:'Sapporo',cat:'viewpoint',lat:42.9896,lng:141.3248,
-    desc:'Funicolare + ropeway per il miglior panorama notturno della città (tra i Top 3 del Giappone).',
-    best:'Tramonto / vista notturna',
-    do:['Andare 30min prima del tramonto','Ultima corsa ~21:30']},
-  {id:'sap-04',name:'Susukino',jp:'すすきの',city:'Sapporo',cat:'neighborhood',lat:43.0553,lng:141.3533,
-    desc:'Il quartiere della vita notturna. Ramen Alley (Ganso Sapporo Ramen Yokocho) con 17 locali ramen.',
-    best:'Sera dalle 19:00',
-    do:['Ramen al miso (specialità locale)','Jingisukan (agnello grigliato)'],
-    dont:['Occhio ai buttadentro aggressivi sulle vie laterali']},
-  {id:'sap-05',name:'Rebun Sushi Genten (GF option)',jp:'',city:'Sapporo',cat:'food',lat:43.0520,lng:141.3530,
-    desc:'Sushi omakase con tamari GF disponibile su richiesta. Pesce di Hokkaido eccellente.',
-    gf:{lvl:'partial',notes:'Portare card celiachia in giapponese. Chiedere "shouyu nashi, tamari kudasai".'},
-    booking:{tabelog:'https://tabelog.com/en/hokkaido/A0101/A010101/',phone:'+81-11-251-0567'}},
-  {id:'sap-06',name:'Daimaru Depachika',jp:'大丸 デパ地下',city:'Sapporo',cat:'food',lat:43.0685,lng:141.3503,
-    desc:'Piano seminterrato del grande magazzino: prodotti freschi, onigiri di riso puro, frutta premium.',
-    best:'19:00-20:00 per sconti fine giornata',
-    gf:{lvl:'partial',notes:'Onigiri semplici (ume, shio) sono GF. Controllare etichette "小麦" (grano).'}},
-  /* ========== NIKKO ========== */
-  {id:'nik-01',name:'Toshogu Shrine',jp:'日光東照宮',city:'Nikko',cat:'shrine',lat:36.7579,lng:139.5986,
-    hours:'8:00–17:00 (nov-mar chiude 16:00)',ticket:'1300¥ adulto, 450¥ bambino',duration:90,
-    desc:'Mausoleo UNESCO di Tokugawa Ieyasu. Arte scultorea pazzesca (le tre scimmie, il gatto dormiente).',
-    best:'Primo mattino (apre 8:00) per evitare bus turistici',
-    do:['Biglietto combo con Rinnoji','Fermarsi al Yomeimon Gate'],
-    dont:['Non usare flash negli interni']},
-  {id:'nik-02',name:'Shinkyo Bridge',jp:'神橋',city:'Nikko',cat:'viewpoint',lat:36.7525,lng:139.6031,
-    desc:'Ponte laccato rosso del XVII secolo, iconico sopra il fiume Daiya.',
-    best:'Autunno (novembre) con foliage rosso/arancio'},
-  {id:'nik-03',name:'Kegon Falls',jp:'華厳滝',city:'Nikko',cat:'nature',lat:36.7388,lng:139.5031,
-    desc:'Cascata di 97m. Ascensore fino alla base per vista ravvicinata (500¥).',
-    best:'Primavera (portata massima) o autunno (colori)',
-    do:['Combinare con Lake Chuzenji','Scendere ad Akechidaira per vista aerea']},
-  {id:'nik-04',name:'Lake Chuzenji',jp:'中禅寺湖',city:'Nikko',cat:'nature',lat:36.7333,lng:139.4833,
-    desc:'Lago vulcanico a 1269m di altitudine. Battelli, templi sulle rive, aria fresca in estate.',
-    best:'Luglio-agosto per rifugio dal caldo, novembre per foliage'},
-  {id:'nik-05',name:'Gyoshintei (Shojin Ryori)',jp:'尭心亭',city:'Nikko',cat:'food',local:true,lat:36.7556,lng:139.6061,
-    desc:'Cucina vegetariana buddhista (Shojin Ryori). Molti piatti naturalmente GF a base di tofu, verdure, riso.',
-    gf:{lvl:'partial',notes:'Shojin ryori usa salsa di soia con grano. Chiedere tamari. Prenotare in anticipo.'},
-    booking:{website:'https://www.meiji-yakata.com/meiji-gyoshin',phone:'+81-288-53-3751'}},
-  /* ========== TOKYO ========== */
-  {id:'tok-01',name:'Senso-ji',paid:false,jp:'浅草寺',city:'Tokyo',cat:'temple',lat:35.7148,lng:139.7967,
-    desc:'Tempio più antico di Tokyo (645 d.C.) nel quartiere di Asakusa. Nakamise-dori per street food.',
-    best:'Prima delle 8:00 per foto senza folla, oppure dopo le 20:00 illuminato',
-    do:['Omikuji (oracolo) 100¥','Nakamise-dori al ritorno'],
-    dont:['Non mangiare camminando nelle vie dei negozi']},
-  {id:'tok-02',name:'Meiji Jingu',paid:false,jp:'明治神宮',city:'Tokyo',cat:'shrine',lat:35.6764,lng:139.6993,
-    desc:'Santuario nella foresta urbana di 70 ettari. Pace totale a 3 minuti da Harajuku.',
-    best:'Mattina presto, specialmente in domenica (matrimoni tradizionali)',
-    do:['Ingresso sud da Harajuku Station','Barili di sake donati all\'ingresso']},
-  {id:'tok-03',name:'Shibuya Scramble',jp:'渋谷スクランブル交差点',city:'Tokyo',cat:'neighborhood',lat:35.6595,lng:139.7004,
-    desc:'L\'incrocio più famoso al mondo. Vista migliore dal Shibuya Sky o Mag\'s Park.',
-    best:'Dopo le 18:00, giorni feriali per ritmo senza overcrowding turistico',
-    dont:['Non fermarsi in mezzo per selfie — fastidio e pericolo']},
-  {id:'tok-04',name:'Shinjuku Gyoen',paid:true,cost:'500¥',jp:'新宿御苑',city:'Tokyo',cat:'nature',lat:35.6852,lng:139.7101,
-    desc:'Parco imperiale con giardino inglese, francese e giapponese. Migliore hanami di Tokyo.',
-    best:'Fine marzo-inizio aprile per sakura (attenzione: vietato alcol a differenza di Ueno)',
-    do:['Entrare dalla stazione JR Shinjuku (10 min a piedi)','Serre tropicali']},
-  {id:'tok-05',name:'TeamLab Planets',paid:true,cost:'3200¥',ticketUrl:"https://teamlab.art/e/planets/",jp:'チームラボプラネッツ',city:'Tokyo',cat:'experience',lat:35.6488,lng:139.7904,
-    hours:'9:00–21:00 (ultimo ingresso 20:00)',ticket:'3200¥ adulto, 1000¥ bambino',duration:90,
-    desc:'Museo immersivo digitale a Toyosu. Meglio di TeamLab Borderless secondo molti.',
-    best:'Prenotare online SEMPRE, preferibilmente 9:00 o 20:00',
-    do:['Portare shorts o pantaloni arrotolabili','Biglietti solo online']},
-  {id:'tok-06',name:'Shimokitazawa',jp:'下北沢',city:'Tokyo',cat:'vintage',lat:35.6612,lng:139.6688,
-    desc:'Il quartiere vintage per eccellenza: Flamingo, Chicago, New York Joe Exchange, Haight & Ashbury. Piccoli teatri, caffè indipendenti.',
-    best:'Pomeriggio feriale (i weekend sono caotici)',
-    do:['Girare le vie laterali (nord ed sud della stazione)','Cafè Bear Pond (espresso)'],
-    dont:['Le taglie giapponesi sono piccole — controllare tutto']},
-  {id:'tok-07',name:'Koenji',jp:'高円寺',city:'Tokyo',cat:'vintage',local:true,lat:35.7054,lng:139.6498,
-    desc:'Alternativa più autentica e punk a Shimokita. Oltre 50 negozi vintage. Festival Awa Odori in agosto.',
-    do:['Don Don Down on Wednesday (scontatissimo)','Whole Earth Cafe per cena'],
-    dont:['Alcuni negozi accettano solo contanti']},
-  {id:'tok-08',name:'Tsukiji Outer Market',jp:'築地場外市場',city:'Tokyo',cat:'market',lat:35.6654,lng:139.7707,
-    desc:'Mercato esterno ancora attivo (quello interno è a Toyosu). Sushi, tamagoyaki, uni, strumenti cucina.',
-    best:'8:00-11:00 — dopo le 14:00 molti chiudono',
-    gf:{lvl:'partial',notes:'Sushi semplice OK con tamari proprio; evitare tempura, unagi con tare.'}},
-  {id:'tok-09',name:'Harajuku / Takeshita',jp:'原宿・竹下通り',city:'Tokyo',cat:'shopping',lat:35.6702,lng:139.7026,
-    desc:'Moda kawaii, crepes, store iconici. Aperta in parallelo Omotesando per brand di lusso/architettura.',
-    best:'Feriali mattina per foto. Weekend è follia.',
-    dont:['Non comprare crepes grandi se hai programma dopo — GF raramente']},
-  {id:'tok-10',name:'Gluten Free T\'s Kitchen',jp:'',city:'Tokyo',cat:'food',lat:35.6906,lng:139.6992,
-    desc:'Ristorante 100% gluten-free ad Ebisu/Meguro. Udon e ramen GF di riso, curry, dolci.',
-    gf:{lvl:'full',notes:'Certificato celiac-friendly, cucina separata. Prenotare — piccolo.'},
-    booking:{website:'https://www.ts-restaurant.jp/',phone:'+81-3-3449-0333'}},
-  {id:'tok-11',name:'Little Bird GF Cafe',jp:'',city:'Tokyo',cat:'food',lat:35.6347,lng:139.7068,
-    desc:'Cafe 100% GF a Meguro. Pancake, panini, dolci celiac-safe. Gestito da madre di bimbo celiaco.',
-    gf:{lvl:'full',notes:'Tutto GF certificato. Popolare — andare fuori orari di punta.'},
-    booking:{tabelog:'https://tabelog.com/en/tokyo/A1316/A131601/13141832/'}},
-  {id:'tok-12',name:'Rainbow Bird Rendezvous',jp:'',city:'Tokyo',cat:'food',lat:35.6720,lng:139.7530,
-    desc:'Shimbashi. Ristorante con menu dedicato GF, pizza di riso, frittura separata.',
-    gf:{lvl:'full',notes:'Certified celiac-safe. Prenotare anticipo, telefono giapponese richiesto.'},
-    booking:{tabelog:'https://tabelog.com/en/tokyo/A1301/A130103/13194850/'}},
-  {id:'tok-13',name:'Komeda Stand Rice Flour',jp:'',city:'Tokyo',cat:'food',lat:35.6996,lng:139.7718,
-    desc:'Catena caffè con opzione pane di riso (Kome-pan) certificato GF in alcune location.',
-    gf:{lvl:'partial',notes:'Non tutte le location. Verificare "米粉" (komeko) nel menu.'}},
-  /* ========== KAMAKURA ========== */
-  {id:'kam-01',name:'Great Buddha (Kotoku-in)',paid:true,cost:'300¥',jp:'鎌倉大仏',city:'Kamakura',cat:'temple',lat:35.3168,lng:139.5358,
-    desc:'Statua bronzea del Buddha Amida (1252), 11.4m. Si può entrare all\'interno (20¥).',
-    best:'Primo mattino per evitare scolaresche',
-    do:['Entrare dentro la statua','Combinarlo con Hasedera 10 min a piedi']},
-  {id:'kam-02',name:'Hase-dera',paid:true,cost:'400¥',jp:'長谷寺',city:'Kamakura',cat:'temple',lat:35.3122,lng:139.5347,
-    desc:'Statua Kannon in legno (9m, XVII sec). Giardini con ortensie (giugno) e vista oceano.',
-    best:'Giugno per ajisai (ortensie) — arrivare alle 8:00',
-    do:['Jizo-do con migliaia di statuette','Vista mare dalla terrazza']},
-  {id:'kam-03',name:'Tsurugaoka Hachimangu',jp:'鶴岡八幡宮',city:'Kamakura',cat:'shrine',lat:35.3262,lng:139.5561,
-    desc:'Santuario principale della città. Via d\'approccio Dankazura con 1000 ciliegi in primavera.',
-    best:'Apertura 6:00 oppure tramonto'},
-  {id:'kam-04',name:'Hokoku-ji (Bamboo Temple)',paid:true,cost:'300¥ + matcha 600¥',jp:'報国寺',city:'Kamakura',cat:'temple',local:true,lat:35.3217,lng:139.5702,
-    desc:'Foresta di bambù + casa del tè tradizionale. Alternativa zen alla caotica Arashiyama di Kyoto.',
-    best:'Mattina feriale per silenzio totale',
-    do:['Prendere matcha al tea house','Sedersi 10 minuti in silenzio']},
-  {id:'kam-05',name:'Enoshima Island',jp:'江ノ島',city:'Kamakura',cat:'nature',lat:35.2998,lng:139.4797,
-    desc:'Isoletta sacra collegata da ponte. Grotte marine, osservatorio, tramonti con Fuji all\'orizzonte.',
-    best:'Pomeriggio-tramonto'},
-  {id:'kam-06',name:'Magokoro (vegan GF)',jp:'麻心',city:'Kamakura',cat:'food',lat:35.3108,lng:139.5394,
-    desc:'Cafe vegano/vegetariano di fronte all\'oceano, a Hase. Molte opzioni naturalmente GF.',
-    gf:{lvl:'partial',notes:'Non 100% GF ma staff informato. Chiedere "guruten-furii".'}},
-  /* ========== SHIRAKAWA-GO ========== */
-  {id:'shi-01',name:'Ogimachi Village',paid:true,cost:"800¥ (accesso)",jp:'荻町合掌造り集落',city:'Shirakawa-go',cat:'experience',lat:36.2583,lng:136.9066,
-    desc:'Villaggio UNESCO con case gassho-zukuri (tetti di paglia a 60°). Vero museo vivente.',
-    best:'Gennaio-febbraio con neve (magia), maggio/ottobre per clima mite',
-    do:['Shiroyama Viewpoint (trail 15min dal villaggio)','Dormire in un gassho-minshuku'],
-    dont:['Non entrare in case senza invito — ci vivono persone']},
-  {id:'shi-02',name:'Wada House',jp:'和田家',city:'Shirakawa-go',cat:'experience',lat:36.2597,lng:136.9066,
-    desc:'La più grande casa gassho visitabile (1573). Tre piani, bachicoltura storica.',
-    best:'Pranzo per combinare con Irori (cucina al focolare)'},
-  {id:'shi-03',name:'Myozenji Museum',jp:'明善寺郷土館',city:'Shirakawa-go',cat:'museum',local:true,lat:36.2597,lng:136.9063,
-    desc:'Tempio buddhista con interni in stile gassho visitabili.'},
-  /* ========== KYOTO ========== */
-  {id:'kyo-01',name:'Fushimi Inari Taisha',paid:false,jp:'伏見稲荷大社',city:'Kyoto',cat:'shrine',lat:34.9671,lng:135.7727,
-    desc:'10.000+ torii arancioni salgono per 4km sul monte Inari. Aperto 24/7.',
-    best:'Prima delle 7:00 o dopo le 19:00 per foto senza folla',
-    do:['Salire almeno fino a Yotsutsuji (20min) per vista','Kitsune udon al ritorno (NO GF)']},
-  {id:'kyo-02',name:'Kinkaku-ji (Golden Pavilion)',paid:true,cost:'500¥',ticketUrl:"https://www.shokoku-ji.jp/en/kinkakuji/",jp:'金閣寺',city:'Kyoto',cat:'temple',lat:35.0394,lng:135.7292,
-    desc:'Padiglione d\'oro su lago. Una delle icone del Giappone.',
-    best:'Apertura 9:00 o con neve (raro ma magico)',
-    do:['Combinare con Ryoan-ji (giardino zen)'],
-    dont:['Si visita solo all\'esterno, niente ingresso dentro']},
-  {id:'kyo-03',name:'Arashiyama Bamboo Grove',jp:'嵐山竹林',city:'Kyoto',cat:'nature',lat:35.0170,lng:135.6719,
-    desc:'Foresta di bambù iconica. Best combinato con Tenryu-ji (UNESCO) e Monkey Park.',
-    best:'PRIMA DELLE 7:00 — dopo diventa invivibile',
-    do:['Togetsukyo bridge per foto','Escursione a Sagano']},
-  {id:'kyo-04',name:'Gion District',jp:'祇園',city:'Kyoto',cat:'neighborhood',lat:35.0037,lng:135.7750,
-    desc:'Quartiere geisha. Hanamikoji street, Shirakawa canal. Teatri kabuki.',
-    best:'Tramonto (17:30-19:00) per lanterne accese',
-    dont:['NON fotografare maiko/geiko in strada — multa 10.000¥ a Hanamikoji dal 2024']},
-  {id:'kyo-05',name:'Kiyomizu-dera',paid:true,cost:'500¥',ticketUrl:"https://www.kiyomizudera.or.jp/en/",jp:'清水寺',city:'Kyoto',cat:'temple',lat:34.9949,lng:135.7851,
-    desc:'Tempio UNESCO su palafitte di legno senza chiodi. Vista su Kyoto.',
-    best:'Apertura 6:00 — folla dalle 9:00',
-    do:['Jishu-jinja (santuario dell\'amore) dietro','Ninenzaka/Sannenzaka per shopping tradizionale']},
-  {id:'kyo-06',name:'Nishiki Market',jp:'錦市場',city:'Kyoto',cat:'market',lat:35.0051,lng:135.7641,
-    desc:'"Cucina di Kyoto" — strada coperta di 400m con 100+ botteghe alimentari.',
-    best:'10:00-16:00',
-    gf:{lvl:'partial',notes:'Sashimi, frutta, dashimaki controllare ingredienti (mirin/soia).'}},
-  {id:'kyo-07',name:'Philosopher\'s Path',jp:'哲学の道',city:'Kyoto',cat:'nature',lat:35.0270,lng:135.7942,
-    desc:'Passeggiata di 2km lungo un canale con ciliegi. Da Ginkaku-ji a Nanzen-ji.',
-    best:'Fine marzo-aprile per sakura, novembre per momiji'},
-  {id:'kyo-08',name:'Choice (GF Restaurant)',jp:'',city:'Kyoto',cat:'food',lat:35.0092,lng:135.7730,
-    desc:'Ristorante vegano 100% GF a pochi minuti da Gion. Pasta, curry, dolci.',
-    gf:{lvl:'full',notes:'100% GF e vegano. Menu in inglese. ATTENZIONE: la pasta NON e GF. Prenotazione consigliata.'},
-    booking:{tabelog:'https://tabelog.com/en/kyoto/A2601/A260301/26009547/'}},
-  {id:'kyo-09',name:'GF Cafe Little Bird Kyoto',jp:'',city:'Kyoto',cat:'food',lat:35.0130,lng:135.7680,
-    desc:'Filiale Kyoto del celebre Little Bird di Tokyo. Cucina totalmente GF.',
-    gf:{lvl:'full',notes:'100% GF certificato. Pancake, panini, curry di riso.'},
-    booking:{website:'https://www.little-bird.jp/'}},
-  {id:'kyo-10',name:'Arashiyama Yoshimura (soba GF option)',jp:'嵐山よしむら',city:'Kyoto',cat:'food',lat:35.0137,lng:135.6770,
-    desc:'Soba di grano saraceno 100% in alcuni piatti "juwari". Vista su Togetsukyo.',
-    gf:{lvl:'partial',notes:'Chiedere ESPLICITAMENTE juwari (十割) — altri soba hanno grano. Contaminazione possibile.'}},
-  /* ========== OSAKA ========== */
-  {id:'osa-01',name:'Dotonbori',jp:'道頓堀',city:'Osaka',cat:'neighborhood',lat:34.6687,lng:135.5012,
-    desc:'Epicentro street food. Glico sign, Kani Doraku (granchio), Kuidaore Taro.',
-    best:'Sera dalle 19:00 per neon attivi',
-    do:['Canal cruise 900¥','Tonbori River Jazz (giovedì sera)'],
-    dont:['Takoyaki, okonomiyaki classici contengono grano — NO GF']},
-  {id:'osa-02',name:'Osaka Castle',paid:true,cost:'600¥',jp:'大阪城',city:'Osaka',cat:'castle',lat:34.6873,lng:135.5262,
-    desc:'Castello di Hideyoshi (ricostruito). Museo interno su 8 piani.',
-    best:'Primavera per sakura, primo mattino',
-    do:['Salire in cima per vista','Nishinomaru Garden']},
-  {id:'osa-03',name:'Kuromon Market',jp:'黒門市場',city:'Osaka',cat:'market',lat:34.6649,lng:135.5076,
-    desc:'"Cucina di Osaka". 600m coperti di pesce, frutta, wagyu A5 alla griglia.',
-    best:'Mattina (9:00-11:00)',
-    gf:{lvl:'partial',notes:'Wagyu alla piastra senza salse = GF. Frutta. Evitare fritti.'}},
-  {id:'osa-04',name:'Shinsekai',jp:'新世界',city:'Osaka',cat:'neighborhood',lat:34.6525,lng:135.5063,
-    desc:'Quartiere retrò anni \'50. Kushikatsu (spiedini fritti) — NO GF. Torre Tsutenkaku.',
-    dont:['Kushikatsu quasi tutti panati con pangrattato — evitare']},
-  {id:'osa-05',name:'Umeda Sky Building',jp:'梅田スカイビル',city:'Osaka',cat:'viewpoint',lat:34.7053,lng:135.4902,
-    desc:'Osservatorio "Floating Garden" con vista 360°.',
-    best:'Tramonto + blue hour'},
-  {id:'osa-06',name:'Hoshino Resort Saika (GF kaiseki)',jp:'',city:'Osaka',cat:'food',lat:34.6700,lng:135.4990,
-    desc:'Kaiseki con menu GF disponibile su richiesta 2+ giorni prima. Esperienza alta gamma.',
-    gf:{lvl:'partial',notes:'Non trovato in database GF ufficiali. Prenotare specificando celiachia. Alto budget. Verifica col locale.'},
-    booking:{website:'https://hoshinoresorts.com/'}},
-  /* ========== TOTTORI ========== */
-  {id:'tot-01',name:'Tottori Sand Dunes',paid:false,jp:'鳥取砂丘',city:'Tottori',cat:'nature',lat:35.5405,lng:134.2314,
-    desc:'Uniche dune di sabbia del Giappone. 16km di costa, dune fino a 50m.',
-    best:'Alba o tramonto, evitare mezzogiorno estivo',
-    do:['Paragliding','Cammello ride (brevissimo — commerciale)','Sand Museum accanto']},
-  {id:'tot-02',name:'Sand Museum',paid:true,cost:'800¥',jp:'砂の美術館',city:'Tottori',cat:'museum',lat:35.5395,lng:134.2286,
-    desc:'Sculture di sabbia effimere, tema cambia ogni anno. Unico al mondo.',
-    best:'Combinare con dune'},
-  {id:'tot-03',name:'Uradome Coast',jp:'浦富海岸',city:'Tottori',cat:'nature',local:true,lat:35.5827,lng:134.3397,
-    desc:'Costa rocciosa San\'in, grotte marine. Giro in barca ~1h.',
-    best:'Maggio-settembre per tour in barca'},
-  {id:'tot-04',name:'Mizuki Shigeru Road',jp:'水木しげるロード',city:'Tottori',cat:'experience',lat:35.5433,lng:133.2337,
-    desc:'A Sakaiminato (1h da Tottori). 177 statue di yokai (mostri) del manga GeGeGe no Kitaro.',
-    do:['Treno yokai JR line','Mizuki Shigeru Museum']},
-  /* ========== BEPPU ========== */
-  {id:'bep-01',name:'Umi Jigoku (Sea Hell)',paid:true,cost:"450¥ (o 2000¥ pass 7 jigoku)",jp:'海地獄',city:'Beppu',cat:'onsen',lat:33.3398,lng:131.4938,
-    desc:'Il più fotografato dei 7 "Inferni di Beppu". Acqua cobalto bollente.',
-    best:'Mattina con vapore denso',
-    do:['Pass per tutti i 7 jigoku','NON bagnarsi — sono "da vedere"']},
-  {id:'bep-02',name:'Chinoike Jigoku (Blood Pond)',jp:'血の池地獄',city:'Beppu',cat:'onsen',lat:33.3542,lng:131.5180,
-    desc:'"Inferno del sangue" — acqua rosso-arancio per ferro e argilla.',
-    do:['Compra "chinoike nanko" (unguento termale)']},
-  {id:'bep-03',name:'Takegawara Onsen',paid:true,cost:"300¥ (bagno) / 1500¥ (sunayu)",jp:'竹瓦温泉',city:'Beppu',cat:'onsen',local:true,lat:33.2813,lng:131.5048,
-    desc:'Onsen pubblico storico (1879). Bagno di sabbia vulcanica (sunayu) — esperienza unica.',
-    best:'Pomeriggio per evitare locali mattinieri',
-    do:['Sunayu 1500¥ — sepolti in sabbia calda per 10min']},
-  {id:'bep-04',name:'Mt. Tsurumi Ropeway',jp:'鶴見岳',city:'Beppu',cat:'viewpoint',lat:33.2850,lng:131.4350,
-    desc:'1375m, vista su Beppu Bay e Aso. Aprile per sakura in quota, novembre per foliage.',
-    best:'Giornata limpida — check meteo'},
-  {id:'bep-05',name:'Myoban Onsen',jp:'明礬温泉',city:'Beppu',cat:'onsen',local:true,lat:33.3019,lng:131.4664,
-    desc:'Onsen solforoso con "yunohana" (fiori di zolfo) coltivati tradizionalmente in capanne.',
-    do:['Comprare bath salts di yunohana come souvenir']},
-  /* ========== OKINAWA (opzionale) ========== */
-  {id:'oki-01',name:'Shuri Castle',jp:'首里城',city:'Okinawa',cat:'castle',lat:26.2170,lng:127.7193,
-    desc:'Ex palazzo reale del regno Ryukyu (UNESCO). In ricostruzione dopo incendio 2019 — parti visibili.',
-    best:'Verificare stato ricostruzione 2027'},
-  {id:'oki-02',name:'Churaumi Aquarium',jp:'沖縄美ら海水族館',city:'Okinawa',cat:'museum',lat:26.6940,lng:127.8779,
-    desc:'Tra i più grandi al mondo. Vasca Kuroshio con squali balena.',
-    best:'Dopo le 16:00 per sconto afternoon'},
-  {id:'oki-03',name:'Kokusai-dori',jp:'国際通り',city:'Okinawa',cat:'shopping',lat:26.2143,lng:127.6860,
-    desc:'Strada principale di Naha, 1.6km di negozi, Makishi Market (2° piano: sushi).',
-    gf:{lvl:'partial',notes:'Awamori (GF naturalmente), frutta tropicale, sashimi fresco.'}},
-  {id:'oki-04',name:'Taketomi Island',jp:'竹富島',city:'Okinawa',cat:'experience',lat:24.3264,lng:124.0866,
-    desc:'Isola delle Yaeyama. Villaggio tradizionale, spiagge stellate (Kaiji Beach — sand stars).',
-    best:'Giro in carretto trainato da bufalo, bicicletta'},
-  {id:'oki-05',name:'Ishigaki Island',jp:'石垣島',city:'Okinawa',cat:'nature',lat:24.3969,lng:124.1557,
-    desc:'Snorkeling con mante a Kabira Bay, hub per Taketomi e Iriomote.',
-    best:'Maggio o settembre-ottobre (evitare giugno piogge, luglio-agosto tifoni)'},
-  /* ========== HIROSHIMA ========== */
-  {id:'hir-01',name:'Hiroshima Peace Memorial Museum',paid:true,cost:'200¥',jp:'広島平和記念資料館',city:'Hiroshima',cat:'museum',lat:34.3953,lng:132.4533,
-    desc:'Museo sulla bomba atomica del 1945. Potente, necessario. Documenti originali e testimonianze.',
-    best:'Apertura 8:30 — piano di almeno 2-3 ore',
-    do:['Combinare con Genbaku Dome (UNESCO) fuori','Cerimonia delle gru di carta origami']},
-  {id:'hir-02',name:'Atomic Bomb Dome (Genbaku Dome)',paid:false,jp:'原爆ドーム',city:'Hiroshima',cat:'museum',lat:34.3955,lng:132.4536,
-    desc:'Scheletro dell\'edificio Prefetturale dell\'Industria, sopravvissuto all\'esplosione del 6 agosto 1945. UNESCO.',
-    best:'Alba o tramonto per fotografia',
-    do:['Vista dal Peace Bridge','Illuminato di sera']},
-  {id:'hir-03',name:'Miyajima Island (Itsukushima)',jp:'宮島・厳島',city:'Hiroshima',cat:'shrine',lat:34.2956,lng:132.3194,
-    desc:'Isola sacra con torii galleggiante arancione sul mare (UNESCO). Cervi liberi.',
-    best:'Alta marea per torii galleggiante, alba per silenzio',
-    do:['Salire a Mt. Misen per vista','Mangiare momiji manju (dolce foglia d\'acero)'],
-    dont:['Non toccare i cervi con cibo — mordono']},
-  {id:'hir-04',name:'Shukkeien Garden',jp:'縮景園',city:'Hiroshima',cat:'nature',lat:34.3999,lng:132.4651,
-    desc:'Giardino strolling del 1620, ricostruito dopo la bomba. Laghetti e ponticelli in miniatura.',
-    best:'Aprile per sakura, novembre per momiji',local:true},
-  {id:'hir-05',name:'Hiroshima Castle',paid:true,cost:'370¥',jp:'広島城',city:'Hiroshima',cat:'castle',lat:34.4026,lng:132.4594,
-    desc:'Ricostruzione del castello del 1589 con museo sulla storia dei samurai di Hiroshima.',
-    best:'Primavera per ciliegi nel fossato'},
-  {id:'hir-06',name:'Okonomimura',jp:'お好み村',city:'Hiroshima',cat:'food',lat:34.3972,lng:132.4596,
-    desc:'Edificio su 4 piani con ~25 bancarelle di okonomiyaki stile Hiroshima (con soba e cavolo a strati).',
-    best:'Sera dalle 18:00',
-    gf:{lvl:'none',notes:'Okonomiyaki contiene soba (grano). NO GF.'}},
-  {id:'hir-07',name:'Mitaki-dera',jp:'三滝寺',city:'Hiroshima',cat:'temple',lat:34.4196,lng:132.4344,
-    desc:'Tempio nascosto nella foresta con cascate e piccoli santuari. Quasi nessun turista.',
-    best:'Mattina feriale, novembre per foliage',local:true,
-    do:['Trail 30min dalla stazione Mitaki JR']},
-  {id:'hir-08',name:'Orizuru Tower',jp:'折り鶴タワー',city:'Hiroshima',cat:'viewpoint',lat:34.3956,lng:132.4531,
-    desc:'Torre con osservatorio a vetro sulla Peace Memorial. Vista su Genbaku Dome e il fiume.',
-    best:'Tramonto',
-    do:['Lasciare una gru di carta sul muro delle donazioni']},
-  {id:'hir-09',name:'Sarasvati (GF Restaurant)',jp:'',city:'Hiroshima',cat:'food',lat:34.3992,lng:132.4571,
-    desc:'Ristorante indiano con opzioni GF. Curry e roti di riso su richiesta.',
-    gf:{lvl:'partial',notes:'Chiedere riso invece di naan. Staff informato su celiachia.'}},
-  /* ========== NARA ========== */
-  {id:'nar-01',name:'Todai-ji',paid:true,cost:'600¥',jp:'東大寺',city:'Nara',cat:'temple',lat:34.6888,lng:135.8398,
-    desc:'Tempio in legno più grande al mondo (UNESCO). Statua Buddha Daibutsu in bronzo di 15m.',
-    best:'Apertura 7:30, evitare 10-15:00',
-    do:['Passare attraverso il pilastro con buco (bontà garantita)','Vista dall\'alto del balcone']},
-  {id:'nar-02',name:'Nara Deer Park',paid:false,jp:'奈良公園',city:'Nara',cat:'nature',lat:34.6851,lng:135.8433,
-    desc:'1200+ cervi sacri (messaggeri di Kasuga) liberi nel parco. Si inchinano per i shika senbei.',
-    best:'Mattina presto o tramonto',
-    do:['Comprare shika senbei (150¥) dagli ambulanti'],
-    dont:['Non tenere cibo visibile — assaltano']},
-  {id:'nar-03',name:'Kasuga Taisha',jp:'春日大社',city:'Nara',cat:'shrine',lat:34.6813,lng:135.8491,
-    desc:'Santuario UNESCO (768 d.C.) con 3000 lanterne di pietra e bronzo. Illuminate a febbraio e agosto.',
-    best:'Alba o lantern festival',
-    do:['Inner sanctuary con offerte di sakè']},
-  {id:'nar-04',name:'Kofuku-ji',jp:'興福寺',city:'Nara',cat:'temple',lat:34.6852,lng:135.8322,
-    desc:'Pagoda a cinque piani UNESCO, secondo più alto del Giappone. Museo con statue Buddha dell\'VIII sec.',
-    best:'Tramonto per silhouette pagoda'},
-  {id:'nar-05',name:'Isuien Garden',jp:'依水園',city:'Nara',cat:'nature',lat:34.6867,lng:135.8429,
-    desc:'Giardino strolling del XVII sec. Vista presa in prestito su Mt. Wakakusa e Todai-ji.',
-    best:'Autunno per foliage',local:true},
-  {id:'nar-06',name:'Naramachi',jp:'ならまち',city:'Nara',cat:'neighborhood',lat:34.6780,lng:135.8292,
-    desc:'Quartiere Edo con machiya (case mercanti). Gallerie, caffè indipendenti, koshi no ie.',
-    best:'Pomeriggio',local:true,
-    do:['Koshi-no-ie (casa restaurata gratuita)','Craft sake shops']},
-  {id:'nar-07',name:'Mt. Wakakusa',jp:'若草山',city:'Nara',cat:'nature',lat:34.6928,lng:135.8530,
-    desc:'Collinetta a tre livelli. Vista a 360° su Nara. Cervi liberi anche qui. Yamayaki (bruciatura) a gennaio.',
-    best:'Tramonto, apertura stagionale aprile-novembre'},
-  {id:'nar-08',name:'Yoshino (Day Trip)',jp:'吉野',city:'Nara',cat:'nature',lat:34.3694,lng:135.8573,
-    desc:'30.000 ciliegi su montagna. Il più spettacolare hanami del Giappone (UNESCO). 1h da Nara.',
-    best:'Fine marzo-inizio aprile (sakura). Prenotare agriturismo con anticipo',local:true},
-  {id:'nar-09',name:'Mizuya Chaya (GF mochi)',jp:'水谷茶屋',city:'Nara',cat:'food',lat:34.6882,lng:135.8452,
-    desc:'Tea house nel parco cervi. Mochi di riso, amazake, tè verde. Naturalmente GF.',
-    gf:{lvl:'partial',notes:'Mochi di riso GF. Verificare ingredienti amazake. Ambiente tradizionale.'},local:true},
-  /* ========== HAKONE ========== */
-  {id:'hak-01',name:'Hakone Open Air Museum',paid:true,cost:'1600¥',ticketUrl:"https://www.hakone-oam.or.jp/en/",jp:'箱根彫刻の森美術館',city:'Hakone',cat:'museum',lat:35.2495,lng:139.0449,
-    desc:'Museo a cielo aperto con 120 sculture di Picasso, Moore, Rodin su 70.000m². Onsen per i piedi.',
-    best:'Giornata nuvolosa (diffuse luci soffuse)',
-    do:['Piazza Picasso','Foot spa gratuita']},
-  {id:'hak-02',name:'Hakone Ropeway',paid:true,cost:"1500¥ round-trip",ticketUrl:"https://www.hakoneropeway.co.jp/en/",jp:'箱根ロープウェイ',city:'Hakone',cat:'viewpoint',lat:35.2280,lng:139.0295,
-    desc:'Funivia con vista su Owakudani (valle vulcanica fumante) e Mt. Fuji nelle giornate limpide.',
-    best:'Mattina presto per Fuji visibile, evitare weekend',
-    do:['Uova nere di Owakudani (cotte nel vapore sulfureo)']},
-  {id:'hak-03',name:'Lake Ashi',jp:'芦ノ湖',city:'Hakone',cat:'nature',lat:35.1910,lng:139.0248,
-    desc:'Lago vulcanico con vista su Fuji (se sereno). Piroscafi in stile pirata, torii sul lago.',
-    best:'Alba di mattina (Fuji visibile)',
-    do:['Hakone Checkpoint (Edo period)','Hakone Shrine sul lago']},
-  {id:'hak-04',name:'Owakudani',jp:'大涌谷',city:'Hakone',cat:'nature',lat:35.2437,lng:139.0217,
-    desc:'Valle vulcanica attiva con fumarole sulfuree. Uova nere cotte nel vapore (si dice 7 anni in più per ognuna).',
-    best:'Mattina',
-    dont:['Sconsigliato a persone con problemi respiratori']},
-  {id:'hak-05',name:'Hakone Shrine',jp:'箱根神社',city:'Hakone',cat:'shrine',lat:35.1987,lng:139.0289,
-    desc:'Santuario sul lago Ashi con torii nel mezzo dell\'acqua. Foresta di cedri.',
-    best:'Alba o dopo le 17:00',local:true},
-  {id:'hak-06',name:'Amazake Chaya',jp:'甘酒茶屋',city:'Hakone',cat:'food',lat:35.2135,lng:139.0575,
-    desc:'Tea house del 1804 sul Tokaido. Mochi e amazake preparati con metodi tradizionali.',
-    gf:{lvl:'partial',notes:'Amazake e mochi di riso GF. Confermare ingredienti.'},local:true},
-  {id:'hak-07',name:'Gora Park & Botanical Garden',paid:true,cost:'700¥',jp:'強羅公園',city:'Hakone',cat:'nature',lat:35.2530,lng:139.0619,
-    desc:'Parco in stile francese con ceramica, cerimonia del tè, funivia per Sounzan.',
-    best:'Maggio per rose, novembre per aceri'},
-  {id:'hak-08',name:'Yunessun Spa Resort',jp:'ユネッサン',city:'Hakone',cat:'onsen',lat:35.2435,lng:139.0498,
-    desc:'Onsen resort con piscine a tema: sakè, caffè, tè verde. Adatto famiglie.',
-    best:'Feriale mattina'},
-  /* ========== KANAZAWA ========== */
-  {id:'kan-01',name:'Kenroku-en',paid:true,cost:'320¥',jp:'兼六園',city:'Kanazawa',cat:'nature',lat:36.5612,lng:136.6622,
-    desc:'Uno dei tre giardini più belli del Giappone (XVII sec.). 11,7 ettari con stagni, cascate, pini invernali.',
-    best:'Febbraio per yukitsuri (protezioni neve sui pini), aprile sakura',
-    do:['Kotoji-toro (lanterna a due gambe, icona del giardino)']},
-  {id:'kan-02',name:'Kanazawa Castle',jp:'金沢城',city:'Kanazawa',cat:'castle',lat:36.5638,lng:136.6565,
-    desc:'Complesso del castello del clan Maeda. Mura bianche e tetti di piombo.',
-    best:'Primavera e autunno'},
-  {id:'kan-03',name:'Higashi Chaya District',jp:'ひがし茶屋街',city:'Kanazawa',cat:'neighborhood',lat:36.5708,lng:136.6678,
-    desc:'Quartiere geisha del XIX sec. meglio conservato fuori Kyoto. Machiya in legno scuro.',
-    best:'Mattina presto (6:00-8:00) per silenzio',local:true,
-    do:['Ochaya Shima (interno visitabile)','Kaikaro tea house']},
-  {id:'kan-04',name:'21st Century Museum',paid:true,cost:"1200¥ (zona exp.)",ticketUrl:"https://www.kanazawa21.jp/en/",jp:'21世紀美術館',city:'Kanazawa',cat:'museum',lat:36.5615,lng:136.6566,
-    desc:'Museo di arte contemporanea con la famosa "Swimming Pool" di Leandro Erlich.',
-    best:'Giorno feriale',
-    do:['Zona free access (gratuita) con molte installazioni esterne']},
-  {id:'kan-05',name:'Omicho Market',jp:'近江町市場',city:'Kanazawa',cat:'market',lat:36.5700,lng:136.6526,
-    desc:'Mercato coperto dal 1721. Crab (kani), sashimi di aragosta, riso Koshihikari.',
-    best:'8:00-11:00',
-    gf:{lvl:'partial',notes:'Sashimi fresco GF naturalmente. Evitare tempura e piatti fritti.'}},
-  {id:'kan-06',name:'Nishi Chaya District',jp:'にし茶屋街',city:'Kanazawa',cat:'neighborhood',lat:36.5592,lng:136.6435,
-    desc:'Chaya meno visitato di Higashi. Autentico, pochissimi turisti.',
-    best:'Qualsiasi ora',local:true},
-  {id:'kan-07',name:'Ninja-dera (Myoryu-ji)',jp:'妙立寺',city:'Kanazawa',cat:'temple',lat:36.5605,lng:136.6392,
-    desc:'Tempio-fortezza con 29 stanze segrete, botole, scale nascoste. Visita solo con guida (prenotare).',
-    best:'Prenotare in anticipo — gruppi piccoli',local:true,
-    do:['Solo visite guidate in giapponese — audio guide inglese disponibili']},
-  {id:'kan-08',name:'Nagamachi Samurai District',jp:'長町武家屋敷跡',city:'Kanazawa',cat:'neighborhood',lat:36.5619,lng:136.6502,
-    desc:'Labirinto di vicoli acciottolati con mura di terra (dobei) e residenze samurai.',
-    best:'Mattina presto',local:true},
-  {id:'kan-09',name:'Hakuichi Gold Leaf Cafe',jp:'箔一',city:'Kanazawa',cat:'food',lat:36.5699,lng:136.6660,
-    desc:'Caffè con dolci e gelato alla foglia d\'oro. Kanazawa produce il 99% dell\'oro in foglia del Giappone.',
-    gf:{lvl:'partial',notes:'Soft cream e alcuni dolci GF. Verificare farina negli snack confezionati.'}},
-  /* ========== NAGASAKI ========== */
-  {id:'nag-01',name:'Nagasaki Peace Park',jp:'平和公園',city:'Nagasaki',cat:'museum',lat:32.7737,lng:129.8647,
-    desc:'Parco con statua della Pace e ipocentro della bomba atomica (9 agosto 1945).',
-    best:'Alba o tramonto',
-    do:['Ipocentro 500m a sud','Fontana della Pace']},
-  {id:'nag-02',name:'Atomic Bomb Museum Nagasaki',jp:'長崎原爆資料館',city:'Nagasaki',cat:'museum',lat:32.7729,lng:129.8645,
-    desc:'Museo complementare a Hiroshima, prospettiva unica con reperti originali.',
-    best:'Mattina (meno affollato del pomeriggio)',
-    do:['Combinare con Hypocenter Park']},
-  {id:'nag-03',name:'Glover Garden',jp:'グラバー園',city:'Nagasaki',cat:'museum',lat:32.7332,lng:129.8746,
-    desc:'Villa del mercante scozzese Thomas Glover (XIX sec.). Vista sul porto. Legato a Madama Butterfly.',
-    best:'Tramonto per vista porto',
-    do:['Ascensore panoramico esterno gratuito']},
-  {id:'nag-04',name:'Dejima',jp:'出島',city:'Nagasaki',cat:'museum',lat:32.7436,lng:129.8760,
-    desc:'Isola artificiale del XVII sec., unico punto di commercio con l\'occidente (Olanda) durante il sakoku.',
-    best:'Pomeriggio',local:true},
-  {id:'nag-05',name:'Chinatown (Shinchi)',jp:'長崎新地中華街',city:'Nagasaki',cat:'neighborhood',lat:32.7396,lng:129.8724,
-    desc:'Chinatown più antico del Giappone. Champon (noodle locale, NO GF) e sara-udon.',
-    gf:{lvl:'none',notes:'Champon e sara-udon contengono grano. No opzioni GF tipiche.'}},
-  {id:'nag-06',name:'Mt. Inasa Viewpoint',jp:'稲佐山',city:'Nagasaki',cat:'viewpoint',lat:32.7539,lng:129.8586,
-    desc:'Vista notturna classificata tra le 3 più belle del Giappone. Funivia o bus.',
-    best:'Dopo le 19:00 per luci notturne',
-    do:['Funivia (620¥)','Prenotare tavolo al ristorante sommitale']},
-  {id:'nag-07',name:'Oura Cathedral',jp:'大浦天主堂',city:'Nagasaki',cat:'temple',lat:32.7341,lng:129.8737,
-    desc:'Cattedrale gotica del 1865 (UNESCO). Unico edificio occidentale tra i patrimoni UNESCO in Giappone.',
-    best:'Mattina per luce interna'},
-  {id:'nag-08',name:'Hashima Island (Gunkanjima)',jp:'端島',city:'Nagasaki',cat:'experience',lat:32.6278,lng:129.7386,
-    desc:'Isola miniera abbandonata ("Battleship Island"). Tour in barca da Nagasaki. UNESCO.',
-    best:'Prenotare mesi prima — parte del tour dipende dal meteo',local:true,
-    do:['Tour con Gunkanjima Concierge','Museo a Nagasaki prima della visita']},
-  {id:'nag-09',name:'Shippoku Cuisine (Ichinoya)',jp:'一乃家',city:'Nagasaki',cat:'food',lat:32.7451,lng:129.8760,
-    desc:'Cucina Shippoku — fusione cinese-olandese-giapponese unica di Nagasaki.',
-    gf:{lvl:'partial',notes:'Piatti di riso e zuppa spesso GF. Evitare fritti panati. Prenotare.'}},
-  /* ========== FUKUOKA ========== */
-  {id:'fuk-01',name:'Ohori Park',jp:'大濠公園',city:'Fukuoka',cat:'nature',lat:33.5898,lng:130.3772,
-    desc:'Parco urbano con grande lago artificiale. Isola con tea house tradizionale.',
-    best:'Mattina presto o tramonto',local:true,
-    do:['Canoa sul lago (noleggio)','Fukuoka Art Museum accanto']},
-  {id:'fuk-02',name:'Fukuoka Castle Ruins',jp:'福岡城跡',city:'Fukuoka',cat:'castle',lat:33.5895,lng:130.3784,
-    desc:'Rovine del castello del 1607 con torre di osservazione. Vista su Hakata e la baia.',
-    best:'Primavera per sakura (1300 alberi)',local:true},
-  {id:'fuk-03',name:'Kushida Shrine',jp:'櫛田神社',city:'Fukuoka',cat:'shrine',lat:33.5997,lng:130.4103,
-    desc:'Santuario principale di Fukuoka (757 d.C.). Sede del festival Hakata Gion Yamakasa (luglio).',
-    best:'Festival Yamakasa luglio',
-    do:['Carro gigante Yamakasa esposto tutto l\'anno']},
-  {id:'fuk-04',name:'Yanagibashi Rengo Market',jp:'柳橋連合市場',city:'Fukuoka',cat:'market',lat:33.5880,lng:130.3975,
-    desc:'\"Cucina di Fukuoka\" — mercato del pesce freschissimo. Meno turistico di Tsukiji.',
-    best:'6:00-10:00',local:true,
-    gf:{lvl:'partial',notes:'Sashimi e frutti di mare GF. Attenzione a salse e marinature.'}},
-  {id:'fuk-05',name:'Hakata Ramen (Shin-Shin)',jp:'博多新·新',city:'Fukuoka',cat:'food',lat:33.5896,lng:130.4012,
-    desc:'Ramen tonkotsu Hakata stile originale. Shin-Shin è tra i più apprezzati dai locali.',
-    gf:{lvl:'none',notes:'Ramen contiene grano. NO GF.'}},
-  {id:'fuk-06',name:'Dazaifu Tenmangu',jp:'太宰府天満宮',city:'Fukuoka',cat:'shrine',lat:33.5122,lng:130.5323,
-    desc:'Santuario del dio dello studio Tenjin (sugawara no michizane). 30min da Fukuoka.',
-    best:'Inizio anno per studenti (omamori esame), primavera per susini',
-    do:['Umegae mochi (dolce di riso fritto a forma di ume) — GF naturalmente']},
-  {id:'fuk-07',name:'Nokonoshima Island',jp:'能古島',city:'Fukuoka',cat:'nature',lat:33.6413,lng:130.3339,
-    desc:'Isola a 10 min di traghetto da Fukuoka. Parco fiorito con colza (febbraio), cosmos (ottobre).',
-    best:'Febbraio o ottobre per fiori',local:true},
-  {id:'fuk-08',name:'Tochoji Temple',jp:'東長寺',city:'Fukuoka',cat:'temple',lat:33.5997,lng:130.4130,
-    desc:'Buddha in legno più grande del Giappone (10.8m). Cammero dietro il Buddha attraverso l\'oscurità.',
-    best:'Mattina',local:true,
-    do:['Pagoda rossa a cinque piani nel cortile']},
-  {id:'fuk-09',name:'Yatai Street Food Stalls',jp:'屋台',city:'Fukuoka',cat:'food',lat:33.5916,lng:130.4004,
-    desc:'Bancarelle notturne tipiche di Fukuoka lungo Nakasu e Tenjin. Tonkotsu, yakitori, gyoza.',
-    best:'21:00-24:00',
-    gf:{lvl:'partial',notes:'Yakitori senza salsa teriyaki GF. Gyoza con pelle di riso in alcuni. Chiedere.'}},
-  /* ========== MATSUYAMA ========== */
-  {id:'mat-01',name:'Matsuyama Castle',paid:true,cost:'520¥',jp:'松山城',city:'Matsuyama',cat:'castle',lat:33.8458,lng:132.7658,
-    desc:'Uno dei 12 castelli originali del Giappone (1603). Arroccato su collina con funivia.',
-    best:'Sakura in aprile attorno alle mura',
-    do:['Funivia o chair lift (500¥)','Vista su tutto Shikoku']},
-  {id:'mat-02',name:'Dogo Onsen Honkan',paid:true,cost:'700¥+',jp:'道後温泉本館',city:'Matsuyama',cat:'onsen',lat:33.8521,lng:132.7856,
-    desc:'Onsen pubblico più antico del Giappone (1894). Ispiratore del Castello Errante di Howl.',
-    best:'Mattina presto (6:00-8:00) per meno folla',
-    do:['Ingresso 2F con yukata e sala riposo (1500¥)','In ristrutturazione parziale fino a 2024 — verificare 2027']},
-  {id:'mat-03',name:'Ishite-ji Temple (88 Pilgrimage)',jp:'石手寺',city:'Matsuyama',cat:'temple',lat:33.8503,lng:132.7912,
-    desc:'Tempio 51° del pellegrinaggio Shikoku 88 (Kobo Daishi). Archi e pagoda UNESCO.',
-    best:'Alba con pellegrini in bianco',local:true},
-  {id:'mat-04',name:'Okaido & Gintengai Shopping',jp:'大街道・銀天街',city:'Matsuyama',cat:'shopping',lat:33.8397,lng:132.7661,
-    desc:'Arcate commerciali del centro. Tarte (crostata di pasta miso-limone), souvenir Ehime.',
-    best:'Pomeriggio-sera',
-    gf:{lvl:'partial',notes:'Tarte Ehime contiene grano. Mikan (mandarini) e marmellate locali GF.'}},
-  {id:'mat-05',name:'Ninomaru History Garden',jp:'二之丸史跡庭園',city:'Matsuyama',cat:'nature',lat:33.8450,lng:132.7636,
-    desc:'Giardino storico ai piedi del castello con resti del palazzo secondario.',
-    best:'Primavera e autunno',local:true},
-  {id:'mat-06',name:'Cape Misaki (Seto Inland Sea)',jp:'三崎半島',city:'Matsuyama',cat:'nature',lat:33.3500,lng:132.0300,
-    desc:'Promontorio a 1h da Matsuyama. Vista su Seto Inland Sea e isole. Traghetto per Kyushu.',
-    best:'Tramonto',local:true},
-  {id:'mat-07',name:'Dogo Onsen Tsubaki-no-yu',jp:'道後温泉 椿の湯',city:'Matsuyama',cat:'onsen',lat:33.8513,lng:132.7845,
-    desc:'Secondo stabilimento del complesso Dogo Onsen. Meno affollato dell\'Honkan.',
-    best:'Pomeriggio',local:true},
-  /* ========== NAOSHIMA ========== */
-  {id:'nao-01',name:'Chichu Art Museum',paid:true,cost:'2100¥',ticketUrl:"https://benesse-artsite.jp/en/art/chichu.html",jp:'地中美術館',city:'Naoshima',cat:'museum',lat:34.4567,lng:133.9832,
-    desc:'Museo interrato di Tadao Ando con Monet, Turrell, De Maria. Architettura e arte fuse.',
-    best:'Mattina — prenotare OBBLIGATORIO online',
-    do:['Arrivare con 30min anticipo','Un\'opera sola di Monet vale il viaggio']},
-  {id:'nao-02',name:'Benesse House Museum',paid:true,cost:'1030¥',ticketUrl:"https://benesse-artsite.jp/en/art/benessehouse-museum.html",jp:'ベネッセハウス',city:'Naoshima',cat:'museum',lat:34.4500,lng:133.9972,
-    desc:'Museo-hotel di Ando con opere site-specific di Hirst, Sugimoto, Richter.',
-    best:'Anche di sera (accessibile agli ospiti)',
-    do:['Se possibile dormirci']},
-  {id:'nao-03',name:'Yayoi Kusama Pumpkins',jp:'草間彌生 かぼちゃ',city:'Naoshima',cat:'experience',lat:34.4537,lng:133.9992,
-    desc:'Le zucche gialle e nere di Kusama affacciate sul mare. Icona di Naoshima.',
-    best:'Tramonto'},
-  {id:'nao-04',name:'Honmura Art Sites (Art House Project)',jp:'本村 家プロジェクト',city:'Naoshima',cat:'museum',lat:34.4618,lng:134.0021,
-    desc:'Case tradizionali trasformate in opere d\'arte permanenti (Turrell, Sugimoto, Ohtake).',
-    best:'Mattina feriale',local:true,
-    do:['Pass combinato (2100¥) per tutte le case']},
-  {id:'nao-05',name:'Lee Ufan Museum',paid:true,cost:'1050¥',ticketUrl:"https://benesse-artsite.jp/en/art/lee-ufan.html",jp:'李禹煥美術館',city:'Naoshima',cat:'museum',lat:34.4541,lng:133.9849,
-    desc:'Museo di Ando per il maestro del Mono-ha. Minimalismo assoluto in calcestruzzo e pietra.',
-    best:'Mattina',local:true},
-  {id:'nao-06',name:'Naoshima Bath (I Love Onsen)',paid:true,cost:'660¥',jp:'直島銭湯 I Love Onsen',city:'Naoshima',cat:'onsen',lat:34.4622,lng:134.0018,
-    desc:'Sento publico di Shinro Ohtake — tutto l\'edificio è un\'opera d\'arte. 660¥.',
-    best:'Sera dopo i musei',local:true},
-  {id:'nao-07',name:'Miyanoura Port Area',jp:'宮浦港',city:'Naoshima',cat:'neighborhood',lat:34.4631,lng:133.9975,
-    desc:'Area porto con opere di Kusama (zucca rossa), Info center di Ando, caffè e bike rental.',
-    best:'Arrivo con traghetto da Takamatsu o Uno'},
-  /* ========== YAKUSHIMA ========== */
-  {id:'yak-01',name:'Yakusugi Land',jp:'ヤクスギランド',city:'Yakushima',cat:'nature',lat:30.3247,lng:130.5287,
-    desc:'Parco con trail tra cedri yakusugi millenari. Versione accessibile rispetto a縄文杉.',
-    best:'Mattina, evitare tifoni (luglio-agosto)',
-    do:['Trail da 30min a 2.5h — scegliere in base alla forma fisica']},
-  {id:'yak-02',name:'Jomon Sugi',jp:'縄文杉',city:'Yakushima',cat:'nature',lat:30.3534,lng:130.5337,
-    desc:'Cedro millenario (2000-7000 anni). Trekking 22km A/R, 8-10 ore. UNESCO.',
-    best:'Maggio-giugno (prima piogge intense), partenza 4:00-5:00',local:true,
-    do:['Prenotare guida certificata','Portare lampada frontale'],
-    dont:['Non lasciare trail — multa e perdita di orientamento']},
-  {id:'yak-03',name:'Shiratani Unsuikyo Gorge',jp:'白谷雲水峡',city:'Yakushima',cat:'nature',lat:30.3794,lng:130.5270,
-    desc:'Foresta muschiosa ispiratrice di Mononoke Hime (Princess Mononoke di Miyazaki).',
-    best:'Dopo la pioggia per muschi vividi',local:true,
-    do:['Trail 2-4 ore','Taiko Rock viewpoint']},
-  {id:'yak-04',name:'Isso Beach (Sea Turtles)',jp:'一湊海水浴場',city:'Yakushima',cat:'nature',lat:30.4397,lng:130.6022,
-    desc:'Spiaggia di nidificazione delle tartarughe marine (maggio-luglio). Tour notturni con ranger.',
-    best:'Giugno-luglio per schiuse',local:true,
-    do:['Solo tour autorizzati (luce/rumore vietati)']},
-  {id:'yak-05',name:'Yakushima Onsen (Hirauchi Kaichu)',jp:'平内海中温泉',city:'Yakushima',cat:'onsen',lat:30.2476,lng:130.5468,
-    desc:'Onsen nel mare — accessibile solo con bassa marea. Completamente naturale e gratuito.',
-    best:'Verificare orari di bassa marea (cambiano ogni giorno)',local:true,
-    do:['Nudismo — portare asciugamano','Notte per stelle + onsen']},
-  {id:'yak-06',name:'Anbo River Kayak',jp:'安房川カヤック',city:'Yakushima',cat:'experience',lat:30.2974,lng:130.6447,
-    desc:'Kayak nella foresta primordiale lungo il fiume Anbo. Tour guidati mattutini.',
-    best:'Aprile-giugno',local:true},
-  {id:'yak-07',name:'Yakushima Environmental Culture Village Center',jp:'屋久島環境文化村センター',city:'Yakushima',cat:'museum',lat:30.3909,lng:130.6528,
-    desc:'Documentario IMAX sulla foresta UNESCO. Perfetto per orientarsi prima dei trail.',
-    best:'Primo giorno di visita'},
-  /* ========== TAKAYAMA ========== */
-  {id:'tak-01',name:'Sanmachi Suji Historic District',jp:'三町筋',city:'Takayama',cat:'neighborhood',lat:36.1448,lng:137.2538,
-    desc:'Tre strade di case mercanti (machiya) del XVII sec. Sake breweries, lacquerware, turisti.',
-    best:'Mattina presto (7:00-9:00) per silenzio',
-    do:['Sake tasting gratuito nelle kura aperte','Mitarashi dango (riso, GF)']},
-  {id:'tak-02',name:'Takayama Jinya',paid:true,cost:'440¥',jp:'高山陣屋',city:'Takayama',cat:'museum',lat:36.1393,lng:137.2516,
-    desc:'Unico ufficio shogunale superstite in Giappone (1615). Museo con sale originali.',
-    best:'Mattina feriale',local:true},
-  {id:'tak-03',name:'Miyagawa Morning Market',jp:'宮川朝市',city:'Takayama',cat:'market',lat:36.1449,lng:137.2576,
-    desc:'Mercato mattutino lungo il fiume Miyagawa. Verdure locali Hida, pickles, artigianato.',
-    best:'7:00-9:00',
-    gf:{lvl:'partial',notes:'Miso locale, verdure, riso GF. Evitare snack confezionati non verificati.'}},
-  {id:'tak-04',name:'Hida Folk Village (Hida no Sato)',jp:'飛騨の里',city:'Takayama',cat:'museum',lat:36.1622,lng:137.2389,
-    desc:'Museo en plein air con 30 case gassho-zukuri originali spostate dai villaggi. Artigiani attivi.',
-    best:'Inverno con neve (fiabe)',
-    do:['Dimostrazioni di tessitura e lavorazione del legno']},
-  {id:'tak-05',name:'Higashiyama Walking Course',jp:'東山遊歩道',city:'Takayama',cat:'nature',lat:36.1492,lng:137.2625,
-    desc:'Trail 3.5km attraverso 13 templi e santuari nei boschi est della città.',
-    best:'Mattina presto o autunno',local:true},
-  {id:'tak-06',name:'Takayama Festival Floats Hall',paid:true,cost:'1000¥',jp:'高山祭屋台会館',city:'Takayama',cat:'museum',lat:36.1506,lng:137.2629,
-    desc:'I carri del Festival di Takayama (tra i 3 più belli del Giappone) conservati con illuminazione.',
-    best:'Tutto l\'anno (i carri escono solo aprile e ottobre)'},
-  {id:'tak-07',name:'Fukuichi (Hida Beef)',jp:'福一',city:'Takayama',cat:'food',lat:36.1444,lng:137.2534,
-    desc:'Wagyu Hida alla griglia su carbone. Una delle migliori esperienze carne del Giappone.',
-    gf:{lvl:'partial',notes:'Carne alla griglia GF. Verificare salse. Prenotare.'}},
-  {id:'tak-08',name:'Shunkei Lacquerware Workshop',jp:'春慶塗',city:'Takayama',cat:'experience',lat:36.1450,lng:137.2540,
-    desc:'Lacca trasparente ambrata su legno di hinoki — tecnica unica di Takayama (XVII sec.).',
-    best:'Prenotare laboratorio',local:true},
-  {id:'tak-09',name:'Shirakawa-go Day Trip',jp:'白川郷',city:'Takayama',cat:'experience',lat:36.2583,lng:136.9066,
-    desc:'UNESCO gassho-zukuri - già in POIS ma facilmente raggiungibile da Takayama in bus, 50min.',
-    do:['Bus Nohi da Takayama BT (1h, 2700¥)','Combinare con visita principale in itinerario']},
-
-  /* ========== FONTANELLE ACQUA GRATUITA ========== */
-  {id:'water-tok-01',name:'Fontanella Shinjuku Gyoen',jp:'新宿御苑 水飲み場',city:'Tokyo',cat:'water',lat:35.6852,lng:139.7101,
-    desc:'Fontanella pubblica potabile all\'interno del parco Shinjuku Gyoen. Acqua municipale Tokyo (ottima qualità).',
-    gf:{lvl:'full',notes:'Acqua potabile — nessun rischio GF.'},
-    do:['Refill gratuito','Usare solo bottiglie con tappo'],local:true},
-  {id:'water-tok-02',name:'7-Eleven Shinjuku (acqua refill)',jp:'セブンイレブン 新宿',city:'Tokyo',cat:'water',lat:35.6896,lng:139.6966,
-    desc:'7-Eleven con chiosco acqua calda/fredda gratuita per clienti. Molti 7-Eleven in Giappone offrono hot/cold water gratuita al banco.',
-    gf:{lvl:'full',notes:'Acqua filtrata. Chiedere al personale.'},
-    do:['Porta una borraccia vuota','Acqua calda per tè disponibile'],local:true},
-  {id:'water-tok-03',name:'Fontanella Ueno Park',jp:'上野公園 水飲み場',city:'Tokyo',cat:'water',lat:35.7146,lng:139.7744,
-    desc:'Fontanelle multiple lungo il percorso principale di Ueno Park. Tutte con acqua potabile municipale.',
-    gf:{lvl:'full',notes:'Acqua potabile.'},local:true},
-  {id:'water-tok-04',name:'Fontanella Yoyogi Park',jp:'代々木公園 水飲み場',city:'Tokyo',cat:'water',lat:35.6713,lng:139.6938,
-    desc:'Parco enorme con molte fontanelle distribuite su tutto il percorso. Ottima per refill durante jogging/picnic.',
-    gf:{lvl:'full',notes:'Acqua potabile.'},local:true},
-  {id:'water-kyo-01',name:'Fontanella Fushimi Inari (base)',jp:'伏見稲荷 水飲み場',city:'Kyoto',cat:'water',lat:34.9671,lng:135.7727,
-    desc:'Fontanella vicino all\'ingresso principale del santuario. Essenziale prima di salire i 4km di torii.',
-    gf:{lvl:'full',notes:'Acqua potabile.'},local:true},
-  {id:'water-kyo-02',name:'Fontanella Arashiyama (parco)',jp:'嵐山公園 水飲み場',city:'Kyoto',cat:'water',lat:35.0170,lng:135.6719,
-    desc:'Fontanella nella zona parco di Arashiyama, prima dell\'ingresso al bamboo grove.',
-    gf:{lvl:'full',notes:'Acqua potabile.'},local:true},
-  {id:'water-osa-01',name:'FamilyMart Dotonbori (acqua refill)',jp:'ファミリーマート 道頓堀',city:'Osaka',cat:'water',lat:34.6687,lng:135.5012,
-    desc:'FamilyMart offre acqua calda/fredda gratuita al banco. Prassi comune in tutti i convenience store giapponesi.',
-    gf:{lvl:'full',notes:'Acqua filtrata.'},local:true},
-  {id:'water-nara-01',name:'Fontanella Nara Park',jp:'奈良公園 水飲み場',city:'Nara',cat:'water',lat:34.6851,lng:135.8433,
-    desc:'Fontanelle distribuite nel parco cervi. Fondamentali in estate (caldo intenso + camminata con i cervi).',
-    gf:{lvl:'full',notes:'Acqua potabile.'},local:true},
-  {id:'water-hak-01',name:'Fontanella Hakone Open Air Museum',jp:'箱根彫刻の森 水飲み場',city:'Hakone',cat:'water',lat:35.2495,lng:139.0449,
-    desc:'Fontanella e foot spa gratuita nel museo. Ottima per refill durante la visita.',
-    gf:{lvl:'full',notes:'Acqua potabile.'},local:true},
-  {id:'water-hir-01',name:'Fontanella Peace Park',jp:'平和公園 水飲み場',city:'Hiroshima',cat:'water',lat:34.3953,lng:132.4533,
-    desc:'Fontanelle distribuite nel Peace Memorial Park. Utili durante la visita al memoriale.',
-    gf:{lvl:'full',notes:'Acqua potabile.'},local:true},
-  {id:'water-kan-01',name:'Fontanella Kenroku-en',jp:'兼六園 水飲み場',city:'Kanazawa',cat:'water',lat:36.5612,lng:136.6622,
-    desc:'Fontanella storica all\'interno del giardino Kenroku-en. Acqua gelata in estate.',
-    gf:{lvl:'full',notes:'Acqua potabile.'},local:true},
-  {id:'water-fuk-01',name:'Fontanella Ohori Park',jp:'大濠公園 水飲み場',city:'Fukuoka',cat:'water',lat:33.5898,lng:130.3772,
-    desc:'Fontanelle lungo il percorso jogging del parco. Utili per i runner mattutini.',
-    gf:{lvl:'full',notes:'Acqua potabile.'},local:true},
-  {id:'water-sap-01',name:'Fontanella Odori Park',jp:'大通公園 水飲み場',city:'Sapporo',cat:'water',lat:43.0604,lng:141.3568,
-    desc:'Fontanelle lungo il parco centrale di 1.5km. Attive da maggio a ottobre.',
-    gf:{lvl:'full',notes:'Acqua potabile.'},local:true},
-
-  /* ========== TOKYO — POI AGGIUNTIVI ========== */
-  {id:'tok-14',name:'Yanaka Cemetery & Neighborhood',jp:'谷中霊園・谷中',city:'Tokyo',cat:'neighborhood',lat:35.7270,lng:139.7650,
-    desc:'Il vecchio Tokyo sopravvissuto a guerra e terremoti. Cimitero con alberi di sakura, botteghe artigiane, gatti randagi e caffè indipendenti.',
-    best:'Fine marzo per sakura + mattina feriale',local:true,
-    do:['Yanaka Ginza (strada commerciale storica)','Tenteki (caffè GF-aware)']},
-  {id:'tok-15',name:'Akihabara Electric Town',jp:'秋葉原電気街',city:'Tokyo',cat:'experience',lat:35.7011,lng:139.7723,
-    desc:'Centro globale di manga, anime, retro gaming e elettronica. Maid cafe, figure shops, arcade su più piani.',
-    best:'Pomeriggio feriale (weekend: ressa)',
-    do:['Super Potato (retro gaming)','Mandarake Complex (manga/figure usato)']},
-  {id:'tok-16',name:'Odaiba',jp:'お台場',city:'Tokyo',cat:'experience',lat:35.6269,lng:139.7756,
-    desc:'Isola artificiale nella baia di Tokyo. Gundam gigante, TeamLab, Odaiba Beach, vista skyline.',
-    best:'Tramonto per skyline illuminato',
-    do:['Rainbow Bridge a piedi','Palette Town Ferris Wheel (vista)']},
-  {id:'tok-17',name:'Ueno Park & Museums',jp:'上野公園',city:'Tokyo',cat:'nature',lat:35.7146,lng:139.7744,
-    desc:'5+ musei nazionali in un unico parco. Tokyo National Museum (tesori nazionali), Natural History, Ueno Zoo.',
-    best:'Mattina feriale per musei senza folla',
-    do:['Tokyo National Museum (il più grande del Giappone)','Shinobazu Pond con fiori di loto in estate']},
-  {id:'tok-18',name:'Nakameguro Canal',jp:'中目黒',city:'Tokyo',cat:'nature',lat:35.6441,lng:139.6989,
-    desc:'Canale con alberi di sakura. Il posto più instagrammato di Tokyo in primavera. Caffè e bar di lusso sulle rive.',
-    best:'Fine marzo-inizio aprile per sakura notturna illuminata'},
-  {id:'tok-19',name:'Jimbocho Booktown',jp:'神保町',city:'Tokyo',cat:'market',lat:35.6965,lng:139.7573,
-    desc:'200+ librerie usate in 3 isolati. Il distretto librario più grande al mondo. Anche vinili, mappe antiche, manga raro.',
-    best:'Feriale pomeriggio',local:true,
-    do:['Sanseido per novità','Ohya Shobo per stampe Ukiyo-e antiche']},
-  {id:'tok-20',name:'Roppongi Art District',jp:'六本木',city:'Tokyo',cat:'museum',lat:35.6631,lng:139.7320,
-    desc:'Tre musei di livello mondiale: Mori Art Museum (53° piano), National Art Center, Suntory Museum.',
-    best:'Mori Art Museum la notte (vista + arte)',
-    do:['Mori Art Museum + Tokyo City View combo (1800¥)']},
-  {id:'tok-21',name:'Toyosu Fish Market',jp:'豊洲市場',city:'Tokyo',cat:'market',lat:35.6517,lng:139.7905,
-    desc:'Mercato del tonno più grande al mondo. Aste tonno (prenotare 3+ mesi prima). Ristoranti sushi al 6° piano eccellenti.',
-    best:'5:30-6:00 per l\'asta del tonno (su prenotazione)',
-    gf:{lvl:'partial',notes:'Sushi fresco con salsa di soia — chiedere tamari.'}},
-  {id:'tok-22',name:'Ryogoku Kokugikan (Sumo)',jp:'両国国技館',city:'Tokyo',cat:'experience',lat:35.6969,lng:139.7930,
-    desc:'Arena principale di sumo. Tornei in gennaio, maggio, settembre. Museo sumo gratuito.',
-    best:'Mattina del torneo (wrestlers arrivano verso le 8)',
-    do:['Acquistare biglietti online con anticipo','Chanko-nabe nei ristoranti del quartiere']},
-  {id:'tok-23',name:'Gotokuji Temple (Lucky Cat)',jp:'豪徳寺',city:'Tokyo',cat:'temple',lat:35.6526,lng:139.6407,
-    desc:'Tempio delle migliaia di Maneki-neko (gatti portafortuna). Il luogo dove è nata la tradizione.',
-    best:'Mattina presto per foto',local:true,
-    do:['Lasciare un Maneki-neko donato','Combinare con Shimokitazawa (15min)']},
-  {id:'tok-24',name:'Shimo-Kitazawa Theater Quarter',jp:'下北沢 演劇街',city:'Tokyo',cat:'experience',lat:35.6612,lng:139.6688,
-    desc:'Zona teatri indipendenti — oltre 20 teatri in pochi isolati. Indie music live, comedy, sperimentale.',
-    best:'Sera dalle 19:00',local:true},
-  {id:'tok-25',name:'Ikebukuro Sunshine City',jp:'池袋サンシャインシティ',city:'Tokyo',cat:'experience',lat:35.7282,lng:139.7189,
-    desc:'Complesso con aquarium, planetario, Namco arcade su 6 piani, e il Pokemon Center più grande del Giappone.',
-    best:'Feriale per evitare code'},
-  {id:'tok-26',name:'GF Restaurant Ceres',jp:'',city:'Tokyo',cat:'food',lat:35.6704,lng:139.7300,
-    desc:'Ristorante 100% gluten-free ad Azabu-Juban. Cucina italiana e giapponese fusion. Menu completo GF.',
-    gf:{lvl:'full',notes:'100% GF certificato. Cucina italiana a Tokyo.'},
-    booking:{website:'https://tabelog.com/en/tokyo/A1307/A130701/'}},
-  {id:'tok-27',name:'Asakusa Traditional Crafts',jp:'浅草 伝統工芸',city:'Tokyo',cat:'experience',lat:35.7100,lng:139.7960,
-    desc:'Laboratori di artigianato tradizionale intorno al Senso-ji. Washi, kanzashi, porcellana, kimono su misura.',
-    best:'Mattina feriale per laboratori',local:true},
-
-  /* ========== KYOTO — POI AGGIUNTIVI ========== */
-  {id:'kyo-11',name:'Nijo Castle',paid:true,cost:'620¥',jp:'二条城',city:'Kyoto',cat:'castle',lat:35.0142,lng:135.7480,
-    desc:'Castello shogunale del 1603 (UNESCO). Pavimenti nightingale (cigolano per avvisare intrusori). Giardini con sakura.',
-    best:'Aprile per sakura nel giardino, mattina feriale',
-    do:['Honmaru Palace (aperto limitatamente)','Pavimenti uguaglioli nell\'ingresso']},
-  {id:'kyo-12',name:'Ginkaku-ji (Silver Pavilion)',paid:true,cost:'500¥',jp:'銀閣寺',city:'Kyoto',cat:'temple',lat:35.0269,lng:135.7980,
-    desc:'Padiglione dell\'argento (mai argentato!) con giardino Zen perfetto. UNESCO.',
-    best:'Apertura 8:30, prima delle 10:00'},
-  {id:'kyo-13',name:'Nijo Jinya (Hidden Ninja House)',jp:'二条陣屋',city:'Kyoto',cat:'experience',lat:35.0116,lng:135.7531,
-    desc:'Residenza privata del XVII sec. con 23 trappole, scale nascoste, stanze mobili. Tour guidato in giapponese.',
-    best:'Prenotare via telefono con anticipo',local:true,
-    do:['Solo visita guidata (inglese limitato)']},
-  {id:'kyo-14',name:'Kurama Mountain & Onsen',jp:'鞍馬山',city:'Kyoto',cat:'nature',lat:35.1162,lng:135.7699,
-    desc:'Montagna sacra a 30min da Kyoto. Tempio Kurama, foresta di cedri, onsen Kurama (650¥).',
-    best:'Autunno per foliage, estate per clima fresco',local:true,
-    do:['Trail fino a Kibune (2h)','Onsen Kurama al ritorno']},
-  {id:'kyo-15',name:'Nishiki Tenmangu Shrine',jp:'錦天満宮',city:'Kyoto',cat:'shrine',lat:35.0052,lng:135.7647,
-    desc:'Piccolo santuario nascosto alla fine del Nishiki Market. I pilastri sfondano il muro dell\'edificio accanto — storia unica.',
-    best:'Sempre aperto, nessuna folla',local:true},
-  {id:'kyo-16',name:'Tofuku-ji & Zen Garden',paid:true,cost:'600¥',jp:'東福寺',city:'Kyoto',cat:'temple',lat:34.9761,lng:135.7769,
-    desc:'Giardino Zen del XX sec. di Mirei Shigemori — il più audace di Kyoto. Ponte Tsutenkyo con vista foliage.',
-    best:'Novembre per foliage (migliore di Kyoto secondo molti)'},
-  {id:'kyo-17',name:'Daitoku-ji Complex',jp:'大徳寺',city:'Kyoto',cat:'temple',lat:35.0444,lng:135.7441,
-    desc:'Complesso di 22 sub-templi Zen, molti con giardini segreti a pagamento. Dove fu sepolto Oda Nobunaga.',
-    best:'Mattina feriale — pochissimi turisti',local:true,
-    do:['Ryogen-in (giardino Zen minimalista)','Daisen-in (paesaggio in pietra)']},
-  {id:'kyo-18',name:'Fushimi Sake District',jp:'伏見 酒蔵',city:'Kyoto',cat:'experience',lat:34.9452,lng:135.7567,
-    desc:'Distretto dei sake breweries lungo il canale Horikawa. Degustazioni, museo sake, canal tour.',
-    best:'Primavera o autunno',local:true,
-    gf:{lvl:'full',notes:'Sake è naturalmente GF (fermentato da riso). Verificare ingredienti aggiunti.'}},
-  {id:'kyo-19',name:'Ohara Village',jp:'大原',city:'Kyoto',cat:'nature',lat:35.1141,lng:135.8279,
-    desc:'Villaggio rurale a 30min dal centro. Tempio Sanzen-in con giardino di licheni e muschi, orti tradizionali.',
-    best:'Mattina, evitare alta stagione sakura/momiji',local:true,
-    do:['Sanzen-in Garden (700¥)','Takano (tofu ryori con ingredienti locali)']},
-  {id:'kyo-20',name:'Pontocho Alley',jp:'先斗町',city:'Kyoto',cat:'neighborhood',lat:35.0072,lng:135.7679,
-    desc:'Stradina gobu medievale tra il Kamo River e Shijo. Ristoranti con kawayuka (terrazzo sul fiume) in estate.',
-    best:'Estate (kawayuka giugno-settembre) o sera',
-    gf:{lvl:'partial',notes:'Diversi ristoranti con menu degustazione — verificare singolarmente.'}},
-
-  /* ========== OSAKA — POI AGGIUNTIVI ========== */
-  {id:'osa-07',name:'Namba Yasaka Shrine',jp:'難波八阪神社',city:'Osaka',cat:'shrine',lat:34.6612,lng:135.5015,
-    desc:'Santuario con un\'enorme testa di leone (20m) che "mangia" i mali. Leggendario per fotografia.',
-    best:'Mattina presto per foto senza persone',local:true},
-  {id:'osa-08',name:'Hozenji Yokocho',jp:'法善寺横丁',city:'Osaka',cat:'neighborhood',lat:34.6667,lng:135.5031,
-    desc:'Vicolo di 50m con ristoranti tradizionali e tempio muschiato. Atmosfera Showa anni \'50.',
-    best:'Sera',local:true},
-  {id:'osa-09',name:'Sumiyoshi Taisha',jp:'住吉大社',city:'Osaka',cat:'shrine',lat:34.6120,lng:135.4928,
-    desc:'Uno dei santuari più antichi del Giappone (211 d.C.). Architettura pre-buddhista unica. Poco turistica.',
-    best:'Gennaio (Hatsumode, migliore in Giappone)',local:true,
-    do:['Taiko-bashi (ponte arcobaleno)','Combinare con quartiere Sumiyoshi']},
-  {id:'osa-10',name:'Den Den Town (Otaku)',jp:'でんでんタウン',city:'Osaka',cat:'experience',lat:34.6593,lng:135.5051,
-    desc:'Versione Osaka di Akihabara. Anime, retro gaming, maid cafe, figure. Più autentico e meno turistico.',
-    best:'Feriale pomeriggio',local:true},
-  {id:'osa-11',name:'Expo \'70 Commemorative Park',jp:'万博記念公園',city:'Osaka',cat:'nature',lat:34.8006,lng:135.5311,
-    desc:'Parco dell\'Expo di Osaka 1970. Torre della Sole (scultura Taro Okamoto). Museum of Ethnology eccellente.',
-    best:'Primavera (sakura) o autunno'},
-  {id:'osa-12',name:'Tenjinbashi-suji Shopping Street',jp:'天神橋筋商店街',city:'Osaka',cat:'shopping',lat:34.6891,lng:135.5133,
-    desc:'La via commerciale coperta più lunga del Giappone: 2.6km. Alimentari, abbigliamento, artigianato a prezzi locali.',
-    best:'Feriale mattina',local:true,
-    gf:{lvl:'partial',notes:'Alimentari freschi GF disponibili. Molte paste, mochi, verdure.'}},
-  {id:'osa-13',name:'Gluten Free Restaurant Mori (Osaka)',jp:'',city:'Osaka',cat:'food',lat:34.6900,lng:135.5050,
-    desc:'Ristorante con cucina completamente GF ad Umeda. Ramen di riso, curry, bento box.',
-    gf:{lvl:'full',notes:'100% GF. Prenotare in anticipo.'}},
-
-  /* ========== HIROSHIMA — POI AGGIUNTIVI ========== */
-  {id:'hir-10',name:'Sandankyo Gorge',jp:'三段峡',city:'Hiroshima',cat:'nature',lat:34.6217,lng:132.3031,
-    desc:'Gola UNESCO di 18km. Barche piatte, cascate, foreste primordiali. 1.5h da Hiroshima.',
-    best:'Autunno (foliage spettacolare)',local:true,
-    do:['Boat ride attraverso le grotte','Trail 2h dal main entrance']},
-  {id:'hir-11',name:'Tomonoura (Old Town)',jp:'鞆の浦',city:'Hiroshima',cat:'neighborhood',lat:34.3815,lng:133.3823,
-    desc:'Porto Edo dell\'era Tokugawa intatto. Faro di pietra più antico del Giappone. Ispirazione di Miyazaki per Ponyo.',
-    best:'Fuori stagione per silenzio',local:true,
-    do:['Tra porto e Fukuzenji Temple','Tramonto dal porto']},
-  {id:'hir-12',name:'Sake Brewery District Saijo',jp:'西条 酒蔵通り',city:'Hiroshima',cat:'experience',lat:34.4310,lng:132.7225,
-    desc:'Uno dei tre distetti sake più famosi del Giappone. 8 breweries in 500m, degustazioni da 200¥.',
-    best:'Ottobre per Sake Festival',local:true,
-    gf:{lvl:'full',notes:'Sake = riso fermentato, naturalmente GF. Verificare sakè aromatizzati.'}},
-
-  /* ========== NARA — POI AGGIUNTIVI ========== */
-  {id:'nar-10',name:'Horyuji Temple',paid:true,cost:'1500¥',jp:'法隆寺',city:'Nara',cat:'temple',lat:34.6148,lng:135.7344,
-    desc:'L\'edificio in legno più antico al mondo (607 d.C., UNESCO). A 12km dal centro Nara, raggiungibile in treno.',
-    best:'Mattina feriale per silenzio totale',
-    do:['Treasury hall (tesori Buddha del VII sec.)','Chuguji Nunnery accanto']},
-  {id:'nar-11',name:'Asuka Village',jp:'飛鳥',city:'Nara',cat:'experience',lat:34.4733,lng:135.8088,
-    desc:'Culla della civiltà giapponese. Tumuli reali, kofun, gigantesche pietre misteriose (Ishibutai).',
-    best:'Primavera o autunno, bicicletta',local:true,
-    do:['Noleggio bici all\'arrivo (500¥/giorno)','Ishibutai Kofun (tumulo aperto)']},
-
-  /* ========== HAKONE — POI AGGIUNTIVI ========== */
-  {id:'hak-09',name:'Pola Museum of Art',paid:true,cost:'1800¥',jp:'ポーラ美術館',city:'Hakone',cat:'museum',lat:35.2366,lng:139.0650,
-    desc:'Monet, Renoir, Picasso in un\'architettura immersa nella foresta. Una delle migliori collezioni impressioniste in Giappone.',
-    best:'Feriale mattina per silenzio',local:true},
-  {id:'hak-10',name:'Sengokuhara Pampas Grass Field',jp:'仙石原すすき草原',city:'Hakone',cat:'nature',lat:35.2477,lng:139.0156,
-    desc:'Campo di pampa argentata su 640m che ondeggia nel vento. Vista iconica d\'autunno.',
-    best:'Ottobre-novembre per il massimo dorato',local:true},
-
-  /* ========== KANAZAWA — POI AGGIUNTIVI ========== */
-  {id:'kan-10',name:'D.T. Suzuki Museum',paid:true,cost:'310¥',jp:'鈴木大拓記念館',city:'Kanazawa',cat:'museum',lat:36.5561,lng:136.6442,
-    desc:'Museo minimalista dedicato al filosofo Zen che portò il Buddhismo in Occidente. Architettura di Yoshio Taniguchi.',
-    best:'Pomeriggio tranquillo',local:true},
-  {id:'kan-11',name:'Myoryuji (Ninja-dera detail)',jp:'妙立寺',city:'Kanazawa',cat:'experience',lat:36.5600,lng:136.6393,
-    desc:'Già presente come kan-07. Nota: OBBLIGATORIO prenotare per telefono (+81-76-241-0888) in anticipo.',
-    do:['Prenotare almeno 2 settimane prima','Solo giapponese ma lo spazio è comprensibile'],local:true},
-  {id:'kan-12',name:'Higashi Chaya Evening Walk',jp:'ひがし茶屋街 夜散歩',city:'Kanazawa',cat:'neighborhood',lat:36.5708,lng:136.6678,
-    desc:'Il quartiere geisha di notte, illuminato da lanterne. Silenzio totale dopo le 20:00, completamente diverso dal giorno.',
-    best:'21:00-22:30 fuori stagione',local:true},
-
-  /* ========== SAPPORO & HOKKAIDO — POI AGGIUNTIVI ========== */
-  {id:'sap-07',name:'Shiroi Koibito Park',jp:'白い恋人パーク',city:'Sapporo',cat:'experience',lat:43.0744,lng:141.3228,
-    desc:'Parco-fabbrica del biscotto più famoso di Hokkaido. Tour produzione, museo Tudor, giardini.',
-    best:'Qualsiasi giorno (coperto)',
-    gf:{lvl:'none',notes:'Biscotti contengono grano. Solo souvenir GF se trovi riso-based.'}},
-  {id:'sap-08',name:'Nakajima Park',jp:'中島公園',city:'Sapporo',cat:'nature',lat:43.0501,lng:141.3555,
-    desc:'Parco centrale con laghetto. Specchio del grattacielo vicino. Sakura in maggio, fontane in estate.',
-    best:'Maggio per sakura',local:true},
-  {id:'sap-09',name:'Biei Blue Pond (Hokkaido)',jp:'青い池',city:'Sapporo',cat:'nature',lat:43.5713,lng:142.5296,
-    desc:'Laghetto dai riflessi azurri (colore da alluminio naturale). La foto di wallpaper di Apple. 2h da Sapporo.',
-    best:'Mattina presto per nebbia bassa e riflessi',local:true,
-    do:['Combinare con Shirogane Onsen','Autunno per contrasto foglie gialle + acqua blu']},
-  {id:'sap-10',name:'Asahikawa Zoo (Asahiyama)',jp:'旭山動物園',city:'Sapporo',cat:'experience',lat:43.7694,lng:142.4752,
-    desc:'Lo zoo più visitato di Giappone. Orsi polari che nuotano in tunnel subacqueo, pinguini che camminano in fila nel parco.',
-    best:'Inverno (pinguini in passeggiata)',
-    do:['2h da Sapporo in bus','Pinguini Walk è solo in inverno (dicembre-marzo)']},
-  {id:'sap-11',name:'Furano Flower Fields',jp:'富良野 ラベンダー',city:'Sapporo',cat:'nature',lat:43.3419,lng:142.3745,
-    desc:'Campi di lavanda a perdita d\'occhio. Luglio = massima fioritura. Farm Tomita è la più famosa.',
-    best:'Luglio per lavanda, agosto per mix fiori',local:true},
-
-  /* ========== OKINAWA — POI AGGIUNTIVI ========== */
-  {id:'oki-06',name:'Cape Manzamo',jp:'万座毛',city:'Okinawa',cat:'nature',lat:26.5067,lng:127.8706,
-    desc:'Scogliera a forma di elefante sulle acque turchesi di Okinawa. Vista iconica.',
-    best:'Tramonto',local:true},
-  {id:'oki-07',name:'Katsuren Castle Ruins',jp:'勝連城跡',city:'Okinawa',cat:'castle',lat:26.3280,lng:127.8714,
-    desc:'Rovine UNESCO del XIV sec. su collina. Vista a 360° sul mare di corallo e le isole Katsuren.',
-    best:'Tramonto per colori su mare',local:true},
-  {id:'oki-08',name:'Yambaru National Park',jp:'やんばる国立公園',city:'Okinawa',cat:'nature',lat:26.7330,lng:128.1830,
-    desc:'Foresta subtropicale nell\'Okinawa del nord, UNESCO. Yambaru kuina (uccello flightless raro), mangrove.',
-    best:'Maggio-giugno (fuori tifoni)',local:true,
-    do:['Canoe nelle mangrovie (guided tour)','Birding tour mattutino']},
-  {id:'oki-09',name:'Naha Tsuboya Pottery District',jp:'壺屋やちむん通り',city:'Okinawa',cat:'experience',lat:26.2167,lng:127.6928,
-    desc:'Quartiere dei vasai di Okinawa (Yachimun). 50+ laboratori e botteghe. Ceramica ryukyu multicolore.',
-    best:'Feriale mattina',local:true,
-    do:['Tour dei fornaci storici Tsuboya','Acquistare direttamente dall\'artigiano']},
-  {id:'oki-10',name:'Blue Cave Snorkeling (Maeda)',jp:'真栄田岬 青の洞窟',city:'Okinawa',cat:'nature',lat:26.4430,lng:127.7519,
-    desc:'Grotta marina con luce blu elettrica riflessa. Una delle 10 grotte marine più belle del mondo.',
-    best:'Mattina presto (9:00-10:00) per luce ottimale',
-    do:['Tour snorkeling organizzato (da 3000¥)','Certificato PADI per diving']},
-
-  /* ========== NIKKO — POI AGGIUNTIVI ========== */
-  {id:'nik-06',name:'Nikko Edomura (Edo Wonderland)',paid:true,cost:'4700¥',jp:'日光江戸村',city:'Nikko',cat:'experience',lat:36.8032,lng:139.5913,
-    desc:'Parco a tema samurai con teatri ninjutsu, spettacoli geisha, cibo Edo. Costumi in affitto.',
-    best:'Feriale (weekend: ressa bambini)'},
-  {id:'nik-07',name:'Ryuzu Falls',jp:'竜頭の滝',city:'Nikko',cat:'nature',lat:36.7569,lng:139.5113,
-    desc:'Cascata "testa di drago" a Okunikko. Vista sul fiume bianco tra aceri — spettacolare in autunno.',
-    best:'Novembre per foliage arancione intorno alla cascata',local:true},
-
-  /* ========== NAGASAKI — POI AGGIUNTIVI ========== */
-  {id:'nag-10',name:'Megane-bashi (Spectacles Bridge)',jp:'眼鏡橋',city:'Nagasaki',cat:'viewpoint',lat:32.7449,lng:129.8792,
-    desc:'Il ponte di pietra ad arco più antico del Giappone (1634). Il riflesso nel canale crea la forma degli occhiali.',
-    best:'Acqua calma al mattino per riflesso',local:true},
-  {id:'nag-11',name:'Nagasaki Ropeway & Mt. Inasa',jp:'稲佐山ロープウェー',city:'Nagasaki',cat:'viewpoint',lat:32.7539,lng:129.8586,
-    desc:'Funivia per Mt. Inasa (333m). Vista notturna classificata top 3 in Giappone insieme a Hakodate e Kobe.',
-    best:'Dopo le 19:00 per luci notturne',
-    do:['Ristorante in cima (prenotare)']},
-
-  /* ========== FUKUOKA — POI AGGIUNTIVI ========== */
-  {id:'fuk-10',name:'Yanagawa Canal Punting',jp:'柳川川下り',city:'Fukuoka',cat:'experience',lat:33.1631,lng:130.4070,
-    desc:'Gita in barca tradizionale sui canali di Yanagawa (45min da Fukuoka). Guida in kimono con canto tradizionale.',
-    best:'Primavera (fiori gialli nanohana) o autunno',local:true,
-    do:['Treno diretto da Nishitetsu Fukuoka (1h)','Acquisto biglietto online']},
-  {id:'fuk-11',name:'Itoshima Coast',jp:'糸島海岸',city:'Fukuoka',cat:'nature',lat:33.5589,lng:130.1955,
-    desc:'Costa rocciosa con torii nel mare e ristoranti di pesce fresco. Frequentata da locali di Fukuoka.',
-    best:'Domenica per mercati locali',local:true},
-  {id:'fuk-12',name:'Karatsu Castle & Genkai Sea',jp:'唐津城・玄海',city:'Fukuoka',cat:'castle',lat:33.4522,lng:129.9701,
-    desc:'Castello sulla roccia affacciato sul Mar di Genkai. 40min da Fukuoka. Pesco, pinta pottery Karatsu-yaki.',
-    best:'Autunno + tramonto',local:true},
-
-  /* ========== MATSUYAMA & SHIKOKU ========== */
-  {id:'mat-08',name:'Cape Ashizuri (Kochi)',jp:'足摺岬',city:'Matsuyama',cat:'nature',lat:32.7250,lng:133.0064,
-    desc:'Il promontorio più meridionale di Shikoku. Oceano Pacifico a 360°, faro del XIX sec., foreste subtropicali.',
-    best:'Primavera o autunno',local:true,
-    do:['Pilgrimage Temple Kongofuku-ji (38°)','Whale watching da Tosashimizu']},
-  {id:'mat-09',name:'Uchiko Town (Preserved Edo)',jp:'内子町',city:'Matsuyama',cat:'neighborhood',lat:33.5437,lng:132.6477,
-    desc:'Villaggio Meiji-Taisho con case di cera (wax merchant houses). Perfettamente preservato, quasi nessun turista.',
-    best:'Feriale mattina',local:true,
-    do:['Yokaichi Gokoku (merchant street)','Kabuki theater 1916 ancora attivo']},
-
-  /* ========== NAOSHIMA & SETOUCHI ========== */
-  {id:'nao-08',name:'Teshima Art Museum',jp:'豊島美術館',city:'Naoshima',cat:'museum',lat:34.4917,lng:134.0855,
-    desc:'Museo sull\'isola di Teshima — guscio di cemento con sorgente d\'acqua naturale al centro. Ryue Nishizawa.',
-    best:'Prenotare online — numero limitato di visitatori',local:true,
-    do:['Noleggio bici per girare tutta Teshima','Combinare con Inujima']},
-  {id:'nao-09',name:'Ogi Area (Naoshima Art)',jp:'大岐',city:'Naoshima',cat:'experience',lat:34.4490,lng:133.9890,
-    desc:'Zona meridionale dell\'isola con installazioni a cielo aperto, meno visitata del centro.',
-    best:'Tramonto',local:true},
-
-  /* ========== BEPPU — POI AGGIUNTIVI ========== */
-  {id:'bep-06',name:'Yufuin Village',jp:'湯布院',city:'Beppu',cat:'nature',lat:33.2614,lng:131.3600,
-    desc:'Village onsen ai piedi del Mt. Yufu. Boutique hotels, artigiani, laghi vulcanici, meno "resort" di Beppu.',
-    best:'Alba per nebbia di vapore sul lago Kinrinko',local:true,
-    do:['Kinrinko Lake alle 6:00 per la nebbia','Yufuin Floral Village (artigianato)']},
-  {id:'bep-07',name:'Hells of Beppu Walking Tour',jp:'地獄めぐり',city:'Beppu',cat:'experience',lat:33.3398,lng:131.4938,
-    desc:'I 7 "Inferni" di Beppu in sequenza: Sea (blu), Blood Pond (rosso), Tornado (geyser), Crocodile, etc. Pass da 2000¥.',
-    best:'Mattina per vapore denso',
-    do:['Pass combinato 2000¥ per tutti e 7','Cominciare da Umi Jigoku']},
-
-  /* ========== TAKAYAMA — POI AGGIUNTIVI ========== */
-  {id:'tak-10',name:'Hida Beef (A5) Tasting',jp:'飛騨牛',city:'Takayama',cat:'food',lat:36.1448,lng:137.2538,
-    desc:'Il wagyu Hida A5 è uno dei migliori del Giappone. Numerose steakhouse nel Sanmachi, anche come nigiri (700¥/pz).',
-    best:'Pranzo (code minori)',
-    gf:{lvl:'partial',notes:'Carne alla griglia GF. Salse teriyaki possono contenere grano — chiedere.'}},
-  {id:'tak-11',name:'Okuhida Onsen Valley',jp:'奥飛騨温泉郷',city:'Takayama',cat:'onsen',lat:36.2783,lng:137.5589,
-    desc:'Valle onsen a 1h da Takayama. Rustic rotenburo (outdoor) a prezzi bassi. Cascata Shira-itodaki in estate.',
-    best:'Inverno (rotenburo con neve intorno)',local:true},
-
-  /* ========== KYUSHU EXTRA ========== */
-  {id:'kum-01',name:'Kumamoto Castle',paid:true,cost:'800¥',jp:'熊本城',city:'Kumamoto',cat:'castle',lat:32.8034,lng:130.7058,
-    desc:'Uno dei più imponenti castelli del Giappone, in ricostruzione dopo il terremoto 2016. Progresso visibile e interessante.',
-    best:'Parte del castello ora visibile'},
-  {id:'kum-02',name:'Mt. Aso Caldera',jp:'阿蘇山',city:'Kumamoto',cat:'nature',lat:32.8843,lng:131.0879,
-    desc:'Il vulcano attivo più grande del mondo per caldera. Cratere visitabile (con condizioni meteo favorevoli).',
-    best:'Mattina limpida, evitare luglio-agosto per nebbia',
-    do:['Check stato vulcano prima (può chiudere)','Aso Milk Road per vista panoramica'],
-    dont:['Non avvicinarsi se soffri di problemi respiratori']},
-  {id:'kag-01',name:'Sakurajima Volcano',jp:'桜島',city:'Kagoshima',cat:'nature',lat:31.5780,lng:130.6580,
-    desc:'Vulcano attivo nella baia di Kagoshima, raggiungibile in traghetto in 15 minuti. Lava walks, osservatorio.',
-    best:'Traghetto ogni 15 min da Kagoshima',
-    do:['Yunohira Lookout per vista sul cratere','Sakurajima Visitor Center']},
-  {id:'kag-02',name:'Sengan-en Garden',paid:true,cost:'1500¥',jp:'仙巌園',city:'Kagoshima',cat:'nature',lat:31.6257,lng:130.5866,
-    desc:'Giardino del clan Shimadzu con vista su Sakurajima. Memoriale UNESCO Meiji Industrial Revolution.',
-    best:'Mattina per Sakurajima visibile sullo sfondo'},
-  {id:'kag-03',name:'Ibusuki Sand Bath',jp:'指宿砂むし会館 砂楽',city:'Kagoshima',cat:'onsen',lat:31.2428,lng:130.6369,
-    desc:'Bagno di sabbia vulcanica in riva al mare — geotermale naturale. Unico al mondo (sabbia a 50°C).',
-    best:'Mattina presto',local:true,
-    do:['Yukata incluso','Durata consigliata 10-15 minuti']},
-
-  /* ========== TOHOKU ========== */
-  {id:'sen-01',name:'Matsushima Bay',jp:'松島',city:'Sendai',cat:'nature',lat:38.3686,lng:141.0688,
-    desc:'La baia più bella del Giappone (tra i top 3). Oltre 260 isole boscose. Vista da Saigyo Modoshi no Matsu.',
-    best:'Tramonto / alba per luce soffusa',
-    do:['Giro in barca tra le isole (1500¥)','Zuiganji Temple (UNESCO)']},
-  {id:'sen-02',name:'Sendai Tanabata Festival',jp:'仙台七夕まつり',city:'Sendai',cat:'experience',lat:38.2682,lng:140.8694,
-    desc:'Il più grande Tanabata del Giappone (6-8 agosto). 3000 ornamenti decorano la shopping arcade centrale.',
-    best:'6-8 agosto (festival specifico)'},
-  {id:'aka-01',name:'Lake Towada (Aomori)',jp:'十和田湖',city:'Aomori',cat:'nature',lat:40.4669,lng:140.8795,
-    desc:'Lago vulcanico profondo in foresta primordiale di Tohoku. Oirase Gorge (9km di trail lungo ruscello).',
-    best:'Ottobre per foliage (il più bello del Tohoku)',local:true,
-    do:['Oirase Stream Trail (2h)','Bus diretto da Aomori']},
-  {id:'aka-02',name:'Hirosaki Castle & Park',jp:'弘前城',city:'Aomori',cat:'castle',lat:40.6069,lng:140.4655,
-    desc:'Uno dei 12 castelli originali. Il parco ha 2600 alberi di sakura — il più fotografato del Giappone settentrionale.',
-    best:'Fine aprile-inizio maggio per sakura',
-    do:['Hanami picnic nel fossato (sakura galleggiano sull\'acqua)']},
-
-  /* ========== HOKURIKU EXTRA ========== */
-  {id:'toy-01',name:'Toyama Glass Art Museum',paid:true,cost:'200¥ (collezione permanente)',jp:'富山市ガラス美術館',city:'Toyama',cat:'museum',lat:36.6945,lng:137.2128,
-    desc:'Museo del vetro artistico in biblioteca pubblica (Kengo Kuma). Libreria a 6 piani + collezione vetro mondiale.',
-    best:'Feriale per calma e luce naturale',local:true},
-  {id:'toy-02',name:'Tateyama Alpine Route',jp:'立山黒部アルペンルート',city:'Toyama',cat:'nature',lat:36.5775,lng:137.5957,
-    desc:'La traversata montana più spettacolare del Giappone. Neve alta 15-20m (Snow Wall) anche ad aprile-maggio.',
-    best:'Aprile-maggio per snow wall, autunno per foliage',
-    do:['Treno + funivia + bus + trolley (pass 15.000¥+)','Partire da Toyama o Nagano']},
-
-  /* ========== SHIKOKU PILGRIMAGE ========== */
-  {id:'pil-01',name:'Temple 1 Ryozen-ji (Shikoku Pilgrimage Start)',paid:true,cost:'500¥',jp:'霊山寺',city:'Tokushima',cat:'temple',lat:34.1653,lng:134.5006,
-    desc:'Inizio del pellegrinaggio Shikoku 88 templi (1200km). Acquistare bastone henro, sedge hat, white vest.',
-    best:'Primavera o autunno per clima',
-    do:['Noleggio attrezzatura henro completa (3000¥)','Stampa del nōkyōchō (libro timbri)']},
-  {id:'pil-02',name:'Oboke Gorge (Tokushima)',jp:'大歩危峡',city:'Tokushima',cat:'nature',lat:33.9008,lng:133.7916,
-    desc:'Gola di marmo verde sull\'Iyogawa. Rafting, gita in barca, iya kazura-bashi (ponte di vite).',
-    best:'Estate per rafting, autunno per foliage',local:true,
-    do:['Kazura-bashi vine bridge (550¥)','Boat tour della gola (1100¥)']},
-
-  /* ========== YAMAGUCHI & SHIMANE ========== */
-  {id:'yam-01',name:'Akiyoshido Cave',paid:true,cost:'1300¥',jp:'秋芳洞',city:'Yamaguchi',cat:'nature',lat:34.2494,lng:131.3044,
-    desc:'La grotta calcarea più grande del Giappone. 10km esplorabili, stalagmiti enormi, river walk nel sottosuolo.',
-    best:'Estate (fresca all\'interno)',
-    do:['Akiyoshidai plateau all\'esterno (gratis)']},
-  {id:'izm-01',name:'Izumo Taisha',paid:false,jp:'出雲大社',city:'Shimane',cat:'shrine',lat:35.4017,lng:132.6855,
-    desc:'Il santuario più antico e sacro del Giappone dopo Ise. Dedicato al dio del matrimonio. Omamori matrimoniali famosi.',
-    best:'Gennaio per Kamiari-zuki (mese dei kami)',local:true,
-    do:['Shimenawa (corda sacra) di 6 tonnellate','Musashino Winery accanto']},
-
-  /* ========== ISE & MIE ========== */
-  {id:'ise-01',name:'Ise Grand Shrine (Naiku)',paid:false,jp:'伊勢神宮内宮',city:'Ise',cat:'shrine',lat:34.4553,lng:136.7256,
-    desc:'Il santuario più sacro del Giappone. Ricostruito ogni 20 anni (Shikinen Sengu) dalla stessa famiglia da 2000 anni.',
-    best:'Primo mattino per atmosfera mistica',
-    do:['Attraversare Uji Bridge a piedi nudi','Okage Yokocho per cibo locale dopo'],
-    dont:['No foto all\'interno delle aree sacre']},
-  {id:'ise-02',name:'Meoto-Iwa (Wedded Rocks)',jp:'夫婦岩',city:'Ise',cat:'viewpoint',lat:34.5419,lng:136.7744,
-    desc:'Due scogli uniti da una fune sacra Shimenawa. Simbolo del matrimonio. Lever del sole spettacolare a giugno.',
-    best:'Alba per il sole tra gli scogli (soprattutto maggio-luglio)',local:true},
-
-  /* ========== KOBE ========== */
-  {id:'kob-01',name:'Kitano-cho Foreign Settlement',jp:'北野町 異人館街',city:'Kobe',cat:'neighborhood',lat:34.7016,lng:135.1894,
-    desc:'Quartiere Meiji con residenze straniere (1868+). Case coloratissime in stile europeo su collina con vista porto.',
-    best:'Pomeriggio',
-    do:['Weathercock House (700¥)','Vista su Kobe dal Kitano Tenmangu']},
-  {id:'kob-02',name:'Meriken Park & Kobe Port',jp:'メリケンパーク',city:'Kobe',cat:'viewpoint',lat:34.6868,lng:135.1938,
-    desc:'Parco del porto con memoriale Great Hanshin Earthquake (1995). Vista sul Kobe Bridge e Akashi Kaikyo.',
-    best:'Tramonto per luci sul porto'},
-  {id:'kob-03',name:'Arima Onsen',jp:'有馬温泉',city:'Kobe',cat:'onsen',lat:34.7985,lng:135.2478,
-    desc:'Uno dei tre onsen più antichi del Giappone. Kin-no-yu (acqua dorata ferrosa) e Gin-no-yu (acqua d\'argento).',
-    best:'Giornata feriale per calma',local:true,
-    do:['Kin-no-yu bathhouse (650¥)','Shotoen Ryokan per kaiseki dinner']},
-  {id:'kob-04',name:'Nada Sake Breweries',jp:'灘の酒蔵',city:'Kobe',cat:'experience',lat:34.7148,lng:135.2633,
-    desc:'Il più grande distretto produzione sake del Giappone. Hakutsuru, Kikkoman, Nadagiku — degustazioni gratuite.',
-    best:'Feriale 10:00-17:00',local:true,
-    gf:{lvl:'full',notes:'Sake puro = GF. Verificare prodotti flavored.'}},
-
-  /* ========== YOKOHAMA ========== */
-  {id:'yok-01',name:'Chinatown Yokohama',jp:'横浜中華街',city:'Yokohama',cat:'neighborhood',lat:35.4437,lng:139.6443,
-    desc:'La Chinatown più grande del Giappone (500+ ristoranti). Manju al vapore, dim sum, baozi.',
-    best:'Feriale pranzo',
-    gf:{lvl:'partial',notes:'Riso saltato, dim sum di riso GF. Evitare ravioli fritti e bao con farina.'}},
-  {id:'yok-02',name:'Sankeien Garden',paid:true,cost:'900¥',jp:'三渓園',city:'Yokohama',cat:'nature',lat:35.4148,lng:139.6478,
-    desc:'Giardino Meiji con 17 strutture storiche originali spostate da tutto il Giappone in 175 ettari.',
-    best:'Mattina feriale — quasi vuoto',local:true},
-  {id:'yok-03',name:'Cup Noodles Museum',paid:true,cost:'500¥',jp:'カップヌードルミュージアム',city:'Yokohama',cat:'museum',lat:35.4528,lng:139.6358,
-    desc:'Crea il tuo Cup Noodle personalizzato. Museo dell\'invenzione che ha cambiato il mondo.',
-    best:'Feriale mattina',
-    gf:{lvl:'none',notes:'Ramen contiene grano — solo souvenir GF impossibile da creare.'}},
-
-  /* ========== KAMAKURA — EXTRA ========== */
-  {id:'kam-07',name:'Zeniarai Benten Shrine',jp:'銭洗弁財天',city:'Kamakura',cat:'shrine',lat:35.3247,lng:139.5397,
-    desc:'Santuario nella grotta dove si lava il denaro (monete) per moltiplicarlo. Atmosfera mistica + fumo di incenso.',
-    best:'Mattina feriale',local:true,
-    do:['Portare monete da lavare','Percorso sotto roccia (15min da Kita-Kamakura)']},
-  {id:'kam-08',name:'Yuigahama & Zaimokuza Beaches',jp:'由比ヶ浜・材木座海岸',city:'Kamakura',cat:'nature',lat:35.3023,lng:139.5497,
-    desc:'Le spiagge di Kamakura — popolari tra i tokyoiti in estate. Surf, beach bar, vista sul Pacifico.',
-    best:'Estate (luglio-agosto) o ottobre-novembre per vuoto'},
-
-  /* ========== GIFU ========== */
-  {id:'gif-01',name:'Gifu Castle',paid:true,cost:'200¥',jp:'岐阜城',city:'Gifu',cat:'castle',lat:35.4475,lng:136.7611,
-    desc:'Castello su roccia (Mt. Kinka, 329m) con funivia. Vista panoramica su fiume Nagara e la città.',
-    best:'Notturno illuminato in estate',
-    do:['Funivia (往復 720¥)','Vista di notte (estate)']},
-  {id:'gif-02',name:'Cormorant Fishing (Ukai)',jp:'長良川鵜飼',city:'Gifu',cat:'experience',lat:35.4220,lng:136.7546,
-    desc:'Pesca tradizionale con cormorani addestrati, in barca sul fiume Nagara. Pratica da 1300 anni. Solo estate.',
-    best:'Maggio-ottobre, sera dalle 18:30',local:true,
-    do:['Prenotare barca in anticipo (+81-58-262-0104)']},
-
-  /* ========== NAGANO ========== */
-  {id:'nag-20',name:'Zenko-ji Temple',jp:'善光寺',city:'Nagano',cat:'temple',lat:36.6612,lng:138.1872,
-    desc:'Tempio in legno del VII sec., pellegrinaggio più importante del Giappone centrale. 7+ milioni di visitatori/anno.',
-    best:'5:30-6:00 per Okaidan (rituale buio, gratis)',
-    do:['Okaidan mattutino (sotto il tempio nel buio totale)','Nakamise-dori per soba di grano saraceno']},
-  {id:'nag-21',name:'Matsumoto Castle',paid:true,cost:'700¥',jp:'松本城',city:'Nagano',cat:'castle',lat:36.2382,lng:137.9720,
-    desc:'Il castello originale più antico del Giappone (1504). Mura nere su riflesso d\'acqua.',
-    best:'Alba per riflesso sull\'acqua e meno folla',
-    do:['Frog figurines (rana = 無事 "muji" = sano)']},
-  {id:'nag-22',name:'Jigokudani Snow Monkey Park',jp:'地獄谷野猿公苑',city:'Nagano',cat:'nature',lat:36.7321,lng:138.4712,
-    desc:'Macachi giapponesi nell\'onsen caldo in mezzo alla neve. Un\'icona del Giappone invernale.',
-    best:'Dicembre-marzo per neve + scimmie nell\'acqua calda',
-    do:['Arrivo alle 8:30 prima dei gruppi tour','Bus da Nagano stazione']},
-
-  /* ========== SHIZUOKA & FUJI AREA ========== */
-  {id:'fuj-01',name:'Mt. Fuji 5th Station (Kawaguchiko)',jp:'富士山五合目',city:'Fuji',cat:'nature',lat:35.3606,lng:138.7274,
-    desc:'Partenza principale per scalata (Yoshida Trail). 5° stazione a 2305m. Anche solo per vista e negozi.',
-    best:'Stagione scalata: luglio-agosto. Vista da 5° station: mattina limpida',
-    do:['Check webcam fuji-san.net','Scalata: 5-7h andata, 3-4h ritorno'],
-    dont:['No scalata fuori stagione ufficiale (molti si perdono o muoiono)']},
-  {id:'fuj-02',name:'Chureito Pagoda (Fuji View)',jp:'浅間神社 忠霊塔',city:'Fuji',cat:'viewpoint',lat:35.4969,lng:138.7844,
-    desc:'Pagoda a 5 piani con Mt. Fuji perfettamente centrato sullo sfondo. LA foto iconica del Giappone.',
-    best:'Alba di aprile con sakura (arrivare 5:30)',
-    do:['398 scalini dal parcheggio — arrivare in forma','Fuji-Yoshida per notte per alba mattutina']},
-  {id:'fuj-03',name:'Oshino Hakkai Springs',jp:'忍野八海',city:'Fuji',cat:'nature',lat:35.4594,lng:138.8200,
-    desc:'8 sorgenti cristalline ai piedi del Fuji (acqua filtra tra la lava in 80 anni). UNESCO.',
-    best:'Mattina presto prima del turismo di massa',
-    gf:{lvl:'partial',notes:'Mochi di riso venduti ai chioschi GF naturalmente.'},local:true},
-
-  /* ========== IZU PENINSULA ========== */
-  {id:'izu-01',name:'Kawazu Sakura (Early Bloom)',jp:'河津桜',city:'Izu',cat:'nature',lat:34.7622,lng:138.9890,
-    desc:'La varietà Kawazu-zakura sboccia a febbraio, 1 mese prima delle altre. 8000 alberi lungo il fiume.',
-    best:'Febbraio-marzo per sakura rosa precoce',local:true,
-    do:['Treno diretto da Tokyo Shinjuku (2.5h)']},
-  {id:'izu-02',name:'Shuzenji Onsen Village',jp:'修善寺温泉',city:'Izu',cat:'onsen',lat:34.9694,lng:138.9278,
-    desc:'Village onsen tradizionale nella foresta di bambù. Meno trafficato di Hakone. Storico dal 807 d.C.',
-    best:'Autunno per foliage + onsen',local:true,
-    do:['Tokko-no-yu (outdoor onsen gratis nel ruscello)','Shuzenji Temple']},
-
-  /* ========== TOHOKU EXTRA ========== */
-  {id:'miy-01',name:'Kinkazan Island (Sacred)',jp:'金華山',city:'Sendai',cat:'shrine',lat:38.2986,lng:141.5583,
-    desc:'Isola sacra nella costa di Miyagi. Solo cervi e scimmie + santuario. Visita di 1 giorno.',
-    best:'Maggio-giugno (fuori tifoni)',local:true,
-    do:['Traghetto da Ayukawa (40min)']},
-  {id:'aki-01',name:'Nyuto Onsen (Akita)',jp:'乳頭温泉郷',city:'Akita',cat:'onsen',lat:39.7500,lng:140.7394,
-    desc:'7 ryokan con onsen di sorgente milky-white in foresta di faggi di Akita. Il più rustico del Giappone.',
-    best:'Inverno per neve e onsen',local:true,
-    do:['Tsurunoyu Onsen (fondato 1638) — il più famoso','Prenotare mesi prima']},
-
-  /* ========== AICHI & NAGOYA ========== */
-  {id:'ngy-01',name:'Nagoya Castle & Hommaru',paid:true,cost:'500¥',jp:'名古屋城',city:'Nagoya',cat:'castle',lat:35.1853,lng:136.8997,
-    desc:'Il castello con le aquile dorate (kinshachi) più iconiche del Giappone. Hommaru Palace (ricostruzione 2018).',
-    best:'Primavera per sakura + cherry blossom corridor'},
-  {id:'ngy-02',name:'Toyota Commemorative Museum',paid:true,cost:'500¥',jp:'トヨタ産業技術記念館',city:'Nagoya',cat:'museum',lat:35.1759,lng:136.8831,
-    desc:'Museo dell\'industria Toyota con macchine tessili originali + auto d\'epoca. Affascinante storia industriale.',
-    best:'Feriale mattina — vuoto',local:true},
-  {id:'ngy-03',name:'Misonikomi Udon (GF option)',jp:'味噌煮込みうどん',city:'Nagoya',cat:'food',lat:35.1696,lng:136.9087,
-    desc:'Specialità Nagoya: udon nel brodo di miso rosso Hatcho. Attenzione: udon = grano. Chiedere riso alternativo.',
-    gf:{lvl:'none',notes:'Udon contiene grano. Il brodo miso Hatcho è GF ma pasta no. Solo riso in alternativa.'}},
-  {id:'ngy-04',name:'Atsuta Shrine',jp:'熱田神宮',city:'Nagoya',cat:'shrine',lat:35.1274,lng:136.9080,
-    desc:'Il santuario che custodisce la spada sacra Kusanagi-no-Tsurugi (uno dei 3 tesori imperiali). Dal 113 d.C.',
-    best:'Alba per atmosfera mistica',
-    do:['Kishi-men (soba stile Nagoya con soba di grano saraceno 100%)']},
-
-  /* ========== EHIME & KAGAWA EXTRA ========== */
-  {id:'udon-01',name:'Takamatsu Udon Pilgrimage',jp:'うどん巡り',city:'Takamatsu',cat:'food',lat:34.3401,lng:134.0434,
-    desc:'Kagawa = regno dell\'udon sanuki. 700+ shop per 1M abitanti. Il miglior udon del Giappone.',
-    gf:{lvl:'none',notes:'Udon = grano. NO GF. Solo per non celiaci.'},
-    do:['Udon Takase (apre alle 8)','Nakamura Udon a Marugame']},
-  {id:'mat-10',name:'Dogo Onsen Ochi-iwa-kan',jp:'大和屋本店',city:'Matsuyama',cat:'onsen',lat:33.8521,lng:132.7856,
-    desc:'Ryokan storico del 1887 accanto al Dogo Onsen. Onsen privato in stanza incluso nelle tariffe.',
-    best:'Fuori stagione per prezzi ridotti',local:true}
-];
+// ============================================================================
+// POI DATABASE — 10,360 real locations from OpenStreetMap
+// Loaded from pois_dataset.js (3.7MB)
+// Source: Tokyo, Kyoto, Osaka, Nara, Yokohama, Hiroshima, Kamakura, Nikko
+// ============================================================================
+const POIS_BASE = window.POIS_DATASET || [];
 /* =========================================================
    APP CONTROLLER
    ========================================================= */
@@ -1463,8 +475,8 @@ const POIS_BASE = [
   'use strict';
   let POIS;
   let POIS_LOADED = false;
-  const CHUNK_LOAD_LIMIT = 1200;
-  const loadedChunkRegions = new Set();
+  // REMOVED: CHUNK_LOAD_LIMIT
+  // REMOVED: loadedChunkRegions
   // Raggio GPS dinamico basato su zoom level
   function getGpsRadiusKm(zoom) {
     if (zoom < 5) return 25;   // Molto zoomato out → largo raggio
@@ -1474,226 +486,21 @@ const POIS_BASE = [
     if (zoom < 14) return 3;
     return 2;                   // Molto zoomato in → raggio stretto
   }
-  const CHUNK_FILES = [
-    'hiroshima-chunk-aa','hiroshima-chunk-ab',
-    'kamakura-chunk-aa','kamakura-chunk-ab','kamakura-chunk-ac',
-    'kyoto-chunk-aa','kyoto-chunk-ab','kyoto-chunk-ac','kyoto-chunk-ad','kyoto-chunk-ae','kyoto-chunk-af','kyoto-chunk-ag','kyoto-chunk-ah',
-    'nara-chunk-aa','nara-chunk-ab',
-    'osaka-chunk-aa','osaka-chunk-ab','osaka-chunk-ac','osaka-chunk-ad','osaka-chunk-ae','osaka-chunk-af','osaka-chunk-ag','osaka-chunk-ah','osaka-chunk-ai','osaka-chunk-aj','osaka-chunk-ak','osaka-chunk-al','osaka-chunk-am','osaka-chunk-an',
-    'osaka-ne-chunk-aa','osaka-ne-chunk-ab','osaka-ne-chunk-ac',
-    'osaka-nw-chunk-aa','osaka-nw-chunk-ab','osaka-nw-chunk-ac','osaka-nw-chunk-ad','osaka-nw-chunk-ae','osaka-nw-chunk-af',
-    'osaka-se-chunk-aa','osaka-se-chunk-ab','osaka-se-chunk-ac',
-    'osaka-sw-chunk-aa','osaka-sw-chunk-ab','osaka-sw-chunk-ac','osaka-sw-chunk-ad',
-    'tokyo-ne-chunk-aa','tokyo-ne-chunk-ab','tokyo-ne-chunk-ac','tokyo-ne-chunk-ad','tokyo-ne-chunk-ae','tokyo-ne-chunk-af','tokyo-ne-chunk-ag','tokyo-ne-chunk-ah','tokyo-ne-chunk-ai','tokyo-ne-chunk-aj','tokyo-ne-chunk-ak','tokyo-ne-chunk-al','tokyo-ne-chunk-am',
-    'tokyo-nw-chunk-aa',
-    'tokyo-se-chunk-aa','tokyo-se-chunk-ab','tokyo-se-chunk-ac','tokyo-se-chunk-ad','tokyo-se-chunk-ae','tokyo-se-chunk-af','tokyo-se-chunk-ag','tokyo-se-chunk-ah','tokyo-se-chunk-ai','tokyo-se-chunk-aj','tokyo-se-chunk-ak','tokyo-se-chunk-al',
-    'tokyo-sw-chunk-aa','tokyo-sw-chunk-ab','tokyo-sw-chunk-ac','tokyo-sw-chunk-ad','tokyo-sw-chunk-ae','tokyo-sw-chunk-af','tokyo-sw-chunk-ag',
-    'yokohama-chunk-aa','yokohama-chunk-ab','yokohama-chunk-ac'
-  ]; 
-  const CHUNK_REGION_MAP = {
-    tokyo: CHUNK_FILES.filter(f => f.startsWith('tokyo-')),
-    osaka: CHUNK_FILES.filter(f => f.startsWith('osaka-') || f.startsWith('osaka-ne-') || f.startsWith('osaka-nw-') || f.startsWith('osaka-se-') || f.startsWith('osaka-sw-')),
-    yokohama: CHUNK_FILES.filter(f => f.startsWith('yokohama-')),
-    kyoto: CHUNK_FILES.filter(f => f.startsWith('kyoto-')),
-    kamakura: CHUNK_FILES.filter(f => f.startsWith('kamakura-')),
-    nara: CHUNK_FILES.filter(f => f.startsWith('nara-')),
-    hiroshima: CHUNK_FILES.filter(f => f.startsWith('hiroshima-'))
-  };
-  const CHUNK_REGION_BOUNDS = [
-    {name:'yokohama', minLat:35.25, maxLat:35.65, minLng:139.45, maxLng:139.90},
-    {name:'tokyo', minLat:34.80, maxLat:36.20, minLng:138.70, maxLng:140.80},
-    {name:'osaka', minLat:34.20, maxLat:35.10, minLng:134.70, maxLng:136.30},
-    {name:'kyoto', minLat:34.70, maxLat:35.20, minLng:135.50, maxLng:136.10},
-    {name:'kamakura', minLat:35.24, maxLat:35.37, minLng:139.40, maxLng:139.70},
-    {name:'nara', minLat:34.50, maxLat:35.00, minLng:135.50, maxLng:136.20},
-    {name:'hiroshima', minLat:34.10, maxLat:34.70, minLng:131.80, maxLng:133.00}
-  ];
-  const CHUNK_CATEGORY_MAP = {
-    shrine:'shrine', temple:'temple', museum:'museum', gallery:'museum', art:'museum', theatre:'experience', cinema:'experience', hotel:'experience', hostel:'experience', guest_house:'experience', guesthouse:'experience', motel:'experience', tourism:'experience', viewpoint:'viewpoint', castle:'castle', park:'nature', garden:'nature', natural:'nature', water:'nature', beach:'nature', river:'nature', lake:'nature', cafe:'food', restaurant:'food', fast_food:'food', food_court:'food', bar:'food', pub:'food', bakery:'food', ice_cream:'food', bistro:'food', coffee_shop:'food', supermarket:'shopping', department_store:'shopping', mall:'shopping', boutique:'shopping', clothes:'shopping', gift:'shopping', kiosk:'shopping', market:'market', marketplace:'market', convenience:'shopping', pharmacy:'shopping', bicycle:'shopping', library:'museum'
-  };
+  // REMOVED: CHUNK_FILES 
+  // REMOVED: CHUNK_REGION_MAP
+  // REMOVED: CHUNK_REGION_BOUNDS
+  // REMOVED: CHUNK_CATEGORY_MAP
 
-  function inferChunkCat(props){
-    if (!props || typeof props !== 'object') return 'all';
-    const keys = ['amenity','shop','tourism','leisure','highway','natural'];
-    for (const key of keys){
-      const value = props[key];
-      if (!value) continue;
-      if (Array.isArray(value)) {
-        for (const v of value) if (CHUNK_CATEGORY_MAP[v]) return CHUNK_CATEGORY_MAP[v];
-      } else if (CHUNK_CATEGORY_MAP[value]) {
-        return CHUNK_CATEGORY_MAP[value];
-      }
-    }
-    return 'all';
-  }
+  // REMOVED: inferChunkCat function
 
-  function getChunkRegionForCoords(lng, lat){
-    for (const region of CHUNK_REGION_BOUNDS){
-      if (lat >= region.minLat && lat <= region.maxLat && lng >= region.minLng && lng <= region.maxLng) return region.name;
-    }
-    return null;
-  }
+  // REMOVED: getChunkRegionForCoords function
 
-  function getCurrentChunkRegions(){
-    const regions = new Set();
-    if (!map || !map.getView) return [];
-    const size = map.getSize();
-    if (!size) return [];
-    const extent = map.getView().calculateExtent(size);
-    const [minX, minY, maxX, maxY] = ol.proj.transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
-    const regionOverlap = (region) => {
-      return maxY >= region.minLat && minY <= region.maxLat && maxX >= region.minLng && minX <= region.maxLng;
-    };
-    CHUNK_REGION_BOUNDS.forEach(region => {
-      if (regionOverlap(region)) regions.add(region.name);
-    });
-    if (state.gpsEnabled && state.gpsCurrentLat && state.gpsCurrentLng) {
-      const gpsRegion = getChunkRegionForCoords(state.gpsCurrentLng, state.gpsCurrentLat);
-      if (gpsRegion) regions.add(gpsRegion);
-    }
-    return Array.from(regions);
-  }
+  // REMOVED: getCurrentChunkRegions function
 
-  // Deprecated: usare chunkPartsLoader
-  /*
-  async function parseChunkFeaturesFromStream(body, onFeature, maxFeatures){
-    const reader = body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let started = false;
-    let objectStart = -1;
-    let depth = 0;
-    let inString = false;
-    let escaped = false;
-    let count = 0;
+  // REMOVED: deprecated parseChunkFeaturesFromStream
 
-    const finalize = async () => {
-      try { await reader.cancel(); } catch(e) {}
-      return count;
-    };
+  // REMOVED: getChunkFilesForRegion and loadChunkData functions
 
-    while(true){
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      if (!started){
-        const featuresIndex = buffer.indexOf('"features"');
-        if (featuresIndex >= 0){
-          const arrayStart = buffer.indexOf('[', featuresIndex);
-          if (arrayStart >= 0){
-            started = true;
-            buffer = buffer.slice(arrayStart + 1);
-          } else {
-            if (buffer.length > 2000) buffer = buffer.slice(-2000);
-            continue;
-          }
-        } else {
-          if (buffer.length > 2000) buffer = buffer.slice(-2000);
-          continue;
-        }
-      }
-
-      let i = 0;
-      while (i < buffer.length){
-        const ch = buffer[i];
-        if (objectStart < 0){
-          if (/\s|,/.test(ch)) { i++; continue; }
-          if (ch === ']') return await finalize();
-          if (ch === '{') { objectStart = i; depth = 1; inString = false; escaped = false; i++; continue; }
-          i++; continue;
-        }
-        if (inString){
-          if (escaped) { escaped = false; }
-          else if (ch === '\\') { escaped = true; }
-          else if (ch === '"') { inString = false; }
-        } else {
-          if (ch === '"') { inString = true; }
-          else if (ch === '{') { depth++; }
-          else if (ch === '}') {
-            depth--;
-            if (depth === 0){
-              const objText = buffer.slice(objectStart, i + 1);
-              try {
-                const feature = JSON.parse(objText);
-                const keep = onFeature(feature, count);
-                count++;
-                if (keep === false || (maxFeatures && count >= maxFeatures)) return await finalize();
-              } catch (err) {
-                // skip malformed object and continue
-              }
-              buffer = buffer.slice(i + 1);
-              objectStart = -1;
-              i = 0;
-              continue;
-            }
-          }
-        }
-        i++;
-      }
-      if (objectStart >= 0){
-        buffer = buffer.slice(objectStart);
-        objectStart = 0;
-      } else if (buffer.length > 2000){
-        buffer = buffer.slice(-2000);
-      }
-    }
-    return count;
-  }
-  */
-
-  const getChunkFilesForRegion = (region) => {
-    if (!region) return CHUNK_FILES;
-    return CHUNK_REGION_MAP[region] || [];
-  };
-
-  async function loadChunkData(regions){
-    if (!window.chunkPartsLoader) {
-      console.warn('[Chunk] chunkPartsLoader not loaded');
-      return;
-    }
-    
-    const zoom = map.getView().getZoom() || 5;
-    const extent = map.getView().calculateExtent(map.getSize());
-    const [minX, minY, maxX, maxY] = ol.proj.transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
-    
-    const visibleCities = [];
-    const cityBounds = {
-      tokyo: { n: 35.95, s: 35.45, e: 140.20, w: 139.20 },
-      osaka: { n: 34.80, s: 34.50, e: 135.70, w: 135.30 },
-      kyoto: { n: 35.15, s: 35.00, e: 135.95, w: 135.65 },
-      yokohama: { n: 35.55, s: 35.25, e: 139.85, w: 139.50 },
-      kamakura: { n: 35.35, s: 35.20, e: 139.60, w: 139.45 },
-      nara: { n: 34.70, s: 34.55, e: 135.85, w: 135.65 },
-      hiroshima: { n: 34.42, s: 34.32, e: 132.50, w: 132.30 }
-    };
-    
-    for (const [city, bounds] of Object.entries(cityBounds)) {
-      if (maxX >= bounds.w && minX <= bounds.e && maxY >= bounds.s && minY <= bounds.n) {
-        visibleCities.push(city);
-      }
-    }
-    
-    if (visibleCities.length === 0) {
-      console.log('[Chunk] No visible cities');
-      return;
-    }
-    
-    console.log(`[Chunk] Loading for cities: ${visibleCities.join(', ')}`);
-    
-    try {
-      const newPois = await window.chunkPartsLoader.loadChunksForCities(visibleCities);
-      
-      if (newPois && newPois.length > 0) {
-        const existingChunk = (POIS || POIS_BASE || []).filter(p => p.source === 'chunk');
-        POIS = (POIS_BASE || []).concat(existingChunk, newPois);
-        POIS_LOADED = true;
-        renderMarkers();
-        console.log(`[Chunk] Added ${newPois.length} new POIs, total: ${POIS.length}`);
-      }
-    } catch (error) {
-      console.error('[Chunk] Load error:', error);
-    }
-  }
 
 
   // ---- Device tier detection for progressive enhancement ----
@@ -1707,20 +514,33 @@ const POIS_BASE = [
   console.log('[giappone2027] Device tier:', tier);
   // ---- Categories + filters ----
   const CATS = {
-    all:{label:'Tutti',icon:'Posizione rilevata'},
+    all:{label:'Tutti',icon:'📍'},
+    restaurant:{label:'Ristoranti',icon:'🍜'},
     shrine:{label:'Santuari',icon:'⛩️'},
     temple:{label:'Templi',icon:'🏯'},
     nature:{label:'Natura',icon:'🌿'},
-    food:{label:'Cibo',icon:'🍜'},
+    cafe:{label:'Caffè',icon:'☕'},
+    shop:{label:'Negozi',icon:'🛍️'},
+    museum:{label:'Musei',icon:'🖼️'},
+    park:{label:'Parchi',icon:'🌳'},
+    castle:{label:'Castelli',icon:'🏰'},
+    bath:{label:'Onsen',icon:'♨️'},
+    station:{label:'Stazioni',icon:'🚉'},
+    church:{label:'Chiese',icon:'⛪'},
+    unclassified:{label:'Da categorizzare',icon:'❓'},
+    food:{label:'Cibo',icon:'🍽️'},
     vintage:{label:'Vintage',icon:'🧥'},
     market:{label:'Mercati',icon:'🥢'},
-    museum:{label:'Musei',icon:'🖼️'},
     onsen:{label:'Onsen',icon:'♨️'},
     neighborhood:{label:'Quartieri',icon:'🏙️'},
     viewpoint:{label:'Viste',icon:'🔭'},
-    castle:{label:'Castelli',icon:'🏰'},
     experience:{label:'Esperienze',icon:'✨'},
-    water:{label:'Acqua gratis',icon:'💧'}
+    water:{label:'Acqua gratis',icon:'💧'},
+    hotel:{label:'Hotel',icon:'🏨'},
+    school:{label:'Scuole',icon:'🎓'},
+    hospital:{label:'Ospedali',icon:'🏥'},
+    gallery:{label:'Gallerie',icon:'🎨'},
+    library:{label:'Librerie',icon:'📚'}
   };
   const CITIES = ['Sapporo','Nikko','Tokyo','Kamakura','Shirakawa-go','Kyoto','Osaka','Tottori','Beppu','Okinawa','Hiroshima','Nara','Hakone','Kanazawa','Nagasaki','Fukuoka','Matsuyama','Naoshima','Yakushima','Takayama','Kumamoto','Kagoshima','Sendai','Aomori','Toyama','Tokushima','Yamaguchi','Shimane','Ise','Gifu','Nagano','Fuji','Izu','Nagoya','Takamatsu','Kobe','Yokohama'];
   const CITY_COORDS = {
@@ -1740,6 +560,7 @@ const POIS_BASE = [
   const STATE_KEY = 'giappone2027_state_v1';
   const state = Object.assign({
     activeCat:'all', onlyGF:false, onlyLocal:false, savedPOIs:[], notes:{}, customEvents:[], dismissInstall:false,
+    userCategoryOverrides:{}, // {poiId: 'newCategory'}
     group:{ name:'Giappone 2027', members:[], myAvatar:null, myName:'' }
   }, JSON.parse(localStorage.getItem(STATE_KEY) || '{}'));
   function saveState(){
@@ -1757,7 +578,30 @@ const POIS_BASE = [
   // ---- Merge custom events into POI view ----
   function allPOIs(){
     const custom = (state.customEvents || []).map(e => Object.assign({}, e, {custom:true}));
-    return (POIS || POIS_BASE || []).concat(custom);
+    const extra  = Array.isArray(window.POIS_EXTRA) ? window.POIS_EXTRA : [];
+
+    // POIS_DATASET è un oggetto {city: [pois]}, non array
+    let pois = [];
+    if (window.POIS_DATASET && typeof window.POIS_DATASET === 'object') {
+      // Estrai tutti i POI da tutte le città
+      pois = Object.values(window.POIS_DATASET).flat();
+    } else if (POIS && Array.isArray(POIS)) {
+      pois = POIS;
+    } else if (POIS_BASE && Array.isArray(POIS_BASE)) {
+      pois = POIS_BASE;
+    }
+
+    // Apply user category overrides
+    const allItems = pois.concat(extra, custom);
+    if (state.userCategoryOverrides) {
+      return allItems.map(p => {
+        if (state.userCategoryOverrides[p.id]) {
+          return Object.assign({}, p, {cat: state.userCategoryOverrides[p.id]});
+        }
+        return p;
+      });
+    }
+    return allItems;
   }
   // ---- Filter logic ----
   function filtered(){
@@ -1827,7 +671,12 @@ const POIS_BASE = [
     shrine:'⛩️', temple:'🏯', nature:'🌿', food:'🍜',
     vintage:'👔', shopping:'🛍️', market:'🥢', museum:'🏛️',
     onsen:'♨️', neighborhood:'🏘️', viewpoint:'🔭',
-    castle:'🏰', experience:'✨', water:'💧', all:'Posizione rilevata'
+    castle:'🏰', experience:'✨', water:'💧',
+    landmark:'📍', restaurant:'🍽️', cafe:'☕', shop:'🛒',
+    hotel:'🏨', station:'🚉', park:'🌳', garden:'🌸',
+    entertainment:'🎭', sports:'⚽', hospital:'🏥', bank:'🏦',
+    school:'🏫', church:'⛪', library:'📚', theatre:'🎬',
+    all:'📍'
   };
   function makePoiStyle(cat, isGF) {
     const color = CAT_COLORS[cat] || '#C85C3B';
@@ -2360,16 +1209,27 @@ const POIS_BASE = [
   }
 
   function renderMarkers(){
+    console.log('[renderMarkers] START');
     vectorSource.clear();
     const zoom = map.getView().getZoom() || 5;
-    // Filtra POI aggressivamente a zoomout totale (zoom < 5)
-    const maxPOI = zoom < 5 ? 150 : zoom < 8 ? 400 : zoom < 11 ? 2000 : zoom < 13 ? 8000 : Infinity;
 
-    // Filtro mappa: usa raggio GPS dinamico se attivo, altrimenti viewport con margine
+    // maxPOI dinamico: se filtro attivo, carica TUTTI; altrimenti limita per performance
+    let maxPOI;
+    if (state.activeCat !== 'all') {
+      // Categoria filtrata → carica TUTTI i POI di quella categoria
+      maxPOI = Infinity;
+      console.log('[renderMarkers] Categoria filtrata:', state.activeCat, '→ carica tutti');
+    } else {
+      // Nessun filtro → limita dinamicamente per zoom
+      maxPOI = zoom < 5 ? 150 : zoom < 8 ? 400 : zoom < 11 ? 2000 : zoom < 13 ? 8000 : Infinity;
+    }
+    console.log('[renderMarkers] zoom=', zoom, 'maxPOI=', maxPOI);
+
     let visibleFilter = () => true;
     if (state.gpsEnabled && state.gpsCurrentLat && state.gpsCurrentLng) {
       const radiusKm = getGpsRadiusKm(zoom);
       visibleFilter = p => haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng) <= radiusKm;
+      console.log('[renderMarkers] GPS filter active');
     } else {
       const size = map.getSize();
       if (size) {
@@ -2380,22 +1240,118 @@ const POIS_BASE = [
         visibleFilter = p =>
           p.lat >= minY - dLat && p.lat <= maxY + dLat &&
           p.lng >= minX - dLng && p.lng <= maxX + dLng;
+        console.log('[renderMarkers] viewport bounds set');
+      } else {
+        console.log('[renderMarkers] WARNING: getSize()=null');
       }
     }
 
-    const pois = filtered().filter(visibleFilter);
+    const allFiltered = filtered();
+    console.log('[renderMarkers] filtered():', allFiltered.length);
+    const pois = allFiltered.filter(visibleFilter);
+    console.log('[renderMarkers] after visibleFilter:', pois.length);
     const toRender = maxPOI === Infinity ? pois : pois.slice(0, maxPOI);
+    console.log('[renderMarkers] toRender:', toRender.length);
 
+    let added = 0;
     toRender.forEach(p => {
       const feature = new ol.Feature({
         geometry: new ol.geom.Point(ol.proj.fromLonLat([p.lng, p.lat])),
-        name: p.name,
+        name: getPoiDisplayName(p),
         id: p.id,
         cat: p.cat,
         isGF: p.gf?.lvl === 'full'
       });
       vectorSource.addFeature(feature);
+      added++;
     });
+    console.log('[renderMarkers] DONE: added', added, '| total features:', vectorSource.getFeatures().length);
+  }
+
+  function getPoiDisplayName(p){
+    const isPlaceholder = n => !n || typeof n !== 'string' || /^\s*(poi|unknown|unnamed|n\/a|no name)\s*$/i.test(n);
+    const hasLatin = n => typeof n === 'string' && /[A-Za-z0-9]/.test(n);
+    const isJapanese = n => typeof n === 'string' && /[\u3040-\u30ff\u4e00-\u9faf]/.test(n);
+    const normalize = n => typeof n === 'string' ? n.trim() : '';
+
+    const romajiMap = {
+      // hiragana + katakana digraphs
+      'きゃ':'kya','きゅ':'kyu','きょ':'kyo','ぎゃ':'gya','ぎゅ':'gyu','ぎょ':'gyo',
+      'しゃ':'sha','しゅ':'shu','しょ':'sho','じゃ':'ja','じゅ':'ju','じょ':'jo',
+      'ちゃ':'cha','ちゅ':'chu','ちょ':'cho','にゃ':'nya','にゅ':'nyu','にょ':'nyo',
+      'ひゃ':'hya','ひゅ':'hyu','ひょ':'hyo','びゃ':'bya','びゅ':'byu','びょ':'byo',
+      'ぴゃ':'pya','ぴゅ':'pyu','ぴょ':'pyo','みゃ':'mya','みゅ':'myu','みょ':'myo',
+      'りゃ':'rya','りゅ':'ryu','りょ':'ryo','キャ':'kya','キュ':'kyu','キョ':'kyo',
+      'ギャ':'gya','ギュ':'gyu','ギョ':'gyo','シャ':'sha','シュ':'shu','ショ':'sho',
+      'ジャ':'ja','ジュ':'ju','ジョ':'jo','チャ':'cha','チュ':'chu','チョ':'cho',
+      'ニャ':'nya','ニュ':'nyu','ニョ':'nyo','ヒャ':'hya','ヒュ':'hyu','ヒョ':'hyo',
+      'ビャ':'bya','ビュ':'byu','ビョ':'byo','ピャ':'pya','ピュ':'pyu','ピョ':'pyo',
+      'ミャ':'mya','ミュ':'myu','ミョ':'myo','リャ':'rya','リュ':'ryu','リョ':'ryo',
+      // basic hiragana + katakana
+      'あ':'a','い':'i','う':'u','え':'e','お':'o','ア':'a','イ':'i','ウ':'u','エ':'e','オ':'o',
+      'か':'ka','き':'ki','く':'ku','け':'ke','こ':'ko','カ':'ka','キ':'ki','ク':'ku','ケ':'ke','コ':'ko',
+      'さ':'sa','し':'shi','す':'su','せ':'se','そ':'so','サ':'sa','シ':'shi','ス':'su','セ':'se','ソ':'so',
+      'た':'ta','ち':'chi','つ':'tsu','て':'te','と':'to','タ':'ta','チ':'chi','ツ':'tsu','テ':'te','ト':'to',
+      'な':'na','に':'ni','ぬ':'nu','ね':'ne','の':'no','ナ':'na','ニ':'ni','ヌ':'nu','ネ':'ne','ノ':'no',
+      'は':'ha','ひ':'hi','ふ':'fu','へ':'he','ほ':'ho','ハ':'ha','ヒ':'hi','フ':'fu','ヘ':'he','ホ':'ho',
+      'ま':'ma','み':'mi','む':'mu','め':'me','も':'mo','マ':'ma','ミ':'mi','ム':'mu','メ':'me','モ':'mo',
+      'や':'ya','ゆ':'yu','よ':'yo','ヤ':'ya','ユ':'yu','ヨ':'yo','ら':'ra','り':'ri','る':'ru','れ':'re','ろ':'ro',
+      'ラ':'ra','リ':'ri','ル':'ru','レ':'re','ロ':'ro','わ':'wa','を':'o','ん':'n','ワ':'wa','ヲ':'o','ン':'n',
+      'が':'ga','ぎ':'gi','ぐ':'gu','げ':'ge','ご':'go','ガ':'ga','ギ':'gi','グ':'gu','ゲ':'ge','ゴ':'go',
+      'ざ':'za','じ':'ji','ず':'zu','ぜ':'ze','ぞ':'zo','ザ':'za','ジ':'ji','ズ':'zu','ゼ':'ze','ゾ':'zo',
+      'だ':'da','ぢ':'ji','づ':'zu','で':'de','ど':'do','ダ':'da','ヂ':'ji','ヅ':'zu','デ':'de','ド':'do',
+      'ば':'ba','び':'bi','ぶ':'bu','べ':'be','ぼ':'bo','バ':'ba','ビ':'bi','ブ':'bu','ベ':'be','ボ':'bo',
+      'ぱ':'pa','ぴ':'pi','ぷ':'pu','ぺ':'pe','ぽ':'po','パ':'pa','ピ':'pi','プ':'pu','ペ':'pe','ポ':'po',
+      'ぁ':'a','ぃ':'i','ぅ':'u','ぇ':'e','ぉ':'o','ァ':'a','ィ':'i','ゥ':'u','ェ':'e','ォ':'o',
+      'ゃ':'ya','ゅ':'yu','ょ':'yo','ャ':'ya','ュ':'yu','ョ':'yo','っ':'','ッ':'','ー':'-'
+    };
+
+    const transliterateJapanese = str => {
+      if (!str || typeof str !== 'string') return '';
+      let s = str.trim();
+      if (!isJapanese(s)) return s;
+      let result = '';
+      for (let i = 0; i < s.length; ) {
+        const two = s.slice(i, i + 2);
+        if (romajiMap[two]) {
+          result += romajiMap[two];
+          i += 2;
+          continue;
+        }
+        const one = s[i];
+        if (romajiMap[one]) {
+          result += romajiMap[one];
+          i += 1;
+          continue;
+        }
+        if (/[A-Za-z0-9]/.test(one)) {
+          result += one;
+        }
+        i += 1;
+      }
+      return result.replace(/[-\s]+/g, ' ').trim();
+    };
+
+    const translateCandidate = v => {
+      if (!v || typeof v !== 'string') return null;
+      const value = normalize(v);
+      if (isPlaceholder(value)) return null;
+      if (hasLatin(value)) return value;
+      if (isJapanese(value)) {
+        const romanized = transliterateJapanese(value);
+        if (romanized) return romanized;
+      }
+      return value || null;
+    };
+
+    const candidates = [p.name_en, p.name, p.jp];
+    for (const v of candidates) {
+      const label = translateCandidate(v);
+      if (label) return label;
+    }
+    if (p.cat) return CATS[p.cat]?.label || p.cat;
+    if (p.city) return `Luogo a ${p.city}`;
+    return 'Punto di interesse';
   }
 
   // Aggiorna marker al cambio vista (debounced 250ms)
@@ -2616,15 +1572,7 @@ const POIS_BASE = [
   // Aggiorna marker su pan/zoom (debounced)
   map.on('moveend', () => {
     debouncedRender();
-    loadChunkData().then(() => {
-      debouncedRender();
-      const activeNav = document.querySelector('nav.bottom button.active');
-      // NON renderizzare automaticamente Tappe al zoom/pan
-      // if (activeNav?.dataset.view === 'list') renderListView();
-    }).catch((error) => {
-      console.warn('[Chunk] reload error', error);
-    });
-    });
+    // REMOVED: loadChunkData() call
   });
 
   map.on('click', (e) => {
@@ -2740,6 +1688,8 @@ const POIS_BASE = [
       if (view === 'shopping') { renderShoppingView(); return; }
       if (view === 'group') { renderGroupView(); return; }
       if (view === 'gf') { renderGFView(); return; }
+      if (view === 'groq-menu') { window.openGroqPanel(); return; }
+      if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
     });
   }
   // ---- POI detail ----
@@ -2750,6 +1700,7 @@ const POIS_BASE = [
     return `<span class="tag ${c}">${t}</span>`;
   }
   function poiDetailHTML(p){
+    const displayName = getPoiDisplayName(p);
     const saved = state.savedPOIs.includes(p.id);
     const note = state.notes[p.id] || '';
     const doList = (p.do||[]).map(x=>`<li>${x}</li>`).join('');
@@ -2762,7 +1713,7 @@ const POIS_BASE = [
     if (b.phone) bookingBtns.push(`<a class="btn" href="tel:${b.phone.replace(/\s+/g,'')}">📞 Chiama</a>`);
     const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=walking`;
     const amaps = `https://maps.apple.com/?daddr=${p.lat},${p.lng}&dirflg=w`;
-    const geo   = `geo:${p.lat},${p.lng}?q=${encodeURIComponent(p.name)}`;
+    const geo   = `geo:${p.lat},${p.lng}?q=${encodeURIComponent(displayName)}`;
     // Orari / prezzo / durata / ingresso
     const infoChips = [];
     if (p.hours)    infoChips.push(`<span class="info-chip">🕐 ${p.hours}</span>`);
@@ -2782,13 +1733,29 @@ const POIS_BASE = [
     const stars = [1,2,3,4,5].map(n =>
       `<span class="star ${n<=rating?'on':''}" data-star="${n}" data-id="${p.id}">★</span>`
     ).join('');
-    // Foto custom (singola o carousel)
+    // Foto custom (singola, carousel, o fetch Unsplash + reverse geocoding)
+    // Helper: link "Cerca su Google Images" come fallback finale
+    const googleImagesUrl = (q, city) => {
+      const query = [q, city, 'Japan'].filter(Boolean).join(' ');
+      return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
+    };
+    const googleFallbackHtml = (label) => `
+      <div style="margin-bottom:12px;padding:14px;background:var(--surface-2);border-radius:8px;text-align:center">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📷 ${label}</div>
+        <a href="${googleImagesUrl(displayName, p.city)}" target="_blank" rel="noopener"
+           class="btn" style="font-size:12px">🔎 Cerca foto su Google Images</a>
+      </div>
+    `;
+
+    // Log diagnostico: quale branch viene preso?
+
+
     let photoHtml = '';
     if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
-      // Carousel orizzontale
+      // Carousel orizzontale da p.photos
       const slides = p.photos.map((photo, idx) => `
         <div class="photo-slide" style="flex-shrink:0;width:100%;height:300px;overflow:hidden;border-radius:8px">
-          <img src="${photo.url}" alt="${p.name} ${idx+1}" style="width:100%;height:100%;object-fit:cover">
+          <img src="${photo.url}" alt="${displayName} ${idx+1}" style="width:100%;height:100%;object-fit:cover">
         </div>
       `).join('');
       photoHtml = `
@@ -2799,14 +1766,23 @@ const POIS_BASE = [
       `;
     } else if (p.photo) {
       // Singola foto fallback
-      photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${p.name}" style="width:100%;height:300px;object-fit:cover;border-radius:8px;margin-bottom:12px">`;
+      photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${displayName}" style="width:100%;height:300px;object-fit:cover;border-radius:8px;margin-bottom:12px">`;
+    } else if (typeof window.getPhotosForLocation === 'function') {
+      photoHtml = `<div id="poi-photos-container" style="margin-bottom:12px;min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">📷 Caricamento foto...</div>`;
+    } else {
+      photoHtml = googleFallbackHtml('Foto non disponibili offline');
     }
     return `
       ${photoHtml}
       <div class="poi-meta">
         <span class="tag cat">${CATS[p.cat]?.icon||''} ${CATS[p.cat]?.label||p.cat}</span>
+        <button class="btn" id="edit-cat-btn" style="font-size:11px;padding:3px 8px;height:auto">✏️ Modifica</button>
         <span class="tag">Posizione rilevata ${p.city}</span>
         ${gfTag(p.gf)}
+      </div>
+      <div id="cat-selector" style="display:none;margin:8px 0;padding:8px;background:var(--surface-2);border-radius:8px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Seleziona categoria:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px" id="cat-options"></div>
       </div>
       ${p.jp ? `<div style="color:var(--muted);font-size:13px;margin-bottom:6px">${p.jp}</div>`:''}
       <p>${p.desc||''}</p>
@@ -2826,7 +1802,7 @@ const POIS_BASE = [
         <textarea id="poi-note" placeholder="Aggiungi note, orari di arrivo, partecipanti...">${note}</textarea>
       </div>
       <div class="action-row">
-        <button class="btn navigate" id="navigate-poi" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${encodeURIComponent(p.name)}">🧭 Portami lì</button>
+        <button class="btn navigate" id="navigate-poi" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${encodeURIComponent(displayName)}">🧭 Portami lì</button>
         <button class="btn primary" id="save-poi">${saved?'★ Salvato':'☆ Salva'}</button>
         <button class="btn" id="add-cal">📅 Calendario</button>
       </div>
@@ -2837,13 +1813,79 @@ const POIS_BASE = [
       ${bookingBtns.length ? `<div class="section"><h3>🍴 Prenotazioni</h3><div class="action-row">${bookingBtns.join('')}</div></div>`:''}
     `;
   }
+  function loadPOIPhotos(p){
+    const container = document.getElementById('poi-photos-container');
+    if (!container) {
+      console.warn('[loadPOIPhotos] container not found for', p.id);
+      return;
+    }
+    if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) return;
+    if (p.photo) return;
+    if (typeof window.getPhotosForLocation !== 'function') {
+      console.warn('[loadPOIPhotos] getPhotosForLocation not available', typeof window.getPhotosForLocation);
+      container.outerHTML = photoFallbackHtml('Foto non disponibili', p);
+      return;
+    }
+
+    const googleImagesUrl = (q, city) => {
+      const query = [q, city, 'Japan'].filter(Boolean).join(' ');
+      return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
+    };
+    const photoFallbackHtml = (label, poi) => `
+      <div style="margin-bottom:12px;padding:14px;background:var(--surface-2);border-radius:8px;text-align:center">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📷 ${label}</div>
+        <a href="${googleImagesUrl(getPoiDisplayName(poi), poi.city)}" target="_blank" rel="noopener"
+           class="btn" style="font-size:12px">🔎 Cerca foto su Google Images</a>
+      </div>
+    `;
+
+    (async () => {
+      try {
+        const photos = await window.getPhotosForLocation(
+          p.lat,
+          p.lng,
+          p.city,
+          getPoiDisplayName(p)
+        );
+
+        if (photos && photos.length > 0) {
+          const slides = photos.slice(0, 5).map((photo, idx) => `
+            <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
+              <a href="${photo.link}" target="_blank" rel="noopener" title="${photo.author}" style="display:block;width:100%;height:100%;text-decoration:none">
+                <img src="${photo.url}" alt="${getPoiDisplayName(p)}" style="width:100%;height:100%;object-fit:cover;transition:transform .2s">
+              </a>
+            </div>
+          `).join('');
+
+          const sourceLabel = photos[0]?.source === 'google_places' ? '📷 Foto da Google Places' : '📷 Foto da Unsplash';
+          container.outerHTML = `
+            <div style="margin-bottom:12px">
+              <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%;margin-bottom:6px">
+                ${slides}
+              </div>
+              <div style="font-size:11px;color:var(--muted);text-align:center">${sourceLabel}</div>
+            </div>
+          `;
+        } else {
+          container.outerHTML = photoFallbackHtml('Nessuna foto Unsplash trovata', p);
+        }
+      } catch (err) {
+        console.error('[loadPOIPhotos] Error:', err && err.message);
+        container.outerHTML = photoFallbackHtml('Errore nel caricamento foto', p);
+      }
+    })();
+  }
+
   function openPOI(id){
     const p = allPOIs().find(x => x.id===id);
     if (!p) return;
-    openSheet(p.name, poiDetailHTML(p));
+    openSheet(getPoiDisplayName(p), poiDetailHTML(p));
+    if (!p.photos && !p.photo && typeof window.getPhotosForLocation === 'function') {
+      loadPOIPhotos(p);
+    }
     // Navigate btn — geo: with fallbacks
     document.getElementById('navigate-poi').onclick = () => {
-      const lat = p.lat, lng = p.lng, name = p.name;
+      const lat = p.lat, lng = p.lng, name = getPoiDisplayName(p);
       const isIOS2 = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS2) {
         window.open(`https://maps.apple.com/?daddr=${lat},${lng}&dirflg=w`, '_blank');
@@ -2878,6 +1920,42 @@ const POIS_BASE = [
       state.notes[id] = e.target.value; saveState();
     });
     document.getElementById('add-cal').onclick = () => promptAddToCalendar(p);
+
+    // Category editor
+    const editCatBtn = document.getElementById('edit-cat-btn');
+    const catSelector = document.getElementById('cat-selector');
+    const catOptions = document.getElementById('cat-options');
+
+    if (editCatBtn && catSelector && catOptions) {
+      // Populate category options
+      catOptions.innerHTML = Object.entries(CATS)
+        .filter(([k]) => k !== 'all')
+        .map(([k, v]) => {
+          const isSelected = (state.userCategoryOverrides?.[id] || p.cat) === k;
+          return `<button class="btn ${isSelected?'primary':''}" data-cat="${k}" style="font-size:11px;padding:6px 8px;text-align:center">
+            ${v.icon} ${v.label}
+          </button>`;
+        })
+        .join('');
+
+      // Toggle selector
+      editCatBtn.onclick = e => {
+        e.preventDefault();
+        catSelector.style.display = catSelector.style.display === 'none' ? 'block' : 'none';
+      };
+
+      // Save category change
+      catOptions.querySelectorAll('button[data-cat]').forEach(btn => {
+        btn.onclick = () => {
+          const newCat = btn.dataset.cat;
+          if (!state.userCategoryOverrides) state.userCategoryOverrides = {};
+          state.userCategoryOverrides[id] = newCat;
+          saveState();
+          toast(`✏️ Categoria cambiata a ${CATS[newCat]?.label || newCat}`);
+          openPOI(id); // Re-render
+        };
+      });
+    }
   }
   window.__openPOI = openPOI;
   // ---- Calendar (.ics) ----
@@ -3050,11 +2128,11 @@ const POIS_BASE = [
       const start = new Date(startVal);
       const end = new Date(start.getTime() + dur*60000);
       const ics = buildICS([{
-        id:p.id, title:p.name+(p.jp?` (${p.jp})`:''), location:p.city+', Giappone',
+        id:p.id, title:getPoiDisplayName(p), location:p.city+', Giappone',
         desc:(p.desc||'')+(p.gf?.notes?'\n\nGluten-Free: '+p.gf.notes:'')+(state.notes[p.id]?'\n\nNote: '+state.notes[p.id]:''),
         lat:p.lat, lng:p.lng, start:start, end:end
       }]);
-      downloadICS(`${p.id}_${p.name.replace(/[^a-z0-9]/gi,'_')}.ics`, ics);
+      downloadICS(`${p.id}_${getPoiDisplayName(p).replace(/[^a-z0-9]/gi,'_')}.ics`, ics);
       toast('Calendario scaricato 📅');
     };
   }
@@ -3080,7 +2158,7 @@ const POIS_BASE = [
           <div class="poi-row" data-id="${p.id}">
             <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
             <div class="body">
-              <div class="name">${p.name}</div>
+              <div class="name">${getPoiDisplayName(p)}</div>
               <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
             </div>
             <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
@@ -3116,7 +2194,7 @@ const POIS_BASE = [
       return `<div class="poi-row" data-id="${p.id}">
         <div class="icon">${CATS[p.cat]?.icon||'Posizione rilevata'}</div>
         <div class="body">
-          <div class="name">★ ${p.name}</div>
+          <div class="name">★ ${getPoiDisplayName(p)}</div>
           <div class="sub">${p.city} ${distSpan}</div>
         </div>
         <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
@@ -3169,7 +2247,7 @@ const POIS_BASE = [
       const end = new Date(cursor.getTime()+90*60000);
       cursor = new Date(cursor.getTime()+3*60*60000); // +3h per tappa
       return {
-        id:p.id, title:p.name+(p.jp?` (${p.jp})`:''), location:p.city+', Giappone',
+        id:p.id, title:getPoiDisplayName(p), location:p.city+', Giappone',
         desc:(p.desc||'')+(p.gf?.notes?'\n\nGF: '+p.gf.notes:'')+(state.notes[p.id]?'\n\nNote: '+state.notes[p.id]:''),
         lat:p.lat, lng:p.lng, start, end
       };
@@ -3350,7 +2428,7 @@ const POIS_BASE = [
         <div class="poi-row" data-id="${p.id}">
           <div class="icon">${CATS[p.cat]?.icon||'🍴'}</div>
           <div class="body">
-            <div class="name">${p.name}</div>
+            <div class="name">${getPoiDisplayName(p)}</div>
             <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
           </div>
         </div>
@@ -3367,7 +2445,7 @@ const POIS_BASE = [
       <div class="poi-row" data-id="${p.id}">
         <div class="icon">${CATS[p.cat]?.icon || '🛍️'}</div>
         <div class="body">
-          <div class="name">${p.name}</div>
+          <div class="name">${getPoiDisplayName(p)}</div>
           <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
         </div>
       </div>
@@ -3413,7 +2491,7 @@ const POIS_BASE = [
 
   function renderGroupView() {
     // Se gruppo già creato, usa group-panel.js
-    if (state.group?.roomId && state.group?.myName) {
+    if (state.group?.roomId && state.group?.myName && window.groupPanel) {
       const html = window.groupPanel.render();
       openSheet('👥 Gruppo', html);
       window.groupPanel.attachEvents();
@@ -3568,17 +2646,6 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   renderFilters();
   renderMarkers();
 
-  loadChunkData().then(() => {
-    renderFilters();
-    renderMarkers();
-    const activeNav = document.querySelector('nav.bottom button.active');
-    if (activeNav?.dataset.view === 'list') renderListView();
-    toast('✅ Chunk POI caricati.');
-  }).catch((error) => {
-    console.warn('[Chunk] load error', error);
-    toast('⚠️ Impossibile caricare i POI chunk.');
-  });
-
   // Export globali per group-panel e group-chat
   window.startGPS = startGPS;
   window.stopGPS = stopGPS;
@@ -3586,7 +2653,525 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   window.closeSheet = closeSheet;
   window.toast = toast;
 
-  })();
-});
+  /* ================= GROQ MENU ANALYZER ================= */
+  const GroqMenuAnalyzer = {
+    CACHE_KEY: 'groq_menu_cache',
+    
+    async analyzeMenu(menuText) {
+      if (!menuText.trim()) {
+        toast('⚠️ Inserisci il menu da analizzare');
+        return null;
+      }
+      
+      const hash = btoa(menuText).substring(0, 16);
+      const cached = this.getFromCache(hash);
+      if (cached) {
+        toast('✅ Risultato da cache offline');
+        return cached;
+      }
+      
+      try {
+        toast('🔄 Analizzando menu con Groq...');
+        const resp = await fetch('/api/groqAnalyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ menuText })
+        });
+        
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          toast(`❌ Groq error: ${err.error || 'server error'}`);
+          return null;
+        }
+
+        const data = await resp.json();
+        const result = data.result;
+        if (!result) {
+          toast('❌ Groq error: risposta non valida');
+          return null;
+        }
+
+        this.saveToCache(hash, result);
+        toast('✅ Menu analizzato!');
+        return result;
+      } catch (err) {
+        console.error('[Groq]', err);
+        toast(`❌ Errore: ${err.message}`);
+        return null;
+      }
+    },
+
+    async analyzeImage(imageBase64, imageLabels = [], menuText = '') {
+      if (!imageBase64) {
+        toast('⚠️ Nessuna foto caricata');
+        return null;
+      }
+
+      if (!imageLabels.length && !menuText.trim()) {
+        toast('⚠️ Carica una foto e/o inserisci un testo per l\'analisi');
+        return null;
+      }
+
+      toast('🔄 Analizzando foto con Groq...');
+      try {
+        const resp = await fetch('/api/groqImageAnalyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ imageBase64, imageLabels, menuText })
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          const errorMessage = err.error || 'server error';
+          if (imageLabels.length) {
+            toast('⚠️ Groq non disponibile, uso analisi locale');
+            return this.localAnalyzeFromLabels(imageLabels, menuText);
+          }
+          toast(`❌ Errore immagine: ${errorMessage}`);
+          return null;
+        }
+
+        const data = await resp.json();
+        const result = data.result;
+        if (!result) {
+          if (imageLabels.length) {
+            toast('⚠️ Risposta Groq invalida, uso analisi locale');
+            return this.localAnalyzeFromLabels(imageLabels, menuText);
+          }
+          toast('❌ Errore: risposta immagine non valida');
+          return null;
+        }
+
+        toast('✅ Foto analizzata!');
+        return result;
+      } catch (err) {
+        console.error('[GroqImage]', err);
+        if (imageLabels.length) {
+          toast('⚠️ Errore Groq, uso analisi locale');
+          return this.localAnalyzeFromLabels(imageLabels, menuText);
+        }
+        toast(`❌ Errore immagine: ${err.message}`);
+        return null;
+      }
+    },
+
+    localAnalyzeFromLabels(labels = [], menuText = '') {
+      const labelText = labels.join(' ').toLowerCase();
+      const normalized = labelText.replace(/[^a-z0-9\s]/g, ' ');
+      const safe = [];
+      const risk = [];
+      const avoid = [];
+      const dishName = labels[0] || 'Piatto non identificato';
+
+      const addUnique = (arr, value) => {
+        if (value && !arr.includes(value)) arr.push(value);
+      };
+
+      const patterns = {
+        safe: ['sashimi', 'salad', 'vegetable', 'grilled fish', 'grilled chicken', 'steak', 'tofu', 'fruit', 'rice dish', 'seafood'],
+        risk: ['sushi', 'soy sauce', 'teriyaki', 'yakitori', 'gyoza', 'dumpling', 'curry', 'tempura', 'fried rice', 'asian noodle', 'udon', 'soba', 'ramen'],
+        avoid: ['pizza', 'pasta', 'spaghetti', 'lasagna', 'bread', 'sandwich', 'burger', 'roll', 'cake', 'donut', 'cookie', 'croissant', 'dumpling', 'ramen', 'udon', 'soba', 'tempura']
+      };
+
+      if (patterns.avoid.some(term => normalized.includes(term))) {
+        addUnique(avoid, `${dishName} (probabile glutine)`);
+      } else if (patterns.risk.some(term => normalized.includes(term))) {
+        addUnique(risk, `${dishName} (possibile salsa di soia o contaminazione)`);
+      } else if (patterns.safe.some(term => normalized.includes(term))) {
+        addUnique(safe, `${dishName} (probabilmente GF se preparato senza pane)`);
+      } else {
+        addUnique(risk, `${dishName} (non identificato, procedi con cautela)`);
+      }
+
+      return {
+        piatti_sicuri: safe,
+        rischi: risk,
+        sconsigliato: avoid
+      };
+    },
+    
+    getFromCache(hash) {
+      try {
+        const cache = JSON.parse(localStorage.getItem(this.CACHE_KEY) || '{}');
+        return cache[hash] || null;
+      } catch { return null; }
+    },
+    
+    saveToCache(hash, result) {
+      try {
+        const cache = JSON.parse(localStorage.getItem(this.CACHE_KEY) || '{}');
+        cache[hash] = result;
+        localStorage.setItem(this.CACHE_KEY, JSON.stringify(cache));
+      } catch (err) { console.error('[Cache save]', err); }
+    }
+  };
+
+  /* ================= GF PLACES DATABASE ================= */
+  const GFPlacesDB = {
+    STORE_KEY: 'gf_custom_places',
+    
+    getAll() {
+      try {
+        return JSON.parse(localStorage.getItem(this.STORE_KEY) || '[]');
+      } catch { return []; }
+    },
+    
+    add(place) {
+      try {
+        const places = this.getAll();
+        place.id = 'gf_' + Date.now();
+        place.createdAt = new Date().toISOString();
+        places.push(place);
+        localStorage.setItem(this.STORE_KEY, JSON.stringify(places));
+        
+        // Broadcast via PeerJS se disponibile
+        if (window.broadcastToPeers) {
+          window.broadcastToPeers({ type: 'gf_place_add', place });
+        }
+        
+        return place;
+      } catch (err) {
+        console.error('[GFPlacesDB.add]', err);
+        return null;
+      }
+    },
+    
+    edit(id, updates) {
+      try {
+        const places = this.getAll();
+        const idx = places.findIndex(p => p.id === id);
+        if (idx < 0) return null;
+        
+        places[idx] = { ...places[idx], ...updates, updatedAt: new Date().toISOString() };
+        localStorage.setItem(this.STORE_KEY, JSON.stringify(places));
+        
+        if (window.broadcastToPeers) {
+          window.broadcastToPeers({ type: 'gf_place_edit', id, updates });
+        }
+        
+        return places[idx];
+      } catch (err) {
+        console.error('[GFPlacesDB.edit]', err);
+        return null;
+      }
+    },
+    
+    delete(id) {
+      try {
+        const places = this.getAll();
+        const filtered = places.filter(p => p.id !== id);
+        localStorage.setItem(this.STORE_KEY, JSON.stringify(filtered));
+        
+        if (window.broadcastToPeers) {
+          window.broadcastToPeers({ type: 'gf_place_delete', id });
+        }
+        
+        return true;
+      } catch (err) {
+        console.error('[GFPlacesDB.delete]', err);
+        return false;
+      }
+    },
+    
+    sync(incomingPlaces) {
+      try {
+        const local = this.getAll();
+        const merged = [...local];
+        
+        for (const incoming of incomingPlaces) {
+          const existing = merged.find(p => p.id === incoming.id);
+          if (!existing) {
+            merged.push(incoming);
+          } else if (new Date(incoming.updatedAt) > new Date(existing.updatedAt)) {
+            Object.assign(existing, incoming);
+          }
+        }
+        
+        localStorage.setItem(this.STORE_KEY, JSON.stringify(merged));
+        return merged;
+      } catch (err) {
+        console.error('[GFPlacesDB.sync]', err);
+        return this.getAll();
+      }
+    }
+  };
+
+  /* ================= UI HANDLERS ================= */
+
+  window.openGroqPanel = async function() {
+    const html = `
+      <div class="groq-panel">
+        <div class="groq-api-setup">
+          <p><strong>🔑 Groq API Key</strong> è configurata sul server Vercel tramite <code>GRO_API_KEY</code>.</p>
+          <p style="color:var(--muted);font-size:12px;margin-top:6px">Imposta <code>GRO_API_KEY</code> nella dashboard Vercel e riavvia il deployment per abilitare l'analisi dei menu.</p>
+        </div>
+
+        <div>
+          <label style="font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:8px">Incolla il menu da analizzare:</label>
+          <textarea id="groq-menu-textarea" class="groq-menu-textarea" placeholder="Es: Pasta al pomodoro, Risotto ai funghi, Petto di pollo..."></textarea>
+        </div>
+        <div style="margin-top:14px">
+          <label style="font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:8px">Carica una foto del piatto:</label>
+          <div class="photo-upload-zone" id="groq-photo-zone">📷 Tocca per aggiungere una foto</div>
+          <input type="file" id="groq-photo-input" accept="image/*" style="display:none" />
+          <img id="groq-photo-preview" class="photo-preview" />
+          <p style="font-size:12px;color:var(--muted);margin-top:6px">Se carichi una foto, l'app cercherà di riconoscere il piatto tramite etichette visive e determinerà il rischio gluten-free. Se il server Groq non è disponibile, userà l'analisi locale.</p>
+        </div>
+
+        <button class="groq-analyze-btn" onclick="window.analyzeMenuGroq()">🤖 Analizza</button>
+
+        <div id="groq-result" style="display:none;"></div>
+      </div>
+    `;
+
+    openSheet('🤖 Analizza Menu Gluten-Free', html);
+
+    const photoZone = document.getElementById('groq-photo-zone');
+    const photoInput = document.getElementById('groq-photo-input');
+    const photoPreview = document.getElementById('groq-photo-preview');
+    let photoBase64 = null;
+
+    photoZone.onclick = () => photoInput.click();
+    photoInput.onchange = ev => {
+      const file = ev.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 800;
+          let w = img.width;
+          let h = img.height;
+          if (w > MAX || h > MAX) {
+            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+            else { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          photoBase64 = canvas.toDataURL('image/jpeg', 0.75);
+          photoPreview.src = photoBase64;
+          photoPreview.style.display = 'block';
+          photoInput.dataset.base64 = photoBase64;
+          photoInput.dataset.labels = '';
+          photoZone.textContent = '🚀 Analisi foto in corso...';
+
+          window.VisionImageAnalyzer.classifyImage(photoBase64).then(predictions => {
+            const labels = predictions.slice(0, 4).map(p => p.label);
+            photoInput.dataset.labels = JSON.stringify(labels);
+            if (labels.length) {
+              photoZone.textContent = `✅ Foto caricata: ${labels.join(', ')}`;
+            } else {
+              photoZone.textContent = '✅ Foto caricata (classificazione non disponibile)';
+            }
+          }).catch(err => {
+            console.warn('[Vision]', err);
+            photoZone.textContent = '✅ Foto caricata';
+          });
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+  };
+
+  window.analyzeMenuGroq = async function() {
+    const menuText = document.getElementById('groq-menu-textarea')?.value || '';
+    const photoInput = document.getElementById('groq-photo-input');
+    const photoBase64 = photoInput?.dataset?.base64 || '';
+    const imageLabels = photoInput?.dataset?.labels ? JSON.parse(photoInput.dataset.labels) : [];
+
+    if (!menuText.trim() && !photoBase64) {
+      toast('⚠️ Inserisci il menu o carica una foto da analizzare');
+      return;
+    }
+
+    let result = null;
+    if (photoBase64) {
+      result = await GroqMenuAnalyzer.analyzeImage(photoBase64, imageLabels, menuText);
+    } else {
+      result = await GroqMenuAnalyzer.analyzeMenu(menuText);
+    }
+    if (!result) return;
+    
+    const html = `
+      <div class="gf-analysis-result">
+        <div class="gf-result-card safe">
+          <h4><span class="emoji">🟢</span> Piatti Sicuri</h4>
+          <ul>${(result.piatti_sicuri || []).map(p => `<li>${p}</li>`).join('')}</ul>
+        </div>
+        <div class="gf-result-card risk">
+          <h4><span class="emoji">🟡</span> Rischio Contaminazione</h4>
+          <ul>${(result.rischi || []).map(p => `<li>${p}</li>`).join('')}</ul>
+        </div>
+        <div class="gf-result-card avoid">
+          <h4><span class="emoji">🔴</span> Sconsigliato</h4>
+          <ul>${(result.sconsigliato || []).map(p => `<li>${p}</li>`).join('')}</ul>
+        </div>
+      </div>
+    `;
+    
+    const resultDiv = document.getElementById('groq-result');
+    if (resultDiv) {
+      resultDiv.innerHTML = html;
+      resultDiv.style.display = 'block';
+    }
+  };
+
+  window.openGFPlacesPanel = function() {
+    const places = GFPlacesDB.getAll();
+    
+    let placesHtml = '';
+    if (places.length === 0) {
+      placesHtml = '<div class="gf-empty-state"><div class="icon">📍</div>Nessun posto aggiunto. Comincia ad aggiungere i tuoi posti GF!</div>';
+    } else {
+      placesHtml = places.map(p => `
+        <div class="gf-place-card">
+          <div class="gpc-header">
+            <div>
+              <div class="gpc-name">${p.name}</div>
+              <div class="gpc-city">${p.city}${p.area ? ' · ' + p.area : ''}</div>
+            </div>
+            <div class="gpc-rating">${'⭐'.repeat(p.rating || 0)}</div>
+          </div>
+          <div class="gpc-meta">
+            ${(p.tags || []).map(t => `<span class="gpc-tag">${t}</span>`).join('')}
+          </div>
+          ${p.note ? `<div style="margin-top:8px;font-size:12px;color:var(--muted);">${p.note}</div>` : ''}
+          <div class="gpc-actions">
+            <button onclick="window.editGFPlace('${p.id}')">✏️ Modifica</button>
+            <button onclick="if(confirm('Elimina?')) { window.deleteGFPlace('${p.id}'); window.openGFPlacesPanel(); }">🗑️ Elimina</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    const addFormHtml = `
+      <div class="gf-place-form">
+        <h3 style="margin:0 0 12px;font-size:14px;color:var(--text)">➕ Aggiungi Posto GF</h3>
+        <div class="form-row">
+          <label>Nome Ristorante</label>
+          <input type="text" id="gf-place-name" placeholder="Es: Sakura Gluten-Free" />
+        </div>
+        <div class="form-row">
+          <label>Città</label>
+          <input type="text" id="gf-place-city" placeholder="Es: Kyoto" />
+        </div>
+        <div class="form-row">
+          <label>Zona (opzionale)</label>
+          <input type="text" id="gf-place-area" placeholder="Es: Gion" />
+        </div>
+        <div class="form-row">
+          <label>Note</label>
+          <textarea id="gf-place-note" placeholder="Menu completamente GF, staff parla inglese..."></textarea>
+        </div>
+        <div class="form-row">
+          <label>Tags (separati da virgola)</label>
+          <input type="text" id="gf-place-tags" placeholder="100% sicuro, Cucina separata, Delivery online" />
+        </div>
+        <div class="form-row">
+          <label>Rating (1-5 stelle)</label>
+          <select id="gf-place-rating">
+            <option value="5">⭐⭐⭐⭐⭐ Perfetto</option>
+            <option value="4">⭐⭐⭐⭐ Molto buono</option>
+            <option value="3">⭐⭐⭐ Buono</option>
+            <option value="2">⭐⭐ Discreto</option>
+            <option value="1">⭐ Scadente</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button onclick="window.saveGFPlace()">💾 Salva Posto</button>
+        </div>
+      </div>
+    `;
+    
+    const html = `<div class="gf-places-container">${addFormHtml}${placesHtml}</div>`;
+    openSheet('🏪 I Miei Posti GF', html);
+  };
+
+  window.saveGFPlace = function() {
+    const name = document.getElementById('gf-place-name')?.value.trim();
+    const city = document.getElementById('gf-place-city')?.value.trim();
+    const area = document.getElementById('gf-place-area')?.value.trim() || null;
+    const note = document.getElementById('gf-place-note')?.value.trim() || null;
+    const rating = parseInt(document.getElementById('gf-place-rating')?.value || '5');
+    const tags = (document.getElementById('gf-place-tags')?.value || '')
+      .split(',').map(t => t.trim()).filter(Boolean);
+    
+    if (!name || !city) {
+      toast('❌ Nome e città obbligatori');
+      return;
+    }
+    
+    const place = { name, city, area, note, rating, tags };
+    GFPlacesDB.add(place);
+    toast('✅ Posto aggiunto! Sincronizzazione P2P in corso...');
+    
+    setTimeout(() => window.openGFPlacesPanel(), 500);
+  };
+
+  window.deleteGFPlace = function(id) {
+    GFPlacesDB.delete(id);
+    toast('✅ Posto eliminato');
+  };
+
+  window.editGFPlace = function(id) {
+    toast('⚠️ Edit in progress — salva come nuovo e elimina vecchio');
+  };
+
+  // Hook: broadcast GF places quando ricevi aggiornamenti P2P
+  const originalOnMessage = window.onDataChannelMessage;
+  window.onDataChannelMessage = function(msg) {
+    if (originalOnMessage) originalOnMessage(msg);
+    
+    if (msg.type === 'gf_place_add' || msg.type === 'gf_place_edit' || msg.type === 'gf_place_delete') {
+      const places = GFPlacesDB.getAll();
+      if (msg.type === 'gf_place_add') {
+        GFPlacesDB.add(msg.place);
+      } else if (msg.type === 'gf_place_edit') {
+        GFPlacesDB.edit(msg.id, msg.updates);
+      } else if (msg.type === 'gf_place_delete') {
+        GFPlacesDB.delete(msg.id);
+      }
+      toast('🔄 Posti GF sincronizzati dal peer');
+    }
+  };
+
+  // ===================== PHASE 2: POI Preload (Overpass + IndexedDB) =====================
+  if (window.poiLoader) {
+    // Precarica le 3 città principali in background senza bloccare UI
+    window.poiLoader.preloadCities(['tokyo', 'kyoto', 'osaka', 'nara', 'hiroshima', 'kamakura', 'nikko', 'yokohama']).then(async total => {
+      if (total > 0) {
+        // Merge POI Overpass in allPOIs()
+        const overpassPois = await window.poiLoader.getAllCached();
+        if (overpassPois.length > 0 && typeof renderMarkers === 'function') {
+          console.log(`[App] Merged ${overpassPois.length} Overpass POI`);
+          // POIS viene usato in allPOIs() — aggiungiamo i nuovi senza duplicati
+          const existing = new Set((window.POIS_BASE || []).map(p => p.id));
+          const newPois = overpassPois.filter(p => !existing.has(p.id));
+          if (newPois.length > 0) {
+            window.POIS_EXTRA = newPois;
+            renderMarkers();
+          }
+        }
+      }
+    }).catch(err => console.warn('[App] POI preload error:', err));
+  }
+
+  // ===================== PHASE 6: Service Worker Registration =====================
+  // ✓ DISABLED: sw.js not on GitHub Pages
+  // if ('serviceWorker' in navigator) {
+  //   navigator.serviceWorker.register('./sw.js')
+  //     .then(reg => console.log('[SW] Registered, scope:', reg.scope))
+  //     .catch(err => console.warn('[SW] Registration failed:', err));
+  // }
+
+})();
+}); // close window.addEventListener load
 </script>
 </body>
