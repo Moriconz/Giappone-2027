@@ -1259,7 +1259,7 @@ const POIS_BASE = window.POIS_DATASET || [];
     toRender.forEach(p => {
       const feature = new ol.Feature({
         geometry: new ol.geom.Point(ol.proj.fromLonLat([p.lng, p.lat])),
-        name: p.name_en || p.name,
+        name: getPoiDisplayName(p),
         id: p.id,
         cat: p.cat,
         isGF: p.gf?.lvl === 'full'
@@ -1268,6 +1268,22 @@ const POIS_BASE = window.POIS_DATASET || [];
       added++;
     });
     console.log('[renderMarkers] DONE: added', added, '| total features:', vectorSource.getFeatures().length);
+  }
+
+  function getPoiDisplayName(p){
+    const isPlaceholder = n => !n || typeof n !== 'string' || /^\s*(poi|unknown|unnamed|n\/a|no name)\s*$/i.test(n);
+    const hasLatin = n => typeof n === 'string' && /[A-Za-z]/.test(n);
+    const normalize = n => typeof n === 'string' ? n.trim() : '';
+    const candidates = [p.name_en, p.name];
+    for (const v of candidates) {
+      if (!isPlaceholder(v) && hasLatin(v)) return normalize(v);
+    }
+    for (const v of candidates) {
+      if (!isPlaceholder(v) && v) return normalize(v);
+    }
+    if (p.cat) return CATS[p.cat]?.label || p.cat;
+    if (p.city) return `Luogo a ${p.city}`;
+    return 'Punto di interesse';
   }
 
   // Aggiorna marker al cambio vista (debounced 250ms)
@@ -1617,6 +1633,7 @@ const POIS_BASE = window.POIS_DATASET || [];
     return `<span class="tag ${c}">${t}</span>`;
   }
   function poiDetailHTML(p){
+    const displayName = getPoiDisplayName(p);
     const saved = state.savedPOIs.includes(p.id);
     const note = state.notes[p.id] || '';
     const doList = (p.do||[]).map(x=>`<li>${x}</li>`).join('');
@@ -1629,7 +1646,7 @@ const POIS_BASE = window.POIS_DATASET || [];
     if (b.phone) bookingBtns.push(`<a class="btn" href="tel:${b.phone.replace(/\s+/g,'')}">📞 Chiama</a>`);
     const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=walking`;
     const amaps = `https://maps.apple.com/?daddr=${p.lat},${p.lng}&dirflg=w`;
-    const geo   = `geo:${p.lat},${p.lng}?q=${encodeURIComponent(p.name)}`;
+    const geo   = `geo:${p.lat},${p.lng}?q=${encodeURIComponent(displayName)}`;
     // Orari / prezzo / durata / ingresso
     const infoChips = [];
     if (p.hours)    infoChips.push(`<span class="info-chip">🕐 ${p.hours}</span>`);
@@ -1658,26 +1675,20 @@ const POIS_BASE = window.POIS_DATASET || [];
     const googleFallbackHtml = (label) => `
       <div style="margin-bottom:12px;padding:14px;background:var(--surface-2);border-radius:8px;text-align:center">
         <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📷 ${label}</div>
-        <a href="${googleImagesUrl(p.name_en || p.name, p.city)}" target="_blank" rel="noopener"
+        <a href="${googleImagesUrl(displayName, p.city)}" target="_blank" rel="noopener"
            class="btn" style="font-size:12px">🔎 Cerca foto su Google Images</a>
       </div>
     `;
 
     // Log diagnostico: quale branch viene preso?
-    console.log('[poiDetailHTML] photo branch decision:', {
-      poi: p.id,
-      hasPhotos: !!(p.photos && Array.isArray(p.photos) && p.photos.length > 0),
-      hasPhoto: !!p.photo,
-      hasFn: typeof window.getPhotosForLocation === 'function'
-    });
+
 
     let photoHtml = '';
     if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
       // Carousel orizzontale da p.photos
-      console.log('[poiDetailHTML] using p.photos (', p.photos.length, ')');
       const slides = p.photos.map((photo, idx) => `
         <div class="photo-slide" style="flex-shrink:0;width:100%;height:300px;overflow:hidden;border-radius:8px">
-          <img src="${photo.url}" alt="${p.name} ${idx+1}" style="width:100%;height:100%;object-fit:cover">
+          <img src="${photo.url}" alt="${displayName} ${idx+1}" style="width:100%;height:100%;object-fit:cover">
         </div>
       `).join('');
       photoHtml = `
@@ -1688,15 +1699,10 @@ const POIS_BASE = window.POIS_DATASET || [];
       `;
     } else if (p.photo) {
       // Singola foto fallback
-      console.log('[poiDetailHTML] using p.photo');
-      photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${p.name}" style="width:100%;height:300px;object-fit:cover;border-radius:8px;margin-bottom:12px">`;
+      photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${displayName}" style="width:100%;height:300px;object-fit:cover;border-radius:8px;margin-bottom:12px">`;
     } else if (typeof window.getPhotosForLocation === 'function') {
-      // Unsplash photos + Reverse Geocoding
-      console.log('[poiDetailHTML] entering getPhotosForLocation branch for', p.id);
       photoHtml = `<div id="poi-photos-container" style="margin-bottom:12px;min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">📷 Caricamento foto...</div>`;
     } else {
-      // Fallback assoluto: features-photos.js non caricato → mostra link Google
-      console.warn('[poiDetailHTML] window.getPhotosForLocation NOT available — showing Google fallback');
       photoHtml = googleFallbackHtml('Foto non disponibili offline');
     }
     return `
@@ -1729,7 +1735,7 @@ const POIS_BASE = window.POIS_DATASET || [];
         <textarea id="poi-note" placeholder="Aggiungi note, orari di arrivo, partecipanti...">${note}</textarea>
       </div>
       <div class="action-row">
-        <button class="btn navigate" id="navigate-poi" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${encodeURIComponent(p.name)}">🧭 Portami lì</button>
+        <button class="btn navigate" id="navigate-poi" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${encodeURIComponent(displayName)}">🧭 Portami lì</button>
         <button class="btn primary" id="save-poi">${saved?'★ Salvato':'☆ Salva'}</button>
         <button class="btn" id="add-cal">📅 Calendario</button>
       </div>
@@ -1761,27 +1767,25 @@ const POIS_BASE = window.POIS_DATASET || [];
     const photoFallbackHtml = (label, poi) => `
       <div style="margin-bottom:12px;padding:14px;background:var(--surface-2);border-radius:8px;text-align:center">
         <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📷 ${label}</div>
-        <a href="${googleImagesUrl(poi.name_en || poi.name, poi.city)}" target="_blank" rel="noopener"
+        <a href="${googleImagesUrl(getPoiDisplayName(poi), poi.city)}" target="_blank" rel="noopener"
            class="btn" style="font-size:12px">🔎 Cerca foto su Google Images</a>
       </div>
     `;
 
     (async () => {
       try {
-        console.log('[loadPOIPhotos] requesting photos for', p.id, p.lat, p.lng, p.city);
         const photos = await window.getPhotosForLocation(
           p.lat,
           p.lng,
           p.city,
-          p.name_en || p.name
+          getPoiDisplayName(p)
         );
-        console.log('[loadPOIPhotos] returned', photos?.length || 0, 'photos for', p.id);
 
         if (photos && photos.length > 0) {
           const slides = photos.slice(0, 5).map((photo, idx) => `
             <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
               <a href="${photo.link}" target="_blank" rel="noopener" title="${photo.author}" style="display:block;width:100%;height:100%;text-decoration:none">
-                <img src="${photo.url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;transition:transform .2s">
+                <img src="${photo.url}" alt="${getPoiDisplayName(p)}" style="width:100%;height:100%;object-fit:cover;transition:transform .2s">
               </a>
             </div>
           `).join('');
@@ -1807,13 +1811,13 @@ const POIS_BASE = window.POIS_DATASET || [];
   function openPOI(id){
     const p = allPOIs().find(x => x.id===id);
     if (!p) return;
-    openSheet(p.name_en || p.name, poiDetailHTML(p));
+    openSheet(getPoiDisplayName(p), poiDetailHTML(p));
     if (!p.photos && !p.photo && typeof window.getPhotosForLocation === 'function') {
       loadPOIPhotos(p);
     }
     // Navigate btn — geo: with fallbacks
     document.getElementById('navigate-poi').onclick = () => {
-      const lat = p.lat, lng = p.lng, name = p.name;
+      const lat = p.lat, lng = p.lng, name = getPoiDisplayName(p);
       const isIOS2 = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS2) {
         window.open(`https://maps.apple.com/?daddr=${lat},${lng}&dirflg=w`, '_blank');
@@ -2060,7 +2064,7 @@ const POIS_BASE = window.POIS_DATASET || [];
         desc:(p.desc||'')+(p.gf?.notes?'\n\nGluten-Free: '+p.gf.notes:'')+(state.notes[p.id]?'\n\nNote: '+state.notes[p.id]:''),
         lat:p.lat, lng:p.lng, start:start, end:end
       }]);
-      downloadICS(`${p.id}_${p.name.replace(/[^a-z0-9]/gi,'_')}.ics`, ics);
+      downloadICS(`${p.id}_${getPoiDisplayName(p).replace(/[^a-z0-9]/gi,'_')}.ics`, ics);
       toast('Calendario scaricato 📅');
     };
   }
@@ -2086,7 +2090,7 @@ const POIS_BASE = window.POIS_DATASET || [];
           <div class="poi-row" data-id="${p.id}">
             <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
             <div class="body">
-              <div class="name">${p.name}</div>
+              <div class="name">${getPoiDisplayName(p)}</div>
               <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
             </div>
             <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
@@ -2122,7 +2126,7 @@ const POIS_BASE = window.POIS_DATASET || [];
       return `<div class="poi-row" data-id="${p.id}">
         <div class="icon">${CATS[p.cat]?.icon||'Posizione rilevata'}</div>
         <div class="body">
-          <div class="name">★ ${p.name}</div>
+          <div class="name">★ ${getPoiDisplayName(p)}</div>
           <div class="sub">${p.city} ${distSpan}</div>
         </div>
         <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
@@ -2356,7 +2360,7 @@ const POIS_BASE = window.POIS_DATASET || [];
         <div class="poi-row" data-id="${p.id}">
           <div class="icon">${CATS[p.cat]?.icon||'🍴'}</div>
           <div class="body">
-            <div class="name">${p.name}</div>
+            <div class="name">${getPoiDisplayName(p)}</div>
             <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
           </div>
         </div>
@@ -2373,7 +2377,7 @@ const POIS_BASE = window.POIS_DATASET || [];
       <div class="poi-row" data-id="${p.id}">
         <div class="icon">${CATS[p.cat]?.icon || '🛍️'}</div>
         <div class="body">
-          <div class="name">${p.name}</div>
+          <div class="name">${getPoiDisplayName(p)}</div>
           <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
         </div>
       </div>
@@ -2585,9 +2589,9 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   const GroqMenuAnalyzer = {
     CACHE_KEY: 'groq_menu_cache',
     
-    async analyzeMenu(menuText, apiKey) {
-      if (!menuText.trim() || !apiKey) {
-        toast('⚠️ Menu e API key obbligatori');
+    async analyzeMenu(menuText) {
+      if (!menuText.trim()) {
+        toast('⚠️ Inserisci il menu da analizzare');
         return null;
       }
       
@@ -2600,15 +2604,35 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
       
       try {
         toast('🔄 Analizzando menu con Groq...');
-        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        const resp = await fetch('/api/groqAnalyze', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            model: 'mixtral-8x7b-32768',
-            messages: [
+          body: JSON.stringify({ menuText })
+        });
+        
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          toast(`❌ Groq error: ${err.error || 'server error'}`);
+          return null;
+        }
+
+        const data = await resp.json();
+        const result = data.result;
+        if (!result) {
+          toast('❌ Groq error: risposta non valida');
+          return null;
+        }
+
+        this.saveToCache(hash, result);
+        toast('✅ Menu analizzato!');
+        return result;
+      } catch (err) {
+        console.error('[Groq]', err);
+        toast(`❌ Errore: ${err.message}`);
+        return null;
+      }
               {
                 role: 'system',
                 content: `Sei un esperto di celiachia e gluten-free. Analizza il menu italiano fornito e categorizza i piatti in 3 sezioni:
@@ -2773,10 +2797,8 @@ Se dubbia, metti in RISCHIO (conservativo).`
         </p>
 
         <div style="background:var(--surface-2);border-radius:8px;padding:12px">
-          <div style="font-size:13px;font-weight:700;margin-bottom:8px">🔑 Groq API Key ${status.groq ? '✅' : '⬜'}</div>
-          <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Gratis su <a href="https://console.groq.com" target="_blank">console.groq.com</a> — fallback AI chat</p>
-          <input type="password" id="cfg-groq-key" placeholder="gsk_..." style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font:inherit;margin-bottom:6px"/>
-          <button onclick="window.saveAPIKey('groq','cfg-groq-key')" style="width:100%;padding:8px;background:var(--success);color:#fff;border:0;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px">Salva cifrata</button>
+          <div style="font-size:13px;font-weight:700;margin-bottom:8px">🔑 Groq API Key</div>
+          <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Configurata sul server Vercel con la variabile <code>GRO_API_KEY</code>. Non è più richiesta una chiave locale.</p>
         </div>
 
         <div style="background:var(--surface-2);border-radius:8px;padding:12px">
@@ -2784,13 +2806,6 @@ Se dubbia, metti in RISCHIO (conservativo).`
           <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Da <a href="https://aistudio.google.com" target="_blank">Google AI Studio</a> — AI chat principale</p>
           <input type="password" id="cfg-gemini-key" placeholder="AIza..." style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font:inherit;margin-bottom:6px"/>
           <button onclick="window.saveAPIKey('gemini','cfg-gemini-key')" style="width:100%;padding:8px;background:var(--success);color:#fff;border:0;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px">Salva cifrata</button>
-        </div>
-
-        <div style="background:var(--surface-2);border-radius:8px;padding:12px">
-          <div style="font-size:13px;font-weight:700;margin-bottom:8px">🔑 Google Places Key ${status.googlePlaces ? '✅' : '⬜'}</div>
-          <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Per foto POI — da <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a></p>
-          <input type="password" id="cfg-places-key" placeholder="AIza..." style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font:inherit;margin-bottom:6px"/>
-          <button onclick="window.saveAPIKey('googlePlaces','cfg-places-key')" style="width:100%;padding:8px;background:var(--success);color:#fff;border:0;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px">Salva cifrata</button>
         </div>
 
         <button onclick="window.appConfig?.clearSession(); window.toast('🔒 Sessione chiavi resettata');" style="padding:8px;background:var(--danger);color:#fff;border:0;border-radius:6px;cursor:pointer;font-size:12px">
@@ -2815,22 +2830,11 @@ Se dubbia, metti in RISCHIO (conservativo).`
   };
 
   window.openGroqPanel = async function() {
-    // Leggi chiave da config cifrato (con fallback a localStorage legacy)
-    let apiKey = '';
-    if (window.appConfig) {
-      const k = await window.appConfig.getKey('groq');
-      apiKey = k ? '••••••••' : '';
-    }
-    if (!apiKey) apiKey = localStorage.getItem('groq_api_key') ? '••••••••' : '';
-
     const html = `
       <div class="groq-panel">
         <div class="groq-api-setup">
-          <p><strong>🔑 Groq API Key</strong> (gratis su <a href="https://console.groq.com" target="_blank">console.groq.com</a>)</p>
-          ${apiKey
-            ? `<p style="color:var(--success);font-size:12px">✅ Chiave configurata</p>`
-            : `<p style="color:var(--warning);font-size:12px">⚠️ Nessuna chiave — <button onclick="window.openAPIKeysPanel()" style="background:none;border:none;color:var(--accent);cursor:pointer;font:inherit;text-decoration:underline">Configura ora</button></p>`
-          }
+          <p><strong>🔑 Groq API Key</strong> è configurata sul server Vercel tramite <code>GRO_API_KEY</code>.</p>
+          <p style="color:var(--muted);font-size:12px;margin-top:6px">Imposta <code>GRO_API_KEY</code> nella dashboard Vercel e riavvia il deployment per abilitare l'analisi dei menu.</p>
         </div>
 
         <div>
@@ -2849,16 +2853,12 @@ Se dubbia, metti in RISCHIO (conservativo).`
 
   window.analyzeMenuGroq = async function() {
     const menuText = document.getElementById('groq-menu-textarea')?.value || '';
-    // Chiave da config.js (cifrata) con fallback localStorage legacy
-    let apiKey = window.appConfig ? await window.appConfig.getKey('groq') : null;
-    if (!apiKey) apiKey = localStorage.getItem('groq_api_key') || '';
-
-    if (!apiKey) {
-      toast('❌ Salva prima l\'API key');
+    if (!menuText.trim()) {
+      toast('⚠️ Inserisci il menu da analizzare');
       return;
     }
-    
-    const result = await GroqMenuAnalyzer.analyzeMenu(menuText, apiKey);
+
+    const result = await GroqMenuAnalyzer.analyzeMenu(menuText);
     if (!result) return;
     
     const html = `

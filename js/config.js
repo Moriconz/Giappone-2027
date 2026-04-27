@@ -11,7 +11,7 @@ window.appConfig = (() => {
   let _decryptedKeys = {};    // cache in-memory per sessione
 
   // Chiavi supportate
-  const KEY_NAMES = ['googlePlaces', 'groq', 'gemini'];
+  const KEY_NAMES = ['gemini'];
 
   // --- Persistenza config cifrata ---
   function _loadRaw() {
