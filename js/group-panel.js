@@ -8,7 +8,7 @@
  */
 
 window.groupPanel = (() => {
-  const FORCE_FAKE_GPS = true; // Forza sempre fake GPS Tokyo anche in gruppo
+  const FORCE_FAKE_GPS = false; // Phase 6: rimosso debug flag
   
   /**
    * Renderizza pannello gruppo
