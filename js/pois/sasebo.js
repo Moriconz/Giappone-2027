@@ -1,0 +1,2 @@
+window.POIS_DATASET = window.POIS_DATASET || {};
+window.POIS_DATASET['sasebo'] = [{"id":"node/8927872992","name":"淡島神社","lat":32.7844703,"lng":129.7916962,"cat":"shrine","desc":"","city":"sasebo","name_en":"たんしまじんじゃ","local":true},{"id":"node/11116172830","name":"カトリック大明寺教会","lat":32.7069941,"lng":129.7716808,"cat":"temple","desc":"","city":"sasebo","name_en":"かとりっくだいめいてらきょうかい","local":true},{"id":"node/11116172884","name":"円通寺","lat":32.7037947,"lng":129.7772614,"cat":"temple","desc":"","city":"sasebo","name_en":"えんつうてら","local":true}];
