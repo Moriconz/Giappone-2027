@@ -263,7 +263,7 @@ async function searchPlacePhotos(poiName, city) {
   const cached = localStorage.getItem(cacheKey);
   if (cached) return JSON.parse(cached);
 
-  // Leggi chiave cifrata da config.js
+  // Ottieni API key da config.js
   const apiKey = window.appConfig
     ? await window.appConfig.getKey('googlePlaces')
     : null;
@@ -273,27 +273,18 @@ async function searchPlacePhotos(poiName, city) {
   }
 
   try {
-    const query = `${poiName} ${city} Japan`;
-    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${apiKey}`;
-    const response = await fetch(searchUrl);
+    // Chiama il proxy Vercel Function invece di Google Places direttamente
+    // Questo risolve il problema CORS
+    const proxyUrl = `/api/searchPlaces?poiName=${encodeURIComponent(poiName)}&city=${encodeURIComponent(city)}&apiKey=${encodeURIComponent(apiKey)}`;
+    const response = await fetch(proxyUrl);
     const data = await response.json();
 
-    if (data.results?.length > 0) {
-      const placeId = data.results[0].place_id;
-      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=photos&key=${apiKey}`;
-      const detailsData = await (await fetch(detailsUrl)).json();
-
-      if (detailsData.result?.photos) {
-        const photos = detailsData.result.photos.map(photo => ({
-          url: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photo.photo_reference}&key=${apiKey}`,
-          attribution: photo.html_attributions?.[0] || 'Google Places',
-        }));
-        localStorage.setItem(cacheKey, JSON.stringify(photos));
-        return photos;
-      }
+    if (data.photos && Array.isArray(data.photos)) {
+      localStorage.setItem(cacheKey, JSON.stringify(data.photos));
+      return data.photos;
     }
   } catch (err) {
-    console.warn('[Photos] API error:', err.message);
+    console.warn('[Photos] Proxy error:', err.message);
   }
   return [];
 }
