@@ -1,5 +1,5 @@
 // ============================================================================
-// JS/FEATURES-PHOTOS.JS — Unsplash photo search + reverse geocoding
+// JS/FEATURES-PHOTOS.JS — Google Places photo search, Unsplash fallback, reverse geocoding
 // ============================================================================
 
 console.log('[Photos] Loading...');
@@ -12,25 +12,18 @@ window.photosFeature = (() => {
     if (!lat || !lng) return null;
 
     try {
-      // Call Vercel function: /api/reverseGeocode
-      // Server uses GOOGLE_MAPS_API_KEY from env (secure)
       const resp = await fetch(`/api/reverseGeocode?lat=${lat}&lng=${lng}`);
-
       if (!resp.ok) {
         console.warn('[ReverseGeo] HTTP error:', resp.status);
         return null;
       }
-
       const data = await resp.json();
-
-      // Google API returns: { name: "...", status: "OK" } or { name: null, status: "ZERO_RESULTS" }
       if (data.status === 'OK' && data.name) {
         console.log('[ReverseGeo] Found:', data.name);
-        return data.name; // e.g., "Senso-ji Temple"
+        return data.name;
       } else if (data.name) {
         return data.name;
       }
-
       console.warn('[ReverseGeo] No result for', lat, lng);
       return null;
     } catch (err) {
@@ -40,36 +33,63 @@ window.photosFeature = (() => {
   }
 
   // =========================================================================
-  // 2. UNSPLASH PHOTO SEARCH — Get photos by place name
+  // 2. GOOGLE PLACES PHOTO SEARCH — Primary source
+  // =========================================================================
+  async function searchGooglePlacePhotos(placeName, city, lat, lng) {
+    if (!placeName) return [];
+
+    try {
+      const params = new URLSearchParams({
+        query: placeName,
+      });
+      if (city) params.set('city', city);
+      if (lat) params.set('lat', String(lat));
+      if (lng) params.set('lng', String(lng));
+
+      const resp = await fetch(`/api/searchGooglePlacesPhotos?${params.toString()}`);
+      if (!resp.ok) {
+        console.warn('[GooglePlaces] HTTP error:', resp.status);
+        return [];
+      }
+
+      const data = await resp.json();
+      if (Array.isArray(data.photos) && data.photos.length) {
+        console.log('[GooglePlaces] Found', data.photos.length, 'photos for', placeName);
+        return data.photos;
+      }
+
+      console.warn('[GooglePlaces] No photos found for:', placeName);
+      return [];
+    } catch (err) {
+      console.error('[GooglePlaces] Error:', err.message);
+      return [];
+    }
+  }
+
+  // =========================================================================
+  // 3. UNSPLASH PHOTO SEARCH — Fallback
   // =========================================================================
   async function searchPlacePhotos(placeName, city) {
     if (!placeName) return [];
 
     try {
-      // Build query: "Senso-ji Temple Tokyo, Japan"
       const query = city ? `${placeName} ${city}` : placeName;
-
-      // Call Vercel function: /api/searchUnsplash
-      // Server uses UNSPLASH_API_KEY from env (secure)
       const resp = await fetch(`/api/searchUnsplash?query=${encodeURIComponent(query)}`);
-
       if (!resp.ok) {
         console.warn('[Unsplash] HTTP error:', resp.status);
         return [];
       }
-
       const data = await resp.json();
-
-      // Unsplash returns: { results: [{ urls: { regular: "..." }, user: { name: "..." }, links: { html: "..." } }] }
       if (data.results && Array.isArray(data.results)) {
+        console.log('[Unsplash] Found', data.results.length, 'photos for', query);
         return data.results.slice(0, 5).map(photo => ({
           url: photo.urls.regular,
           thumb: photo.urls.thumb,
-          author: photo.user.name,
-          link: photo.user.links.html
+          author: photo.user?.name,
+          link: photo.user?.links?.html,
+          source: 'unsplash'
         }));
       }
-
       console.warn('[Unsplash] No results for:', query);
       return [];
     } catch (err) {
@@ -79,32 +99,37 @@ window.photosFeature = (() => {
   }
 
   // =========================================================================
-  // 3. COMPLETE FLOW: Get photos (with optional reverse geocoding)
+  // 4. COMPLETE FLOW: Get photos (Google Places first, Unsplash fallback)
   // =========================================================================
   async function getPhotosForLocation(lat, lng, city, fallbackName) {
+    const candidates = [];
     let placeName = null;
 
-    // Step 1: Try reverse geocoding FIRST (get REAL name from coordinates)
-    console.log('[Photos] Attempting reverse geocode for:', lat, lng);
     try {
       placeName = await reverseGeocode(lat, lng);
       if (placeName) {
-        console.log('[Photos] Got real name from reverse geo:', placeName);
+        candidates.push(placeName);
+        console.log('[Photos] Reverse geocode name:', placeName);
       }
     } catch (err) {
-      console.warn('[Photos] Reverse geocoding failed, using fallback');
+      console.warn('[Photos] Reverse geocode failed, will use fallback name');
     }
 
-    // Step 2: If reverse geocoding failed, use fallback name
-    if (!placeName && fallbackName) {
-      console.log('[Photos] Using fallback name:', fallbackName);
-      placeName = fallbackName;
+    if (fallbackName && fallbackName.trim()) {
+      const normalizedFallback = fallbackName.trim();
+      if (!candidates.includes(normalizedFallback)) {
+        candidates.push(normalizedFallback);
+      }
     }
 
-    // Step 3: Search Unsplash with the place name
-    if (placeName) {
-      console.log('[Photos] Searching Unsplash for:', placeName, 'in', city);
-      return await searchPlacePhotos(placeName, city);
+    for (const candidate of candidates) {
+      const googlePhotos = await searchGooglePlacePhotos(candidate, city, lat, lng);
+      if (googlePhotos.length) return googlePhotos;
+    }
+
+    const searchName = candidates[0] || null;
+    if (searchName) {
+      return await searchPlacePhotos(searchName, city);
     }
 
     console.warn('[Photos] No place name available for photos');
@@ -113,13 +138,14 @@ window.photosFeature = (() => {
 
   return {
     reverseGeocode,
+    searchGooglePlacePhotos,
     searchPlacePhotos,
     getPhotosForLocation
   };
 })();
 
-// Export to window
 window.reverseGeocode = window.photosFeature.reverseGeocode;
+window.searchGooglePlacePhotos = window.photosFeature.searchGooglePlacePhotos;
 window.searchPlacePhotos = window.photosFeature.searchPlacePhotos;
 window.getPhotosForLocation = window.photosFeature.getPhotosForLocation;
 

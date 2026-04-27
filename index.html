@@ -414,10 +414,6 @@ nav.bottom button{position:relative}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       🏪 Posti
     </button>
-    <button data-view="api-keys">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-      🔑 Chiavi
-    </button>
 
   </nav>
 </div>
@@ -1272,14 +1268,84 @@ const POIS_BASE = window.POIS_DATASET || [];
 
   function getPoiDisplayName(p){
     const isPlaceholder = n => !n || typeof n !== 'string' || /^\s*(poi|unknown|unnamed|n\/a|no name)\s*$/i.test(n);
-    const hasLatin = n => typeof n === 'string' && /[A-Za-z]/.test(n);
+    const hasLatin = n => typeof n === 'string' && /[A-Za-z0-9]/.test(n);
+    const isJapanese = n => typeof n === 'string' && /[\u3040-\u30ff\u4e00-\u9faf]/.test(n);
     const normalize = n => typeof n === 'string' ? n.trim() : '';
-    const candidates = [p.name_en, p.name];
+
+    const romajiMap = {
+      // hiragana + katakana digraphs
+      'きゃ':'kya','きゅ':'kyu','きょ':'kyo','ぎゃ':'gya','ぎゅ':'gyu','ぎょ':'gyo',
+      'しゃ':'sha','しゅ':'shu','しょ':'sho','じゃ':'ja','じゅ':'ju','じょ':'jo',
+      'ちゃ':'cha','ちゅ':'chu','ちょ':'cho','にゃ':'nya','にゅ':'nyu','にょ':'nyo',
+      'ひゃ':'hya','ひゅ':'hyu','ひょ':'hyo','びゃ':'bya','びゅ':'byu','びょ':'byo',
+      'ぴゃ':'pya','ぴゅ':'pyu','ぴょ':'pyo','みゃ':'mya','みゅ':'myu','みょ':'myo',
+      'りゃ':'rya','りゅ':'ryu','りょ':'ryo','キャ':'kya','キュ':'kyu','キョ':'kyo',
+      'ギャ':'gya','ギュ':'gyu','ギョ':'gyo','シャ':'sha','シュ':'shu','ショ':'sho',
+      'ジャ':'ja','ジュ':'ju','ジョ':'jo','チャ':'cha','チュ':'chu','チョ':'cho',
+      'ニャ':'nya','ニュ':'nyu','ニョ':'nyo','ヒャ':'hya','ヒュ':'hyu','ヒョ':'hyo',
+      'ビャ':'bya','ビュ':'byu','ビョ':'byo','ピャ':'pya','ピュ':'pyu','ピョ':'pyo',
+      'ミャ':'mya','ミュ':'myu','ミョ':'myo','リャ':'rya','リュ':'ryu','リョ':'ryo',
+      // basic hiragana + katakana
+      'あ':'a','い':'i','う':'u','え':'e','お':'o','ア':'a','イ':'i','ウ':'u','エ':'e','オ':'o',
+      'か':'ka','き':'ki','く':'ku','け':'ke','こ':'ko','カ':'ka','キ':'ki','ク':'ku','ケ':'ke','コ':'ko',
+      'さ':'sa','し':'shi','す':'su','せ':'se','そ':'so','サ':'sa','シ':'shi','ス':'su','セ':'se','ソ':'so',
+      'た':'ta','ち':'chi','つ':'tsu','て':'te','と':'to','タ':'ta','チ':'chi','ツ':'tsu','テ':'te','ト':'to',
+      'な':'na','に':'ni','ぬ':'nu','ね':'ne','の':'no','ナ':'na','ニ':'ni','ヌ':'nu','ネ':'ne','ノ':'no',
+      'は':'ha','ひ':'hi','ふ':'fu','へ':'he','ほ':'ho','ハ':'ha','ヒ':'hi','フ':'fu','ヘ':'he','ホ':'ho',
+      'ま':'ma','み':'mi','む':'mu','め':'me','も':'mo','マ':'ma','ミ':'mi','ム':'mu','メ':'me','モ':'mo',
+      'や':'ya','ゆ':'yu','よ':'yo','ヤ':'ya','ユ':'yu','ヨ':'yo','ら':'ra','り':'ri','る':'ru','れ':'re','ろ':'ro',
+      'ラ':'ra','リ':'ri','ル':'ru','レ':'re','ロ':'ro','わ':'wa','を':'o','ん':'n','ワ':'wa','ヲ':'o','ン':'n',
+      'が':'ga','ぎ':'gi','ぐ':'gu','げ':'ge','ご':'go','ガ':'ga','ギ':'gi','グ':'gu','ゲ':'ge','ゴ':'go',
+      'ざ':'za','じ':'ji','ず':'zu','ぜ':'ze','ぞ':'zo','ザ':'za','ジ':'ji','ズ':'zu','ゼ':'ze','ゾ':'zo',
+      'だ':'da','ぢ':'ji','づ':'zu','で':'de','ど':'do','ダ':'da','ヂ':'ji','ヅ':'zu','デ':'de','ド':'do',
+      'ば':'ba','び':'bi','ぶ':'bu','べ':'be','ぼ':'bo','バ':'ba','ビ':'bi','ブ':'bu','ベ':'be','ボ':'bo',
+      'ぱ':'pa','ぴ':'pi','ぷ':'pu','ぺ':'pe','ぽ':'po','パ':'pa','ピ':'pi','プ':'pu','ペ':'pe','ポ':'po',
+      'ぁ':'a','ぃ':'i','ぅ':'u','ぇ':'e','ぉ':'o','ァ':'a','ィ':'i','ゥ':'u','ェ':'e','ォ':'o',
+      'ゃ':'ya','ゅ':'yu','ょ':'yo','ャ':'ya','ュ':'yu','ョ':'yo','っ':'','ッ':'','ー':'-'
+    };
+
+    const transliterateJapanese = str => {
+      if (!str || typeof str !== 'string') return '';
+      let s = str.trim();
+      if (!isJapanese(s)) return s;
+      let result = '';
+      for (let i = 0; i < s.length; ) {
+        const two = s.slice(i, i + 2);
+        if (romajiMap[two]) {
+          result += romajiMap[two];
+          i += 2;
+          continue;
+        }
+        const one = s[i];
+        if (romajiMap[one]) {
+          result += romajiMap[one];
+          i += 1;
+          continue;
+        }
+        if (/[A-Za-z0-9]/.test(one)) {
+          result += one;
+        }
+        i += 1;
+      }
+      return result.replace(/[-\s]+/g, ' ').trim();
+    };
+
+    const translateCandidate = v => {
+      if (!v || typeof v !== 'string') return null;
+      const value = normalize(v);
+      if (isPlaceholder(value)) return null;
+      if (hasLatin(value)) return value;
+      if (isJapanese(value)) {
+        const romanized = transliterateJapanese(value);
+        if (romanized) return romanized;
+      }
+      return value || null;
+    };
+
+    const candidates = [p.name_en, p.name, p.jp];
     for (const v of candidates) {
-      if (!isPlaceholder(v) && hasLatin(v)) return normalize(v);
-    }
-    for (const v of candidates) {
-      if (!isPlaceholder(v) && v) return normalize(v);
+      const label = translateCandidate(v);
+      if (label) return label;
     }
     if (p.cat) return CATS[p.cat]?.label || p.cat;
     if (p.city) return `Luogo a ${p.city}`;
@@ -1622,7 +1688,6 @@ const POIS_BASE = window.POIS_DATASET || [];
       if (view === 'gf') { renderGFView(); return; }
       if (view === 'groq-menu') { window.openGroqPanel(); return; }
       if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
-      if (view === 'api-keys') { window.openAPIKeysPanel(); return; }
     });
   }
   // ---- POI detail ----
@@ -2060,7 +2125,7 @@ const POIS_BASE = window.POIS_DATASET || [];
       const start = new Date(startVal);
       const end = new Date(start.getTime() + dur*60000);
       const ics = buildICS([{
-        id:p.id, title:p.name+(p.jp?` (${p.jp})`:''), location:p.city+', Giappone',
+        id:p.id, title:getPoiDisplayName(p), location:p.city+', Giappone',
         desc:(p.desc||'')+(p.gf?.notes?'\n\nGluten-Free: '+p.gf.notes:'')+(state.notes[p.id]?'\n\nNote: '+state.notes[p.id]:''),
         lat:p.lat, lng:p.lng, start:start, end:end
       }]);
@@ -2179,7 +2244,7 @@ const POIS_BASE = window.POIS_DATASET || [];
       const end = new Date(cursor.getTime()+90*60000);
       cursor = new Date(cursor.getTime()+3*60*60000); // +3h per tappa
       return {
-        id:p.id, title:p.name+(p.jp?` (${p.jp})`:''), location:p.city+', Giappone',
+        id:p.id, title:getPoiDisplayName(p), location:p.city+', Giappone',
         desc:(p.desc||'')+(p.gf?.notes?'\n\nGF: '+p.gf.notes:'')+(state.notes[p.id]?'\n\nNote: '+state.notes[p.id]:''),
         lat:p.lat, lng:p.lng, start, end
       };
@@ -2786,48 +2851,6 @@ Se dubbia, metti in RISCHIO (conservativo).`
   };
 
   /* ================= UI HANDLERS ================= */
-
-  // Pannello gestione chiavi API (Phase 3)
-  window.openAPIKeysPanel = async function() {
-    const status = window.appConfig ? window.appConfig.getKeyStatus() : {};
-    const html = `
-      <div style="padding:14px;display:flex;flex-direction:column;gap:14px">
-        <p style="font-size:12px;color:var(--muted)">
-          Le chiavi sono cifrate con AES-256-GCM e protette da master password. Non vengono mai salvate in chiaro.
-        </p>
-
-        <div style="background:var(--surface-2);border-radius:8px;padding:12px">
-          <div style="font-size:13px;font-weight:700;margin-bottom:8px">🔑 Groq API Key</div>
-          <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Configurata sul server Vercel con la variabile <code>GRO_API_KEY</code>. Non è più richiesta una chiave locale.</p>
-        </div>
-
-        <div style="background:var(--surface-2);border-radius:8px;padding:12px">
-          <div style="font-size:13px;font-weight:700;margin-bottom:8px">🔑 Gemini API Key ${status.gemini ? '✅' : '⬜'}</div>
-          <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Da <a href="https://aistudio.google.com" target="_blank">Google AI Studio</a> — AI chat principale</p>
-          <input type="password" id="cfg-gemini-key" placeholder="AIza..." style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font:inherit;margin-bottom:6px"/>
-          <button onclick="window.saveAPIKey('gemini','cfg-gemini-key')" style="width:100%;padding:8px;background:var(--success);color:#fff;border:0;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px">Salva cifrata</button>
-        </div>
-
-        <button onclick="window.appConfig?.clearSession(); window.toast('🔒 Sessione chiavi resettata');" style="padding:8px;background:var(--danger);color:#fff;border:0;border-radius:6px;cursor:pointer;font-size:12px">
-          🔒 Blocca sessione (dimentica master password)
-        </button>
-      </div>
-    `;
-    openSheet('🔑 Gestione API Key', html);
-  };
-
-  window.saveAPIKey = async function(name, inputId) {
-    const val = document.getElementById(inputId)?.value?.trim();
-    if (!val) { toast('⚠️ Inserisci una chiave valida'); return; }
-    if (!window.appConfig) { toast('⚠️ Encryption module non caricato'); return; }
-    const ok = await window.appConfig.setKey(name, val);
-    if (ok) {
-      toast(`✅ Chiave ${name} salvata (cifrata)`);
-      document.getElementById(inputId).value = '';
-    } else {
-      toast('❌ Errore salvataggio chiave');
-    }
-  };
 
   window.openGroqPanel = async function() {
     const html = `
