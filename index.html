@@ -1753,6 +1753,9 @@ const POIS_BASE = window.POIS_DATASET || [];
   window.openSheet = openSheet;
   window.closeSheet = closeSheet;
 
+  // Track active tab to avoid resetting it when opening POI details
+  let activeTabView = 'map';
+
   const bottomNav = document.querySelector('nav.bottom');
   if (bottomNav) {
     bottomNav.addEventListener('click', e => {
@@ -1760,6 +1763,7 @@ const POIS_BASE = window.POIS_DATASET || [];
       if (!btn) return;
       bottomNav.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
       const view = btn.dataset.view;
+      activeTabView = view; // Traccia quale tab è attivo
       if (view === 'map') { closeSheet(); return; }
       if (view === 'list') { renderListView(); return; }
       if (view === 'itinerary') { renderItineraryView(); return; }
@@ -1771,6 +1775,19 @@ const POIS_BASE = window.POIS_DATASET || [];
       if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
     });
   }
+
+  // Quando chiudi il dettaglio POI, ripristina il bottone al tab attivo
+  const originalCloseSheet = closeSheet;
+  window.closeSheet = function() {
+    originalCloseSheet();
+    // Ripristina il bottone attivo al tab che era attivo prima
+    if (bottomNav && activeTabView !== 'map') {
+      const activeBtn = bottomNav.querySelector(`button[data-view="${activeTabView}"]`);
+      if (activeBtn) {
+        bottomNav.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === activeBtn));
+      }
+    }
+  };
   // ---- POI detail ----
   function gfTag(gf){
     if (!gf || !gf.lvl || gf.lvl === 'unknown') return ''; // Non mostrare il tag se non disponibile
@@ -3094,32 +3111,65 @@ const POIS_BASE = window.POIS_DATASET || [];
   }
 
   function renderGFView() {
-    // Usa TUTTE le città da CITY_COORDS, non solo quelle con dati hardcoded
+    // Usa TUTTE le città da CITY_COORDS
     const allCities = Object.keys(CITY_COORDS).sort();
-    const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;\"><option value=\"all\">Tutte le città</option>" + allCities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\" style=\"position:relative;min-height:200px;\"></div>";
+
+    // Determina la città attuale da GPS (se disponibile)
+    let currentCity = null;
+    if (window.state?.gpsCurrentLat && window.state?.gpsCurrentLng) {
+      // Trova la città più vicina
+      let minDist = Infinity;
+      for (const [city, [lat, lng]] of Object.entries(CITY_COORDS)) {
+        const dx = window.state.gpsCurrentLat - lat;
+        const dy = window.state.gpsCurrentLng - lng;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < minDist) {
+          minDist = dist;
+          currentCity = city;
+        }
+      }
+      console.log('[renderGFView] Città attuale da GPS:', currentCity, '- distanza:', minDist.toFixed(2));
+    }
+
+    const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;\"><option value=\"all\">Tutte le città</option>" + allCities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\" style=\"position:relative;min-height:200px;\"><p style=\"color:var(--muted);text-align:center;padding:20px;\">⏳ Caricamento città attuale...</p></div>";
     window.openSheet("🌾 Gluten Free", html);
 
     // Mostra subito i dati hardcoded
     renderGFList("all", "");
 
-    // Load GF shops from Google Places in background (non blocca UI)
+    // Load GF shops: PRIORITÀ GPS → Vicini → Rest (non blocca UI)
     (async () => {
-      console.log('[renderGFView] Inizio caricamento GF shops da Google Places per', allCities.length, 'città');
+      console.log('[renderGFView] Inizio caricamento GF shops con priorità GPS');
       try {
         allGlutenFreeShops = [];
-        for (const city of allCities) {
+
+        // Ordina le città: prima quella attuale (GPS), poi il resto
+        const priorityCities = currentCity ? [currentCity, ...allCities.filter(c => c !== currentCity)] : allCities;
+
+        for (let i = 0; i < priorityCities.length; i++) {
+          const city = priorityCities[i];
           try {
+            const isCurrentCity = city === currentCity;
+            console.log(`[renderGFView] ${i+1}/${priorityCities.length} Caricando${isCurrentCity ? ' (PRIORITÀ GPS)' : ''}: ${city}...`);
+
             const shops = await loadGlutenFreeShopsForCity(city);
             if (shops.length > 0) {
-              console.log(`[renderGFView] ${city}: ${shops.length} GF shops trovati`);
+              console.log(`[renderGFView] ✓ ${city}: ${shops.length} GF shops trovati`);
               allGlutenFreeShops = allGlutenFreeShops.concat(shops);
+
+              // Aggiorna la lista SUBITO dopo la città attuale
+              if (isCurrentCity) {
+                console.log('[renderGFView] Città attuale caricata! Aggiornando lista...');
+                renderGFList("all", "");
+              }
             }
           } catch (err) {
             console.warn(`[renderGFView] Errore caricamento ${city}:`, err.message);
           }
         }
-        console.log(`[renderGFView] Caricati ${allGlutenFreeShops.length} shop totali da Google Places`);
-        // Aggiorna la lista con i nuovi dati
+
+        console.log(`[renderGFView] ✅ Caricati ${allGlutenFreeShops.length} shop totali da Google Places`);
+        // Aggiorna la lista finale con TUTTI i dati
         renderGFList("all", "");
       } catch (err) {
         console.error('[renderGFView] Error loading GF shops:', err);
