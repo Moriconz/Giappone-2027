@@ -17,20 +17,26 @@ if (!window.toast) {
 }
 
 // Funzione globale per aprire un POI dal click sulla mappa
-window.__openPOI = function(poiId) {
+// Accetta poiId (string) e opzionalmente poiObj (object) passato dal map click handler
+window.__openPOI = function(poiId, poiObj) {
   console.log('%c[POI] Opening POI: ' + poiId, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
-  console.log('[POI] POIS_DATASET keys:', Object.keys(window.POIS_DATASET || {}).length);
-  console.log('[POI] POIS_DATASET:', window.POIS_DATASET);
 
-  // Trova il POI nei dataset caricati
-  let poi = null;
+  // Se il POI è stato passato direttamente dal handler, usalo
+  let poi = poiObj || null;
+  console.log('[POI] POI passed from handler:', poi ? '✅ YES' : '❌ NO');
 
-  // Cerca in window.POIS_DATASET (città → array di POI)
-  if (window.POIS_DATASET && typeof window.POIS_DATASET === 'object') {
-    console.log('[POI] Searching in POIS_DATASET...');
+  // Se non ricevuto dal handler, cercalo in allPOIs() (che include tutto)
+  if (!poi && typeof window.allPOIs === 'function') {
+    console.log('[POI] Searching in window.allPOIs()...');
+    poi = window.allPOIs().find(p => p.id === poiId);
+    if (poi) console.log('[POI] ✅ FOUND in allPOIs');
+  }
+
+  // Fallback: cerca in window.POIS_DATASET
+  if (!poi && window.POIS_DATASET && typeof window.POIS_DATASET === 'object') {
+    console.log('[POI] Fallback: Searching in POIS_DATASET...');
     for (const city in window.POIS_DATASET) {
       const cityPois = window.POIS_DATASET[city];
-      console.log(`[POI] City: ${city}, count: ${Array.isArray(cityPois) ? cityPois.length : 'NOT ARRAY'}`);
       if (Array.isArray(cityPois)) {
         poi = cityPois.find(p => p.id === poiId);
         if (poi) {
@@ -39,13 +45,11 @@ window.__openPOI = function(poiId) {
         }
       }
     }
-  } else {
-    console.warn('[POI] POIS_DATASET NOT LOADED or NOT OBJECT');
   }
 
-  // Se non trovato, cerca negli custom events
+  // Fallback: cerca negli custom events
   if (!poi && window.state && window.state.customEvents) {
-    console.log('[POI] Searching in customEvents...');
+    console.log('[POI] Fallback: Searching in customEvents...');
     poi = window.state.customEvents.find(e => e.id === poiId);
   }
 
@@ -55,7 +59,7 @@ window.__openPOI = function(poiId) {
     return;
   }
 
-  console.log('[POI] POI object:', poi);
+  console.log('[POI] POI object found:', poi.name || poi.id);
 
   // Usa poiDetailHTML se disponibile (da index.html)
   console.log('[POI] typeof poiDetailHTML:', typeof poiDetailHTML);

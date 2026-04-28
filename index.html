@@ -610,6 +610,8 @@ const POIS_BASE = window.POIS_DATASET || [];
     }
     return allItems;
   }
+  // Rendi globale per accesso da altri script
+  window.allPOIs = allPOIs;
   // ---- Filter logic ----
   function filtered(){
     return allPOIs().filter(p => {
@@ -1613,7 +1615,10 @@ const POIS_BASE = window.POIS_DATASET || [];
         handled = true;
       } else if (id) {
         console.log('[MAP CLICK] → Opening POI:', id);
-        window.__openPOI(id);
+        // Cerca il POI completo in allPOIs e passalo a __openPOI
+        const poi = allPOIs().find(p => p.id === id);
+        console.log('[MAP CLICK] Found POI object:', poi ? '✅' : '❌', poi?.name);
+        window.__openPOI(id, poi);
         handled = true;
       }
     });
