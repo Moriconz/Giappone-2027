@@ -58,7 +58,13 @@ window.photosFeature = (() => {
 
       const data = await resp.json();
       if (Array.isArray(data.photos) && data.photos.length) {
-        console.log('[GooglePlaces] Found', data.photos.length, 'photos for', placeName);
+        const actualPlaceName = data.place?.name || placeName;
+        const actualAddress = data.place?.formatted_address || 'N/A';
+        console.log('%c[GooglePlaces] ✅ FOUND', 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
+        console.log(`📍 Searched for: "${placeName}"`);
+        console.log(`📍 Found: "${actualPlaceName}"`);
+        console.log(`📍 Address: ${actualAddress}`);
+        console.log(`📸 Photos: ${data.photos.length} found`);
         return data.photos;
       }
 
