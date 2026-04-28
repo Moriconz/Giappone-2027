@@ -1936,7 +1936,7 @@ const POIS_BASE = window.POIS_DATASET || [];
     console.log('[openPOI] typeof openSheet:', typeof openSheet);
     const html = poiDetailHTML(p);
     console.log('[openPOI] HTML length:', html?.length);
-    openSheet(getPoiDisplayName(p), html);
+    window.openSheet(getPoiDisplayName(p), html);
     console.log('[openPOI] ✅ openSheet called');
     if (!p.photos && !p.photo && typeof window.getPhotosForLocation === 'function') {
       loadPOIPhotos(p);
@@ -2178,7 +2178,7 @@ const POIS_BASE = window.POIS_DATASET || [];
         <p style="font-size:12px;color:var(--muted)">Scarica il file e aprilo col tuo telefono: Google Calendar, Apple Calendar e Outlook lo importano automaticamente con POI, coordinate e note.</p>
       </div>
     `;
-    openSheet('📅 Aggiungi a calendario', html);
+    window.openSheet('📅 Aggiungi a calendario', html);
     document.getElementById('cal-export').onclick = () => {
       const startVal = document.getElementById('cal-start').value;
       const dur = parseInt(document.getElementById('cal-dur').value,10);
@@ -2232,7 +2232,7 @@ const POIS_BASE = window.POIS_DATASET || [];
       `;
     }).join('');
 
-    openSheet('🗺️ Tutte le tappe', html || '<p>Nessuna tappa trovata.</p>');
+    window.openSheet('🗺️ Tutte le tappe', html || '<p>Nessuna tappa trovata.</p>');
     sheetBody.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
   }
   // ---- Itinerary / Agenda view ----
@@ -2282,7 +2282,7 @@ const POIS_BASE = window.POIS_DATASET || [];
       </div>
       ${custom.length?`<div class="section"><h3>✎ Tappe personalizzate</h3>${customHTML}</div>`:''}
     `;
-    openSheet('📅 La tua agenda', html);
+    window.openSheet('📅 La tua agenda', html);
     updateGPSStatusPanel();
     sheetBody.querySelectorAll('[data-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
     sheetBody.querySelectorAll('[data-custom-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.customId); });
@@ -2338,7 +2338,7 @@ const POIS_BASE = window.POIS_DATASET || [];
       </div>
       <div class="section" style="margin-top:10px"><p style="font-size:12px;color:var(--muted)">💡 Lat/lng: cerca su Google Maps, clic destro → "Cosa c'è qui?" → copia coordinate.</p></div>
     `;
-    openSheet('➕ Nuova tappa personalizzata', html);
+    window.openSheet('➕ Nuova tappa personalizzata', html);
     // Photo upload + canvas resize
     const photoZone = document.getElementById('photo-zone');
     const photoInp = document.getElementById('c-photo-inp');
@@ -2462,13 +2462,13 @@ const POIS_BASE = window.POIS_DATASET || [];
         </ul>
       </div>
     `;
-    openSheet('💡 Tips Giappone 2027', html);
+    window.openSheet('💡 Tips Giappone 2027', html);
   }
 
   function renderGFView() {
     const cities = [...new Set((typeof allPOIs === "function" ? allPOIs() : []).filter(p => p.gf && (p.gf.lvl === "full" || p.gf.lvl === "partial")).map(p => p.city))].sort();
     const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;\"><option value=\"all\">Tutte le città</option>" + cities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\"></div>";
-    openSheet("🌾 Gluten Free", html);
+    window.openSheet("🌾 Gluten Free", html);
     renderGFList("all", "");
     document.getElementById("gf-search").oninput = function() { renderGFList(document.getElementById("gf-city-filter").value, this.value); };
     document.getElementById("gf-city-filter").onchange = function() { renderGFList(this.value, document.getElementById("gf-search").value); };
@@ -2493,7 +2493,7 @@ const POIS_BASE = window.POIS_DATASET || [];
         <div class="section">${bookingBtns.join(' ')}</div>
       `;
     }).join('') : '<p style="color:var(--muted);font-size:13px">Nessuna prenotazione disponibile.</p>';
-    openSheet('🍽️ Prenota', html);
+    window.openSheet('🍽️ Prenota', html);
     sheetBody.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
   }
 
@@ -2536,7 +2536,7 @@ const POIS_BASE = window.POIS_DATASET || [];
         `).join('')}
       </div>
     `).join('') : '<p style="color:var(--muted);font-size:13px">Nessun punto shopping trovato con i filtri correnti.</p>';
-    openSheet('🛍️ Shopping', html);
+    window.openSheet('🛍️ Shopping', html);
     sheetBody.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
   }
 
@@ -2580,7 +2580,7 @@ const POIS_BASE = window.POIS_DATASET || [];
     // Se gruppo già creato, usa group-panel.js
     if (state.group?.roomId && state.group?.myName && window.groupPanel) {
       const html = window.groupPanel.render();
-      openSheet('👥 Gruppo', html);
+      window.openSheet('👥 Gruppo', html);
       window.groupPanel.attachEvents();
       return;
     }
@@ -2603,7 +2603,7 @@ const POIS_BASE = window.POIS_DATASET || [];
       <button class="btn primary" id="group-start" style="width:100%;">✅ Avvia / Connetti</button>
       <div id="peer-status-box" style="margin-top:10px;color:var(--muted);font-size:13px;">Pronto a connettersi...</div>
     `;
-    openSheet('👥 Gruppo - Setup', html);
+    window.openSheet('👥 Gruppo - Setup', html);
     
     const statusBox = document.getElementById('peer-status-box');
     const startBtn = document.getElementById('group-start');
@@ -2747,7 +2747,7 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
       </div>
       <div class="section" style="display:flex;gap:10px;flex-wrap:wrap;">${buttons.join('')}</div>
     `;
-    openSheet(r.name, html);
+    window.openSheet(r.name, html);
   }
 
   renderFilters();
@@ -3035,7 +3035,7 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
       </div>
     `;
 
-    openSheet('🤖 Analizza Menu Gluten-Free', html);
+    window.openSheet('🤖 Analizza Menu Gluten-Free', html);
 
     const photoZone = document.getElementById('groq-photo-zone');
     const photoInput = document.getElementById('groq-photo-input');
@@ -3198,7 +3198,7 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     `;
     
     const html = `<div class="gf-places-container">${addFormHtml}${placesHtml}</div>`;
-    openSheet('🏪 I Miei Posti GF', html);
+    window.openSheet('🏪 I Miei Posti GF', html);
   };
 
   window.saveGFPlace = function() {
