@@ -85,9 +85,10 @@ main{flex:1;position:relative;overflow:hidden}
 #map{position:absolute;inset:0;background:#0a1320}
 .leaflet-container{background:#0a1320;font-family:inherit}
 /* Floating filter bar */
-#filters{position:fixed;top:10px;left:10px;right:10px;z-index:500;
+#filters{position:fixed;top:10px;left:10px;right:10px;z-index:9999;
   display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;padding-bottom:4px;max-height:42px;max-width:calc(100% - 20px)}
+  scrollbar-width:none;padding-bottom:4px;max-height:42px;max-width:calc(100% - 20px);
+  background:transparent;pointer-events:auto;visibility:visible}
 #filters::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:6px 12px;border-radius:999px;background:rgba(30,49,72,.92);
   border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;
@@ -3815,7 +3816,7 @@ window.addEventListener("load", () => {
   }
 
   function renderShoppingView() {
-    console.log('[renderShoppingView] Generating shopping list from Google Places...');
+    console.log('[renderShoppingView] Loading shopping POIs from Google Places with radius expansion...');
 
     // Load shopping POIs from Google Places API
     const googlePOIs = window.GOOGLE_PLACES_POIS || [];
@@ -3829,12 +3830,15 @@ window.addEventListener("load", () => {
       return SHOPPING_CATEGORIES.some(cat => types.includes(cat));
     });
 
+    console.log('[renderShoppingView] Total Google Places shopping POIs available:', shoppingPOIs.length);
+
     // Filter by GPS distance (50km radius)
     const MAX_DISTANCE_KM = 50;
+    const MIN_DISTANCE_KM = 0;
     if (state.gpsCurrentLat && state.gpsCurrentLng) {
       shoppingPOIs = shoppingPOIs.filter(p => {
         const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
-        return dist <= MAX_DISTANCE_KM;
+        return dist >= MIN_DISTANCE_KM && dist <= MAX_DISTANCE_KM;
       });
 
       // Sort by distance from GPS
@@ -3844,22 +3848,19 @@ window.addEventListener("load", () => {
         return distA - distB;
       });
       console.log('[renderShoppingView] Filtered to', shoppingPOIs.length, 'shops within 50km, sorted by distance');
+    } else {
+      console.warn('[renderShoppingView] GPS not available, showing all shopping POIs');
     }
 
-    // Fallback to SHOPPING_DB if no Google POIs available
-    const items = shoppingPOIs.length > 0 ? shoppingPOIs : (SHOPPING_DB || []);
-    let sortedItems = [...items];
+    // Separate: regular shops vs vintage/second-hand
+    // ALL Google Places shopping POIs go to "regular" (Negozi Generali)
+    // SHOPPING_DB items with vintage/second-hand metadata go to "secondhand"
+    const regular = shoppingPOIs.length > 0
+      ? shoppingPOIs.filter(p => !p.items || (typeof p.items === 'string' ? !p.items.toLowerCase().includes('vintage') : !p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand'))))
+      : (SHOPPING_DB || []).filter(p => !p.items || (typeof p.items === 'string' ? !p.items.toLowerCase().includes('vintage') : !p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand'))));
 
-    // Separazione: negozi normali vs vintage/second-hand
-    const regular = sortedItems.filter(p => {
-      // Google Places POIs don't have vintage metadata, so include all Google POIs as regular
-      if (p.fromGooglePlaces) return true;
-      // For SHOPPING_DB items, filter by vintage metadata
-      return !p.items || (typeof p.items === 'string' ? !p.items.toLowerCase().includes('vintage') :
-        !p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand')))
-    });
-    const secondhand = sortedItems.filter(p =>
-      !p.fromGooglePlaces && p.items && (typeof p.items === 'string' ? p.items.toLowerCase().includes('vintage') || p.items.toLowerCase().includes('second-hand') :
+    const secondhand = (SHOPPING_DB || []).filter(p =>
+      p.items && (typeof p.items === 'string' ? p.items.toLowerCase().includes('vintage') || p.items.toLowerCase().includes('second-hand') :
         p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand')))
     );
 
@@ -3997,19 +3998,36 @@ window.addEventListener("load", () => {
 
     // Carica vintage shops da Google Places in background
     (async () => {
-      console.log('[renderShoppingView] Inizio caricamento vintage shops...');
-      const cities = new Set(getCachedAllPOIs().map(p => p.city).filter(Boolean));
-      console.log('[renderShoppingView] Città da caricare:', Array.from(cities));
-      let allVintageShops = [];
+      console.log('[renderShoppingView] Inizio caricamento vintage shops da Google Places...');
 
-      for (const city of Array.from(cities)) {
-        console.log(`[renderShoppingView] Caricamento vintage shops per ${city}...`);
-        const shops = await loadVintageShopsForCity(city);
-        console.log(`[renderShoppingView] ${city}: ${shops.length} negozi trovati`, shops);
-        allVintageShops = allVintageShops.concat(shops);
+      // Categorie che potrebbero avere articoli vintage/second-hand
+      const VINTAGE_CATEGORIES = ['clothing_store', 'shoe_store', 'antique_shop', 'thrift_store',
+                                  'department_store', 'shopping_mall', 'market'];
+
+      // Prendi tutti i Google Places POIs e filtra per categorie vintage
+      const googlePOIs = window.GOOGLE_PLACES_POIS || [];
+      let allVintageShops = googlePOIs.filter(p => {
+        const types = p.types || [];
+        return VINTAGE_CATEGORIES.some(cat => types.includes(cat));
+      });
+
+      // Filtra per distanza 50km
+      const MAX_DISTANCE_KM = 50;
+      if (state.gpsCurrentLat && state.gpsCurrentLng) {
+        allVintageShops = allVintageShops.filter(p => {
+          const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
+          return dist <= MAX_DISTANCE_KM;
+        });
+
+        // Ordina per distanza
+        allVintageShops.sort((a, b) => {
+          const distA = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, a.lat, a.lng);
+          const distB = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, b.lat, b.lng);
+          return distA - distB;
+        });
       }
 
-      console.log('[renderShoppingView] Totale vintage shops caricati:', allVintageShops.length);
+      console.log('[renderShoppingView] Totale vintage shops caricati da Google Places:', allVintageShops.length);
 
       // Renderizza vintage shops con distanza
       const vintageHtml = allVintageShops.length
