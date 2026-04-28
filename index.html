@@ -36,6 +36,10 @@
 <script src="js/features-ai.js"></script>
 <script src="js/features-gps.js"></script>
 <script src="js/features-photos.js"></script>
+<script src="js/poi-verified-db.js"></script>
+<script src="js/poi-sync.js"></script>
+<script src="js/poi-viewport-sync.js"></script>
+<script src="js/test-poi-sync.js"></script>
 <script src="js/group-chat.js"></script>
 <script src="js/group-panel.js"></script>
 <style>
@@ -1216,6 +1220,39 @@ const POIS_BASE = window.POIS_DATASET || [];
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
   }
 
+  // Track fake POIs (not found on Google Places)
+  let FAKE_POI_IDS = new Set();
+
+  async function updateFakePOIList() {
+    const allPOIs = getCachedAllPOIs();
+    let newFakesFound = 0;
+
+    for (const poi of allPOIs) {
+      const status = await window.POIVerifiedDB?.getVerificationStatus?.(poi.id);
+      if (status === 'not_found') {
+        if (!FAKE_POI_IDS.has(poi.id)) {
+          newFakesFound++;
+          console.log(`[renderMarkers] Marking as fake: ${poi.name} (${poi.id})`);
+        }
+        FAKE_POI_IDS.add(poi.id);
+      }
+    }
+
+    if (newFakesFound > 0) {
+      console.log(`[renderMarkers] Found ${newFakesFound} new fake POIs, re-rendering map...`);
+      renderMarkers(); // Re-render to hide fake POIs
+    }
+  }
+
+  // Periodically update fake POI list
+  setInterval(updateFakePOIList, 3000);
+
+  // Listen for sync progress events
+  window.addEventListener('poi-sync-progress', (e) => {
+    // Check for new fake POIs after each sync batch
+    setTimeout(updateFakePOIList, 500);
+  });
+
   function renderMarkers(){
     console.log('[renderMarkers] START');
     vectorSource.clear();
@@ -1258,7 +1295,12 @@ const POIS_BASE = window.POIS_DATASET || [];
     console.log('[renderMarkers] filtered():', allFiltered.length);
     const pois = allFiltered.filter(visibleFilter);
     console.log('[renderMarkers] after visibleFilter:', pois.length);
-    const toRender = maxPOI === Infinity ? pois : pois.slice(0, maxPOI);
+
+    // FILTER OUT FAKE POIs (not found on Google Places)
+    const realPOIs = pois.filter(p => !FAKE_POI_IDS.has(p.id));
+    console.log(`[renderMarkers] Filtered fake POIs: ${pois.length} → ${realPOIs.length}`);
+
+    const toRender = maxPOI === Infinity ? realPOIs : realPOIs.slice(0, maxPOI);
     console.log('[renderMarkers] toRender:', toRender.length);
 
     let added = 0;
@@ -1945,11 +1987,20 @@ const POIS_BASE = window.POIS_DATASET || [];
 
     (async () => {
       try {
+        // Usa dati verificati se disponibili
+        const verifiedPOI = await window.POIVerifiedDB?.getVerifiedPOI?.(p.id);
+        const photoLat = verifiedPOI?.lat || p.lat;
+        const photoLng = verifiedPOI?.lng || p.lng;
+        const photoCity = verifiedPOI?.addressCity || p.city;
+        const photoName = verifiedPOI?.name || getPoiDisplayName(p);
+
+        console.log('[loadPOIPhotos] Using', verifiedPOI ? 'verified' : 'local', 'data for photos');
+
         const photos = await window.getPhotosForLocation(
-          p.lat,
-          p.lng,
-          p.city,
-          getPoiDisplayName(p)
+          photoLat,
+          photoLng,
+          photoCity,
+          photoName
         );
 
         if (photos && photos.length > 0) {
@@ -2077,10 +2128,21 @@ const POIS_BASE = window.POIS_DATASET || [];
       return;
     }
 
-    console.log('[openPOI] Calling openSheet with:', getPoiDisplayName(p));
-    const html = poiDetailHTML(p);
-    window.openSheet(getPoiDisplayName(p), html);
-    console.log('[openPOI] ✅ openSheet called');
+    // Syncronizza con Google Places se non ancora verificato
+    (async () => {
+      const verified = await window.POISync?.ensurePOIVerified?.(p);
+      if (verified) {
+        console.log('[openPOI] ✅ POI verified, using Google data');
+        p = { ...p, ...verified };
+      } else {
+        console.warn('[openPOI] ⚠️ POI verification failed, using local data');
+      }
+
+      console.log('[openPOI] Calling openSheet with:', getPoiDisplayName(p));
+      const html = poiDetailHTML(p);
+      window.openSheet(getPoiDisplayName(p), html);
+      console.log('[openPOI] ✅ openSheet called');
+    })();
 
     // Enrichisci il POI in background (non blocca UI)
     (async () => {
@@ -2105,7 +2167,18 @@ const POIS_BASE = window.POIS_DATASET || [];
       }
 
       // Analisi gluten-free per categorie food/drink
-      let placeIdForGF = p.place_id;
+      // Priorità: place_id verificato > place_id locale > matching GF shops
+      let placeIdForGF = null;
+
+      // Primo: prova con place_id verificato (dalla sincronizzazione)
+      const verifiedPOIGF = await window.POIVerifiedDB?.getVerifiedPOI?.(p.id);
+      if (verifiedPOIGF?.googlePlaceId) {
+        placeIdForGF = verifiedPOIGF.googlePlaceId;
+        console.log('[openPOI] Using verified place_id for GF:', placeIdForGF);
+      } else if (p.place_id) {
+        placeIdForGF = p.place_id;
+        console.log('[openPOI] Using local place_id for GF:', placeIdForGF);
+      }
 
       // Se non ha place_id, prova a matchare con i GF shops caricati da Google Places
       if (!placeIdForGF && ['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) {
