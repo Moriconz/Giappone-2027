@@ -2608,10 +2608,32 @@ const POIS_BASE = window.POIS_DATASET || [];
           const extraSearch = Object.keys(bycitySearch).filter(c => !CITIES.includes(c)).sort();
           const orderSearch = [...knownSearch, ...extraSearch];
 
+          // Costruisci lista di ricerca con LAZY-LOAD (come la lista iniziale)
           const searchHtml = orderSearch.map(cityName => {
+            const totalCount = Object.values(bycitySearch[cityName]).flat().length;
+            return `
+              <details class="city-dropdown" open data-city="${cityName}" data-search="true">
+                <summary>${cityName} <span class="count">${totalCount}</span></summary>
+                <div class="city-content">⏳ Caricamento...</div>
+              </details>
+            `;
+          }).join('');
+
+          resultsDiv.innerHTML = searchHtml || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
+
+          // Setup lazy-load per risultati di ricerca
+          resultsDiv.querySelectorAll('[data-search="true"]').forEach(details => {
+            // Genera contenuto subito (città OPEN di default nei risultati)
+            const cityName = details.dataset.city;
+            const cityContent = details.querySelector('.city-content');
+
+            // Genera contenuto di ricerca (con paginazione)
             const categories = Object.keys(bycitySearch[cityName]).sort((a,b) => (CATS[a]?.label||a).localeCompare(CATS[b]?.label||b));
             const categoryHtml = categories.map(cat => {
-              const items = bycitySearch[cityName][cat].map(p => `
+              const allItems = bycitySearch[cityName][cat];
+              const { page1, hasMore, rest } = paginateItems(allItems);
+
+              const itemsHtml = page1.map(p => `
                 <div class="poi-row" data-id="${p.id}">
                   <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
                   <div class="body">
@@ -2621,18 +2643,65 @@ const POIS_BASE = window.POIS_DATASET || [];
                   <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
                 </div>
               `).join('');
-              return `<div class="category-section"><h4>${CATS[cat]?.label||cat} <span class="count">${bycitySearch[cityName][cat].length}</span></h4>${items}</div>`;
-            }).join('');
-            return `
-              <details class="city-dropdown" open>
-                <summary>${cityName} <span class="count">${Object.values(bycitySearch[cityName]).flat().length}</span></summary>
-                ${categoryHtml}
-              </details>
-            `;
-          }).join('');
 
-          resultsDiv.innerHTML = searchHtml || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
-          attachRowClickHandlers();
+              const loadMoreBtn = hasMore ? `
+                <button data-city="${cityName}" data-cat="${cat}" data-search-load="true"
+                  style="width:100%;padding:8px;margin-top:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:11px">
+                  ↓ Carica altri ${Math.min(rest.length, MAX_ITEMS_PER_PAGE)}
+                </button>
+              ` : '';
+
+              return `
+                <div class="category-section">
+                  <h4>${CATS[cat]?.label||cat} <span class="count">${allItems.length}${hasMore ? ' (mostrando ' + page1.length + ')' : ''}</span></h4>
+                  ${itemsHtml}
+                  ${loadMoreBtn}
+                </div>
+              `;
+            }).join('');
+
+            cityContent.innerHTML = categoryHtml;
+
+            // Attacca click handler ai poi-row
+            cityContent.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+
+            // Attacca handler ai pulsanti "Carica altri" della ricerca
+            cityContent.querySelectorAll('[data-search-load="true"]').forEach(btn => {
+              btn.onclick = (e) => {
+                e.preventDefault();
+                const city = btn.dataset.city;
+                const cat = btn.dataset.cat;
+                const allItems = bycitySearch[city][cat];
+                const { page1, rest } = paginateItems(allItems);
+
+                const nextItems = rest.slice(0, MAX_ITEMS_PER_PAGE);
+                const stillMore = rest.length > MAX_ITEMS_PER_PAGE;
+
+                const moreHtml = nextItems.map(p => `
+                  <div class="poi-row" data-id="${p.id}">
+                    <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
+                    <div class="body">
+                      <div class="name">${getPoiDisplayName(p)}</div>
+                      <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
+                    </div>
+                    <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+                  </div>
+                `).join('');
+
+                const newDiv = document.createElement('div');
+                newDiv.innerHTML = moreHtml;
+                btn.parentNode.insertBefore(newDiv, btn);
+
+                if (stillMore) {
+                  btn.textContent = `↓ Carica altri ${Math.min(rest.length - MAX_ITEMS_PER_PAGE, MAX_ITEMS_PER_PAGE)}`;
+                } else {
+                  btn.remove();
+                }
+
+                newDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+              };
+            });
+          });
         }
       };
     }
