@@ -1925,7 +1925,12 @@ const POIS_BASE = window.POIS_DATASET || [];
       console.error('[openPOI] ❌ POI not found, returning');
       return;
     }
-    openSheet(getPoiDisplayName(p), poiDetailHTML(p));
+    console.log('[openPOI] Calling openSheet with:', getPoiDisplayName(p));
+    console.log('[openPOI] typeof openSheet:', typeof openSheet);
+    const html = poiDetailHTML(p);
+    console.log('[openPOI] HTML length:', html?.length);
+    openSheet(getPoiDisplayName(p), html);
+    console.log('[openPOI] ✅ openSheet called');
     if (!p.photos && !p.photo && typeof window.getPhotosForLocation === 'function') {
       loadPOIPhotos(p);
     }
