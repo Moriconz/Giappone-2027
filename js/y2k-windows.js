@@ -14,6 +14,10 @@
 (function() {
   'use strict';
 
+  console.log('%c[Y2K] Y2K-WINDOWS.JS LOADED', 'background: #FF1493; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold');
+  console.log('[Y2K] document.readyState:', document.readyState);
+  console.log('[Y2K] window.openSheet exists?', typeof window.openSheet);
+
   /* ── CSS FINESTRE ──────────────────────────────────────────────── */
   const style = document.createElement('style');
   style.textContent = `
@@ -313,12 +317,20 @@
     if (e.key === 'Escape') closeAll();
   });
 
-  // Patcha dopo che tutto il DOM è pronto
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', patchSheets);
-  } else {
-    // Aspetta un tick per dare tempo agli altri script di definire openSheet
-    setTimeout(patchSheets, 100);
+  // Patcha dopo che openSheet è definita
+  console.log('[Y2K] Waiting for openSheet to be defined...');
+
+  function waitForOpenSheet() {
+    if (typeof window.openSheet === 'function') {
+      console.log('[Y2K] ✅ openSheet found! Patching now...');
+      patchSheets();
+    } else {
+      console.log('[Y2K] openSheet not found yet, retrying in 100ms...');
+      setTimeout(waitForOpenSheet, 100);
+    }
   }
+
+  // Inizia ad aspettare
+  waitForOpenSheet();
 
 })();
