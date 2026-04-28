@@ -1655,17 +1655,17 @@ const POIS_BASE = window.POIS_DATASET || [];
       filtersEl.parentElement.style.position = 'relative';
       filtersEl.parentElement.appendChild(advPanel);
       
-      // Bind advanced filter controls
-      document.getElementById('adv-rating').oninput = (e) => {
+      // Bind advanced filter controls (with throttle to prevent excessive rendering)
+      document.getElementById('adv-rating').oninput = throttle((e) => {
         state.minRating = parseInt(e.target.value);
         document.getElementById('rating-val').textContent = state.minRating;
         saveState(); renderMarkers();
-      };
-      document.getElementById('adv-budget').oninput = (e) => {
+      }, 200);
+      document.getElementById('adv-budget').oninput = throttle((e) => {
         state.maxBudget = parseInt(e.target.value);
         document.getElementById('budget-val').textContent = '¥'+state.maxBudget;
         saveState(); renderMarkers();
-      };
+      }, 200);
       document.getElementById('adv-reset').onclick = () => {
         state.minRating = 0;
         state.maxBudget = 100000;
@@ -1688,6 +1688,51 @@ const POIS_BASE = window.POIS_DATASET || [];
   // ---- Sheet ----
   const sheet = document.getElementById('sheet');
   const sheetTitle = document.getElementById('sheet-title');
+  // ============================================================================
+  // PERFORMANCE UTILITIES - Debounce, Throttle, Lazy Loading
+  // ============================================================================
+  function debounce(fn, delay) {
+    let timeoutId;
+    return function(...args) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  function throttle(fn, limit) {
+    let inThrottle;
+    return function(...args) {
+      if (!inThrottle) {
+        fn(...args);
+        inThrottle = true;
+        setTimeout(() => inThrottle = false, limit);
+      }
+    };
+  }
+
+  // Lazy load images with IntersectionObserver
+  function setupLazyLoadImages() {
+    if ('IntersectionObserver' in window) {
+      const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            if (img.dataset.src) {
+              img.src = img.dataset.src;
+              img.removeAttribute('data-src');
+              observer.unobserve(img);
+            }
+          }
+        });
+      }, { rootMargin: '50px' });
+
+      document.querySelectorAll('img[data-src]').forEach(img => imageObserver.observe(img));
+    }
+  }
+
+  // Call lazy load setup periodically
+  setInterval(setupLazyLoadImages, 2000);
+
   const sheetBody = document.getElementById('sheet-body');
   document.getElementById('sheet-close').onclick = closeSheet;
   sheet.addEventListener('click', e => { if (e.target === sheet) closeSheet(); });
@@ -1822,7 +1867,7 @@ const POIS_BASE = window.POIS_DATASET || [];
       <p>${p.desc||''}</p>
       ${infoChips.length ? `<div style="margin:6px 0">${infoChips.join('')}</div>`:''}
       ${ticketBtn}
-      ${p.gf && p.gf.notes ? `<div class="section"><h3>🌾 Gluten-Free</h3><p>${p.gf.notes}</p></div>`:''}
+      <div class="section" data-gf-section>${p.gf && p.gf.notes ? `<h3>🌾 Gluten-Free</h3><p>${p.gf.notes}</p>` : ((['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) ? `<h3>🌾 Gluten-Free</h3><p style="font-size:12px;color:var(--muted);">⏳ Analisi in corso...</p>` : '')}</div>
       ${p.best ? `<div class="section"><h3>⏰ Orario migliore</h3><p>${p.best}</p></div>`:''}
       ${doList ? `<div class="section"><h3>✅ Fare</h3><ul class="do-list">${doList}</ul></div>`:''}
       ${dontList ? `<div class="section"><h3>⛔ Evitare</h3><ul class="dont-list">${dontList}</ul></div>`:''}
@@ -2041,6 +2086,36 @@ const POIS_BASE = window.POIS_DATASET || [];
             ${enriched.is_open !== null ? `<div style="font-size:12px;margin-top:4px;color:${enriched.is_open ? 'var(--success)' : 'var(--danger)'}">⏰ ${enriched.is_open ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
           `;
           sheetBody.insertBefore(ratingHtml, sheetBody.firstChild);
+        }
+      }
+
+      // Analisi gluten-free per categorie food/drink
+      if (['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat) && p.place_id) {
+        console.log('[openPOI] Analyzing GF status for:', p.name);
+        const gfStatus = await analyzeGlutenFreeStatus(p.place_id, p.name, p.city);
+        if (gfStatus && gfStatus.lvl !== 'unknown') {
+          console.log('[openPOI] GF Analysis result:', gfStatus);
+          // Aggiorna il POI con i dati GF
+          if (!p.gf) p.gf = {};
+          p.gf.lvl = gfStatus.lvl;
+          p.gf.confidence = gfStatus.confidence;
+          p.gf.mentions = gfStatus.mentions;
+          p.gf.total_reviews = gfStatus.total_reviews;
+
+          // Aggiorna la UI se è ancora aperta
+          const sheetBody = document.getElementById('sheet-body');
+          if (sheetBody) {
+            const gfSection = sheetBody.querySelector('[data-gf-section]');
+            if (gfSection) {
+              const map = { full: ['✅ 100% Gluten Free','gf-full'], partial: ['⚠️ Opzioni GF','gf-partial'], no: ['❌ Contiene Gluten','gf-none'], unknown: ['❓ Sconosciuto',''] };
+              const [label, cls] = map[gfStatus.lvl] || map.unknown;
+              gfSection.innerHTML = `
+                <h3>🌾 Analisi Gluten-Free</h3>
+                <p><span class="tag ${cls}">${label}</span></p>
+                <p style="font-size:12px;color:var(--muted);">Confidenza: ${gfStatus.confidence}% • ${gfStatus.mentions} menzioni su ${gfStatus.total_reviews} review</p>
+              `;
+            }
+          }
         }
       }
     })();
@@ -2577,7 +2652,7 @@ const POIS_BASE = window.POIS_DATASET || [];
     // Setup ricerca (GLOBALE — cerca TUTTI i POI anche fuori dal raggio GPS)
     const searchInput = document.getElementById('list-search');
     if (searchInput) {
-      searchInput.oninput = (e) => {
+      searchInput.oninput = debounce((e) => {
         const query = e.target.value.toLowerCase().trim();
         console.log('[renderListView] Ricerca:', query);
 
@@ -2711,7 +2786,7 @@ const POIS_BASE = window.POIS_DATASET || [];
             });
           });
         }
-      };
+      }, 400);  // Debounce search input
     }
 
     // Helper: attach click handlers a tutti i poi-row
@@ -3020,11 +3095,29 @@ const POIS_BASE = window.POIS_DATASET || [];
 
   function renderGFView() {
     const cities = [...new Set((typeof allPOIs === "function" ? allPOIs() : []).filter(p => p.gf && (p.gf.lvl === "full" || p.gf.lvl === "partial")).map(p => p.city))].sort();
-    const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;\"><option value=\"all\">Tutte le città</option>" + cities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\"></div>";
+    const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;\"><option value=\"all\">Tutte le città</option>" + cities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\" style=\"position:relative;min-height:200px;\"><p style=\"color:var(--muted);text-align:center;padding:20px;\">⏳ Caricamento...</p></div>";
     window.openSheet("🌾 Gluten Free", html);
-    renderGFList("all", "");
-    document.getElementById("gf-search").oninput = function() { renderGFList(document.getElementById("gf-city-filter").value, this.value); };
-    document.getElementById("gf-city-filter").onchange = function() { renderGFList(this.value, document.getElementById("gf-search").value); };
+
+    // Load GF shops from Google Places in background
+    (async () => {
+      try {
+        allGlutenFreeShops = [];
+        for (const city of cities) {
+          const shops = await loadGlutenFreeShopsForCity(city);
+          allGlutenFreeShops = allGlutenFreeShops.concat(shops);
+        }
+        console.log(`[renderGFView] Caricati ${allGlutenFreeShops.length} shop da Google Places`);
+      } catch (err) {
+        console.error('[renderGFView] Error loading GF shops:', err);
+      }
+      renderGFList("all", "");
+    })();
+
+    const searchInput = document.getElementById("gf-search");
+    const cityFilter = document.getElementById("gf-city-filter");
+
+    if (searchInput) searchInput.oninput = debounce(() => renderGFList(cityFilter.value, searchInput.value), 300);
+    if (cityFilter) cityFilter.onchange = () => renderGFList(cityFilter.value, searchInput.value);
   }
 
   function renderBookingsView() {
@@ -3107,6 +3200,61 @@ const POIS_BASE = window.POIS_DATASET || [];
       console.error('[loadVintageShopsForCity] Network/Parse Error per', city, ':', err.message);
       console.error('[loadVintageShopsForCity] Stack:', err.stack);
       return [];
+    }
+  }
+
+  // ============================================================================
+  // GLUTEN-FREE SHOPS LOADING
+  // ============================================================================
+  let gfCache = { shops: {} };
+
+  async function loadGlutenFreeShopsForCity(city) {
+    if (gfCache.shops[city]) {
+      console.log(`[loadGlutenFreeShopsForCity] Cache HIT per ${city}`);
+      return gfCache.shops[city];
+    }
+
+    const coords = CITY_COORDS[city];
+    if (!coords) {
+      console.warn(`[loadGlutenFreeShopsForCity] ${city} non trovata in CITY_COORDS`);
+      return [];
+    }
+
+    const [lat, lng] = coords;
+    const apiUrl = `/api/searchGlutenFreeShops?city=${encodeURIComponent(city)}&lat=${lat}&lng=${lng}`;
+    console.log(`[loadGlutenFreeShopsForCity] Fetching: ${apiUrl}`);
+
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        console.error(`[loadGlutenFreeShopsForCity] HTTP Error ${response.status}`);
+        return [];
+      }
+
+      const data = await response.json();
+      const shops = data.shops || [];
+      gfCache.shops[city] = shops;
+      console.log(`[loadGlutenFreeShopsForCity] Loaded ${shops.length} shops for ${city}`);
+      return shops;
+    } catch (err) {
+      console.error('[loadGlutenFreeShopsForCity] Error:', err.message);
+      return [];
+    }
+  }
+
+  async function analyzeGlutenFreeStatus(placeId, name, city) {
+    const apiUrl = `/api/analyzeGlutenFree?place_id=${encodeURIComponent(placeId)}&name=${encodeURIComponent(name)}&city=${encodeURIComponent(city)}`;
+    console.log(`[analyzeGlutenFreeStatus] Analyzing: ${apiUrl}`);
+
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const data = await response.json();
+      return data.gf || { lvl: 'unknown', confidence: 0 };
+    } catch (err) {
+      console.error('[analyzeGlutenFreeStatus] Error:', err.message);
+      return { lvl: 'unknown', confidence: 0 };
     }
   }
 
@@ -3301,7 +3449,7 @@ const POIS_BASE = window.POIS_DATASET || [];
     const searchInput = document.getElementById('shopping-search');
     const resultsDiv = document.getElementById('shopping-results');
     if (searchInput) {
-      searchInput.oninput = (e) => {
+      searchInput.oninput = debounce((e) => {
         const query = e.target.value.toLowerCase().trim();
         const filtered = shoppingCache.data;
 
@@ -3347,7 +3495,7 @@ const POIS_BASE = window.POIS_DATASET || [];
         }
 
         resultsDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
-      };
+      }, 300);  // Debounce search input
     }
 
     sheetBody.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
@@ -3471,6 +3619,9 @@ const POIS_BASE = window.POIS_DATASET || [];
     };
   }
 
+  // GF Shops discovered from Google Places
+  let allGlutenFreeShops = [];
+
   const GF_RESTAURANTS = [
     { id:"gf-001", name:"Gluten Free T's Kitchen", city:"Tokyo", area:"Roppongi", cuisine:"Italiana/Fusion", tags:["100% GF","certificato GIG"], address:"3-8-15 Roppongi, Minato-ku, Tokyo", maps_url:"https://maps.google.com/?q=Gluten+Free+Ts+Kitchen+Roppongi+Tokyo", fmgf_url:"https://www.findmeglutenfree.com/map#loc=Tokyo,+Japan", note:"Primo locale certificato GIG in Asia" },
     { id:"gf-002", name:"Gluten-free Izakaya SHION", city:"Tokyo", area:"Akihabara", cuisine:"Izakaya", tags:["100% GF"], address:"Akihabara, Tokyo", maps_url:"https://maps.google.com/?q=Gluten+Free+Izakaya+SHION+Akihabara", fmgf_url:"https://www.findmeglutenfree.com/map#loc=Tokyo,+Japan", note:"Menu completamente senza glutine" },
@@ -3503,21 +3654,36 @@ function renderGFList(city, searchText) {
 const container = document.getElementById("gf-list-sheet") || document.getElementById("gf-list");
 if (!container) return;
 
+// Combina hardcoded + Google Places
+const allItems = [
+  ...GF_RESTAURANTS.map(r => ({ ...r, source: 'hardcoded' })),
+  ...allGlutenFreeShops.map(r => ({ ...r, source: 'google', id: r.place_id || r.id }))
+];
+
 const filtered = (city && city !== "all")
-? GF_RESTAURANTS.filter(r => r.city === city && (!searchText || r.name.toLowerCase().includes(searchText.toLowerCase())))
-: GF_RESTAURANTS.filter(r => !searchText || r.name.toLowerCase().includes(searchText.toLowerCase()));
+? allItems.filter(r => r.city === city && (!searchText || r.name.toLowerCase().includes(searchText.toLowerCase())))
+: allItems.filter(r => !searchText || r.name.toLowerCase().includes(searchText.toLowerCase()));
 
 const discoverUrl = FMGF_CITY_URLS[city] || "https://www.findmeglutenfree.com/map#loc=Japan";
 
 if (filtered.length === 0) {
-  container.innerHTML = "<div style=\"padding:14px 12px;text-align:center;\"><p style=\"margin:0 0 8px;font-size:13px;\">Nessun ristorante pre-caricato per questa città.</p><a href=\"" + discoverUrl + "\" target=\"_blank\" style=\"display:inline-block;padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);font-size:13px;\">🔍 Cerca su Find Me Gluten Free</a></div>";
+  container.innerHTML = "<div style=\"padding:14px 12px;text-align:center;\"><p style=\"margin:0 0 8px;font-size:13px;\">Nessun ristorante trovato.</p><a href=\"" + discoverUrl + "\" target=\"_blank\" style=\"display:inline-block;padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);font-size:13px;\">🔍 Cerca su Find Me Gluten Free</a></div>";
   return;
 }
 
 let html = filtered.map(r => {
   const tags = (r.tags || []).map(t => `<span style="margin-right:6px;color:#4caf50;font-weight:600;">${t}</span>`).join('');
-  const actions = [`<a href="${r.fmgf_url}" target="_blank" style="color:var(--accent);text-decoration:underline;font-weight:600;margin-right:8px;">🔍 Verifica su Find Me GF</a>`];
-  if (r.maps_url) actions.push(`<a href="${r.maps_url}" target="_blank" style="color:var(--text);text-decoration:underline;font-weight:600;">🗺️ Apri in Maps</a>`);
+  const actions = [];
+
+  if (r.source === 'google') {
+    if (r.google_maps_url) actions.push(`<a href="${r.google_maps_url}" target="_blank" style="color:var(--accent);text-decoration:underline;font-weight:600;">🗺️ Vedi su Maps</a>`);
+  } else {
+    if (r.fmgf_url) actions.push(`<a href="${r.fmgf_url}" target="_blank" style="color:var(--accent);text-decoration:underline;font-weight:600;margin-right:8px;">🔍 Verifica su Find Me GF</a>`);
+    if (r.maps_url) actions.push(`<a href="${r.maps_url}" target="_blank" style="color:var(--text);text-decoration:underline;font-weight:600;">🗺️ Apri in Maps</a>`);
+  }
+
+  const rating = r.rating ? `⭐ ${r.rating}` : '';
+  const reviewCount = r.review_count ? `(${r.review_count} review)` : '';
 
   return `
     <div class="poi-row" data-id="${r.id}">
@@ -3526,10 +3692,11 @@ let html = filtered.map(r => {
         <div class="name">${r.name}</div>
         <div class="sub">${r.city}${r.area?` · ${r.area}`:''}${r.cuisine?` · ${r.cuisine}`:''}</div>
         ${tags ? `<div style="margin-top:6px;font-size:12px;">${tags}</div>` : ''}
-        ${r.note ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted);">${r.note}</div>` : ''}
-        <div style="margin-top:10px;">${actions.join('')}</div>
+        ${rating || reviewCount ? `<div style="margin-top:4px;font-size:12px;color:var(--text);">${rating} ${reviewCount}</div>` : ''}
+        ${r.note ? `<div style="margin-top:8px;font-size:12px;color:var(--text);">${r.note}</div>` : ''}
+        <div style="margin-top:10px;font-size:12px;">${actions.join(' ')}</div>
       </div>
-      <div class="gf-dot ${r.tags?.length ? 'full' : 'none'}"></div>
+      <div class="gf-dot ${r.tags?.length || r.source === 'google' ? 'full' : 'none'}"></div>
     </div>`;
 }).join('');
 
