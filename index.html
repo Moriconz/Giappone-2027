@@ -3296,34 +3296,44 @@ const POIS_BASE = window.POIS_DATASET || [];
 
   async function loadGlutenFreeShopsForCity(city) {
     if (gfCache.shops[city]) {
-      console.log(`[loadGlutenFreeShopsForCity] Cache HIT per ${city}`);
+      console.log(`%c[GF] Cache HIT: ${city} = ${gfCache.shops[city].length} shops`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
       return gfCache.shops[city];
     }
 
     const coords = CITY_COORDS[city];
     if (!coords) {
-      console.warn(`[loadGlutenFreeShopsForCity] ${city} non trovata in CITY_COORDS`);
+      console.warn(`%c[GF] ❌ ${city} non trovata in CITY_COORDS`, 'background: #D9534F; color: white; padding: 4px 8px; border-radius: 3px');
       return [];
     }
 
     const [lat, lng] = coords;
     const apiUrl = `/api/searchGlutenFreeShops?city=${encodeURIComponent(city)}&lat=${lat}&lng=${lng}`;
-    console.log(`[loadGlutenFreeShopsForCity] Fetching: ${apiUrl}`);
+    console.log(`%c[GF] 🌐 Fetching ${city}...`, 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px');
+    console.log(`[GF] URL: ${apiUrl}`);
 
     try {
+      const fetchStart = Date.now();
       const response = await fetch(apiUrl);
+      const fetchTime = Date.now() - fetchStart;
+
       if (!response.ok) {
-        console.error(`[loadGlutenFreeShopsForCity] HTTP Error ${response.status}`);
+        console.error(`%c[GF] ❌ HTTP ${response.status} per ${city} (${fetchTime}ms)`, 'background: #D9534F; color: white; padding: 4px 8px; border-radius: 3px');
         return [];
       }
 
       const data = await response.json();
       const shops = data.shops || [];
       gfCache.shops[city] = shops;
-      console.log(`[loadGlutenFreeShopsForCity] Loaded ${shops.length} shops for ${city}`);
+
+      if (shops.length > 0) {
+        console.log(`%c[GF] ✅ ${city}: ${shops.length} shops caricati (${fetchTime}ms)`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
+      } else {
+        console.log(`%c[GF] ⚠️ ${city}: ZERO shops ritornati dall'API (${fetchTime}ms)`, 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px');
+        console.log('[GF] API Response:', data);
+      }
       return shops;
     } catch (err) {
-      console.error('[loadGlutenFreeShopsForCity] Error:', err.message);
+      console.error(`%c[GF] ❌ ${city}: Network/Parse Error`, 'background: #D9534F; color: white; padding: 4px 8px; border-radius: 3px', err.message);
       return [];
     }
   }
