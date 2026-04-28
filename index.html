@@ -1586,24 +1586,38 @@ const POIS_BASE = window.POIS_DATASET || [];
   });
 
   map.on('click', (e) => {
+    console.log('%c[MAP CLICK]', 'background: #1A3C5E; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold');
     // Check shopping layer first (higher priority)
     let handled = false;
+    let featuresFound = 0;
     map.forEachFeatureAtPixel(e.pixel, (feature, layer) => {
+      featuresFound++;
+      console.log(`[MAP CLICK] Feature ${featuresFound}:`, {
+        id: feature.get('id'),
+        type: feature.get('type'),
+        name: feature.get('name'),
+        peerName: feature.get('peerName')
+      });
+
       if (handled) return;
       const id = feature.get('id');
       const type = feature.get('type');
       const peerName = feature.get('peerName');
       if (peerName) {
+        console.log('[MAP CLICK] → Peer location');
         toast('Posizione rilevata ' + peerName);
         handled = true;
       } else if (type === 'shopping') {
+        console.log('[MAP CLICK] → Opening shop:', id);
         window.__openShop(id);
         handled = true;
       } else if (id) {
+        console.log('[MAP CLICK] → Opening POI:', id);
         window.__openPOI(id);
         handled = true;
       }
     });
+    console.log('[MAP CLICK] Features found:', featuresFound, 'Handled:', handled);
   });
   // ---- Filter bar UI ----
   const filtersEl = document.getElementById('filters');
