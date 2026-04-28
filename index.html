@@ -2109,15 +2109,22 @@ const POIS_BASE = window.POIS_DATASET || [];
 
       // Se non ha place_id, prova a matchare con i GF shops caricati da Google Places
       if (!placeIdForGF && ['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) {
-        console.log('[openPOI] No place_id found, searching in GF shops by name+city...');
-        const matchedShop = allGlutenFreeShops.find(shop =>
-          shop.name && p.name &&
-          shop.name.toLowerCase().includes(p.name.toLowerCase().substring(0, 5)) &&
-          shop.city === p.city
-        );
+        console.log('%c[openPOI] No place_id - searching GF shops match...', 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px');
+        console.log(`[DEBUG] POI name: "${p.name}", city: "${p.city}"`);
+        console.log(`[DEBUG] Available GF shops in ${p.city}:`, allGlutenFreeShops.filter(s => s.city === p.city).map(s => s.name).slice(0, 10));
+
+        const matchedShop = allGlutenFreeShops.find(shop => {
+          const nameMatch = shop.name && p.name && shop.name.toLowerCase().includes(p.name.toLowerCase().substring(0, 5));
+          const cityMatch = shop.city === p.city;
+          console.log(`[DEBUG] Testing "${shop.name}": name=${nameMatch}, city=${cityMatch}`);
+          return nameMatch && cityMatch;
+        });
+
         if (matchedShop && matchedShop.place_id) {
           placeIdForGF = matchedShop.place_id;
-          console.log('[openPOI] ✓ Matched with GF shop:', matchedShop.name, 'place_id:', placeIdForGF);
+          console.log('%c[openPOI] ✅ MATCHED with GF shop!', 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px', matchedShop.name, 'place_id:', placeIdForGF);
+        } else {
+          console.log('%c[openPOI] ❌ NO MATCH found in GF shops', 'background: #D9534F; color: white; padding: 4px 8px; border-radius: 3px');
         }
       }
 
