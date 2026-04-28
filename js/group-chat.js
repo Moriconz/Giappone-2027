@@ -29,6 +29,7 @@ window.groupChat = (() => {
    */
   function sendGroupMessage(text) {
     const group = window.state?.group;
+    console.log('[GroupChat] sendGroupMessage start', { text, group });
     if (!group) {
       console.warn('[GroupChat] Not in a group');
       return;

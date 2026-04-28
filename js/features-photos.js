@@ -72,6 +72,7 @@ window.photosFeature = (() => {
   async function getPhotosForLocation(lat, lng, city, fallbackName) {
     const candidates = [];
     let placeName = null;
+    console.log('[Photos] getPhotosForLocation start', { lat, lng, city, fallbackName });
 
     if (fallbackName && fallbackName.trim()) {
       candidates.push(fallbackName.trim());
