@@ -2462,8 +2462,19 @@ const POIS_BASE = window.POIS_DATASET || [];
       return { page1: items.slice(0, maxPerPage), rest: items.slice(maxPerPage), hasMore: true };
     }
 
-    // Build COMPACT list (solo nomi città, chiuse per default, con paginazione)
+    // Build COMPACT list - LAZY LOAD: genera HTML dei POI solo quando la città viene espansa
     const compactHtml = order.map(cityName => {
+      const totalCount = Object.values(bycity[cityName]).flat().length;
+      return `
+        <details class="city-dropdown" data-city="${cityName}">
+          <summary>${cityName} <span class="count">${totalCount}</span></summary>
+          <div class="city-content">⏳ Caricamento...</div>
+        </details>
+      `;
+    }).join('');
+
+    // Function: genera l'HTML dei POI quando una città viene espansa
+    function renderCityContent(cityName) {
       const categories = Object.keys(bycity[cityName]).sort((a,b) => (CATS[a]?.label||a).localeCompare(CATS[b]?.label||b));
       const categoryHtml = categories.map(cat => {
         const allItems = bycity[cityName][cat];
@@ -2495,62 +2506,64 @@ const POIS_BASE = window.POIS_DATASET || [];
           </div>
         `;
       }).join('');
-
-      return `
-        <details class="city-dropdown">
-          <summary>${cityName} <span class="count">${Object.values(bycity[cityName]).flat().length}</span></summary>
-          ${categoryHtml}
-        </details>
-      `;
-    }).join('');
+      return categoryHtml;
+    }
 
     resultsDiv.innerHTML = compactHtml || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
 
-    // Setup click handlers per i pulsanti "Carica altri"
-    resultsDiv.querySelectorAll('[data-city]').forEach(btn => {
-      btn.onclick = (e) => {
-        e.preventDefault();
-        const city = btn.dataset.city;
-        const cat = btn.dataset.cat;
-        const allItems = bycity[city][cat];
-        const { page1, rest } = paginateItems(allItems);
+    // Setup lazy-load: genera contenuto quando la città viene espansa
+    resultsDiv.querySelectorAll('[data-city]').forEach(details => {
+      details.addEventListener('toggle', () => {
+        if (details.open) {
+          const cityContent = details.querySelector('.city-content');
+          if (cityContent && cityContent.textContent.includes('Caricamento')) {
+            console.log('[renderListView] Lazy-loading città:', details.dataset.city);
+            const html = renderCityContent(details.dataset.city);
+            cityContent.innerHTML = html;
 
-        // Mostra altri MAX_ITEMS_PER_PAGE
-        const nextItems = rest.slice(0, MAX_ITEMS_PER_PAGE);
-        const stillMore = rest.length > MAX_ITEMS_PER_PAGE;
+            // Attacca click handler ai poi-row
+            cityContent.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
 
-        const moreHtml = nextItems.map(p => `
-          <div class="poi-row" data-id="${p.id}">
-            <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
-            <div class="body">
-              <div class="name">${getPoiDisplayName(p)}</div>
-              <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
-            </div>
-            <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
-          </div>
-        `).join('');
+            // Attacca handler ai pulsanti "Carica altri"
+            cityContent.querySelectorAll('[data-city]').forEach(btn => {
+              btn.onclick = (e) => {
+                e.preventDefault();
+                const city = btn.dataset.city;
+                const cat = btn.dataset.cat;
+                const allItems = bycity[city][cat];
+                const { page1, rest } = paginateItems(allItems);
 
-        // Aggiungi i nuovi item prima del pulsante
-        const categorySection = btn.closest('.category-section');
-        const itemsContainer = categorySection.querySelector('.poi-row:last-of-type');
-        const newDiv = document.createElement('div');
-        newDiv.innerHTML = moreHtml;
+                const nextItems = rest.slice(0, MAX_ITEMS_PER_PAGE);
+                const stillMore = rest.length > MAX_ITEMS_PER_PAGE;
 
-        // Inserisci prima del pulsante
-        btn.parentNode.insertBefore(newDiv, btn);
+                const moreHtml = nextItems.map(p => `
+                  <div class="poi-row" data-id="${p.id}">
+                    <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
+                    <div class="body">
+                      <div class="name">${getPoiDisplayName(p)}</div>
+                      <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
+                    </div>
+                    <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+                  </div>
+                `).join('');
 
-        // Update/rimuovi il pulsante
-        if (stillMore) {
-          const remaining = rest.length - MAX_ITEMS_PER_PAGE;
-          btn.textContent = `↓ Carica altri ${Math.min(remaining, MAX_ITEMS_PER_PAGE)} (${remaining > MAX_ITEMS_PER_PAGE ? '+' + (remaining - MAX_ITEMS_PER_PAGE) : 'ultimi'})`;
-          btn.dataset.restCount = remaining;
-        } else {
-          btn.remove();
+                const newDiv = document.createElement('div');
+                newDiv.innerHTML = moreHtml;
+                btn.parentNode.insertBefore(newDiv, btn);
+
+                if (stillMore) {
+                  const remaining = rest.length - MAX_ITEMS_PER_PAGE;
+                  btn.textContent = `↓ Carica altri ${Math.min(remaining, MAX_ITEMS_PER_PAGE)}`;
+                } else {
+                  btn.remove();
+                }
+
+                newDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+              };
+            });
+          }
         }
-
-        // Riattacca i click handler ai nuovi elementi
-        newDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
-      };
+      });
     });
 
     // Setup ricerca (GLOBALE — cerca TUTTI i POI anche fuori dal raggio GPS)
