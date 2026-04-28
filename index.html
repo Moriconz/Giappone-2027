@@ -1888,19 +1888,21 @@ window.addEventListener("load", () => {
     if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
       // Carousel orizzontale da p.photos
       const slides = p.photos.map((photo, idx) => `
-        <div class="photo-slide" style="flex-shrink:0;width:100%;height:300px;overflow:hidden;border-radius:8px">
-          <img src="${photo.url}" alt="${displayName} ${idx+1}" style="width:100%;height:100%;object-fit:cover">
+        <div class="photo-slide" style="flex-shrink:0;width:100%;height:300px;overflow:hidden;border-radius:8px;flex:none">
+          <img src="${photo.url}" alt="${displayName} ${idx+1}" style="width:100%;height:100%;object-fit:cover;display:block">
         </div>
       `).join('');
+      // Mostra "Scorri" solo se ci sono più foto
+      const scrollHint = p.photos.length > 1 ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-align:center">👈 Scorri per altre foto →</div>` : '';
       photoHtml = `
-        <div style="overflow-x:auto;display:flex;gap:8px;margin-bottom:12px;padding:0 -8px;scroll-behavior:smooth">
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;margin-bottom:8px;scroll-behavior:smooth;width:100%;max-width:100%;position:relative">
           ${slides}
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Scorri per altre foto</div>
+        ${scrollHint}
       `;
     } else if (p.photo) {
       // Singola foto fallback
-      photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${displayName}" style="width:100%;height:300px;object-fit:cover;border-radius:8px;margin-bottom:12px">`;
+      photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${displayName}" style="width:100%;height:300px;object-fit:cover;border-radius:8px;margin-bottom:12px;display:block">`;
     } else if (typeof window.getPhotosForLocation === 'function') {
       photoHtml = `<div id="poi-photos-container" style="margin-bottom:12px;min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">📷 Caricamento foto...</div>`;
     } else {
@@ -2174,7 +2176,7 @@ window.addEventListener("load", () => {
       }
 
       // Analisi gluten-free per categorie food/drink
-      // Priorità: place_id verificato > place_id locale > matching GF shops
+      // Priorità: place_id verificato > googlePlaceId (Google Places) > place_id locale > matching GF shops
       let placeIdForGF = null;
 
       // Primo: prova con place_id verificato (dalla sincronizzazione)
@@ -2182,7 +2184,12 @@ window.addEventListener("load", () => {
       if (verifiedPOIGF?.googlePlaceId) {
         placeIdForGF = verifiedPOIGF.googlePlaceId;
         console.log('[openPOI] Using verified place_id for GF:', placeIdForGF);
+      } else if (p.googlePlaceId) {
+        // Google Places POI - usa il place_id di Google Places
+        placeIdForGF = p.googlePlaceId;
+        console.log('[openPOI] Using Google Places place_id for GF:', placeIdForGF);
       } else if (p.place_id) {
+        // Local POI - usa il place_id locale
         placeIdForGF = p.place_id;
         console.log('[openPOI] Using local place_id for GF:', placeIdForGF);
       }
@@ -2209,9 +2216,11 @@ window.addEventListener("load", () => {
       }
 
       if (['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) {
+        console.log(`%c[openPOI] GF Check START for: ${p.name} (cat=${p.cat})`, 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px');
         if (placeIdForGF) {
           console.log('%c[openPOI] 🌐 Analyzing GF status', 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px', p.name, 'with place_id:', placeIdForGF);
           const gfStatus = await analyzeGlutenFreeStatus(placeIdForGF, p.name, p.city);
+          console.log('[openPOI] GF Analysis returned:', gfStatus);
           if (gfStatus && gfStatus.lvl !== 'unknown') {
             console.log('[openPOI] GF Analysis result:', gfStatus);
             // Aggiorna il POI con i dati GF
