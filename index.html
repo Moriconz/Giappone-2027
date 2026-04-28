@@ -1615,10 +1615,7 @@ const POIS_BASE = window.POIS_DATASET || [];
         handled = true;
       } else if (id) {
         console.log('[MAP CLICK] → Opening POI:', id);
-        // Cerca il POI completo in allPOIs e passalo a __openPOI
-        const poi = allPOIs().find(p => p.id === id);
-        console.log('[MAP CLICK] Found POI object:', poi ? '✅' : '❌', poi?.name);
-        window.__openPOI(id, poi);
+        openPOI(id);
         handled = true;
       }
     });
