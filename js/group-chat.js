@@ -20,8 +20,16 @@ window.groupChat = (() => {
     } catch (e) {
       chatHistory = { messages: [], members: [] };
     }
+
+    if (!chatHistory || typeof chatHistory !== 'object') {
+      chatHistory = { messages: [], members: [] };
+    }
+    if (!Array.isArray(chatHistory.messages)) {
+      chatHistory.messages = [];
+    }
+    chatHistory.messages = chatHistory.messages.filter(msg => msg && typeof msg === 'object' && typeof msg.text === 'string');
     
-    console.log(`[GroupChat] Initialized for room ${roomId}`);
+    console.log(`[GroupChat] Initialized for room ${roomId}`, { chatHistory });
   }
   
   /**
@@ -79,6 +87,10 @@ window.groupChat = (() => {
   function receiveGroupMessage(message) {
     const group = window.state?.group;
     if (!group) return;
+    if (!message || typeof message !== 'object' || typeof message.text !== 'string') {
+      console.warn('[GroupChat] Ignored invalid incoming payload', message);
+      return;
+    }
     
     chatHistory.messages = chatHistory.messages || [];
     chatHistory.messages.push(message);
@@ -132,8 +144,11 @@ window.groupChat = (() => {
     const myPeerId = group?.myPeerId || window.peerGPS?.getMyPeerId?.();
     
     const messagesHtml = messages.slice(-50).map(msg => {
-      const isOwn = myPeerId ? msg.fromPeerId === myPeerId : msg.from === group?.myName;
-      const time = new Date(msg.timestamp).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      const messageFrom = msg?.from || 'Anonimo';
+      const messageText = msg?.text || '';
+      const messageTime = msg?.timestamp ? new Date(msg.timestamp) : new Date();
+      const isOwn = myPeerId ? msg.fromPeerId === myPeerId : messageFrom === group?.myName;
+      const time = messageTime.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
       
       return `
         <div style="
@@ -156,11 +171,11 @@ window.groupChat = (() => {
               font-size: 16px;
               font-weight: 600;
               color: white;
-            ">${msg.avatar || msg.from.charAt(0).toUpperCase()}</div>
+            ">${escapeHtml(msg?.avatar || messageFrom.charAt(0).toUpperCase())}</div>
           ` : ''}
           
           <div style="max-width: 70%;">
-            ${!isOwn ? `<div style="font-size: 12px; font-weight: 600; margin-bottom: 3px; padding: 0 8px; color: var(--muted);">${escapeHtml(msg.from)}</div>` : ''}
+            ${!isOwn ? `<div style="font-size: 12px; font-weight: 600; margin-bottom: 3px; padding: 0 8px; color: var(--muted);">${escapeHtml(messageFrom)}</div>` : ''}
             <div style="
               background: ${isOwn ? 'var(--accent)' : 'var(--surface-2)'};
               color: ${isOwn ? '#fff' : 'var(--text)'};
@@ -169,7 +184,7 @@ window.groupChat = (() => {
               word-wrap: break-word;
               font-size: 13px;
             ">
-              ${escapeHtml(msg.text)}
+              ${escapeHtml(messageText)}
             </div>
             <div style="
               font-size: 11px;
