@@ -16,14 +16,42 @@ let currentGPS = null;
 let loadedRadii = new Set();
 let loadInProgress = new Set();
 
+// Wait for GPS coordinates to be available
+async function waitForGPS(maxWaitMs = 25000, pollIntervalMs = 500) {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < maxWaitMs) {
+    if (window.state?.gpsCurrentLat && window.state?.gpsCurrentLng) {
+      console.log(`[GooglePlacesLoader] GPS coordinates found: ${window.state.gpsCurrentLat.toFixed(4)}, ${window.state.gpsCurrentLng.toFixed(4)}`);
+      return { lat: window.state.gpsCurrentLat, lng: window.state.gpsCurrentLng };
+    }
+    // Wait before polling again
+    await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+  }
+
+  console.warn('[GooglePlacesLoader] GPS coordinates not available after ${maxWaitMs}ms');
+  return null;
+}
+
 // Initialize loader
 async function initGooglePlacesLoader() {
   console.log('[GooglePlacesLoader] Initializing...');
 
   await window.GooglePlacesCache.initDB();
 
-  // Monitor GPS for changes
-  if (navigator.geolocation) {
+  // Wait for GPS coordinates (from window.state for testing, or navigator.geolocation for production)
+  let gpsCoords = await waitForGPS();
+
+  if (gpsCoords) {
+    currentGPS = gpsCoords;
+    console.log(`[GooglePlacesLoader] Starting with GPS: ${currentGPS.lat.toFixed(4)}, ${currentGPS.lng.toFixed(4)}`);
+    loadNearbyPOIs(currentGPS.lat, currentGPS.lng);
+  } else {
+    console.warn('[GooglePlacesLoader] No GPS coordinates available');
+  }
+
+  // Monitor GPS for changes (optional: use navigator.geolocation if available)
+  if (navigator.geolocation && false) { // Disabled for now - using window.state GPS
     navigator.geolocation.watchPosition(
       (pos) => {
         const newLat = pos.coords.latitude;
@@ -40,12 +68,6 @@ async function initGooglePlacesLoader() {
       (err) => console.warn('[GooglePlacesLoader] GPS error:', err),
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
     );
-  }
-
-  // Also try to get initial GPS position
-  if (window.state?.gpsCurrentLat && window.state?.gpsCurrentLng) {
-    currentGPS = { lat: window.state.gpsCurrentLat, lng: window.state.gpsCurrentLng };
-    loadNearbyPOIs(currentGPS.lat, currentGPS.lng);
   }
 
   console.log('[GooglePlacesLoader] Initialized');
