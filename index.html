@@ -2886,12 +2886,12 @@ const POIS_BASE = window.POIS_DATASET || [];
       </div>
       <div id="shopping-results">
         <div class="section" style="margin-bottom:16px">
-          <h3>🛍️ Negozi & Mercati</h3>
-          <div id="regular-shops">${regularHtml}</div>
-        </div>
-        <div class="section" style="margin-bottom:16px">
           <h3>👕 Vintage Shops (da Google Places)</h3>
           <div id="google-vintage" style="color:var(--muted);font-size:12px">⏳ Caricamento negozi vintage da Google Places...</div>
+        </div>
+        <div class="section" style="margin-bottom:16px">
+          <h3>🛍️ Negozi & Mercati</h3>
+          <div id="regular-shops">${regularHtml}</div>
         </div>
         <div class="section">
           <h3>🔄 Second-Hand & Vintage (Database locale)</h3>
@@ -3761,7 +3761,11 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     }).catch(err => console.warn('[App] POI preload error:', err));
   }
 
-  // ===================== PHASE 6: Service Worker Registration =====================
+  // ===================== PHASE 6: Auto-enable GPS on load =====================
+  console.log('[Giappone2027] Auto-enabling GPS on startup...');
+  startGPS();
+
+  // ===================== PHASE 7: Service Worker Registration =====================
   // ✓ DISABLED: sw.js not on GitHub Pages
   // if ('serviceWorker' in navigator) {
   //   navigator.serviceWorker.register('./sw.js')
