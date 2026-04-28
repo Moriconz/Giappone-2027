@@ -2312,6 +2312,18 @@ const POIS_BASE = window.POIS_DATASET || [];
   let listViewCache = { data: null, html: null };
 
   function renderListView(){
+    // Se GPS è acceso ma NON ha coordinate ancora: aspetta
+    if (state.gpsEnabled && (!state.gpsCurrentLat || !state.gpsCurrentLng)) {
+      window.openSheet('🗺️ Tutte le tappe', `
+        <div style="padding:20px;text-align:center">
+          <p style="font-size:14px;color:var(--accent);margin-bottom:20px">⏳ Acquisendo posizione GPS...</p>
+          <p style="font-size:12px;color:var(--muted)">Un attimo, il dispositivo sta localizzando...</p>
+        </div>
+      `);
+      console.log('[renderListView] GPS attivo ma coordinate NON acquisite — in attesa');
+      return;
+    }
+
     // Filtra per GPS se attivo (default: entro 10km)
     const gpsEnabled = state.gpsEnabled && state.gpsCurrentLat && state.gpsCurrentLng;
     const gpsRadius = 10; // km
@@ -2326,7 +2338,7 @@ const POIS_BASE = window.POIS_DATASET || [];
     });
     console.log('[renderListView] Total POI nel cache:', allPoisForList.length);
 
-    // Se GPS attivo, pre-filtra per distanza (mostra per default solo tappe vicine)
+    // Se GPS attivo, pre-filtra per distanza
     if (gpsEnabled) {
       const beforeFilter = allPoisForList.length;
       allPoisForList = allPoisForList.filter(p => {
@@ -2379,11 +2391,19 @@ const POIS_BASE = window.POIS_DATASET || [];
       `;
     }).join('');
 
+    // Messaggio GPS
+    let gpsMessage = '';
+    if (gpsEnabled) {
+      gpsMessage = `<p style="font-size:11px;color:var(--success);margin:6px 0 0">✅ 📍 Mostrando tappe entro ${gpsRadius}km. Scrivi per cercare ovunque.</p>`;
+    } else if (state.gpsEnabled && (!state.gpsCurrentLat || !state.gpsCurrentLng)) {
+      gpsMessage = `<p style="font-size:11px;color:var(--warning);margin:6px 0 0">⏳ Acquisendo posizione GPS... Nel frattempo vedi tutte le tappe.</p>`;
+    }
+
     const searchHtml = `
       <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
         <input id="list-search" type="text" placeholder="🔍 Cerca tappa..."
           style="width:100%;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit">
-        ${gpsEnabled ? `<p style="font-size:11px;color:var(--muted);margin:6px 0 0">📍 Mostrando tappe entro ${gpsRadius}km. Scrivi per cercare ovunque.</p>` : ''}
+        ${gpsMessage}
       </div>
       <div id="list-results"></div>
     `;
@@ -2430,14 +2450,26 @@ const POIS_BASE = window.POIS_DATASET || [];
       }).join('');
     };
 
-    // Mostra lista iniziale (filtrata GPS) - COMPATTA, senza espandere le città
+    // Mostra lista iniziale (filtrata GPS) - COMPATTA con PAGINAZIONE per città grandi
     const resultsDiv = document.getElementById('list-results');
+    const MAX_ITEMS_PER_PAGE = 100; // Mostra max 100 POI per pagina
 
-    // Build COMPACT list (solo nomi città, chiuse per default)
+    // Helper: pagina i POI di una categoria
+    function paginateItems(items, maxPerPage = MAX_ITEMS_PER_PAGE) {
+      if (items.length <= maxPerPage) {
+        return { page1: items, hasMore: false };
+      }
+      return { page1: items.slice(0, maxPerPage), rest: items.slice(maxPerPage), hasMore: true };
+    }
+
+    // Build COMPACT list (solo nomi città, chiuse per default, con paginazione)
     const compactHtml = order.map(cityName => {
       const categories = Object.keys(bycity[cityName]).sort((a,b) => (CATS[a]?.label||a).localeCompare(CATS[b]?.label||b));
       const categoryHtml = categories.map(cat => {
-        const items = bycity[cityName][cat].map(p => `
+        const allItems = bycity[cityName][cat];
+        const { page1, hasMore, rest } = paginateItems(allItems);
+
+        const itemsHtml = page1.map(p => `
           <div class="poi-row" data-id="${p.id}">
             <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
             <div class="body">
@@ -2447,8 +2479,23 @@ const POIS_BASE = window.POIS_DATASET || [];
             <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
           </div>
         `).join('');
-        return `<div class="category-section"><h4>${CATS[cat]?.label||cat} <span class="count">${bycity[cityName][cat].length}</span></h4>${items}</div>`;
+
+        const loadMoreBtn = hasMore ? `
+          <button data-city="${cityName}" data-cat="${cat}" data-rest-count="${rest.length}"
+            style="width:100%;padding:8px;margin-top:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:11px">
+            ↓ Carica altri ${Math.min(rest.length, MAX_ITEMS_PER_PAGE)} (${rest.length - MAX_ITEMS_PER_PAGE > 0 ? '+' + (rest.length - MAX_ITEMS_PER_PAGE) : 'ultimi'})
+          </button>
+        ` : '';
+
+        return `
+          <div class="category-section">
+            <h4>${CATS[cat]?.label||cat} <span class="count">${allItems.length}${hasMore ? ' (mostrando ' + page1.length + ')' : ''}</span></h4>
+            ${itemsHtml}
+            ${loadMoreBtn}
+          </div>
+        `;
       }).join('');
+
       return `
         <details class="city-dropdown">
           <summary>${cityName} <span class="count">${Object.values(bycity[cityName]).flat().length}</span></summary>
@@ -2458,6 +2505,53 @@ const POIS_BASE = window.POIS_DATASET || [];
     }).join('');
 
     resultsDiv.innerHTML = compactHtml || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
+
+    // Setup click handlers per i pulsanti "Carica altri"
+    resultsDiv.querySelectorAll('[data-city]').forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        const city = btn.dataset.city;
+        const cat = btn.dataset.cat;
+        const allItems = bycity[city][cat];
+        const { page1, rest } = paginateItems(allItems);
+
+        // Mostra altri MAX_ITEMS_PER_PAGE
+        const nextItems = rest.slice(0, MAX_ITEMS_PER_PAGE);
+        const stillMore = rest.length > MAX_ITEMS_PER_PAGE;
+
+        const moreHtml = nextItems.map(p => `
+          <div class="poi-row" data-id="${p.id}">
+            <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
+            <div class="body">
+              <div class="name">${getPoiDisplayName(p)}</div>
+              <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
+            </div>
+            <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+          </div>
+        `).join('');
+
+        // Aggiungi i nuovi item prima del pulsante
+        const categorySection = btn.closest('.category-section');
+        const itemsContainer = categorySection.querySelector('.poi-row:last-of-type');
+        const newDiv = document.createElement('div');
+        newDiv.innerHTML = moreHtml;
+
+        // Inserisci prima del pulsante
+        btn.parentNode.insertBefore(newDiv, btn);
+
+        // Update/rimuovi il pulsante
+        if (stillMore) {
+          const remaining = rest.length - MAX_ITEMS_PER_PAGE;
+          btn.textContent = `↓ Carica altri ${Math.min(remaining, MAX_ITEMS_PER_PAGE)} (${remaining > MAX_ITEMS_PER_PAGE ? '+' + (remaining - MAX_ITEMS_PER_PAGE) : 'ultimi'})`;
+          btn.dataset.restCount = remaining;
+        } else {
+          btn.remove();
+        }
+
+        // Riattacca i click handler ai nuovi elementi
+        newDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+      };
+    });
 
     // Setup ricerca (GLOBALE — cerca TUTTI i POI anche fuori dal raggio GPS)
     const searchInput = document.getElementById('list-search');
