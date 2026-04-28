@@ -160,6 +160,57 @@ async function fetchGooglePlacesPOIs(lat, lng, radiusM) {
   }
 }
 
+// Map Google Places types to app categories
+function mapGoogleTypesToCategory(types) {
+  if (!types || !Array.isArray(types)) return 'poi';
+
+  const typeMap = {
+    'restaurant': 'food',
+    'cafe': 'food',
+    'bakery': 'food',
+    'bar': 'food',
+    'night_club': 'food',
+    'meal_delivery': 'food',
+    'meal_takeaway': 'food',
+    'hotel': 'accommodation',
+    'lodging': 'accommodation',
+    'hostel': 'accommodation',
+    'museum': 'culture',
+    'library': 'culture',
+    'art_gallery': 'culture',
+    'temple': 'culture',
+    'church': 'culture',
+    'mosque': 'culture',
+    'shopping_mall': 'shopping',
+    'store': 'shopping',
+    'supermarket': 'shopping',
+    'clothing_store': 'shopping',
+    'shoe_store': 'shopping',
+    'pharmacy': 'shopping',
+    'park': 'nature',
+    'natural_feature': 'nature',
+    'tourist_attraction': 'culture',
+    'amusement_park': 'nature',
+    'zoo': 'nature',
+    'spa': 'wellness',
+    'gym': 'wellness',
+    'health': 'wellness',
+    'dentist': 'wellness',
+    'hospital': 'wellness',
+    'fire_station': 'services',
+    'police': 'services',
+    'post_office': 'services',
+    'train_station': 'transport',
+    'bus_station': 'transport',
+    'airport': 'transport'
+  };
+
+  for (const type of types) {
+    if (typeMap[type]) return typeMap[type];
+  }
+  return 'poi';
+}
+
 // Render markers from Google Places POI data
 async function renderMarkersFromGoogle(pois) {
   if (!pois || pois.length === 0) return;
@@ -167,8 +218,9 @@ async function renderMarkersFromGoogle(pois) {
   console.log(`[GooglePlacesLoader] Rendering ${pois.length} markers from Google Places`);
 
   // Transform POIs to standard format (extract lat/lng from geometry)
-  const transformedPois = pois.map(poi => ({
-    // Core Google Places data
+  const transformedPois = pois.map((poi, idx) => ({
+    // Generate unique ID for Google Places POI
+    id: `gp_${poi.place_id || `poi_${Date.now()}_${idx}`}`,
     googlePlaceId: poi.place_id,
     name: poi.name,
     lat: poi.geometry.location.lat,
@@ -177,6 +229,7 @@ async function renderMarkersFromGoogle(pois) {
     rating: poi.rating || null,
     ratingCount: poi.user_ratings_total || 0,
     types: poi.types || [],
+    cat: mapGoogleTypesToCategory(poi.types),
     businessStatus: poi.business_status || 'OPERATIONAL',
     icon: poi.icon || null,
     photos: (poi.photos || []).map(p => ({
@@ -189,6 +242,8 @@ async function renderMarkersFromGoogle(pois) {
     // Mark as Google Places POI
     fromGooglePlaces: true
   }));
+
+  console.log(`[GooglePlacesLoader] Transformed ${transformedPois.length} POIs with IDs and categories`);
 
   // Dispatch event for main app to render markers
   window.dispatchEvent(new CustomEvent('google-places-pois-loaded', {

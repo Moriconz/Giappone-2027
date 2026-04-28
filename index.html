@@ -669,7 +669,9 @@ window.addEventListener("load", () => {
     shrine:'#E07B39', temple:'#B5541E', nature:'#4A7C59', food:'#D4A017',
     vintage:'#7B5EA7', shopping:'#C85C3B', market:'#E0923A', museum:'#4A7AB5',
     onsen:'#D4698A', neighborhood:'#5A8AA5', viewpoint:'#3AA5A0',
-    castle:'#8A5A3A', experience:'#7A9E3A', water:'#1E90FF', all:'#C85C3B'
+    castle:'#8A5A3A', experience:'#7A9E3A', water:'#1E90FF', all:'#C85C3B',
+    accommodation:'#8B6F47', culture:'#4A7AB5', wellness:'#D4698A',
+    services:'#5A7A9E', transport:'#3A7EA0', poi:'#C85C3B'
   };
   const CAT_EMOJI = {
     shrine:'⛩️', temple:'🏯', nature:'🌿', food:'🍜',
@@ -680,7 +682,8 @@ window.addEventListener("load", () => {
     hotel:'🏨', station:'🚉', park:'🌳', garden:'🌸',
     entertainment:'🎭', sports:'⚽', hospital:'🏥', bank:'🏦',
     school:'🏫', church:'⛪', library:'📚', theatre:'🎬',
-    all:'📍'
+    accommodation:'🏩', culture:'🎨', wellness:'💆', services:'⚙️',
+    transport:'🚆', poi:'📍', all:'📍'
   };
   function makePoiStyle(cat, isGF) {
     const color = CAT_COLORS[cat] || '#C85C3B';
@@ -1911,6 +1914,15 @@ window.addEventListener("load", () => {
         <span class="tag">Posizione rilevata ${p.city}</span>
         ${gfTag(p.gf)}
       </div>
+      ${p.fromGooglePlaces ? `
+      <div style="background:var(--surface-2);padding:10px;border-radius:8px;margin:8px 0;border-left:3px solid var(--accent)">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">📍 Google Places</div>
+        ${p.rating ? `<div style="font-weight:600;color:var(--text)">⭐ ${p.rating.toFixed(1)} (${p.ratingCount} recensioni)</div>` : ''}
+        ${p.address ? `<div style="font-size:12px;margin-top:4px">📍 ${p.address}</div>` : ''}
+        ${p.businessStatus ? `<div style="font-size:12px;margin-top:4px;color:${p.businessStatus === 'OPERATIONAL' ? 'var(--success)' : 'var(--danger)'}">🏢 ${p.businessStatus === 'OPERATIONAL' ? 'Aperto' : 'Chiuso'}</div>` : ''}
+        ${p.openNow !== null ? `<div style="font-size:12px;margin-top:4px;color:${p.openNow ? 'var(--success)' : 'var(--danger)'}">⏰ ${p.openNow ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
+      </div>
+      ` : ''}
       <div id="cat-selector" style="display:none;margin:8px 0;padding:8px;background:var(--surface-2);border-radius:8px">
         <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Seleziona categoria:</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px" id="cat-options"></div>
