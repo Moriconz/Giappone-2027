@@ -1266,8 +1266,10 @@ window.addEventListener("load", () => {
     let visibleFilter = () => true;
     if (state.gpsEnabled && state.gpsCurrentLat && state.gpsCurrentLng) {
       const radiusKm = getGpsRadiusKm(zoom);
-      visibleFilter = p => haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng) <= radiusKm;
-      console.log('[renderMarkers] GPS filter active');
+      // Don't filter Google Places POIs by GPS radius (they're real locations to explore)
+      // Only filter local POIs by proximity
+      visibleFilter = p => p.fromGooglePlaces || haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng) <= radiusKm;
+      console.log('[renderMarkers] GPS filter active (local POIs only, Google Places POIs shown always)');
     } else {
       const size = map.getSize();
       if (size) {
