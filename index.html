@@ -2169,6 +2169,7 @@ const POIS_BASE = window.POIS_DATASET || [];
               console.log('[openPOI] ✅ GF section updated in Y2K window');
             }
           });
+        }
         } else {
           console.log('%c[openPOI] ⏭️ GF analysis skipped (no place_id found)', 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px');
         }
@@ -2253,6 +2254,8 @@ const POIS_BASE = window.POIS_DATASET || [];
     }
   }
   window.__openPOI = openPOI;
+  window.openPOI = openPOI;
+  window.analyzeGlutenFreeStatus = analyzeGlutenFreeStatus;
   // ---- Calendar (.ics) ----
   function pad(n){ return n<10?'0'+n:''+n; }
   function toICSDate(d){
