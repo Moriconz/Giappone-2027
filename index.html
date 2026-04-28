@@ -2140,20 +2140,34 @@ const POIS_BASE = window.POIS_DATASET || [];
           p.gf.mentions = gfStatus.mentions;
           p.gf.total_reviews = gfStatus.total_reviews;
 
-          // Aggiorna la UI se è ancora aperta
+          // Aggiorna la UI se è ancora aperta (sia sheet che Y2K window)
+          const map = { full: ['✅ 100% Gluten Free','gf-full'], partial: ['⚠️ Opzioni GF','gf-partial'], no: ['❌ Contiene Gluten','gf-none'], unknown: ['❓ Sconosciuto',''] };
+          const [label, cls] = map[gfStatus.lvl] || map.unknown;
+          const gfHtml = `
+            <h3>🌾 Analisi Gluten-Free</h3>
+            <p><span class="tag ${cls}">${label}</span></p>
+            <p style="font-size:12px;color:var(--muted);">Confidenza: ${gfStatus.confidence}% • ${gfStatus.mentions} menzioni su ${gfStatus.total_reviews} review</p>
+          `;
+
+          // Try sheet first
           const sheetBody = document.getElementById('sheet-body');
           if (sheetBody) {
             const gfSection = sheetBody.querySelector('[data-gf-section]');
             if (gfSection) {
-              const map = { full: ['✅ 100% Gluten Free','gf-full'], partial: ['⚠️ Opzioni GF','gf-partial'], no: ['❌ Contiene Gluten','gf-none'], unknown: ['❓ Sconosciuto',''] };
-              const [label, cls] = map[gfStatus.lvl] || map.unknown;
-              gfSection.innerHTML = `
-                <h3>🌾 Analisi Gluten-Free</h3>
-                <p><span class="tag ${cls}">${label}</span></p>
-                <p style="font-size:12px;color:var(--muted);">Confidenza: ${gfStatus.confidence}% • ${gfStatus.mentions} menzioni su ${gfStatus.total_reviews} review</p>
-              `;
+              gfSection.innerHTML = gfHtml;
+              console.log('[openPOI] ✅ GF section updated in sheet');
             }
           }
+
+          // Also try Y2K windows (in case POI is open as floating window)
+          const y2kWindows = document.querySelectorAll('.y2k-win-body');
+          y2kWindows.forEach(win => {
+            const gfSection = win.querySelector('[data-gf-section]');
+            if (gfSection) {
+              gfSection.innerHTML = gfHtml;
+              console.log('[openPOI] ✅ GF section updated in Y2K window');
+            }
+          });
         }
       }
     })();

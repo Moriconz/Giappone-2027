@@ -82,7 +82,8 @@ window.photosFeature = (() => {
   async function getPhotosForLocation(lat, lng, city, fallbackName) {
     const candidates = [];
     let placeName = null;
-    console.log('[Photos] getPhotosForLocation start', { lat, lng, city, fallbackName });
+    console.log('%c[Photos] 📷 START', 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px', { lat, lng, city, fallbackName });
+    const photoStartTime = Date.now();
 
     if (fallbackName && fallbackName.trim()) {
       candidates.push(fallbackName.trim());
@@ -111,13 +112,14 @@ window.photosFeature = (() => {
       console.log('[Photos] ⚠️ Name search failed, trying nearby search by coordinates...', { lat, lng });
       const nearbyPhotos = await searchGooglePlacePhotos(`nearby restaurant ${city}`, city, lat, lng);
       if (nearbyPhotos.length) {
-        console.log('[Photos] ✅ Found via coordinate fallback');
+        const photoTime = Date.now() - photoStartTime;
+        console.log(`%c[Photos] ✅ Found via coordinate fallback (${photoTime}ms)`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
         return nearbyPhotos;
       }
     }
-    }
 
-    console.warn('[Photos] No Google Places photos found for any candidate');
+    const photoTime = Date.now() - photoStartTime;
+    console.log(`%c[Photos] ❌ ZERO photos found (${photoTime}ms) - Candidates tried: ${candidates.join(', ')}`, 'background: #D9534F; color: white; padding: 4px 8px; border-radius: 3px');
     return [];
   }
 
