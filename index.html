@@ -1224,7 +1224,7 @@ const POIS_BASE = window.POIS_DATASET || [];
   let FAKE_POI_IDS = new Set();
 
   async function updateFakePOIList() {
-    const allPOIs = getCachedAllPOIs();
+    const allPOIs = window.allPOIs?.() || [];
     let newFakesFound = 0;
 
     for (const poi of allPOIs) {

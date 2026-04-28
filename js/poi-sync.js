@@ -61,7 +61,7 @@ async function syncNearbyPOIs(lat, lng, radiusKm = SYNC_RADIUS_INITIAL) {
   console.log(`[POI-Sync] Syncing nearby POIs: ${radiusKm}km radius`);
 
   try {
-    const allPOIs = window.getCachedAllPOIs?.() || window.allPOIs?.() || [];
+    const allPOIs = window.allPOIs?.() || window.allPOIs?.() || [];
     const needingVerification = await window.POIVerifiedDB.getPOIsNeedingVerificationNearby(
       allPOIs,
       lat,
@@ -227,7 +227,7 @@ async function getPOIData(poi) {
 // Sync stats
 async function getSyncStats() {
   const allVerified = await window.POIVerifiedDB.getAllVerifiedPOIs();
-  const allPOIs = window.getCachedAllPOIs?.() || window.allPOIs?.() || [];
+  const allPOIs = window.allPOIs?.() || window.allPOIs?.() || [];
 
   return {
     total: allPOIs.length,

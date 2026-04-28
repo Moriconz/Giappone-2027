@@ -172,7 +172,7 @@ window.POISyncTest = {
 };
 
 window.POISyncTest.mapQuality = async function() {
-  const allPOIs = window.getCachedAllPOIs?.() || [];
+  const allPOIs = window.allPOIs?.() || [];
   const allVerified = await window.POIVerifiedDB?.getAllVerifiedPOIs?.() || [];
   const verifiedIds = new Set(allVerified.map(p => p.localId));
 

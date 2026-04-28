@@ -94,7 +94,7 @@ async function syncCurrentViewport() {
   try {
     console.log('[POI-ViewportSync] Syncing viewport:', bounds);
 
-    const allPOIs = window.getCachedAllPOIs?.() || window.allPOIs?.() || [];
+    const allPOIs = window.allPOIs?.() || window.allPOIs?.() || [];
     const poiInViewport = allPOIs.filter(poi => isPOIInViewport(poi, bounds));
 
     if (poiInViewport.length === 0) {
@@ -139,7 +139,7 @@ async function syncCurrentViewport() {
 async function updateMapMarkers() {
   console.log('[POI-ViewportSync] Updating map markers');
 
-  const allPOIs = window.getCachedAllPOIs?.() || window.allPOIs?.() || [];
+  const allPOIs = window.allPOIs?.() || window.allPOIs?.() || [];
 
   // Get all verified POI IDs
   const verifiedPOIs = await window.POIVerifiedDB?.getAllVerifiedPOIs?.() || [];
@@ -192,7 +192,7 @@ function debounce(func, delay) {
 
 // Get viewport sync stats
 async function getViewportStats() {
-  const allPOIs = window.getCachedAllPOIs?.() || window.allPOIs?.() || [];
+  const allPOIs = window.allPOIs?.() || window.allPOIs?.() || [];
   const verified = await window.POIVerifiedDB?.getAllVerifiedPOIs?.() || [];
 
   return {
