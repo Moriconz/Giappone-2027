@@ -106,6 +106,17 @@ window.photosFeature = (() => {
       if (googlePhotos.length) return googlePhotos;
     }
 
+    // Fallback: se nessun nome ha funzionato, prova ricerca per coordinate
+    if (lat && lng && candidates.length > 0) {
+      console.log('[Photos] ⚠️ Name search failed, trying nearby search by coordinates...', { lat, lng });
+      const nearbyPhotos = await searchGooglePlacePhotos(`nearby restaurant ${city}`, city, lat, lng);
+      if (nearbyPhotos.length) {
+        console.log('[Photos] ✅ Found via coordinate fallback');
+        return nearbyPhotos;
+      }
+    }
+    }
+
     console.warn('[Photos] No Google Places photos found for any candidate');
     return [];
   }

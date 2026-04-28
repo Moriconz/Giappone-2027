@@ -3175,8 +3175,10 @@ const POIS_BASE = window.POIS_DATASET || [];
 
             const shops = await loadGlutenFreeShopsForCity(city);
             if (shops.length > 0) {
-              console.log(`[renderGFView] ✓ ${city}: ${shops.length} GF shops trovati`);
+              console.log(`%c[renderGFView] ✓ ${city}: ${shops.length} GF shops`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
               allGlutenFreeShops = allGlutenFreeShops.concat(shops);
+            } else {
+              console.log(`%c[renderGFView] ⚠️ ${city}: 0 GF shops (nessuno caricato)`, 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px');
 
               // Aggiorna la lista SUBITO dopo la città attuale
               if (isCurrentCity) {
