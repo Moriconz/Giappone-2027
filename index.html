@@ -355,7 +355,6 @@ nav.bottom button{position:relative}
 .gf-empty-state .icon{font-size:32px;margin-bottom:8px}
 
 </style>
-<link rel="stylesheet" href="./y2k-override.css" />
 </head>
 <body>
 <div id="app">
@@ -2194,6 +2193,9 @@ const POIS_BASE = window.POIS_DATASET || [];
       toast('Calendario scaricato 📅');
     };
   }
+  // Cache per lista tappe
+  let listViewCache = { data: null, html: null };
+
   function renderListView(){
     const bycity = {};
     allPOIs().forEach(p => {
@@ -2205,6 +2207,8 @@ const POIS_BASE = window.POIS_DATASET || [];
       if (!bycity[cityKey][cat]) bycity[cityKey][cat] = [];
       bycity[cityKey][cat].push(p);
     });
+    listViewCache.data = bycity;
+
     const known = CITIES.filter(c => bycity[c]);
     const extra = Object.keys(bycity).filter(c => !CITIES.includes(c)).sort();
     const order = [...known, ...extra];
@@ -2225,14 +2229,64 @@ const POIS_BASE = window.POIS_DATASET || [];
         return `<div class="category-section"><h4>${CATS[cat]?.label||cat} <span class="count">${bycity[cityName][cat].length}</span></h4>${items}</div>`;
       }).join('');
       return `
-        <details class="city-dropdown" open>
+        <details class="city-dropdown">
           <summary>${cityName} <span class="count">${Object.values(bycity[cityName]).flat().length}</span></summary>
           ${categoryHtml}
         </details>
       `;
     }).join('');
 
-    window.openSheet('🗺️ Tutte le tappe', html || '<p>Nessuna tappa trovata.</p>');
+    const searchHtml = `
+      <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
+        <input id="list-search" type="text" placeholder="🔍 Cerca tappa..."
+          style="width:100%;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit">
+      </div>
+      <div id="list-results">${html || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>'}</div>
+    `;
+
+    window.openSheet('🗺️ Tutte le tappe', searchHtml);
+
+    // Setup ricerca
+    const searchInput = document.getElementById('list-search');
+    const resultsDiv = document.getElementById('list-results');
+    if (searchInput) {
+      searchInput.oninput = (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        if (!query) {
+          resultsDiv.innerHTML = html;
+        } else {
+          const filtered = order.map(cityName => {
+            const poiInCity = Object.values(bycity[cityName]).flat()
+              .filter(p => getPoiDisplayName(p).toLowerCase().includes(query) ||
+                           (p.desc && p.desc.toLowerCase().includes(query)));
+            if (!poiInCity.length) return '';
+
+            const categoryHtml = Object.keys(bycity[cityName]).map(cat => {
+              const items = bycity[cityName][cat].filter(p =>
+                getPoiDisplayName(p).toLowerCase().includes(query) ||
+                (p.desc && p.desc.toLowerCase().includes(query))
+              ).map(p => `
+                <div class="poi-row" data-id="${p.id}">
+                  <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
+                  <div class="body">
+                    <div class="name">${getPoiDisplayName(p)}</div>
+                    <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
+                  </div>
+                  <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+                </div>
+              `).join('');
+              return items ? `<div class="category-section"><h4>${CATS[cat]?.label||cat} <span class="count">${items.length}</span></h4>${items}</div>` : '';
+            }).join('');
+
+            return categoryHtml ? `<details class="city-dropdown" open><summary>${cityName}</summary>${categoryHtml}</details>` : '';
+          }).join('');
+
+          resultsDiv.innerHTML = filtered || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
+        }
+        resultsDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+      };
+    }
+
     sheetBody.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
   }
   // ---- Itinerary / Agenda view ----
@@ -2270,19 +2324,84 @@ const POIS_BASE = window.POIS_DATASET || [];
       </div>`;
     }).join('') : '';
     const html = `
+      <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
+        <input id="itinerary-search" type="text" placeholder="🔍 Cerca tappa..."
+          style="width:100%;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;margin-bottom:8px">
+        <div class="action-row">
+          <button class="btn success" id="export-all-ics" ${!saved.length&&!custom.length?'disabled':''}>📥 .ics</button>
+          <button class="btn primary" id="export-json" ${!saved.length&&!custom.length?'disabled':''}>📥 JSON</button>
+          <button class="btn primary" id="export-pdf" ${!saved.length&&!custom.length?'disabled':''}>📥 HTML/PDF</button>
+          <button class="btn" id="add-custom">+ Custom</button>
+        </div>
+      </div>
       <div id="gps-status-panel" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px">
         ${buildGPSPanelHTML(gpsActive, pts, lat, lng)}
       </div>
-      <div class="section"><h3>★ Tappe salvate</h3>${savedHTML}</div>
-      <div class="action-row">
-        <button class="btn success" id="export-all-ics" ${!saved.length&&!custom.length?'disabled':''}>📥 .ics</button>
-        <button class="btn primary" id="export-json" ${!saved.length&&!custom.length?'disabled':''}>📥 JSON</button>
-        <button class="btn primary" id="export-pdf" ${!saved.length&&!custom.length?'disabled':''}>📥 HTML/PDF</button>
-        <button class="btn" id="add-custom">+ Custom</button>
+      <div id="itinerary-results">
+        <div class="section"><h3>★ Tappe salvate</h3><div id="saved-list">${savedHTML}</div></div>
+        ${custom.length?`<div class="section"><h3>✎ Tappe personalizzate</h3><div id="custom-list">${customHTML}</div></div>`:''}
       </div>
-      ${custom.length?`<div class="section"><h3>✎ Tappe personalizzate</h3>${customHTML}</div>`:''}
     `;
     window.openSheet('📅 La tua agenda', html);
+
+    // Setup ricerca
+    const searchInput = document.getElementById('itinerary-search');
+    if (searchInput) {
+      searchInput.oninput = (e) => {
+        const query = e.target.value.toLowerCase().trim();
+
+        if (!query) {
+          document.getElementById('saved-list').innerHTML = savedHTML;
+          if (custom.length) document.getElementById('custom-list').innerHTML = customHTML;
+        } else {
+          const filteredSaved = saved.filter(p =>
+            getPoiDisplayName(p).toLowerCase().includes(query) ||
+            (p.desc && p.desc.toLowerCase().includes(query)) ||
+            (p.city && p.city.toLowerCase().includes(query))
+          );
+          const filteredCustom = custom.filter(e =>
+            e.name.toLowerCase().includes(query) ||
+            (e.city && e.city.toLowerCase().includes(query))
+          );
+
+          const filteredSavedHTML = filteredSaved.length ? filteredSaved.map(p => {
+            const km = (state.gpsCurrentLat && p.lat)
+              ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng) : null;
+            const distSpan = `<span data-gps-dist data-lat="${p.lat}" data-lng="${p.lng}"
+              style="font-size:11px;color:${km!==null?(km<1?'var(--success)':km<5?'var(--warning)':'var(--muted)'):'var(--muted)'}">
+              ${km!==null?'Posizione rilevata '+fmtDist(km):''}</span>`;
+            return `<div class="poi-row" data-id="${p.id}">
+              <div class="icon">${CATS[p.cat]?.icon||'Posizione rilevata'}</div>
+              <div class="body">
+                <div class="name">★ ${getPoiDisplayName(p)}</div>
+                <div class="sub">${p.city} ${distSpan}</div>
+              </div>
+              <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+            </div>`;
+          }).join('') : '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata</p>';
+
+          const filteredCustomHTML = filteredCustom.length ? filteredCustom.map(e => {
+            const km = (state.gpsCurrentLat && e.lat)
+              ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, e.lat, e.lng) : null;
+            return `<div class="poi-row" data-custom-id="${e.id}">
+              <div class="icon" style="background:var(--warning);color:#1a1a1a">✎</div>
+              <div class="body">
+                <div class="name">${e.name}</div>
+                <div class="sub">${e.city} · personalizzato${km!==null?' · <span data-gps-dist data-lat="'+e.lat+'" data-lng="'+e.lng+'" style="font-size:11px;color:var(--muted)">Posizione rilevata '+fmtDist(km)+'</span>':''}</div>
+              </div>
+            </div>`;
+          }).join('') : '';
+
+          document.getElementById('saved-list').innerHTML = filteredSavedHTML;
+          if (custom.length && document.getElementById('custom-list')) {
+            document.getElementById('custom-list').innerHTML = filteredCustomHTML;
+          }
+        }
+
+        document.getElementById('itinerary-results').querySelectorAll('[data-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+        document.getElementById('itinerary-results').querySelectorAll('[data-custom-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.customId); });
+      };
+    }
     updateGPSStatusPanel();
     sheetBody.querySelectorAll('[data-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
     sheetBody.querySelectorAll('[data-custom-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.customId); });
@@ -2514,29 +2633,108 @@ const POIS_BASE = window.POIS_DATASET || [];
   }
   window.createAvatarDataUrl = createAvatarDataUrl;
 
+  // Cache per shopping
+  let shoppingCache = { data: null };
+
   function renderShoppingView() {
-    const categories = { shop:'Negozi', vintage:'Vintage', market:'Mercati' };
     const items = filtered().filter(p => ['shop','market','vintage'].includes(p.cat));
-    const grouped = items.reduce((acc, p) => {
-      acc[p.cat] = acc[p.cat] || [];
-      acc[p.cat].push(p);
-      return acc;
-    }, {});
-    const html = items.length ? Object.entries(grouped).map(([cat, group]) => `
-      <div style="margin-bottom:16px;">
-        <h4 style="margin:0 0 8px;">${CATS[cat]?.icon || '🛍️'} ${CATS[cat]?.label || categories[cat] || cat}</h4>
-        ${group.map(p => `
-          <div class="poi-row" data-id="${p.id}">
-            <div class="icon">${CATS[p.cat]?.icon || '🛍️'}</div>
-            <div class="body">
-              <div class="name">${getPoiDisplayName(p)}</div>
-              <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
-            </div>
-          </div>
-        `).join('')}
+
+    // Separazione: negozi normali vs second-hand
+    const regular = items.filter(p => p.cat === 'shop' || p.cat === 'market');
+    const secondhand = items.filter(p => p.cat === 'vintage');
+
+    shoppingCache.data = items;
+
+    const regularHtml = regular.length ? regular.map(p => `
+      <div class="poi-row" data-id="${p.id}">
+        <div class="icon">${CATS[p.cat]?.icon || '🛍️'}</div>
+        <div class="body">
+          <div class="name">${getPoiDisplayName(p)}</div>
+          <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
+        </div>
       </div>
-    `).join('') : '<p style="color:var(--muted);font-size:13px">Nessun punto shopping trovato con i filtri correnti.</p>';
+    `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio trovato</p>';
+
+    const secondhandHtml = secondhand.length ? secondhand.map(p => `
+      <div class="poi-row" data-id="${p.id}">
+        <div class="icon">${CATS[p.cat]?.icon || '👕'}</div>
+        <div class="body">
+          <div class="name">${getPoiDisplayName(p)}</div>
+          <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
+        </div>
+      </div>
+    `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio second-hand trovato</p>';
+
+    const html = `
+      <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
+        <input id="shopping-search" type="text" placeholder="🔍 Cerca negozio..."
+          style="width:100%;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit">
+      </div>
+      <div id="shopping-results">
+        <div class="section" style="margin-bottom:16px">
+          <h3>🛍️ Negozi & Mercati</h3>
+          <div id="regular-shops">${regularHtml}</div>
+        </div>
+        <div class="section">
+          <h3>👕 Second-Hand & Vintage</h3>
+          <div id="secondhand-shops">${secondhandHtml}</div>
+        </div>
+      </div>
+    `;
+
     window.openSheet('🛍️ Shopping', html);
+
+    // Setup ricerca
+    const searchInput = document.getElementById('shopping-search');
+    const resultsDiv = document.getElementById('shopping-results');
+    if (searchInput) {
+      searchInput.oninput = (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        const filtered = shoppingCache.data;
+
+        if (!query) {
+          document.getElementById('regular-shops').innerHTML = regularHtml;
+          document.getElementById('secondhand-shops').innerHTML = secondhandHtml;
+        } else {
+          const filteredRegular = regular.filter(p =>
+            getPoiDisplayName(p).toLowerCase().includes(query) ||
+            (p.desc && p.desc.toLowerCase().includes(query)) ||
+            (p.city && p.city.toLowerCase().includes(query))
+          );
+          const filteredSecondhand = secondhand.filter(p =>
+            getPoiDisplayName(p).toLowerCase().includes(query) ||
+            (p.desc && p.desc.toLowerCase().includes(query)) ||
+            (p.city && p.city.toLowerCase().includes(query))
+          );
+
+          const regularHtmlFiltered = filteredRegular.length ? filteredRegular.map(p => `
+            <div class="poi-row" data-id="${p.id}">
+              <div class="icon">${CATS[p.cat]?.icon || '🛍️'}</div>
+              <div class="body">
+                <div class="name">${getPoiDisplayName(p)}</div>
+                <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
+              </div>
+            </div>
+          `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio trovato</p>';
+
+          const secondhandHtmlFiltered = filteredSecondhand.length ? filteredSecondhand.map(p => `
+            <div class="poi-row" data-id="${p.id}">
+              <div class="icon">${CATS[p.cat]?.icon || '👕'}</div>
+              <div class="body">
+                <div class="name">${getPoiDisplayName(p)}</div>
+                <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
+              </div>
+            </div>
+          `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio second-hand trovato</p>';
+
+          document.getElementById('regular-shops').innerHTML = regularHtmlFiltered;
+          document.getElementById('secondhand-shops').innerHTML = secondhandHtmlFiltered;
+        }
+
+        resultsDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+      };
+    }
+
     sheetBody.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
   }
 

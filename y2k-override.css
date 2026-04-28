@@ -505,6 +505,59 @@ nav.bottom button:nth-child(5) { animation-delay: 0.25s; }
 nav.bottom button:nth-child(6) { animation-delay: 0.30s; }
 nav.bottom button:nth-child(7) { animation-delay: 0.35s; }
 
+/* ── CONTRASTO TESTI GRIGI SU SUPERFICI CHIARE ──────────────────── */
+/* Nelle finestre/sheet (sfondo cream) il muted lavanda diventa illeggibile.
+   Queste regole forzano testi scuri su ogni superficie chiara.           */
+
+.sheet-inner .sub,
+.sheet-inner .muted,
+.sheet-inner small,
+.sheet-inner .tag:not(.cat):not(.gf-full):not(.gf-partial) {
+  color: #4A3D8A !important;
+  opacity: 1 !important;
+}
+
+/* Sottotitoli nelle poi-row dentro le sheet: testo scuro su bg chiaro */
+.sheet-inner .poi-row .sub {
+  color: #C8BDFF !important; /* rimane leggibile sul bg blu scuro dei poi-row */
+}
+
+/* Booking card: ogni testo secondario ben leggibile */
+.booking-card .sub,
+.booking-card small,
+.booking-card .muted,
+.booking-card [style*="color:var(--muted)"],
+.booking-card [style*="color: var(--muted)"] {
+  color: #4A3D8A !important;
+}
+
+/* Shop card */
+.shop-card .sub,
+.shop-card small,
+.shop-card .muted {
+  color: #4A3D8A !important;
+}
+
+/* Form labels su sfondo scuro: lavanda più brillante */
+.form-row label {
+  color: #C8BDFF !important;
+  font-weight: 600 !important;
+}
+
+/* Testi con var(--muted) inline su superfici chiare */
+.sheet-body [style*="color:var(--muted)"],
+.sheet-body [style*="color: var(--muted)"] {
+  color: #4A3D8A !important;
+}
+
+/* Section header nelle sheet: rosa scuro leggibile su cream */
+.sheet-inner .section h3,
+.sheet-body .section h3 {
+  color: #A8005A !important;
+  text-shadow: none !important;
+  letter-spacing: 0.06em !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
