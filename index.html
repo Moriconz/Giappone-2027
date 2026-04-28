@@ -2107,9 +2107,25 @@ const POIS_BASE = window.POIS_DATASET || [];
       }
 
       // Analisi gluten-free per categorie food/drink
-      if (['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat) && p.place_id) {
-        console.log('[openPOI] Analyzing GF status for:', p.name);
-        const gfStatus = await analyzeGlutenFreeStatus(p.place_id, p.name, p.city);
+      let placeIdForGF = p.place_id;
+
+      // Se non ha place_id, prova a matchare con i GF shops caricati da Google Places
+      if (!placeIdForGF && ['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) {
+        console.log('[openPOI] No place_id found, searching in GF shops by name+city...');
+        const matchedShop = allGlutenFreeShops.find(shop =>
+          shop.name && p.name &&
+          shop.name.toLowerCase().includes(p.name.toLowerCase().substring(0, 5)) &&
+          shop.city === p.city
+        );
+        if (matchedShop && matchedShop.place_id) {
+          placeIdForGF = matchedShop.place_id;
+          console.log('[openPOI] ✓ Matched with GF shop:', matchedShop.name, 'place_id:', placeIdForGF);
+        }
+      }
+
+      if (['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat) && placeIdForGF) {
+        console.log('[openPOI] Analyzing GF status for:', p.name, 'with place_id:', placeIdForGF);
+        const gfStatus = await analyzeGlutenFreeStatus(placeIdForGF, p.name, p.city);
         if (gfStatus && gfStatus.lvl !== 'unknown') {
           console.log('[openPOI] GF Analysis result:', gfStatus);
           // Aggiorna il POI con i dati GF
