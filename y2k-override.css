@@ -154,11 +154,13 @@ nav.bottom button {
   background: linear-gradient(180deg, #8B9FD9, #6B7FB9) !important;
   border: 2px solid #E0D5FF !important;
   border-radius: 6px !important;
-  color: white !important;
+  color: #FFFFFF !important;
   font-family: 'Courier New', monospace !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6) !important;
   transition: all 0.2s !important;
   padding: 4px 2px 3px !important;
-  font-size: 8px !important;
+  font-size: 10px !important;
 }
 
 nav.bottom button svg {
@@ -210,12 +212,21 @@ nav.bottom button svg {
 }
 
 .sheet-header h2 {
-  color: #2D3B7D !important;
+  color: #1A2560 !important;
   font-family: 'Comic Sans MS', cursive !important;
+  font-weight: 700 !important;
 }
 
 .sheet-body {
-  color: #2D3B7D !important;
+  color: #1A2560 !important;
+}
+
+.sheet-body p,
+.sheet-body span,
+.sheet-body div,
+.sheet-body small,
+.sheet-body li {
+  color: #1A2560 !important;
 }
 
 /* ── TAGS ───────────────────────────────────────────────────────── */
@@ -313,14 +324,16 @@ nav.bottom button svg {
 }
 
 .poi-row .sub {
-  color: #E0D5FF !important;
+  color: #C8BDFF !important;
+  font-weight: 600 !important;
 }
 
 /* ── SECTIONS ───────────────────────────────────────────────────── */
 .section h3 {
-  color: #FF1493 !important;
-  text-shadow: 0 0 8px rgba(255,20,147,0.3) !important;
+  color: #A8005A !important;
+  text-shadow: none !important;
   font-family: 'Courier New', monospace !important;
+  font-weight: 700 !important;
 }
 
 /* ── FORM INPUTS ────────────────────────────────────────────────── */
@@ -363,8 +376,12 @@ nav.bottom button svg {
   background: linear-gradient(135deg, #FFF8DC, #FFFACD) !important;
   border: 2px solid #FFD700 !important;
   border-radius: 10px !important;
-  color: #2D3B7D !important;
+  color: #1A2560 !important;
   box-shadow: 0 0 8px rgba(255,215,0,0.2) !important;
+}
+
+.booking-card * {
+  color: #1A2560 !important;
 }
 
 .bc-status.confirmed {
@@ -388,8 +405,9 @@ nav.bottom button svg {
 }
 
 .shop-card .sc-name {
-  color: #2D3B7D !important;
+  color: #1A2560 !important;
   font-family: 'Courier New', monospace !important;
+  font-weight: 700 !important;
 }
 
 .shop-card .sc-rating {
@@ -412,8 +430,9 @@ nav.bottom button svg {
 
 .ai-msg.ai {
   background: linear-gradient(135deg, #E8F4FF, #F0EDFF) !important;
-  border: 2px solid #00FF88 !important;
-  color: #2D3B7D !important;
+  border: 2px solid #00BB66 !important;
+  color: #1A2560 !important;
+  font-weight: 600 !important;
 }
 
 /* ── LEAFLET POPUP ──────────────────────────────────────────────── */
