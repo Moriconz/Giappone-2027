@@ -1858,7 +1858,7 @@ const POIS_BASE = window.POIS_DATASET || [];
             </div>
           `).join('');
 
-          const sourceLabel = photos[0]?.source === 'google_places' ? '📷 Foto da Google Places' : '📷 Foto da Unsplash';
+          const sourceLabel = '📷 Foto da Google Maps';
           container.outerHTML = `
             <div style="margin-bottom:12px">
               <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%;margin-bottom:6px">
@@ -1868,7 +1868,7 @@ const POIS_BASE = window.POIS_DATASET || [];
             </div>
           `;
         } else {
-          container.outerHTML = photoFallbackHtml('Nessuna foto Unsplash trovata', p);
+          container.outerHTML = photoFallbackHtml('Nessuna foto Google Maps trovata', p);
         }
       } catch (err) {
         console.error('[loadPOIPhotos] Error:', err && err.message);
@@ -2455,6 +2455,7 @@ const POIS_BASE = window.POIS_DATASET || [];
     ctx.fillText(initials, 32, 34);
     return canvas.toDataURL('image/png');
   }
+  window.createAvatarDataUrl = createAvatarDataUrl;
 
   function renderShoppingView() {
     const categories = { shop:'Negozi', vintage:'Vintage', market:'Mercati' };

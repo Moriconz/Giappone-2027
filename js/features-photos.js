@@ -1,5 +1,5 @@
 // ============================================================================
-// JS/FEATURES-PHOTOS.JS — Google Places photo search, Unsplash fallback, reverse geocoding
+// JS/FEATURES-PHOTOS.JS — Google Places photo search only, reverse geocoding
 // ============================================================================
 
 console.log('[Photos] Loading...');
@@ -67,86 +67,47 @@ window.photosFeature = (() => {
   }
 
   // =========================================================================
-  // 3. UNSPLASH PHOTO SEARCH — Fallback
-  // =========================================================================
-  async function searchPlacePhotos(placeName, city) {
-    if (!placeName) return [];
-
-    try {
-      const query = city ? `${placeName} ${city} Japan` : `${placeName} Japan`;
-      const resp = await fetch(`/api/searchUnsplash?query=${encodeURIComponent(query)}`);
-      if (!resp.ok) {
-        console.warn('[Unsplash] HTTP error:', resp.status);
-        return [];
-      }
-      const data = await resp.json();
-      if (data.results && Array.isArray(data.results)) {
-        console.log('[Unsplash] Found', data.results.length, 'photos for', query);
-        return data.results.slice(0, 5).map(photo => ({
-          url: photo.urls.regular,
-          thumb: photo.urls.thumb,
-          author: photo.user?.name,
-          link: photo.user?.links?.html,
-          source: 'unsplash'
-        }));
-      }
-      console.warn('[Unsplash] No results for:', query);
-      return [];
-    } catch (err) {
-      console.error('[Unsplash] Error:', err.message);
-      return [];
-    }
-  }
-
-  // =========================================================================
-  // 4. COMPLETE FLOW: Get photos (Google Places first, Unsplash fallback)
+  // 3. COMPLETE FLOW: Get photos (Google Places only)
   // =========================================================================
   async function getPhotosForLocation(lat, lng, city, fallbackName) {
     const candidates = [];
     let placeName = null;
 
+    if (fallbackName && fallbackName.trim()) {
+      candidates.push(fallbackName.trim());
+    }
+
     try {
       placeName = await reverseGeocode(lat, lng);
       if (placeName) {
-        candidates.push(placeName);
+        if (!candidates.includes(placeName)) {
+          candidates.push(placeName);
+        }
         console.log('[Photos] Reverse geocode name:', placeName);
       }
     } catch (err) {
       console.warn('[Photos] Reverse geocode failed, will use fallback name');
     }
 
-    if (fallbackName && fallbackName.trim()) {
-      const normalizedFallback = fallbackName.trim();
-      if (!candidates.includes(normalizedFallback)) {
-        candidates.push(normalizedFallback);
-      }
-    }
-
     for (const candidate of candidates) {
+      console.log('[Photos] Trying Google Places search for:', candidate);
       const googlePhotos = await searchGooglePlacePhotos(candidate, city, lat, lng);
       if (googlePhotos.length) return googlePhotos;
     }
 
-    const searchName = candidates[0] || null;
-    if (searchName) {
-      return await searchPlacePhotos(searchName, city);
-    }
-
-    console.warn('[Photos] No place name available for photos');
+    console.warn('[Photos] No Google Places photos found for any candidate');
     return [];
   }
 
   return {
     reverseGeocode,
     searchGooglePlacePhotos,
-    searchPlacePhotos,
     getPhotosForLocation
   };
 })();
 
 window.reverseGeocode = window.photosFeature.reverseGeocode;
 window.searchGooglePlacePhotos = window.photosFeature.searchGooglePlacePhotos;
-window.searchPlacePhotos = window.photosFeature.searchPlacePhotos;
 window.getPhotosForLocation = window.photosFeature.getPhotosForLocation;
 
 console.log('[Photos] Loaded ✓');
