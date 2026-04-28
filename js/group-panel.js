@@ -83,6 +83,9 @@ window.groupPanel = (() => {
           <button class="btn primary" id="open-group-chat" style="width: 100%; margin-bottom: 10px;">
             💬 Apri chat stanza
           </button>
+          <button class="btn" id="clear-group-chat" style="width: 100%; margin-bottom: 10px; background: var(--warning); border-color: var(--warning); color: #1a1a1a;">
+            🧹 Pulisci chat locale
+          </button>
           <p style="font-size: 11px; color: var(--muted);">
             Comunica con i membri della stanza (messaggi P2P).
           </p>
@@ -135,6 +138,18 @@ window.groupPanel = (() => {
     if (chatBtn) {
       chatBtn.addEventListener('click', () => {
         window.groupChat?.openChatPanel();
+      });
+    }
+
+    const clearChatBtn = document.getElementById('clear-group-chat');
+    if (clearChatBtn) {
+      clearChatBtn.addEventListener('click', () => {
+        const roomId = window.state?.group?.roomId;
+        if (!roomId) return;
+        window.groupChat?.clearHistory(roomId);
+        if (typeof toast === 'function') {
+          toast('🧹 Cronologia chat cancellata.');
+        }
       });
     }
     

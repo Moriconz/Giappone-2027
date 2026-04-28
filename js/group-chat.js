@@ -7,7 +7,35 @@
 window.groupChat = (() => {
   let chatHistory = {};
   let chatPanelOpen = false;
-  
+
+  function isValidAvatarString(value) {
+    return typeof value === 'string' && (
+      value.startsWith('data:image/') ||
+      value.startsWith('http://') ||
+      value.startsWith('https://')
+    );
+  }
+
+  function normalizeChatMessage(message) {
+    if (!message || typeof message !== 'object') return null;
+
+    const from = typeof message.from === 'string' && message.from.trim() ? message.from.trim() : 'Anonimo';
+    const text = typeof message.text === 'string' ? message.text.trim() : '';
+    if (!text) return null;
+
+    return {
+      id: typeof message.id === 'string' ? message.id : `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      from,
+      fromPeerId: typeof message.fromPeerId === 'string' ? message.fromPeerId : null,
+      avatar: isValidAvatarString(message.avatar) ? message.avatar : null,
+      text,
+      timestamp: typeof message.timestamp === 'string' && !Number.isNaN(Date.parse(message.timestamp))
+        ? message.timestamp
+        : new Date().toISOString(),
+      type: 'message'
+    };
+  }
+
   /**
    * Inizializza chat per una stanza
    */
@@ -45,7 +73,7 @@ window.groupChat = (() => {
     
     if (!text || text.trim() === '') return;
     
-    const message = {
+    const rawMessage = {
       id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       from: group.myName || 'Anonimo',
       fromPeerId: window.peerGPS?.getMyPeerId?.() || null,
@@ -54,7 +82,12 @@ window.groupChat = (() => {
       timestamp: new Date().toISOString(),
       type: 'message'
     };
-    
+    const message = normalizeChatMessage(rawMessage);
+    if (!message) {
+      console.warn('[GroupChat] Message normalization failed', { rawMessage });
+      return;
+    }
+
     // Salva localmente
     chatHistory.messages = chatHistory.messages || [];
     chatHistory.messages.push(message);
@@ -87,18 +120,20 @@ window.groupChat = (() => {
   function receiveGroupMessage(message) {
     const group = window.state?.group;
     if (!group) return;
-    if (!message || typeof message !== 'object' || typeof message.text !== 'string') {
+
+    const normalizedMessage = normalizeChatMessage(message);
+    if (!normalizedMessage) {
       console.warn('[GroupChat] Ignored invalid incoming payload', message);
       return;
     }
-    
+
     chatHistory.messages = chatHistory.messages || [];
-    chatHistory.messages.push(message);
+    chatHistory.messages.push(normalizedMessage);
     saveChat(group.roomId);
     
     // Notifica push (se pannello non aperto)
     if (!chatPanelOpen) {
-      notifyNewMessage(message);
+      notifyNewMessage(normalizedMessage);
     }
     
     // Rirenderizza se pannello aperto
@@ -147,18 +182,13 @@ window.groupChat = (() => {
       const messageFrom = msg?.from || 'Anonimo';
       const messageText = msg?.text || '';
       const messageTime = msg?.timestamp ? new Date(msg.timestamp) : new Date();
+      const avatar = isValidAvatarString(msg?.avatar) ? msg.avatar : null;
       const isOwn = myPeerId ? msg.fromPeerId === myPeerId : messageFrom === group?.myName;
       const time = messageTime.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
       
-      return `
-        <div style="
-          display: flex;
-          gap: 8px;
-          margin-bottom: 12px;
-          justify-content: ${isOwn ? 'flex-end' : 'flex-start'};
-          align-items: flex-end;
-        ">
-          ${!isOwn ? `
+      const avatarHtml = avatar ? `
+            <img src="${avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--primary);" />
+          ` : `
             <div style="
               width: 32px;
               height: 32px;
@@ -171,8 +201,18 @@ window.groupChat = (() => {
               font-size: 16px;
               font-weight: 600;
               color: white;
-            ">${escapeHtml(msg?.avatar || messageFrom.charAt(0).toUpperCase())}</div>
-          ` : ''}
+            ">${escapeHtml(messageFrom.charAt(0).toUpperCase())}</div>
+          `;
+
+      return `
+        <div style="
+          display: flex;
+          gap: 8px;
+          margin-bottom: 12px;
+          justify-content: ${isOwn ? 'flex-end' : 'flex-start'};
+          align-items: flex-end;
+        ">
+          ${!isOwn ? avatarHtml : ''}
           
           <div style="max-width: 70%;">
             ${!isOwn ? `<div style="font-size: 12px; font-weight: 600; margin-bottom: 3px; padding: 0 8px; color: var(--muted);">${escapeHtml(messageFrom)}</div>` : ''}
@@ -309,6 +349,23 @@ window.groupChat = (() => {
       console.warn('[GroupChat] localStorage save failed:', e);
     }
   }
+
+  /**
+   * Cancella la cronologia chat locale per una stanza
+   */
+  function clearChatHistory(roomId) {
+    if (!roomId) return;
+    const cacheKey = `groupchat_${roomId}`;
+    try {
+      localStorage.removeItem(cacheKey);
+      if (window.state?.group?.roomId === roomId) {
+        chatHistory = { messages: [], members: [] };
+      }
+      console.log('[GroupChat] Cleared local chat history for', roomId);
+    } catch (e) {
+      console.warn('[GroupChat] Clear chat history failed:', e);
+    }
+  }
   
   /**
    * Escapa HTML
@@ -328,6 +385,7 @@ window.groupChat = (() => {
     send: sendGroupMessage,
     receive: receiveGroupMessage,
     openChatPanel,
+    clearHistory: clearChatHistory,
     getHistory: () => chatHistory
   };
 })();
