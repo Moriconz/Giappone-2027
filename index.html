@@ -1915,12 +1915,12 @@ window.addEventListener("load", () => {
         ${gfTag(p.gf)}
       </div>
       ${p.fromGooglePlaces ? `
-      <div style="background:var(--surface-2);padding:10px;border-radius:8px;margin:8px 0;border-left:3px solid var(--accent)">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">📍 Google Places</div>
-        ${p.rating ? `<div style="font-weight:600;color:var(--text)">⭐ ${p.rating.toFixed(1)} (${p.ratingCount} recensioni)</div>` : ''}
-        ${p.address ? `<div style="font-size:12px;margin-top:4px">📍 ${p.address}</div>` : ''}
-        ${p.businessStatus ? `<div style="font-size:12px;margin-top:4px;color:${p.businessStatus === 'OPERATIONAL' ? 'var(--success)' : 'var(--danger)'}">🏢 ${p.businessStatus === 'OPERATIONAL' ? 'Aperto' : 'Chiuso'}</div>` : ''}
-        ${p.openNow !== null ? `<div style="font-size:12px;margin-top:4px;color:${p.openNow ? 'var(--success)' : 'var(--danger)'}">⏰ ${p.openNow ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
+      <div style="background:#2A3F5F;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #FFD700">
+        <div style="font-size:12px;color:#B0C4DE;margin-bottom:8px">📍 <strong>Google Places</strong></div>
+        ${p.rating ? `<div style="font-weight:700;color:#FFD700;font-size:14px">⭐ ${p.rating.toFixed(1)} <span style="color:#B0C4DE;font-size:12px">(${p.ratingCount} recensioni)</span></div>` : ''}
+        ${p.address ? `<div style="font-size:12px;margin-top:6px;color:#E8E8E8">📍 ${p.address}</div>` : ''}
+        ${p.businessStatus ? `<div style="font-size:12px;margin-top:4px;color:${p.businessStatus === 'OPERATIONAL' ? '#90EE90' : '#FF6B6B'}">🏢 ${p.businessStatus === 'OPERATIONAL' ? 'Aperto' : 'Chiuso'}</div>` : ''}
+        ${p.openNow !== null ? `<div style="font-size:12px;margin-top:4px;color:${p.openNow ? '#90EE90' : '#FF6B6B'}">⏰ ${p.openNow ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
       </div>
       ` : ''}
       <div id="cat-selector" style="display:none;margin:8px 0;padding:8px;background:var(--surface-2);border-radius:8px">
@@ -2213,45 +2213,85 @@ window.addEventListener("load", () => {
           console.log('%c[openPOI] 🌐 Analyzing GF status', 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px', p.name, 'with place_id:', placeIdForGF);
           const gfStatus = await analyzeGlutenFreeStatus(placeIdForGF, p.name, p.city);
           if (gfStatus && gfStatus.lvl !== 'unknown') {
-          console.log('[openPOI] GF Analysis result:', gfStatus);
-          // Aggiorna il POI con i dati GF
-          if (!p.gf) p.gf = {};
-          p.gf.lvl = gfStatus.lvl;
-          p.gf.confidence = gfStatus.confidence;
-          p.gf.mentions = gfStatus.mentions;
-          p.gf.total_reviews = gfStatus.total_reviews;
+            console.log('[openPOI] GF Analysis result:', gfStatus);
+            // Aggiorna il POI con i dati GF
+            if (!p.gf) p.gf = {};
+            p.gf.lvl = gfStatus.lvl;
+            p.gf.confidence = gfStatus.confidence;
+            p.gf.mentions = gfStatus.mentions;
+            p.gf.total_reviews = gfStatus.total_reviews;
 
-          // Aggiorna la UI se è ancora aperta (sia sheet che Y2K window)
-          const map = { full: ['✅ 100% Gluten Free','gf-full'], partial: ['⚠️ Opzioni GF','gf-partial'], no: ['❌ Contiene Gluten','gf-none'], unknown: ['❓ Sconosciuto',''] };
-          const [label, cls] = map[gfStatus.lvl] || map.unknown;
+            // Aggiorna la UI se è ancora aperta (sia sheet che Y2K window)
+            const map = { full: ['✅ 100% Gluten Free','gf-full'], partial: ['⚠️ Opzioni GF','gf-partial'], no: ['❌ Contiene Gluten','gf-none'], unknown: ['❓ Sconosciuto',''] };
+            const [label, cls] = map[gfStatus.lvl] || map.unknown;
+            const gfHtml = `
+              <h3>🌾 Analisi Gluten-Free</h3>
+              <p><span class="tag ${cls}">${label}</span></p>
+              <p style="font-size:12px;color:var(--muted);">Confidenza: ${gfStatus.confidence}% • ${gfStatus.mentions} menzioni su ${gfStatus.total_reviews} review</p>
+              <div class="action-row" style="margin-top:8px">
+                <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
+              </div>
+            `;
+
+            // Update sheet and Y2K windows
+            const sheetBody = document.getElementById('sheet-body');
+            if (sheetBody) {
+              const gfSection = sheetBody.querySelector('[data-gf-section]');
+              if (gfSection) {
+                gfSection.innerHTML = gfHtml;
+                console.log('[openPOI] ✅ GF section updated in sheet');
+              }
+            }
+
+            const y2kWindows = document.querySelectorAll('.y2k-win-body');
+            y2kWindows.forEach(win => {
+              const gfSection = win.querySelector('[data-gf-section]');
+              if (gfSection) {
+                gfSection.innerHTML = gfHtml;
+                console.log('[openPOI] ✅ GF section updated in Y2K window');
+              }
+            });
+          } else {
+            // Analysis failed or unknown - show fallback
+            console.log('%c[openPOI] ⚠️ GF analysis failed or unknown', 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px');
+            const gfHtml = `
+              <h3>🌾 Gluten-Free</h3>
+              <p><span class="tag gf-none">❌ Nessun dato disponibile</span></p>
+              <p style="font-size:12px;color:var(--muted);">Impossibile verificare lo stato gluten-free da Google Reviews. Verifica manualmente:</p>
+              <div class="action-row" style="margin-top:8px">
+                <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
+              </div>
+            `;
+
+            const sheetBody = document.getElementById('sheet-body');
+            if (sheetBody) {
+              const gfSection = sheetBody.querySelector('[data-gf-section]');
+              if (gfSection) {
+                gfSection.innerHTML = gfHtml;
+                console.log('[openPOI] ⚠️ GF fallback shown in sheet');
+              }
+            }
+          }
+        } else {
+          console.log('%c[openPOI] ⏭️ GF analysis skipped (no place_id found)', 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px');
+          // Show Find Me Gluten Free fallback even without place_id
           const gfHtml = `
-            <h3>🌾 Analisi Gluten-Free</h3>
-            <p><span class="tag ${cls}">${label}</span></p>
-            <p style="font-size:12px;color:var(--muted);">Confidenza: ${gfStatus.confidence}% • ${gfStatus.mentions} menzioni su ${gfStatus.total_reviews} review</p>
+            <h3>🌾 Gluten-Free</h3>
+            <p><span class="tag gf-none">❓ Nessun dato disponibile</span></p>
+            <p style="font-size:12px;color:var(--muted);">Verifica lo status gluten-free:</p>
+            <div class="action-row" style="margin-top:8px">
+              <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
+            </div>
           `;
 
-          // Try sheet first
           const sheetBody = document.getElementById('sheet-body');
           if (sheetBody) {
             const gfSection = sheetBody.querySelector('[data-gf-section]');
             if (gfSection) {
               gfSection.innerHTML = gfHtml;
-              console.log('[openPOI] ✅ GF section updated in sheet');
+              console.log('[openPOI] ❓ GF no-data fallback shown');
             }
           }
-
-          // Also try Y2K windows (in case POI is open as floating window)
-          const y2kWindows = document.querySelectorAll('.y2k-win-body');
-          y2kWindows.forEach(win => {
-            const gfSection = win.querySelector('[data-gf-section]');
-            if (gfSection) {
-              gfSection.innerHTML = gfHtml;
-              console.log('[openPOI] ✅ GF section updated in Y2K window');
-            }
-          });
-        }
-        } else {
-          console.log('%c[openPOI] ⏭️ GF analysis skipped (no place_id found)', 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px');
         }
       }
     })();

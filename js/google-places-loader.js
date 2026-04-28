@@ -165,49 +165,47 @@ function mapGoogleTypesToCategory(types) {
   if (!types || !Array.isArray(types)) return 'poi';
 
   const typeMap = {
-    'restaurant': 'food',
-    'cafe': 'food',
-    'bakery': 'food',
-    'bar': 'food',
-    'night_club': 'food',
-    'meal_delivery': 'food',
-    'meal_takeaway': 'food',
-    'hotel': 'accommodation',
-    'lodging': 'accommodation',
-    'hostel': 'accommodation',
-    'museum': 'culture',
-    'library': 'culture',
-    'art_gallery': 'culture',
-    'temple': 'culture',
-    'church': 'culture',
-    'mosque': 'culture',
-    'shopping_mall': 'shopping',
-    'store': 'shopping',
-    'supermarket': 'shopping',
-    'clothing_store': 'shopping',
-    'shoe_store': 'shopping',
-    'pharmacy': 'shopping',
-    'park': 'nature',
-    'natural_feature': 'nature',
-    'tourist_attraction': 'culture',
-    'amusement_park': 'nature',
-    'zoo': 'nature',
-    'spa': 'wellness',
-    'gym': 'wellness',
-    'health': 'wellness',
-    'dentist': 'wellness',
-    'hospital': 'wellness',
-    'fire_station': 'services',
-    'police': 'services',
-    'post_office': 'services',
-    'train_station': 'transport',
-    'bus_station': 'transport',
-    'airport': 'transport'
+    // FOOD & DINING
+    'restaurant': 'food', 'cafe': 'food', 'bakery': 'food', 'bar': 'food',
+    'night_club': 'food', 'meal_delivery': 'food', 'meal_takeaway': 'food',
+    'food': 'food', 'drinking_bar': 'food', 'liquor_store': 'food',
+    // ACCOMMODATION
+    'hotel': 'accommodation', 'lodging': 'accommodation', 'hostel': 'accommodation',
+    'apartment_building': 'accommodation', 'guest_house': 'accommodation',
+    'campground': 'accommodation', 'rv_park': 'accommodation',
+    // CULTURE & LANDMARKS
+    'museum': 'culture', 'library': 'culture', 'art_gallery': 'culture',
+    'temple': 'culture', 'church': 'culture', 'mosque': 'culture',
+    'tourist_attraction': 'culture', 'landmark': 'culture', 'synagogue': 'culture',
+    'buddhist_temple': 'culture', 'hindu_temple': 'culture', 'point_of_interest': 'culture',
+    // SHOPPING
+    'shopping_mall': 'shopping', 'store': 'shopping', 'supermarket': 'shopping',
+    'clothing_store': 'shopping', 'shoe_store': 'shopping', 'pharmacy': 'shopping',
+    'department_store': 'shopping', 'home_goods_store': 'shopping', 'jewelry_store': 'shopping',
+    'book_store': 'shopping', 'electronics_store': 'shopping', 'furniture_store': 'shopping',
+    // NATURE & PARKS
+    'park': 'nature', 'natural_feature': 'nature', 'amusement_park': 'nature',
+    'zoo': 'nature', 'botanical_garden': 'nature', 'aquarium': 'nature',
+    // WELLNESS & HEALTH
+    'spa': 'wellness', 'gym': 'wellness', 'health': 'wellness', 'dentist': 'wellness',
+    'hospital': 'wellness', 'doctor': 'wellness', 'physiotherapist': 'wellness',
+    'beauty_salon': 'wellness', 'hair_care': 'wellness',
+    // SERVICES
+    'fire_station': 'services', 'police': 'services', 'post_office': 'services',
+    'bank': 'services', 'atm': 'services', 'movie_rental': 'services',
+    // TRANSPORT
+    'train_station': 'transport', 'bus_station': 'transport', 'airport': 'transport',
+    'parking': 'transport', 'car_rental': 'transport', 'taxi_stand': 'transport',
+    // FALLBACK
+    'establishment': 'poi', 'place_of_worship': 'culture'
   };
 
   for (const type of types) {
     if (typeMap[type]) return typeMap[type];
   }
+
+  // Log unmapped types for debugging
+  console.warn(`[GooglePlacesLoader] Unmapped types: ${types.join(', ')}`);
   return 'poi';
 }
 
@@ -232,7 +230,9 @@ async function renderMarkersFromGoogle(pois) {
     cat: mapGoogleTypesToCategory(poi.types),
     businessStatus: poi.business_status || 'OPERATIONAL',
     icon: poi.icon || null,
-    photos: (poi.photos || []).map(p => ({
+    photos: (poi.photos || []).map((p, photoIdx) => ({
+      // Convert photo_reference to URL via backend endpoint
+      url: `/api/placePhoto?reference=${encodeURIComponent(p.photo_reference)}&maxwidth=800`,
       reference: p.photo_reference,
       height: p.height,
       width: p.width,
