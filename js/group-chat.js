@@ -39,8 +39,8 @@ window.groupChat = (() => {
     const message = {
       id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       from: group.myName || 'Anonimo',
-      fromPeerId: group.myPeerId,
-      avatar: group.myAvatar,
+      fromPeerId: window.peerGPS?.getMyPeerId?.() || null,
+      avatar: group.myAvatar || window.createAvatarDataUrl?.(group.myName || 'User'),
       text: text.trim(),
       timestamp: new Date().toISOString(),
       type: 'message'
@@ -128,9 +128,10 @@ window.groupChat = (() => {
     
     const messages = chatHistory.messages || [];
     const group = window.state?.group;
+    const myPeerId = group?.myPeerId || window.peerGPS?.getMyPeerId?.();
     
     const messagesHtml = messages.slice(-50).map(msg => {
-      const isOwn = msg.fromPeerId === group?.myPeerId;
+      const isOwn = myPeerId ? msg.fromPeerId === myPeerId : msg.from === group?.myName;
       const time = new Date(msg.timestamp).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
       
       return `

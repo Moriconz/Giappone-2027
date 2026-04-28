@@ -1108,6 +1108,7 @@ const POIS_BASE = window.POIS_DATASET || [];
         broadcastGroupSync();
       },
       getMyPeerId() { return peer?.id || null; },
+      getPeerConnections() { return connections; },
       getPeerCount() { return Object.keys(connections).length; },
       getRole() { return peer ? (isHub ? 'hub' : 'client') : '—'; },
       getStatus,
@@ -2439,15 +2440,42 @@ const POIS_BASE = window.POIS_DATASET || [];
     sheetBody.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
   }
 
+  function createAvatarDataUrl(name) {
+    const initials = (name || '').trim().substring(0, 2).toUpperCase() || '?';
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#1f51ff';
+    ctx.fillRect(0, 0, 64, 64);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(initials, 32, 34);
+    return canvas.toDataURL('image/png');
+  }
+
   function renderShoppingView() {
-    const items = filtered().filter(p => p.cat === 'shopping' || p.cat === 'market');
-    const html = items.length ? items.map(p => `
-      <div class="poi-row" data-id="${p.id}">
-        <div class="icon">${CATS[p.cat]?.icon || '🛍️'}</div>
-        <div class="body">
-          <div class="name">${getPoiDisplayName(p)}</div>
-          <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
-        </div>
+    const categories = { shop:'Negozi', vintage:'Vintage', market:'Mercati' };
+    const items = filtered().filter(p => ['shop','market','vintage'].includes(p.cat));
+    const grouped = items.reduce((acc, p) => {
+      acc[p.cat] = acc[p.cat] || [];
+      acc[p.cat].push(p);
+      return acc;
+    }, {});
+    const html = items.length ? Object.entries(grouped).map(([cat, group]) => `
+      <div style="margin-bottom:16px;">
+        <h4 style="margin:0 0 8px;">${CATS[cat]?.icon || '🛍️'} ${CATS[cat]?.label || categories[cat] || cat}</h4>
+        ${group.map(p => `
+          <div class="poi-row" data-id="${p.id}">
+            <div class="icon">${CATS[p.cat]?.icon || '🛍️'}</div>
+            <div class="body">
+              <div class="name">${getPoiDisplayName(p)}</div>
+              <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
+            </div>
+          </div>
+        `).join('')}
       </div>
     `).join('') : '<p style="color:var(--muted);font-size:13px">Nessun punto shopping trovato con i filtri correnti.</p>';
     openSheet('🛍️ Shopping', html);
@@ -2508,6 +2536,11 @@ const POIS_BASE = window.POIS_DATASET || [];
         <label style="display:block;margin-bottom:4px;font-size:13px">Il tuo nome</label>
         <input id="group-name" placeholder="Es. Marco" style="width:100%;padding:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;" value="${state.group?.myName||''}">
       </div>
+      <div class="section">
+        <label style="display:block;margin-bottom:4px;font-size:13px">Avatar profilo (URL immagine opzionale)</label>
+        <input id="group-avatar" placeholder="https://example.com/avatar.png" style="width:100%;padding:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;" value="${state.group?.myAvatar || ''}">
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">Lascia vuoto per generare un avatar con le tue iniziali.</div>
+      </div>
       <button class="btn primary" id="group-start" style="width:100%;">✅ Avvia / Connetti</button>
       <div id="peer-status-box" style="margin-top:10px;color:var(--muted);font-size:13px;">Pronto a connettersi...</div>
     `;
@@ -2518,6 +2551,7 @@ const POIS_BASE = window.POIS_DATASET || [];
     if (startBtn) startBtn.onclick = () => {
       const room = document.getElementById('group-room').value.trim();
       const name = document.getElementById('group-name').value.trim() || 'Guest';
+      const avatarInput = document.getElementById('group-avatar').value.trim();
       if (!room) {
         toast('Inserisci un Room ID');
         return;
@@ -2525,9 +2559,10 @@ const POIS_BASE = window.POIS_DATASET || [];
       state.group = state.group || {};
       state.group.roomId = room;
       state.group.myName = name;
-      state.group.isCreator = true;
-      state.group.createdBy = name;
-      state.group.members = [];
+      state.group.myAvatar = avatarInput || window.createAvatarDataUrl(name);
+      state.group.isCreator = false;
+      state.group.createdBy = state.group.createdBy || name;
+      state.group.members = state.group.members || [];
       saveState();
       
       // Inizializza chat per questa stanza
@@ -2543,9 +2578,19 @@ const POIS_BASE = window.POIS_DATASET || [];
       // Avvia peerGPS IN BACKGROUND (non bloccante)
       if (peerGPS && typeof peerGPS.start === 'function') {
         setTimeout(() => {
-          peerGPS.start(room, name, status => { 
+          peerGPS.start(room, name, (status) => { 
             console.log('[Group] Status:', status);
           }, (state.group.members||[]).map(m => m.name).filter(n => n && n !== name));
+          setTimeout(() => {
+            if (peerGPS?.getMyPeerId) {
+              state.group.myPeerId = peerGPS.getMyPeerId();
+            }
+            if (peerGPS?.getRole && peerGPS.getRole() === 'hub') {
+              state.group.isCreator = true;
+            }
+            saveState();
+            renderGroupView();
+          }, 900);
         }, 100);
       }
     };

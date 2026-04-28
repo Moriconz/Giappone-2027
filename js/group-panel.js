@@ -20,18 +20,30 @@ window.groupPanel = (() => {
     }
     
     const isCreator = group.isCreator;
-    const members = group.members || [];
+    const members = group.members ? [...group.members] : [];
     const gpsEnabled = window.state?.gpsEnabled;
+    if (group.myName && !members.some(m => m.name === group.myName)) {
+      members.unshift({ name: group.myName, avatar: group.myAvatar || window.createAvatarDataUrl?.(group.myName), peerId: window.peerGPS?.getMyPeerId?.() });
+    }
     
-    const membersList = members.map(m => `
+    const membersList = members.map(m => {
+      const avatarHtml = m.avatar ? `
+        <img src="${m.avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--primary);" />
+      ` : `
+        <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+          ${escapeHtml((m.name || '?').charAt(0).toUpperCase())}
+        </div>
+      `;
+      return `
       <div style="display: flex; gap: 10px; align-items: center; padding: 8px; background: var(--surface-2); border-radius: 8px; margin-bottom: 8px;">
-        <img src="${m.avatar || '👤'}" style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary);" />
+        ${avatarHtml}
         <div style="flex: 1; min-width: 0;">
           <div style="font-weight: 600; font-size: 14px;">${escapeHtml(m.name || 'Unnamed')}</div>
           <div style="font-size: 11px; color: var(--muted);">${m.peerId ? '🟢 Online' : '🔴 Offline'}</div>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
     
     const html = `
       <div style="padding: 14px;">
