@@ -2128,10 +2128,11 @@ const POIS_BASE = window.POIS_DATASET || [];
         }
       }
 
-      if (['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat) && placeIdForGF) {
-        console.log('[openPOI] Analyzing GF status for:', p.name, 'with place_id:', placeIdForGF);
-        const gfStatus = await analyzeGlutenFreeStatus(placeIdForGF, p.name, p.city);
-        if (gfStatus && gfStatus.lvl !== 'unknown') {
+      if (['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) {
+        if (placeIdForGF) {
+          console.log('%c[openPOI] 🌐 Analyzing GF status', 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px', p.name, 'with place_id:', placeIdForGF);
+          const gfStatus = await analyzeGlutenFreeStatus(placeIdForGF, p.name, p.city);
+          if (gfStatus && gfStatus.lvl !== 'unknown') {
           console.log('[openPOI] GF Analysis result:', gfStatus);
           // Aggiorna il POI con i dati GF
           if (!p.gf) p.gf = {};
@@ -2168,6 +2169,8 @@ const POIS_BASE = window.POIS_DATASET || [];
               console.log('[openPOI] ✅ GF section updated in Y2K window');
             }
           });
+        } else {
+          console.log('%c[openPOI] ⏭️ GF analysis skipped (no place_id found)', 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px');
         }
       }
     })();

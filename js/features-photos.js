@@ -65,6 +65,18 @@ window.photosFeature = (() => {
         console.log(`📍 Found: "${actualPlaceName}"`);
         console.log(`📍 Address: ${actualAddress}`);
         console.log(`📸 Photos: ${data.photos.length} found`);
+
+        // Verifica se il luogo trovato è simile a quello cercato (primo 5 caratteri)
+        const searchBase = placeName.toLowerCase().substring(0, 5);
+        const foundBase = actualPlaceName.toLowerCase().substring(0, 5);
+        if (searchBase !== foundBase) {
+          console.warn('%c⚠️ NOME MISMATCH DETECTED', 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px');
+          console.warn(`Searched: "${placeName}" (${searchBase}...)`);
+          console.warn(`Found: "${actualPlaceName}" (${foundBase}...)`);
+          console.warn('❌ Foto potrebbero essere di un luogo diverso!');
+          return []; // Non mostrare foto se è un nome diverso
+        }
+
         return data.photos;
       }
 
@@ -82,9 +94,21 @@ window.photosFeature = (() => {
   async function getPhotosForLocation(lat, lng, city, fallbackName) {
     const candidates = [];
     let placeName = null;
-    console.log('%c[Photos] 📷 START', 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px', { lat, lng, city, fallbackName });
+    console.log('%c[Photos] 📷 START (coordinate-first)', 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px', { lat, lng, city, fallbackName });
     const photoStartTime = Date.now();
 
+    // PRIMA: Prova ricerca per coordinate (più affidabile)
+    if (lat && lng) {
+      console.log('[Photos] 🎯 Primary search: by coordinates', { lat, lng });
+      const nearbyPhotos = await searchGooglePlacePhotos(`restaurant near ${lat},${lng}`, city, lat, lng);
+      if (nearbyPhotos.length) {
+        const photoTime = Date.now() - photoStartTime;
+        console.log(`%c[Photos] ✅ Found via coordinates (${photoTime}ms)`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
+        return nearbyPhotos;
+      }
+    }
+
+    // FALLBACK: Se coordinate non trovano nulla, prova con nome
     if (fallbackName && fallbackName.trim()) {
       candidates.push(fallbackName.trim());
     }
@@ -101,25 +125,15 @@ window.photosFeature = (() => {
       console.warn('[Photos] Reverse geocode failed, will use fallback name');
     }
 
+    console.log('[Photos] ⚠️ Coordinates search failed, trying names:', candidates);
     for (const candidate of candidates) {
       console.log('[Photos] Trying Google Places search for:', candidate);
       const googlePhotos = await searchGooglePlacePhotos(candidate, city, lat, lng);
       if (googlePhotos.length) return googlePhotos;
     }
 
-    // Fallback: se nessun nome ha funzionato, prova ricerca per coordinate
-    if (lat && lng && candidates.length > 0) {
-      console.log('[Photos] ⚠️ Name search failed, trying nearby search by coordinates...', { lat, lng });
-      const nearbyPhotos = await searchGooglePlacePhotos(`nearby restaurant ${city}`, city, lat, lng);
-      if (nearbyPhotos.length) {
-        const photoTime = Date.now() - photoStartTime;
-        console.log(`%c[Photos] ✅ Found via coordinate fallback (${photoTime}ms)`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
-        return nearbyPhotos;
-      }
-    }
-
     const photoTime = Date.now() - photoStartTime;
-    console.log(`%c[Photos] ❌ ZERO photos found (${photoTime}ms) - Candidates tried: ${candidates.join(', ')}`, 'background: #D9534F; color: white; padding: 4px 8px; border-radius: 3px');
+    console.log(`%c[Photos] ❌ ZERO photos found (${photoTime}ms)`, 'background: #D9534F; color: white; padding: 4px 8px; border-radius: 3px');
     return [];
   }
 
