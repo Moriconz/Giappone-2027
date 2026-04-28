@@ -2430,33 +2430,113 @@ const POIS_BASE = window.POIS_DATASET || [];
       }).join('');
     };
 
-    // Mostra lista iniziale (filtrata GPS)
+    // Mostra lista iniziale (filtrata GPS) - COMPATTA, senza espandere le città
     const resultsDiv = document.getElementById('list-results');
-    resultsDiv.innerHTML = buildListHtml(allPoisForList) || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
 
-    // Setup ricerca (GLOBALE — non rispetta filtro GPS)
+    // Build COMPACT list (solo nomi città, chiuse per default)
+    const compactHtml = order.map(cityName => {
+      const categories = Object.keys(bycity[cityName]).sort((a,b) => (CATS[a]?.label||a).localeCompare(CATS[b]?.label||b));
+      const categoryHtml = categories.map(cat => {
+        const items = bycity[cityName][cat].map(p => `
+          <div class="poi-row" data-id="${p.id}">
+            <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
+            <div class="body">
+              <div class="name">${getPoiDisplayName(p)}</div>
+              <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
+            </div>
+            <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+          </div>
+        `).join('');
+        return `<div class="category-section"><h4>${CATS[cat]?.label||cat} <span class="count">${bycity[cityName][cat].length}</span></h4>${items}</div>`;
+      }).join('');
+      return `
+        <details class="city-dropdown">
+          <summary>${cityName} <span class="count">${Object.values(bycity[cityName]).flat().length}</span></summary>
+          ${categoryHtml}
+        </details>
+      `;
+    }).join('');
+
+    resultsDiv.innerHTML = compactHtml || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
+
+    // Setup ricerca (GLOBALE — cerca TUTTI i POI anche fuori dal raggio GPS)
     const searchInput = document.getElementById('list-search');
     if (searchInput) {
       searchInput.oninput = (e) => {
         const query = e.target.value.toLowerCase().trim();
+        console.log('[renderListView] Ricerca:', query);
+
         if (!query) {
-          // Torna a mostrare solo tappe vicine se GPS attivo
-          resultsDiv.innerHTML = buildListHtml(allPoisForList) || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
+          // Torna a mostrare lista compatta (città chiuse)
+          console.log('[renderListView] Ricerca svuotata, torna a lista GPS-filtrata compatta');
+          resultsDiv.innerHTML = compactHtml || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
+          attachRowClickHandlers();
         } else {
-          // RICERCA GLOBALE — cerca in TUTTI i POI (anche lontani)
-          const searchResults = getCachedAllPOIs().filter(p =>
+          // RICERCA GLOBALE — cerca in TUTTI i POI (anche lontani, fuori da GPS)
+          console.log('[renderListView] Ricerca globale nel database completo...');
+          const allPois = getCachedAllPOIs();
+          const searchResults = allPois.filter(p =>
             p.city && (
               getPoiDisplayName(p).toLowerCase().includes(query) ||
               (p.desc && p.desc.toLowerCase().includes(query)) ||
               (p.city && p.city.toLowerCase().includes(query))
             )
           );
-          resultsDiv.innerHTML = buildListHtml(searchResults) || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
+
+          console.log('[renderListView] Risultati ricerca:', searchResults.length, 'POI trovati');
+
+          // Costruisci HTML con risultati raggruppati per città (città APERTE di default quando ci sono risultati)
+          const bycitySearch = {};
+          searchResults.forEach(p => {
+            if (!p.city) return;
+            const cityName = p.city || 'Senza città';
+            const cityKey = cityName.trim();
+            if (!bycitySearch[cityKey]) bycitySearch[cityKey] = {};
+            const cat = p.cat || 'all';
+            if (!bycitySearch[cityKey][cat]) bycitySearch[cityKey][cat] = [];
+            bycitySearch[cityKey][cat].push(p);
+          });
+
+          const knownSearch = CITIES.filter(c => bycitySearch[c]);
+          const extraSearch = Object.keys(bycitySearch).filter(c => !CITIES.includes(c)).sort();
+          const orderSearch = [...knownSearch, ...extraSearch];
+
+          const searchHtml = orderSearch.map(cityName => {
+            const categories = Object.keys(bycitySearch[cityName]).sort((a,b) => (CATS[a]?.label||a).localeCompare(CATS[b]?.label||b));
+            const categoryHtml = categories.map(cat => {
+              const items = bycitySearch[cityName][cat].map(p => `
+                <div class="poi-row" data-id="${p.id}">
+                  <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
+                  <div class="body">
+                    <div class="name">${getPoiDisplayName(p)}</div>
+                    <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
+                  </div>
+                  <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+                </div>
+              `).join('');
+              return `<div class="category-section"><h4>${CATS[cat]?.label||cat} <span class="count">${bycitySearch[cityName][cat].length}</span></h4>${items}</div>`;
+            }).join('');
+            return `
+              <details class="city-dropdown" open>
+                <summary>${cityName} <span class="count">${Object.values(bycitySearch[cityName]).flat().length}</span></summary>
+                ${categoryHtml}
+              </details>
+            `;
+          }).join('');
+
+          resultsDiv.innerHTML = searchHtml || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
+          attachRowClickHandlers();
         }
-        resultsDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
       };
     }
 
+    // Helper: attach click handlers a tutti i poi-row
+    function attachRowClickHandlers() {
+      resultsDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+    }
+
+    // Attach initial handlers
+    attachRowClickHandlers();
     sheetBody.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
   }
   // ---- Itinerary / Agenda view ----
