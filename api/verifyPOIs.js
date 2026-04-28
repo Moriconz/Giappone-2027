@@ -12,11 +12,24 @@ const RATE_LIMIT_DELAY_MS = 200; // 5 requests/sec max
 // Helper: delay for rate limiting
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper: name similarity check (first 5 chars)
-const namesMatch = (local, google) => {
-  const localBase = local.toLowerCase().substring(0, 5);
-  const googleBase = google.toLowerCase().substring(0, 5);
-  return localBase === googleBase;
+// Helper: Calculate distance in meters (Haversine)
+const getDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371000; // Earth radius in meters
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+const toRad = (deg) => deg * (Math.PI / 180);
+
+// Helper: Check if coordinates match (within 100m tolerance)
+const coordinatesMatch = (localLat, localLng, googleLat, googleLng, maxDistanceM = 100) => {
+  const distance = getDistance(localLat, localLng, googleLat, googleLng);
+  return distance <= maxDistanceM;
 };
 
 // Helper: category mapping
@@ -47,11 +60,53 @@ async function verifyPOI(poi, radiusM = 500) {
       return { error: `No results for ${poi.name}` };
     }
 
-    // Step 2: Filter by name match
-    let match = nearbyData.results.find(r => namesMatch(poi.name, r.name));
+    // Step 2: Find POI that matches BOTH coordinates AND name
+    let match = null;
+    let bestDistance = Infinity;
+
+    nearbyData.results.forEach(r => {
+      const dist = getDistance(poi.lat, poi.lng, r.geometry.location.lat, r.geometry.location.lng);
+
+      // Check if this POI could be the same place:
+      // 1. Coordinates within 100m
+      // 2. Name is at least similar (substring or first 3+ chars match)
+      const isCloseEnough = dist <= 100;
+      const nameMatches = isNameSimilar(poi.name, r.name);
+
+      if (isCloseEnough && nameMatches && dist < bestDistance) {
+        bestDistance = dist;
+        match = r;
+      }
+    });
 
     if (!match) {
-      return { error: `Name mismatch for ${poi.name}` };
+      const closest = nearbyData.results.reduce((prev, curr) => {
+        const currDist = getDistance(poi.lat, poi.lng, curr.geometry.location.lat, curr.geometry.location.lng);
+        const prevDist = getDistance(poi.lat, poi.lng, prev.geometry.location.lat, prev.geometry.location.lng);
+        return currDist < prevDist ? curr : prev;
+      });
+      const closestDist = getDistance(poi.lat, poi.lng, closest.geometry.location.lat, closest.geometry.location.lng);
+      return { error: `No match for ${poi.name}. Closest: "${closest.name}" at ${closestDist.toFixed(0)}m (name mismatch)` };
+    }
+
+    // Helper: fuzzy name matching
+    function isNameSimilar(local, google) {
+      const localLower = local.toLowerCase();
+      const googleLower = google.toLowerCase();
+
+      // Exact match
+      if (localLower === googleLower) return true;
+
+      // Substring (either direction)
+      if (googleLower.includes(localLower) || localLower.includes(googleLower)) return true;
+
+      // First 3+ chars match (for Japanese names)
+      const minLen = Math.min(3, Math.min(local.length, google.length));
+      if (local.substring(0, minLen).toLowerCase() === google.substring(0, minLen).toLowerCase()) {
+        return true;
+      }
+
+      return false;
     }
 
     // Step 3: Get full details

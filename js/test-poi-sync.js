@@ -15,12 +15,12 @@ window.POISyncTest = {
 
   // Test 2: Sync nearby POIs (requires GPS)
   async syncNearby(radiusKm = 5) {
-    if (!window.gpsPos) {
+    if (!window.state?.gpsCurrentLat || !window.state?.gpsCurrentLng) {
       console.error('[POI-SYNC TEST] GPS not active');
       return;
     }
-    const lat = window.gpsPos.coords.latitude;
-    const lng = window.gpsPos.coords.longitude;
+    const lat = window.state.gpsCurrentLat;
+    const lng = window.state.gpsCurrentLng;
     console.log(`%c[POI-SYNC TEST] Syncing nearby POIs (${radiusKm}km from GPS)`, 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px');
     const result = await window.POISync.syncNearbyPOIs(lat, lng, radiusKm);
     console.log(result);

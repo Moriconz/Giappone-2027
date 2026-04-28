@@ -37,7 +37,7 @@ async function initSyncEngine() {
 function scheduleRadiusExpansion() {
   // Expand radius every 30 seconds if GPS is active
   setInterval(() => {
-    if (window.gpsPos && !syncInProgress.size) {
+    if (window.state?.gpsCurrentLat && window.state?.gpsCurrentLng && !syncInProgress.size) {
       expandSyncRadius();
     }
   }, 30000);
@@ -45,14 +45,14 @@ function scheduleRadiusExpansion() {
 
 // Expand sync radius progressively
 async function expandSyncRadius() {
-  if (!window.gpsPos) return;
+  if (!window.state?.gpsCurrentLat || !window.state?.gpsCurrentLng) return;
 
   for (const radius of SYNC_RADIUS_EXPAND) {
     if (expandedRadii.has(radius)) continue;
     expandedRadii.add(radius);
 
     console.log(`[POI-Sync] Expanding radius to ${radius}km`);
-    await syncNearbyPOIs(window.gpsPos.coords.latitude, window.gpsPos.coords.longitude, radius);
+    await syncNearbyPOIs(window.state.gpsCurrentLat, window.state.gpsCurrentLng, radius);
   }
 }
 
