@@ -206,6 +206,14 @@
     win.remove();
     delete wins[id];
     updateMapBlur();
+
+    // Reset tab button to active state
+    const bottomNav = document.querySelector('nav.bottom');
+    if (bottomNav && window.activeTabView) {
+      bottomNav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      const activeBtn = bottomNav.querySelector(`button[data-view="${window.activeTabView}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
+    }
   }
 
   function closeAll() {

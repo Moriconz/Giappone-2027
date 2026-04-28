@@ -3325,12 +3325,17 @@ const POIS_BASE = window.POIS_DATASET || [];
   const GF_CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 giorni
 
   async function analyzeGlutenFreeStatus(placeId, name, city) {
+    const startTime = Date.now();
+    const logPrefix = `%c[GF Analysis: ${name}]`;
+    const logStyle = 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold';
+
     // Check in-memory cache first
     const memKey = `${placeId}_${name}_${city}`;
     if (gfAnalysisCache[memKey]) {
-      console.log('[analyzeGlutenFreeStatus] Cache HIT (memoria)');
+      console.log(logPrefix + ' ✅ Cache HIT (memoria)', logStyle);
       return gfAnalysisCache[memKey];
     }
+    console.log(logPrefix + ' ⏳ Memory cache miss', logStyle);
 
     // Check localStorage cache
     const storageKey = `${GF_CACHE_PREFIX}${placeId}`;
@@ -3340,23 +3345,26 @@ const POIS_BASE = window.POIS_DATASET || [];
         const cached = JSON.parse(stored);
         const age = Date.now() - cached.timestamp;
         if (age < GF_CACHE_TTL) {
-          console.log('[analyzeGlutenFreeStatus] Cache HIT (localStorage)', `Age: ${Math.round(age/1000/60)}m`);
+          console.log(logPrefix + ` ✅ Cache HIT (localStorage) Age: ${Math.round(age/1000/60)}m`, logStyle);
           // Restore to memory cache
           gfAnalysisCache[memKey] = cached.result;
           return cached.result;
         } else {
-          console.log('[analyzeGlutenFreeStatus] Cache EXPIRED (localStorage)');
+          console.log(logPrefix + ' ⏳ Cache EXPIRED (localStorage)', logStyle);
           localStorage.removeItem(storageKey);
         }
       }
     } catch (e) {
-      console.warn('[analyzeGlutenFreeStatus] localStorage read error:', e.message);
+      console.warn(logPrefix + ` localStorage read error: ${e.message}`, logStyle);
     }
 
     const apiUrl = `/api/analyzeGlutenFree?place_id=${encodeURIComponent(placeId)}&name=${encodeURIComponent(name)}&city=${encodeURIComponent(city)}`;
-    console.log(`[analyzeGlutenFreeStatus] Analyzing: ${apiUrl}`);
+    console.log(logPrefix + ' 🌐 Fetching API...', logStyle);
+    console.log(logPrefix + ` URL: ${apiUrl}`, logStyle);
 
     try {
+      const fetchStart = Date.now();
+
       // Fetch with 10s timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -3364,9 +3372,16 @@ const POIS_BASE = window.POIS_DATASET || [];
       const response = await fetch(apiUrl, { signal: controller.signal });
       clearTimeout(timeoutId);
 
+      const fetchTime = Date.now() - fetchStart;
+      console.log(logPrefix + ` ✅ Fetch complete (${fetchTime}ms)`, logStyle);
+
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
+      const parseStart = Date.now();
       const data = await response.json();
+      const parseTime = Date.now() - parseStart;
+      console.log(logPrefix + ` ✅ JSON parsed (${parseTime}ms)`, logStyle);
+
       const result = data.gf || { lvl: 'unknown', confidence: 0 };
 
       // Cache the result in memory
@@ -3381,15 +3396,18 @@ const POIS_BASE = window.POIS_DATASET || [];
           name: name,
           city: city
         }));
-        console.log('[analyzeGlutenFreeStatus] Result saved to localStorage');
+        console.log(logPrefix + ' 💾 Result saved to localStorage', logStyle);
       } catch (e) {
-        console.warn('[analyzeGlutenFreeStatus] localStorage write error:', e.message);
+        console.warn(logPrefix + ` localStorage write error: ${e.message}`, logStyle);
       }
 
-      console.log('[analyzeGlutenFreeStatus] Result:', result);
+      const totalTime = Date.now() - startTime;
+      console.log(logPrefix + ` ✅ DONE in ${totalTime}ms - Result: ${result.lvl} (${Math.round(result.confidence*100)}%)`, logStyle);
       return result;
     } catch (err) {
-      console.error('[analyzeGlutenFreeStatus] Error:', err.message);
+      const totalTime = Date.now() - startTime;
+      console.error(logPrefix + ` ❌ ERROR after ${totalTime}ms: ${err.message}`, logStyle);
+
       // Cache the error result too
       const errorResult = { lvl: 'unknown', confidence: 0 };
       gfAnalysisCache[memKey] = errorResult;
