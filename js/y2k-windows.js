@@ -140,15 +140,20 @@
   let topZ = 2000;
 
   function openWin(id, title, html) {
+    console.log('%c[Y2K] openWin called', 'background: #FF1493; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold', 'id:', id, 'title:', title);
+
     // Se già aperta, porta in foreground
     if (wins[id]) {
+      console.log('[Y2K] Window already open, bringing to front');
       wins[id].style.zIndex = ++topZ;
       return;
     }
 
+    console.log('[Y2K] Creating new window element');
     const win = document.createElement('div');
     win.className = 'y2k-win';
     win.id = 'y2kwin-' + id;
+    console.log('[Y2K] Window element created:', win);
 
     // Posizione centrata con offset casuale
     const ox = (Math.random() - 0.5) * 80;
@@ -167,8 +172,12 @@
       <div class="y2k-win-resize"></div>
     `;
 
+    console.log('[Y2K] Appending to body');
     document.body.appendChild(win);
     wins[id] = win;
+    console.log('[Y2K] ✅ Window added to DOM, id:', id, 'win:', win);
+    console.log('[Y2K] Window position - left:', win.style.left, 'top:', win.style.top);
+    console.log('[Y2K] Window in DOM?', document.getElementById('y2kwin-' + id) ? 'YES' : 'NO');
 
     // Blur mappa
     updateMapBlur();
@@ -260,16 +269,26 @@
 
   /* ── INTERCETTA openSheet / closeSheet ───────────────────────────── */
   function patchSheets() {
+    console.log('%c[Y2K] patchSheets called', 'background: #FF1493; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold');
+
     // Attendi che openSheet sia definita
     const origOpen  = window.openSheet;
     const origClose = window.closeSheet;
 
+    console.log('[Y2K] origOpen type:', typeof origOpen);
+    console.log('[Y2K] origClose type:', typeof origClose);
+
     if (typeof origOpen === 'function') {
+      console.log('[Y2K] ✅ Patching openSheet');
       window.openSheet = function(title, html, onClose) {
+        console.log('[Y2K] ✅ NEW openSheet called with title:', title);
         // Genera id dall'iniziale del titolo
         const id = title.replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20) || 'win';
+        console.log('[Y2K] Generated id:', id);
         openWin(id, title, html);
       };
+    } else {
+      console.error('[Y2K] ❌ origOpen is not a function!');
     }
 
     if (typeof origClose === 'function') {
