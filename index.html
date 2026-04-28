@@ -1857,13 +1857,24 @@ const POIS_BASE = window.POIS_DATASET || [];
         if (photos && photos.length > 0) {
           const slides = photos.slice(0, 5).map((photo, idx) => `
             <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
-              <a href="${photo.link}" target="_blank" rel="noopener" title="${photo.author}" style="display:block;width:100%;height:100%;text-decoration:none">
+              <a href="${photo.link || googleImagesUrl(getPoiDisplayName(p), p.city)}" target="_blank" rel="noopener" title="${photo.author || ''}" style="display:block;width:100%;height:100%;text-decoration:none">
                 <img src="${photo.url}" alt="${getPoiDisplayName(p)}" style="width:100%;height:100%;object-fit:cover;transition:transform .2s">
               </a>
             </div>
           `).join('');
 
-          const sourceLabel = '📷 Foto da Google Maps';
+          const sourceLabelMap = {
+            google_places: '📷 Foto da Google Maps',
+            google_custom_search: '📷 Foto da Google Search',
+            wikipedia: '📷 Foto da Wikipedia',
+            google_street_view: '📷 Foto da Google Street View',
+            google_static_map: '📷 Mappa ufficiale Google Maps'
+          };
+          const uniqueSources = [...new Set(photos.map(photo => photo.source).filter(Boolean))];
+          const sourceLabel = uniqueSources.length === 1
+            ? sourceLabelMap[uniqueSources[0]] || '📷 Foto ufficiali'
+            : '📷 Foto ufficiali da più fonti';
+
           container.outerHTML = `
             <div style="margin-bottom:12px">
               <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%;margin-bottom:6px">

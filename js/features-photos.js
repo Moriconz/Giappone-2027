@@ -1,5 +1,9 @@
 // ============================================================================
-// JS/FEATURES-PHOTOS.JS — Google Places photo search only, reverse geocoding
+// JS/FEATURES-PHOTOS.JS — Place photo search with multiple official sources
+//   - Google Places
+//   - Google Custom Search Image (optional)
+//   - Google Street View / Static Map fallback
+//   - Wikimedia / Wikipedia fallback
 // ============================================================================
 
 console.log('[Photos] Loading...');
