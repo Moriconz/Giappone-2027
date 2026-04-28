@@ -29,17 +29,21 @@
 <!-- ============================================================================ -->
 <script src="js/encryption.js"></script>
 <script src="js/config.js"></script>
-<!-- REMOVED: poi-loader.js -->
-<script src="js/pois_dataset.js"></script>
+<!-- REMOVED: poi-loader.js, pois_dataset.js (using Google Places instead) -->
 <script src="js/state.js"></script>
 <script src="js/ui-helpers.js"></script>
 <script src="js/features-ai.js"></script>
 <script src="js/features-gps.js"></script>
 <script src="js/features-photos.js"></script>
-<script src="js/poi-verified-db.js"></script>
-<script src="js/poi-sync.js"></script>
-<script src="js/poi-viewport-sync.js"></script>
-<script src="js/test-poi-sync.js"></script>
+<!-- DISABLED: Old verification system -->
+<!-- <script src="js/poi-verified-db.js"></script> -->
+<!-- <script src="js/poi-sync.js"></script> -->
+<!-- <script src="js/poi-viewport-sync.js"></script> -->
+<!-- <script src="js/test-poi-sync.js"></script> -->
+
+<!-- NEW: Google Places direct loading -->
+<script src="js/google-places-cache.js"></script>
+<script src="js/google-places-loader.js"></script>
 <script src="js/group-chat.js"></script>
 <script src="js/group-panel.js"></script>
 <style>
@@ -468,11 +472,8 @@ window.addEventListener("load", () => {
   
 // POI base (fallback)
 // ============================================================================
-// POI DATABASE — 10,360 real locations from OpenStreetMap
-// Loaded from pois_dataset.js (3.7MB)
-// Source: Tokyo, Kyoto, Osaka, Nara, Yokohama, Hiroshima, Kamakura, Nikko
+// POI LOADING — Now using Google Places API directly (no local dataset)
 // ============================================================================
-const POIS_BASE = window.POIS_DATASET || [];
 /* =========================================================
    APP CONTROLLER
    ========================================================= */
@@ -584,24 +585,15 @@ const POIS_BASE = window.POIS_DATASET || [];
       toast('⚠️ Impossibile salvare: storage pieno.');
     }
   }
-  // ---- Merge custom events into POI view ----
+  // ---- Merge custom events with Google Places POIs ----
   function allPOIs(){
+    // Source: Google Places (loaded via API)
+    const googlePOIs = window.GOOGLE_PLACES_POIS || [];
+    // Add user custom events
     const custom = (state.customEvents || []).map(e => Object.assign({}, e, {custom:true}));
-    const extra  = Array.isArray(window.POIS_EXTRA) ? window.POIS_EXTRA : [];
+    const allItems = googlePOIs.concat(custom);
 
-    // POIS_DATASET è un oggetto {city: [pois]}, non array
-    let pois = [];
-    if (window.POIS_DATASET && typeof window.POIS_DATASET === 'object') {
-      // Estrai tutti i POI da tutte le città
-      pois = Object.values(window.POIS_DATASET).flat();
-    } else if (POIS && Array.isArray(POIS)) {
-      pois = POIS;
-    } else if (POIS_BASE && Array.isArray(POIS_BASE)) {
-      pois = POIS_BASE;
-    }
-
-    // Apply user category overrides
-    const allItems = pois.concat(extra, custom);
+    // Apply user category overrides if any
     if (state.userCategoryOverrides) {
       return allItems.map(p => {
         if (state.userCategoryOverrides[p.id]) {
@@ -4101,6 +4093,38 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     window.openSheet(r.name, html);
   }
 
+  // ========== GOOGLE PLACES INTEGRATION ==========
+  // Store all POIs loaded from Google Places
+  window.GOOGLE_PLACES_POIS = [];
+
+  // Listen for Google Places POI data loaded
+  window.addEventListener('google-places-pois-loaded', (e) => {
+    const newPois = e.detail.pois || [];
+    console.log(`[App] Google Places loaded: ${newPois.length} POIs`);
+
+    // Add new POIs (avoid duplicates)
+    const existingIds = new Set(window.GOOGLE_PLACES_POIS.map(p => p.googlePlaceId));
+    const uniqueNewPois = newPois.filter(p => !existingIds.has(p.googlePlaceId));
+
+    window.GOOGLE_PLACES_POIS.push(...uniqueNewPois);
+    console.log(`[App] Total Google Places POIs: ${window.GOOGLE_PLACES_POIS.length}`);
+
+    // Re-render map with new POIs
+    renderMarkers();
+  });
+
+  // Override allPOIs() to use Google Places as source
+  const originalAllPOIs = window.allPOIs;
+  window.allPOIs = function() {
+    // If we have Google Places data, use only that
+    if (window.GOOGLE_PLACES_POIS.length > 0) {
+      console.log(`[allPOIs] Using ${window.GOOGLE_PLACES_POIS.length} Google Places POIs`);
+      return window.GOOGLE_PLACES_POIS;
+    }
+    // Fallback to original dataset if Google Places not loaded
+    return originalAllPOIs();
+  };
+
   renderFilters();
   renderMarkers();
 
@@ -4595,26 +4619,10 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     }
   };
 
-  // ===================== PHASE 2: POI Preload (Overpass + IndexedDB) =====================
-  if (window.poiLoader) {
-    // Precarica le 3 città principali in background senza bloccare UI
-    window.poiLoader.preloadCities(['tokyo', 'kyoto', 'osaka', 'nara', 'hiroshima', 'kamakura', 'nikko', 'yokohama']).then(async total => {
-      if (total > 0) {
-        // Merge POI Overpass in allPOIs()
-        const overpassPois = await window.poiLoader.getAllCached();
-        if (overpassPois.length > 0 && typeof renderMarkers === 'function') {
-          console.log(`[App] Merged ${overpassPois.length} Overpass POI`);
-          // POIS viene usato in allPOIs() — aggiungiamo i nuovi senza duplicati
-          const existing = new Set((window.POIS_BASE || []).map(p => p.id));
-          const newPois = overpassPois.filter(p => !existing.has(p.id));
-          if (newPois.length > 0) {
-            window.POIS_EXTRA = newPois;
-            renderMarkers();
-          }
-        }
-      }
-    }).catch(err => console.warn('[App] POI preload error:', err));
-  }
+  // ===================== PHASE 2: POI Loading (Google Places via GooglePlacesLoader) =====================
+  // POI loading now handled by google-places-loader.js
+  // Listens to 'google-places-pois-loaded' event and populates GOOGLE_PLACES_POIS
+  console.log('[Giappone2027] Google Places Loader initialized');
 
   // ===================== PHASE 6: Auto-enable GPS on load =====================
   console.log('[Giappone2027] Auto-enabling GPS on startup...');
