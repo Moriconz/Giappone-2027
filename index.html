@@ -2312,8 +2312,36 @@ const POIS_BASE = window.POIS_DATASET || [];
   let listViewCache = { data: null, html: null };
 
   function renderListView(){
+    // Filtra per GPS se attivo (default: entro 10km)
+    const gpsEnabled = state.gpsEnabled && state.gpsCurrentLat && state.gpsCurrentLng;
+    const gpsRadius = 10; // km
+    let allPoisForList = getCachedAllPOIs();
+
+    console.log('[renderListView] ========== START ==========');
+    console.log('[renderListView] GPS Settings:', {
+      enabled: state.gpsEnabled,
+      currentLat: state.gpsCurrentLat,
+      currentLng: state.gpsCurrentLng,
+      gpsEnabled: gpsEnabled
+    });
+    console.log('[renderListView] Total POI nel cache:', allPoisForList.length);
+
+    // Se GPS attivo, pre-filtra per distanza (mostra per default solo tappe vicine)
+    if (gpsEnabled) {
+      const beforeFilter = allPoisForList.length;
+      allPoisForList = allPoisForList.filter(p => {
+        if (!p.lat || !p.lng) return true;
+        const km = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
+        return km <= gpsRadius;
+      });
+      console.log(`[renderListView] FILTRO GPS ATTIVO: ${beforeFilter} → ${allPoisForList.length} POI entro ${gpsRadius}km`);
+    } else {
+      console.log('[renderListView] GPS NON ATTIVO: mostrando tutti i POI');
+    }
+
+    // Costruisci struttura bycity SOLO per i POI che mostrerai
     const bycity = {};
-    getCachedAllPOIs().forEach(p => {
+    allPoisForList.forEach(p => {
       if (!p.city) return;
       const cityName = p.city || 'Senza città';
       const cityKey = cityName.trim();
@@ -2350,20 +2378,6 @@ const POIS_BASE = window.POIS_DATASET || [];
         </details>
       `;
     }).join('');
-
-    // Filtra per GPS se attivo (default: entro 10km)
-    const gpsEnabled = state.gpsEnabled && state.gpsCurrentLat && state.gpsCurrentLng;
-    const gpsRadius = 10; // km
-    let allPoisForList = getCachedAllPOIs();
-
-    // Se GPS attivo, pre-filtra per distanza (mostra per default solo tappe vicine)
-    if (gpsEnabled) {
-      allPoisForList = allPoisForList.filter(p => {
-        if (!p.lat || !p.lng) return true; // Includi POI senza coordinate
-        const km = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
-        return km <= gpsRadius;
-      });
-    }
 
     const searchHtml = `
       <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
@@ -2794,23 +2808,40 @@ const POIS_BASE = window.POIS_DATASET || [];
 
   async function loadVintageShopsForCity(city) {
     if (shoppingCache.vintageShops[city]) {
+      console.log(`[loadVintageShopsForCity] Cache HIT per ${city}`);
       return shoppingCache.vintageShops[city];
     }
 
     // Determina coordinate della città (usa CITY_COORDS)
     const coords = CITY_COORDS[city];
-    if (!coords) return [];
+    if (!coords) {
+      console.warn(`[loadVintageShopsForCity] ATTENZIONE: ${city} non trovata in CITY_COORDS`);
+      return [];
+    }
 
     const [lat, lng] = coords;
+    const apiUrl = `/api/searchVintageShops?city=${encodeURIComponent(city)}&lat=${lat}&lng=${lng}`;
+    console.log(`[loadVintageShopsForCity] Fetching: ${apiUrl}`);
 
     try {
-      const response = await fetch(`/api/searchVintageShops?city=${encodeURIComponent(city)}&lat=${lat}&lng=${lng}`);
+      const response = await fetch(apiUrl);
+      console.log(`[loadVintageShopsForCity] Response status per ${city}:`, response.status);
+
+      if (!response.ok) {
+        console.error(`[loadVintageShopsForCity] HTTP Error ${response.status} per ${city}`);
+        return [];
+      }
+
       const data = await response.json();
+      console.log(`[loadVintageShopsForCity] API Response per ${city}:`, data);
+
       const shops = data.shops || [];
       shoppingCache.vintageShops[city] = shops;
+      console.log(`[loadVintageShopsForCity] Cache SET: ${city} = ${shops.length} negozi`);
       return shops;
     } catch (err) {
-      console.warn('[Vintage Shops] Error loading for', city, err);
+      console.error('[loadVintageShopsForCity] Network/Parse Error per', city, ':', err.message);
+      console.error('[loadVintageShopsForCity] Stack:', err.stack);
       return [];
     }
   }
@@ -2873,13 +2904,19 @@ const POIS_BASE = window.POIS_DATASET || [];
 
     // Carica vintage shops da Google Places in background
     (async () => {
+      console.log('[renderShoppingView] Inizio caricamento vintage shops...');
       const cities = new Set(getCachedAllPOIs().map(p => p.city).filter(Boolean));
+      console.log('[renderShoppingView] Città da caricare:', Array.from(cities));
       let allVintageShops = [];
 
       for (const city of Array.from(cities)) {
+        console.log(`[renderShoppingView] Caricamento vintage shops per ${city}...`);
         const shops = await loadVintageShopsForCity(city);
+        console.log(`[renderShoppingView] ${city}: ${shops.length} negozi trovati`, shops);
         allVintageShops = allVintageShops.concat(shops);
       }
+
+      console.log('[renderShoppingView] Totale vintage shops caricati:', allVintageShops.length);
 
       // Renderizza vintage shops
       const vintageHtml = allVintageShops.length
@@ -2897,13 +2934,26 @@ const POIS_BASE = window.POIS_DATASET || [];
         `).join('')
         : '<p style="font-size:12px;color:var(--muted)">Nessun negozio vintage trovato</p>';
 
-      document.getElementById('google-vintage').innerHTML = vintageHtml;
+      console.log('[renderShoppingView] Cercando elemento #google-vintage...');
+      const vintageElement = document.getElementById('google-vintage');
+      console.log('[renderShoppingView] Elemento trovato:', vintageElement ? 'SÌ' : 'NO');
+
+      if (vintageElement) {
+        vintageElement.innerHTML = vintageHtml;
+        console.log('[renderShoppingView] Vintage shops HTML aggiornato');
+      } else {
+        console.error('[renderShoppingView] ERRORE: Elemento #google-vintage non trovato!');
+      }
 
       // Aggiungi click handlers per i negozi Google
-      document.getElementById('google-vintage').querySelectorAll('.poi-row').forEach(r => {
+      const vintageRows = document.getElementById('google-vintage').querySelectorAll('.poi-row');
+      console.log('[renderShoppingView] Attaching click handlers a', vintageRows.length, 'vintage shops');
+      vintageRows.forEach(r => {
         r.onclick = () => {
           const shopId = r.dataset.id;
+          console.log('[Vintage Shop Click] ID:', shopId);
           const shop = allVintageShops.find(s => s.id === shopId);
+          console.log('[Vintage Shop Click] Shop trovato:', shop ? 'SÌ' : 'NO');
           if (shop) {
             const html = `
               <div class="shop-card" style="border:none;padding:0">
