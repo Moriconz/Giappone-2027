@@ -567,6 +567,7 @@ window.addEventListener("load", () => {
   const STATE_KEY = 'giappone2027_state_v1';
   const state = Object.assign({
     activeCat:'all', onlyGF:false, onlyLocal:false, savedPOIs:[], notes:{}, customEvents:[], dismissInstall:false,
+    itinerary:[], // Collaborative itinerary shared across group members
     userCategoryOverrides:{}, // {poiId: 'newCategory'}
     group:{ name:'Giappone 2027', members:[], myAvatar:null, myName:'', createdBy:null, createdByName:null, isCreator:false }
   }, JSON.parse(localStorage.getItem(STATE_KEY) || '{}'));
@@ -644,6 +645,33 @@ window.addEventListener("load", () => {
       
       return true;
     });
+  }
+  // ---- Collaborative Itinerary Helpers ----
+  function addToItinerary(entry) {
+    // entry: { id, name, city, type?, lat?, lng?, date? }
+    if (!state.itinerary) state.itinerary = [];
+    const exists = state.itinerary.find(e => e.id === entry.id);
+    if (exists) return false; // Already in itinerary
+    state.itinerary.push(entry);
+    saveState();
+    return true;
+  }
+  function removeFromItinerary(id) {
+    if (!state.itinerary) state.itinerary = [];
+    const idx = state.itinerary.findIndex(e => e.id === id);
+    if (idx === -1) return false;
+    state.itinerary.splice(idx, 1);
+    saveState();
+    return true;
+  }
+  function updateItinerary(entries) {
+    // Replace entire itinerary (used when receiving sync from peer)
+    state.itinerary = entries || [];
+    saveState();
+  }
+  function isInItinerary(id) {
+    if (!state.itinerary) return false;
+    return state.itinerary.some(e => e.id === id);
   }
   // ---- MAP (OpenLayers) ----
   const map = new ol.Map({
@@ -837,6 +865,16 @@ window.addEventListener("load", () => {
         });
       }
     }
+    function broadcastItinerary() {
+      // Invia l'itinerario a tutti i peer connessi (quando cambia)
+      const payload = {
+        type: 'itinerary_sync',
+        itinerary: state.itinerary || []
+      };
+      Object.values(connections).forEach(c => {
+        try { if (c.open) c.send(payload); } catch(e) {}
+      });
+    }
     function connectToPeer(targetId) {
       if (connections[targetId] || targetId === peer.id) return;
       const conn = peer.connect(targetId, { reliable: true, serialization: 'json' });
@@ -882,29 +920,40 @@ window.addEventListener("load", () => {
         // Host manda lista peer noti → connettiti a chi manca
         (data.list || []).forEach(pid => connectToPeer(pid));
       }
+      if (data.type === 'itinerary_sync') {
+        // Sincronizza l'itinerario dal peer
+        if (data.itinerary) {
+          state.itinerary = data.itinerary;
+          saveState();
+          console.log('[Group] Itinerary updated from peer:', data.itinerary.length, 'items');
+          // Se la view è aperta, ri-renderizza
+          const activeNav = document.querySelector('nav.bottom button.active');
+          if (activeNav?.dataset.view === 'itinerary') renderItineraryView();
+        }
+      }
       if (data.type === 'group_sync') {
         // Sincro bidirezionale: merge lista membri da peer con la lista locale
         const g = state.group;
         if (!g || !data.members) return;
-        
+
         // Crea una mappa per dedup (il set dei nomi locali attuali)
         const localNames = new Set((g.members || []).map(m => m.name));
         let changed = false;
-        
+
         // Aggiungi ogni membro remoto che non abbiamo localmente
         (data.members || []).forEach(remote => {
           if (!localNames.has(remote.name)) {
             if (!g.members) g.members = [];
-            g.members.push({ 
-              name: remote.name, 
-              role: remote.role || '', 
-              avatar: null 
+            g.members.push({
+              name: remote.name,
+              role: remote.role || '',
+              avatar: null
             });
             localNames.add(remote.name);
             changed = true;
           }
         });
-        
+
         // Assicura che il nostro nome sia sempre nella lista
         if (g.myName && !localNames.has(g.myName)) {
           if (!g.members) g.members = [];
@@ -1113,6 +1162,10 @@ window.addEventListener("load", () => {
       broadcastGroupSync() {
         // Broadcast members list to all connected peers
         broadcastGroupSync();
+      },
+      broadcastItinerary() {
+        // Broadcast itinerary changes to all connected peers
+        broadcastItinerary();
       },
       getMyPeerId() { return peer?.id || null; },
       getPeerConnections() { return connections; },
@@ -2580,8 +2633,17 @@ window.addEventListener("load", () => {
   }
   // Invalida cache quando state cambia (custom events, category overrides)
   const origSaveState = saveState;
+  let lastItineraryLength = 0;
   saveState = function() {
     globalPOIsCache = null;
+    // Check if itinerary changed, and broadcast to group
+    const currentLength = (state.itinerary || []).length;
+    if (currentLength !== lastItineraryLength) {
+      lastItineraryLength = currentLength;
+      if (window.peerGPS?.broadcastItinerary) {
+        window.peerGPS.broadcastItinerary();
+      }
+    }
     origSaveState.apply(this, arguments);
   };
 
@@ -2994,13 +3056,34 @@ window.addEventListener("load", () => {
   }
   // ---- Itinerary / Agenda view ----
   function renderItineraryView(){
+    // ===== COLLABORATIVE ITINERARY (Shared with group) =====
+    const itinerary = state.itinerary || [];
+    const itineraryHTML = itinerary.length ? itinerary.map((entry, idx) => {
+      const poi = allPOIs().find(p => p.id === entry.id);
+      const km = poi && state.gpsCurrentLat
+        ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, poi.lat, poi.lng) : null;
+      const distStr = km !== null ? ` · <span style="color:var(--success);font-weight:600">${fmtDist(km)}</span>` : '';
+      return `<div class="poi-row" style="position:relative" data-itinerary-id="${entry.id}">
+        <div style="position:absolute;top:8px;right:8px;font-size:11px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:4px">${idx+1}</div>
+        <div class="icon">${poi ? (CATS[poi.cat]?.icon || '📍') : '📌'}</div>
+        <div class="body">
+          <div class="name">${entry.name || (poi ? getPoiDisplayName(poi) : '?')}</div>
+          <div class="sub">${entry.city || (poi ? poi.city : '?')}${distStr}</div>
+        </div>
+        <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:var(--danger);border-color:var(--danger);color:#fff" data-remove-itinerary="${entry.id}">Rimuovi</button>
+      </div>`;
+    }).join('') : '<p style="color:var(--muted);font-size:13px">📋 L\'itinerario del gruppo è vuoto. Aggiungi le prime tappe!</p>';
+
+    // ===== SAVED + CUSTOM (Personal list) =====
     const saved = state.savedPOIs.map(id => allPOIs().find(p => p.id===id)).filter(Boolean);
     const custom = state.customEvents;
     const gpsActive = state.gpsEnabled && gpsWatchId !== null;
     const pts = state.gpsTrack?.length || 0;
     const lat = state.gpsCurrentLat ? state.gpsCurrentLat.toFixed(5) : '—';
     const lng = state.gpsCurrentLng ? state.gpsCurrentLng.toFixed(5) : '—';
+
     const savedHTML = saved.length ? saved.map(p => {
+      const inItinerary = isInItinerary(p.id);
       const km = (state.gpsCurrentLat && p.lat)
         ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng) : null;
       const distSpan = `<span data-gps-dist data-lat="${p.lat}" data-lng="${p.lng}"
@@ -3012,10 +3095,12 @@ window.addEventListener("load", () => {
           <div class="name">★ ${getPoiDisplayName(p)}</div>
           <div class="sub">${p.city} ${distSpan}</div>
         </div>
-        <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+        <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${inItinerary?'var(--warning)':'var(--primary)'};border-color:${inItinerary?'var(--warning)':'var(--primary)'};color:#fff" data-add-to-itinerary="${p.id}">${inItinerary?'✓ Aggiunto':'+ Aggiungi'}</button>
       </div>`;
     }).join('') : '<p style="color:var(--muted);font-size:13px">Nessuna tappa salvata. Apri una scheda e premi ☆ Salva.</p>';
+
     const customHTML = custom.length ? custom.map(e => {
+      const inItinerary = isInItinerary(e.id);
       const km = (state.gpsCurrentLat && e.lat)
         ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, e.lat, e.lng) : null;
       return `<div class="poi-row" data-custom-id="${e.id}">
@@ -3024,28 +3109,70 @@ window.addEventListener("load", () => {
           <div class="name">${e.name}</div>
           <div class="sub">${e.city} · personalizzato${km!==null?' · <span data-gps-dist data-lat="'+e.lat+'" data-lng="'+e.lng+'" style="font-size:11px;color:var(--muted)">Posizione rilevata '+fmtDist(km)+'</span>':''}</div>
         </div>
+        <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${inItinerary?'var(--warning)':'var(--primary)'};border-color:${inItinerary?'var(--warning)':'var(--primary)'};color:#fff" data-add-to-itinerary="${e.id}">${inItinerary?'✓ Aggiunto':'+ Aggiungi'}</button>
       </div>`;
     }).join('') : '';
+
     const html = `
       <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
         <input id="itinerary-search" type="text" placeholder="🔍 Cerca tappa..."
           style="width:100%;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;margin-bottom:8px">
         <div class="action-row">
-          <button class="btn success" id="export-all-ics" ${!saved.length&&!custom.length?'disabled':''}>📥 .ics</button>
-          <button class="btn primary" id="export-json" ${!saved.length&&!custom.length?'disabled':''}>📥 JSON</button>
-          <button class="btn primary" id="export-pdf" ${!saved.length&&!custom.length?'disabled':''}>📥 HTML/PDF</button>
+          <button class="btn success" id="export-all-ics" ${itinerary.length===0?'disabled':''}>📥 .ics</button>
+          <button class="btn primary" id="export-json" ${itinerary.length===0?'disabled':''}>📥 JSON</button>
+          <button class="btn primary" id="export-pdf" ${itinerary.length===0?'disabled':''}>📥 HTML/PDF</button>
           <button class="btn" id="add-custom">+ Custom</button>
         </div>
       </div>
       <div id="gps-status-panel" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px">
         ${buildGPSPanelHTML(gpsActive, pts, lat, lng)}
       </div>
+
+      <!-- COLLABORATIVE ITINERARY SECTION -->
+      <div class="section" style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid var(--success);border-radius:10px;padding:12px;margin-bottom:16px">
+        <h3 style="margin-top:0;color:var(--success)">🗓️ Itinerario del Gruppo</h3>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 8px">Condiviso in tempo reale con i membri della stanza</p>
+        <div id="itinerary-list">${itineraryHTML}</div>
+      </div>
+
+      <!-- PERSONAL ITEMS SECTION -->
       <div id="itinerary-results">
-        <div class="section"><h3>★ Tappe salvate</h3><div id="saved-list">${savedHTML}</div></div>
-        ${custom.length?`<div class="section"><h3>✎ Tappe personalizzate</h3><div id="custom-list">${customHTML}</div></div>`:''}
+        <div class="section"><h3>★ Tappe salvate</h3><p style="font-size:12px;color:var(--muted);margin:0 0 8px">Clicca "+ Aggiungi" per aggiungere all'itinerario di gruppo</p><div id="saved-list">${savedHTML}</div></div>
+        ${custom.length?`<div class="section"><h3>✎ Tappe personalizzate</h3><p style="font-size:12px;color:var(--muted);margin:0 0 8px">Clicca "+ Aggiungi" per aggiungere all'itinerario di gruppo</p><div id="custom-list">${customHTML}</div></div>`:''}
       </div>
     `;
     window.openSheet('📅 La tua agenda', html);
+
+    // ===== EVENT HANDLERS =====
+    // Add to itinerary
+    document.querySelectorAll('[data-add-to-itinerary]').forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.dataset.addToItinerary;
+        const poi = allPOIs().find(p => p.id === id);
+        if (poi) {
+          const entry = {
+            id: poi.id,
+            name: getPoiDisplayName(poi),
+            city: poi.city,
+            lat: poi.lat,
+            lng: poi.lng
+          };
+          addToItinerary(entry);
+          toast('✓ Aggiunto a itinerario');
+          renderItineraryView(); // Refresh view
+        }
+      };
+    });
+
+    // Remove from itinerary
+    document.querySelectorAll('[data-remove-itinerary]').forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.dataset.removeItinerary;
+        removeFromItinerary(id);
+        toast('Rimosso da itinerario');
+        renderItineraryView(); // Refresh view
+      };
+    });
 
     // Setup ricerca
     const searchInput = document.getElementById('itinerary-search');
@@ -3068,6 +3195,7 @@ window.addEventListener("load", () => {
           );
 
           const filteredSavedHTML = filteredSaved.length ? filteredSaved.map(p => {
+            const inItinerary = isInItinerary(p.id);
             const km = (state.gpsCurrentLat && p.lat)
               ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng) : null;
             const distSpan = `<span data-gps-dist data-lat="${p.lat}" data-lng="${p.lng}"
@@ -3079,11 +3207,12 @@ window.addEventListener("load", () => {
                 <div class="name">★ ${getPoiDisplayName(p)}</div>
                 <div class="sub">${p.city} ${distSpan}</div>
               </div>
-              <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+              <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${inItinerary?'var(--warning)':'var(--primary)'};border-color:${inItinerary?'var(--warning)':'var(--primary)'};color:#fff" data-add-to-itinerary="${p.id}">${inItinerary?'✓ Aggiunto':'+ Aggiungi'}</button>
             </div>`;
           }).join('') : '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata</p>';
 
           const filteredCustomHTML = filteredCustom.length ? filteredCustom.map(e => {
+            const inItinerary = isInItinerary(e.id);
             const km = (state.gpsCurrentLat && e.lat)
               ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, e.lat, e.lng) : null;
             return `<div class="poi-row" data-custom-id="${e.id}">
@@ -3092,6 +3221,7 @@ window.addEventListener("load", () => {
                 <div class="name">${e.name}</div>
                 <div class="sub">${e.city} · personalizzato${km!==null?' · <span data-gps-dist data-lat="'+e.lat+'" data-lng="'+e.lng+'" style="font-size:11px;color:var(--muted)">Posizione rilevata '+fmtDist(km)+'</span>':''}</div>
               </div>
+              <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${inItinerary?'var(--warning)':'var(--primary)'};border-color:${inItinerary?'var(--warning)':'var(--primary)'};color:#fff" data-add-to-itinerary="${e.id}">${inItinerary?'✓ Aggiunto':'+ Aggiungi'}</button>
             </div>`;
           }).join('') : '';
 
@@ -3101,10 +3231,31 @@ window.addEventListener("load", () => {
           }
         }
 
+        // Re-attach handlers after search
+        document.querySelectorAll('[data-add-to-itinerary]').forEach(btn => {
+          btn.onclick = () => {
+            const id = btn.dataset.addToItinerary;
+            const poi = allPOIs().find(p => p.id === id);
+            if (poi) {
+              const entry = {
+                id: poi.id,
+                name: getPoiDisplayName(poi),
+                city: poi.city,
+                lat: poi.lat,
+                lng: poi.lng
+              };
+              addToItinerary(entry);
+              toast('✓ Aggiunto a itinerario');
+              renderItineraryView();
+            }
+          };
+        });
+
         document.getElementById('itinerary-results').querySelectorAll('[data-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
         document.getElementById('itinerary-results').querySelectorAll('[data-custom-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.customId); });
       };
     }
+
     updateGPSStatusPanel();
     sheetBody.querySelectorAll('[data-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
     sheetBody.querySelectorAll('[data-custom-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.customId); });
@@ -3664,29 +3815,51 @@ window.addEventListener("load", () => {
   }
 
   function renderShoppingView() {
-    console.log('[renderShoppingView] Generating shopping list...');
+    console.log('[renderShoppingView] Generating shopping list from Google Places...');
 
-    // Use SHOPPING_DB directly (always available)
-    const items = SHOPPING_DB || [];
+    // Load shopping POIs from Google Places API
+    const googlePOIs = window.GOOGLE_PLACES_POIS || [];
+    const SHOPPING_CATEGORIES = ['shopping', 'clothing_store', 'shoe_store', 'department_store',
+                                 'home_goods_store', 'jewelry_store', 'book_store', 'electronics_store',
+                                 'furniture_store', 'supermarket', 'market', 'shopping_mall'];
 
-    // Sort by distance from user location if GPS available
-    let sortedItems = [...items];
+    // Filter Google POIs for shopping categories
+    let shoppingPOIs = googlePOIs.filter(p => {
+      const types = p.types || [];
+      return SHOPPING_CATEGORIES.some(cat => types.includes(cat));
+    });
+
+    // Filter by GPS distance (50km radius)
+    const MAX_DISTANCE_KM = 50;
     if (state.gpsCurrentLat && state.gpsCurrentLng) {
-      sortedItems.sort((a, b) => {
-        const distA = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, a.coords[0], a.coords[1]);
-        const distB = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, b.coords[0], b.coords[1]);
+      shoppingPOIs = shoppingPOIs.filter(p => {
+        const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
+        return dist <= MAX_DISTANCE_KM;
+      });
+
+      // Sort by distance from GPS
+      shoppingPOIs.sort((a, b) => {
+        const distA = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, a.lat, a.lng);
+        const distB = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, b.lat, b.lng);
         return distA - distB;
       });
-      console.log('[renderShoppingView] Sorted by distance from GPS');
+      console.log('[renderShoppingView] Filtered to', shoppingPOIs.length, 'shops within 50km, sorted by distance');
     }
 
+    // Fallback to SHOPPING_DB if no Google POIs available
+    const items = shoppingPOIs.length > 0 ? shoppingPOIs : (SHOPPING_DB || []);
+    let sortedItems = [...items];
+
     // Separazione: negozi normali vs vintage/second-hand
-    const regular = sortedItems.filter(p =>
-      !p.items || (typeof p.items === 'string' ? !p.items.toLowerCase().includes('vintage') :
+    const regular = sortedItems.filter(p => {
+      // Google Places POIs don't have vintage metadata, so include all Google POIs as regular
+      if (p.fromGooglePlaces) return true;
+      // For SHOPPING_DB items, filter by vintage metadata
+      return !p.items || (typeof p.items === 'string' ? !p.items.toLowerCase().includes('vintage') :
         !p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand')))
-    );
+    });
     const secondhand = sortedItems.filter(p =>
-      p.items && (typeof p.items === 'string' ? p.items.toLowerCase().includes('vintage') || p.items.toLowerCase().includes('second-hand') :
+      !p.fromGooglePlaces && p.items && (typeof p.items === 'string' ? p.items.toLowerCase().includes('vintage') || p.items.toLowerCase().includes('second-hand') :
         p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand')))
     );
 
@@ -3699,27 +3872,39 @@ window.addEventListener("load", () => {
     const regularBatch = regular.slice(0, BATCH_SIZE);
     const secondhandBatch = secondhand.slice(0, BATCH_SIZE);
 
-    const regularHtml = regularBatch.length ? regularBatch.map(p => `
+    const regularHtml = regularBatch.length ? regularBatch.map(p => {
+      let distanceStr = '';
+      if (state.gpsCurrentLat && p.lat) {
+        const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
+        distanceStr = ` · <span style="color:var(--success);font-weight:600">${fmtDist(dist)}</span>`;
+      }
+      return `
       <div class="poi-row" data-id="${p.id}">
         <div class="icon">${CATS[p.cat]?.icon || '🛍️'}</div>
         <div class="body">
           <div class="name">${getPoiDisplayName(p)}</div>
-          <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
+          <div class="sub">${p.city}${distanceStr} · ${p.desc?.slice(0, 50) || ''}</div>
         </div>
       </div>
-    `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio trovato</p>';
+    `}).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio trovato</p>';
 
     const regularLoadMore = regular.length > BATCH_SIZE ? `<button data-load-more="regular" style="width:100%;padding:10px;margin-top:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-weight:600;cursor:pointer">📥 Carica altri ${regular.length - BATCH_SIZE} negozi</button>` : '';
 
-    const secondhandHtml = secondhandBatch.length ? secondhandBatch.map(p => `
+    const secondhandHtml = secondhandBatch.length ? secondhandBatch.map(p => {
+      let distanceStr = '';
+      if (state.gpsCurrentLat && p.lat) {
+        const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
+        distanceStr = ` · <span style="color:var(--success);font-weight:600">${fmtDist(dist)}</span>`;
+      }
+      return `
       <div class="poi-row" data-id="${p.id}">
         <div class="icon">${CATS[p.cat]?.icon || '👕'}</div>
         <div class="body">
           <div class="name">${getPoiDisplayName(p)}</div>
-          <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
+          <div class="sub">${p.city}${distanceStr} · ${p.desc?.slice(0, 50) || ''}</div>
         </div>
       </div>
-    `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio second-hand trovato</p>';
+    `}).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio second-hand trovato</p>';
 
     const secondhandLoadMore = secondhand.length > BATCH_SIZE ? `<button data-load-more="secondhand" style="width:100%;padding:10px;margin-top:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-weight:600;cursor:pointer">📥 Carica altri ${secondhand.length - BATCH_SIZE} articoli second-hand</button>` : '';
 
@@ -3826,20 +4011,26 @@ window.addEventListener("load", () => {
 
       console.log('[renderShoppingView] Totale vintage shops caricati:', allVintageShops.length);
 
-      // Renderizza vintage shops
+      // Renderizza vintage shops con distanza
       const vintageHtml = allVintageShops.length
-        ? allVintageShops.map(p => `
+        ? allVintageShops.map(p => {
+          let distanceStr = '';
+          if (state.gpsCurrentLat && p.lat) {
+            const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
+            distanceStr = ` · <span style="color:var(--success);font-weight:600">${fmtDist(dist)}</span>`;
+          }
+          return `
           <div class="poi-row" data-id="${p.id}">
             <div class="icon" style="background:linear-gradient(135deg, #FF1493, #FFD700);">🎯</div>
             <div class="body">
               <div class="name">${p.name}
                 ${p.rating ? `<span style="font-size:11px;color:var(--warning);margin-left:4px">⭐ ${p.rating.toFixed(1)}</span>` : ''}
               </div>
-              <div class="sub">${p.city} · ${p.desc.slice(0, 60)}</div>
+              <div class="sub">${p.city}${distanceStr} · ${p.desc.slice(0, 50)}</div>
               <div style="font-size:11px;color:var(--success);margin-top:4px">📍 Google Places</div>
             </div>
           </div>
-        `).join('')
+        `}).join('')
         : '<p style="font-size:12px;color:var(--muted)">Nessun negozio vintage trovato</p>';
 
       console.log('[renderShoppingView] Cercando elemento #google-vintage...');
