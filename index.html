@@ -1693,9 +1693,16 @@ const POIS_BASE = window.POIS_DATASET || [];
   document.getElementById('sheet-close').onclick = closeSheet;
   sheet.addEventListener('click', e => { if (e.target === sheet) closeSheet(); });
   function openSheet(title, html){
+    console.log('[openSheet] Starting, title:', title);
+    console.log('[openSheet] sheetTitle:', sheetTitle, 'sheetBody:', sheetBody, 'sheet:', sheet);
+    if (!sheetTitle || !sheetBody || !sheet) {
+      console.error('[openSheet] ❌ Elements not found!', {sheetTitle: !!sheetTitle, sheetBody: !!sheetBody, sheet: !!sheet});
+      return;
+    }
     sheetTitle.textContent = title;
     sheetBody.innerHTML = html;
     sheet.classList.add('open');
+    console.log('[openSheet] ✅ Sheet opened, class added');
   }
   function closeSheet(){ sheet.classList.remove('open'); }
   // Rendi globali per poi-handlers.js
