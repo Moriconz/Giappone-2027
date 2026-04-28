@@ -1748,7 +1748,18 @@ const POIS_BASE = window.POIS_DATASET || [];
     sheet.classList.add('open');
     console.log('[openSheet] ✅ Sheet opened, class added');
   }
-  function closeSheet(){ sheet.classList.remove('open'); }
+  function closeSheet(){
+    sheet.classList.remove('open');
+    // Reset tab button state when closing detail view
+    if (activeTabView === 'map') {
+      const bottomNav = document.querySelector('nav.bottom');
+      if (bottomNav) {
+        bottomNav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        const mapBtn = bottomNav.querySelector('button[data-view="map"]');
+        if (mapBtn) mapBtn.classList.add('active');
+      }
+    }
+  }
   // Rendi globali per poi-handlers.js
   window.openSheet = openSheet;
   window.closeSheet = closeSheet;
@@ -1775,19 +1786,6 @@ const POIS_BASE = window.POIS_DATASET || [];
       if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
     });
   }
-
-  // Quando chiudi il dettaglio POI, ripristina il bottone al tab attivo
-  const originalCloseSheet = closeSheet;
-  window.closeSheet = function() {
-    originalCloseSheet();
-    // Ripristina il bottone attivo al tab che era attivo prima
-    if (bottomNav && activeTabView !== 'map') {
-      const activeBtn = bottomNav.querySelector(`button[data-view="${activeTabView}"]`);
-      if (activeBtn) {
-        bottomNav.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === activeBtn));
-      }
-    }
-  };
   // ---- POI detail ----
   function gfTag(gf){
     if (!gf || !gf.lvl || gf.lvl === 'unknown') return ''; // Non mostrare il tag se non disponibile
@@ -3321,15 +3319,38 @@ const POIS_BASE = window.POIS_DATASET || [];
     }
   }
 
-  // GF Analysis cache
+  // GF Analysis cache (memoria + localStorage)
   let gfAnalysisCache = {};
+  const GF_CACHE_PREFIX = 'gf_analysis_';
+  const GF_CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 giorni
 
   async function analyzeGlutenFreeStatus(placeId, name, city) {
-    // Check cache first
-    const cacheKey = `${placeId}_${name}_${city}`;
-    if (gfAnalysisCache[cacheKey]) {
-      console.log('[analyzeGlutenFreeStatus] Cache HIT');
-      return gfAnalysisCache[cacheKey];
+    // Check in-memory cache first
+    const memKey = `${placeId}_${name}_${city}`;
+    if (gfAnalysisCache[memKey]) {
+      console.log('[analyzeGlutenFreeStatus] Cache HIT (memoria)');
+      return gfAnalysisCache[memKey];
+    }
+
+    // Check localStorage cache
+    const storageKey = `${GF_CACHE_PREFIX}${placeId}`;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        const cached = JSON.parse(stored);
+        const age = Date.now() - cached.timestamp;
+        if (age < GF_CACHE_TTL) {
+          console.log('[analyzeGlutenFreeStatus] Cache HIT (localStorage)', `Age: ${Math.round(age/1000/60)}m`);
+          // Restore to memory cache
+          gfAnalysisCache[memKey] = cached.result;
+          return cached.result;
+        } else {
+          console.log('[analyzeGlutenFreeStatus] Cache EXPIRED (localStorage)');
+          localStorage.removeItem(storageKey);
+        }
+      }
+    } catch (e) {
+      console.warn('[analyzeGlutenFreeStatus] localStorage read error:', e.message);
     }
 
     const apiUrl = `/api/analyzeGlutenFree?place_id=${encodeURIComponent(placeId)}&name=${encodeURIComponent(name)}&city=${encodeURIComponent(city)}`;
@@ -3348,21 +3369,118 @@ const POIS_BASE = window.POIS_DATASET || [];
       const data = await response.json();
       const result = data.gf || { lvl: 'unknown', confidence: 0 };
 
-      // Cache the result
-      gfAnalysisCache[cacheKey] = result;
-      console.log('[analyzeGlutenFreeStatus] Result cached:', result);
+      // Cache the result in memory
+      gfAnalysisCache[memKey] = result;
 
+      // Cache the result in localStorage
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({
+          result: result,
+          timestamp: Date.now(),
+          placeId: placeId,
+          name: name,
+          city: city
+        }));
+        console.log('[analyzeGlutenFreeStatus] Result saved to localStorage');
+      } catch (e) {
+        console.warn('[analyzeGlutenFreeStatus] localStorage write error:', e.message);
+      }
+
+      console.log('[analyzeGlutenFreeStatus] Result:', result);
       return result;
     } catch (err) {
       console.error('[analyzeGlutenFreeStatus] Error:', err.message);
       // Cache the error result too
       const errorResult = { lvl: 'unknown', confidence: 0 };
-      gfAnalysisCache[cacheKey] = errorResult;
+      gfAnalysisCache[memKey] = errorResult;
       return errorResult;
     }
   }
 
+  // Shopping view cache
+  let shoppingViewCache = { html: null, timestamp: 0, regular: null, secondhand: null };
+  const SHOPPING_CACHE_TTL = 5 * 60 * 1000; // 5 minuti
+  let shoppingLoadIndex = { regular: 100, secondhand: 100 };
+
+  function attachShoppingHandlers() {
+    // Attach load more buttons
+    document.querySelectorAll('[data-load-more]').forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        const type = btn.dataset.loadMore;
+        const items = shoppingViewCache[type];
+        if (!items) return;
+
+        const BATCH_SIZE = 100;
+        const currentIndex = shoppingLoadIndex[type];
+        const nextBatch = items.slice(currentIndex, currentIndex + BATCH_SIZE);
+
+        if (nextBatch.length > 0) {
+          const html = nextBatch.map(p => `
+            <div class="poi-row" data-id="${p.id}">
+              <div class="icon">${CATS[p.cat]?.icon || (type === 'regular' ? '🛍️' : '👕')}</div>
+              <div class="body">
+                <div class="name">${getPoiDisplayName(p)}</div>
+                <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
+              </div>
+            </div>
+          `).join('');
+
+          // Find the container and append
+          const containerId = type === 'regular' ? 'regular-shops' : (type === 'secondhand' ? 'secondhand-shops-tab1' : 'secondhand-shops-tab2');
+          const container = document.getElementById(containerId);
+          if (container) {
+            container.innerHTML += html;
+            // Attach click handlers to new items
+            container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+          }
+
+          shoppingLoadIndex[type] = currentIndex + BATCH_SIZE;
+
+          // Update or remove load more button
+          const remaining = items.length - shoppingLoadIndex[type];
+          if (remaining > 0) {
+            btn.textContent = `📥 Carica altri ${remaining}`;
+          } else {
+            btn.remove();
+          }
+        }
+      };
+    });
+
+    // Attach click handlers to all poi-row
+    document.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+
+    // Attach search handler
+    const searchInput = document.getElementById('shopping-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', debounce((e) => {
+        const query = e.target.value.toLowerCase();
+        if (!query) {
+          // Reset
+          document.querySelectorAll('.poi-row').forEach(r => r.style.display = 'block');
+          return;
+        }
+        document.querySelectorAll('.poi-row').forEach(r => {
+          const name = r.querySelector('.name')?.textContent.toLowerCase() || '';
+          const sub = r.querySelector('.sub')?.textContent.toLowerCase() || '';
+          r.style.display = (name.includes(query) || sub.includes(query)) ? 'block' : 'none';
+        });
+      }, 300));
+    }
+  }
+
   function renderShoppingView() {
+    // Check cache first
+    const now = Date.now();
+    if (shoppingViewCache.html && (now - shoppingViewCache.timestamp) < SHOPPING_CACHE_TTL) {
+      console.log('[renderShoppingView] Using cached HTML');
+      window.openSheet('🛍️ Shopping', shoppingViewCache.html);
+      attachShoppingHandlers();
+      return;
+    }
+
+    console.log('[renderShoppingView] Generating fresh view...');
     const items = getCachedAllPOIs().filter(p => ['shop','market'].includes(p.cat));
 
     // Separazione: negozi normali vs vintage/second-hand
@@ -3374,8 +3492,15 @@ const POIS_BASE = window.POIS_DATASET || [];
     );
 
     shoppingCache.data = items;
+    shoppingViewCache.regular = regular;
+    shoppingViewCache.secondhand = secondhand;
 
-    const regularHtml = regular.length ? regular.map(p => `
+    // Render only first 100 for speed
+    const BATCH_SIZE = 100;
+    const regularBatch = regular.slice(0, BATCH_SIZE);
+    const secondhandBatch = secondhand.slice(0, BATCH_SIZE);
+
+    const regularHtml = regularBatch.length ? regularBatch.map(p => `
       <div class="poi-row" data-id="${p.id}">
         <div class="icon">${CATS[p.cat]?.icon || '🛍️'}</div>
         <div class="body">
@@ -3385,7 +3510,9 @@ const POIS_BASE = window.POIS_DATASET || [];
       </div>
     `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio trovato</p>';
 
-    const secondhandHtml = secondhand.length ? secondhand.map(p => `
+    const regularLoadMore = regular.length > BATCH_SIZE ? `<button data-load-more="regular" style="width:100%;padding:10px;margin-top:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-weight:600;cursor:pointer">📥 Carica altri ${regular.length - BATCH_SIZE} negozi</button>` : '';
+
+    const secondhandHtml = secondhandBatch.length ? secondhandBatch.map(p => `
       <div class="poi-row" data-id="${p.id}">
         <div class="icon">${CATS[p.cat]?.icon || '👕'}</div>
         <div class="body">
@@ -3394,6 +3521,8 @@ const POIS_BASE = window.POIS_DATASET || [];
         </div>
       </div>
     `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio second-hand trovato</p>';
+
+    const secondhandLoadMore = secondhand.length > BATCH_SIZE ? `<button data-load-more="secondhand" style="width:100%;padding:10px;margin-top:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-weight:600;cursor:pointer">📥 Carica altri ${secondhand.length - BATCH_SIZE} articoli second-hand</button>` : '';
 
     const html = `
       <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
@@ -3419,10 +3548,12 @@ const POIS_BASE = window.POIS_DATASET || [];
           <div class="section" style="margin-bottom:16px">
             <h3>🛍️ Negozi & Mercati</h3>
             <div id="regular-shops">${regularHtml}</div>
+            ${regularLoadMore}
           </div>
           <div class="section">
             <h3>🔄 Second-Hand (Database locale)</h3>
             <div id="secondhand-shops-tab1">${secondhandHtml}</div>
+            ${secondhandLoadMore}
           </div>
         </div>
 
@@ -3435,12 +3566,18 @@ const POIS_BASE = window.POIS_DATASET || [];
           <div class="section">
             <h3>🔄 Second-Hand (Database locale)</h3>
             <div id="secondhand-shops-tab2">${secondhandHtml}</div>
+            ${secondhandLoadMore}
           </div>
         </div>
       </div>
     `;
 
     window.openSheet('🛍️ Shopping', html);
+    shoppingViewCache.timestamp = Date.now();
+    shoppingViewCache.html = html;
+
+    // Attach shopping handlers (load more, search, poi click)
+    attachShoppingHandlers();
 
     // Setup tab switching
     const tabGeneralBtn = document.getElementById('tab-general');
