@@ -2884,23 +2884,79 @@ const POIS_BASE = window.POIS_DATASET || [];
         <input id="shopping-search" type="text" placeholder="🔍 Cerca negozio..."
           style="width:100%;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit">
       </div>
+
+      <!-- TAB BUTTONS -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">
+        <button id="tab-general" data-tab="general"
+          style="flex:1;padding:10px;border:none;background:var(--surface-2);color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;font-weight:600;font-size:13px">
+          🛍️ Negozi Generali
+        </button>
+        <button id="tab-vintage" data-tab="vintage"
+          style="flex:1;padding:10px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-weight:600;font-size:13px">
+          👕 Vintage & Second-Hand
+        </button>
+      </div>
+
       <div id="shopping-results">
-        <div class="section" style="margin-bottom:16px">
-          <h3>👕 Vintage Shops (da Google Places)</h3>
-          <div id="google-vintage" style="color:var(--muted);font-size:12px">⏳ Caricamento negozi vintage da Google Places...</div>
+        <!-- TAB 1: NEGOZI GENERALI -->
+        <div id="tab-content-general" style="display:block">
+          <div class="section" style="margin-bottom:16px">
+            <h3>🛍️ Negozi & Mercati</h3>
+            <div id="regular-shops">${regularHtml}</div>
+          </div>
+          <div class="section">
+            <h3>🔄 Second-Hand (Database locale)</h3>
+            <div id="secondhand-shops-tab1">${secondhandHtml}</div>
+          </div>
         </div>
-        <div class="section" style="margin-bottom:16px">
-          <h3>🛍️ Negozi & Mercati</h3>
-          <div id="regular-shops">${regularHtml}</div>
-        </div>
-        <div class="section">
-          <h3>🔄 Second-Hand & Vintage (Database locale)</h3>
-          <div id="secondhand-shops">${secondhandHtml}</div>
+
+        <!-- TAB 2: VINTAGE & SECOND-HAND -->
+        <div id="tab-content-vintage" style="display:none">
+          <div class="section" style="margin-bottom:16px">
+            <h3>👕 Vintage Shops (da Google Places)</h3>
+            <div id="google-vintage" style="color:var(--muted);font-size:12px">⏳ Caricamento negozi vintage da Google Places...</div>
+          </div>
+          <div class="section">
+            <h3>🔄 Second-Hand (Database locale)</h3>
+            <div id="secondhand-shops-tab2">${secondhandHtml}</div>
+          </div>
         </div>
       </div>
     `;
 
     window.openSheet('🛍️ Shopping', html);
+
+    // Setup tab switching
+    const tabGeneralBtn = document.getElementById('tab-general');
+    const tabVintageBtn = document.getElementById('tab-vintage');
+    const tabContentGeneral = document.getElementById('tab-content-general');
+    const tabContentVintage = document.getElementById('tab-content-vintage');
+
+    if (tabGeneralBtn && tabVintageBtn) {
+      tabGeneralBtn.onclick = () => {
+        tabGeneralBtn.style.background = 'var(--surface-2)';
+        tabGeneralBtn.style.color = 'var(--accent)';
+        tabGeneralBtn.style.borderBottom = '2px solid var(--accent)';
+        tabVintageBtn.style.background = 'transparent';
+        tabVintageBtn.style.color = 'var(--muted)';
+        tabVintageBtn.style.borderBottom = 'none';
+        if (tabContentGeneral) tabContentGeneral.style.display = 'block';
+        if (tabContentVintage) tabContentVintage.style.display = 'none';
+        console.log('[Shopping] Switched to GENERAL tab');
+      };
+
+      tabVintageBtn.onclick = () => {
+        tabVintageBtn.style.background = 'var(--surface-2)';
+        tabVintageBtn.style.color = 'var(--accent)';
+        tabVintageBtn.style.borderBottom = '2px solid var(--accent)';
+        tabGeneralBtn.style.background = 'transparent';
+        tabGeneralBtn.style.color = 'var(--muted)';
+        tabGeneralBtn.style.borderBottom = 'none';
+        if (tabContentGeneral) tabContentGeneral.style.display = 'none';
+        if (tabContentVintage) tabContentVintage.style.display = 'block';
+        console.log('[Shopping] Switched to VINTAGE tab');
+      };
+    }
 
     // Carica vintage shops da Google Places in background
     (async () => {
@@ -2987,7 +3043,8 @@ const POIS_BASE = window.POIS_DATASET || [];
 
         if (!query) {
           document.getElementById('regular-shops').innerHTML = regularHtml;
-          document.getElementById('secondhand-shops').innerHTML = secondhandHtml;
+          document.getElementById('secondhand-shops-tab1').innerHTML = secondhandHtml;
+          document.getElementById('secondhand-shops-tab2').innerHTML = secondhandHtml;
         } else {
           const filteredRegular = regular.filter(p =>
             getPoiDisplayName(p).toLowerCase().includes(query) ||
@@ -3021,7 +3078,8 @@ const POIS_BASE = window.POIS_DATASET || [];
           `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio second-hand trovato</p>';
 
           document.getElementById('regular-shops').innerHTML = regularHtmlFiltered;
-          document.getElementById('secondhand-shops').innerHTML = secondhandHtmlFiltered;
+          document.getElementById('secondhand-shops-tab1').innerHTML = secondhandHtmlFiltered;
+          document.getElementById('secondhand-shops-tab2').innerHTML = secondhandHtmlFiltered;
         }
 
         resultsDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
