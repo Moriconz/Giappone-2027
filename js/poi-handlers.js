@@ -4,6 +4,17 @@
 
 console.log('[POI Handlers] Loading...');
 
+// Toast utility (se non definita)
+if (!window.toast) {
+  window.toast = function(msg) {
+    const container = document.getElementById('toast-container');
+    if (!container) return console.log('[Toast]', msg);
+    container.textContent = msg;
+    container.classList.add('show');
+    setTimeout(() => container.classList.remove('show'), 3000);
+  };
+}
+
 // Funzione globale per aprire un POI dal click sulla mappa
 window.__openPOI = function(poiId) {
   console.log('[POI] Opening POI:', poiId);

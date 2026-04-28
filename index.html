@@ -1361,6 +1361,8 @@ const POIS_BASE = window.POIS_DATASET || [];
     if (p.city) return `Luogo a ${p.city}`;
     return 'Punto di interesse';
   }
+  // Rendi globale per poi-handlers.js
+  window.getPoiDisplayName = getPoiDisplayName;
 
   // Aggiorna marker al cambio vista (debounced 250ms)
   const debouncedRender = debounce(renderMarkers, 250);
@@ -1681,6 +1683,9 @@ const POIS_BASE = window.POIS_DATASET || [];
     sheet.classList.add('open');
   }
   function closeSheet(){ sheet.classList.remove('open'); }
+  // Rendi globali per poi-handlers.js
+  window.openSheet = openSheet;
+  window.closeSheet = closeSheet;
 
   const bottomNav = document.querySelector('nav.bottom');
   if (bottomNav) {
@@ -1821,6 +1826,8 @@ const POIS_BASE = window.POIS_DATASET || [];
       ${bookingBtns.length ? `<div class="section"><h3>🍴 Prenotazioni</h3><div class="action-row">${bookingBtns.join('')}</div></div>`:''}
     `;
   }
+  // Rendi poiDetailHTML globale per poi-handlers.js
+  window.poiDetailHTML = poiDetailHTML;
   function loadPOIPhotos(p){
     const container = document.getElementById('poi-photos-container');
     if (!container) {

@@ -8,31 +8,41 @@ async function loadAllPOIS() {
   const basePath = href.substring(0, href.lastIndexOf('/') + 1);
   const baseUrl = basePath + 'js/pois/';
 
+  console.log('[POI Dataset] Starting load from:', baseUrl);
+
   for (const [city, info] of Object.entries(POIS_MANIFEST)) {
     try {
       const url = `${baseUrl}${info.file}`;
       const resp = await fetch(url);
-      if (!resp.ok) continue;
+      if (!resp.ok) {
+        console.warn(`[POI] Failed to load ${city}:`, resp.status);
+        continue;
+      }
       const text = await resp.text();
       const actualCode = text.replace(/\\\\n/g, '\n');
       const match = actualCode.match(/\[\s*\{[\s\S]*?\}\s*\]/);
-      if (!match) continue;
+      if (!match) {
+        console.warn(`[POI] No data found in ${city}`);
+        continue;
+      }
       try {
         let jsonStr = match[0].replace(/\n/g, ' ');
         const jsonData = JSON.parse(jsonStr);
         window.POIS_DATASET[city] = jsonData;
         loaded++;
+        console.log(`[POI] Loaded ${city}: ${jsonData.length} POI`);
       } catch(parseErr) {
-        // silent fail
+        console.error(`[POI] Parse error in ${city}:`, parseErr.message);
       }
     } catch(e) {
-      // silent fail
+      console.error(`[POI] Error loading ${city}:`, e.message);
     }
   }
+
+  console.log(`[POI Dataset] Load complete: ${loaded}/${Object.keys(POIS_MANIFEST).length} città caricati`);
+  window.dispatchEvent(new CustomEvent('POI_DATASET_READY', { detail: { loaded, total: Object.keys(POIS_MANIFEST).length } }));
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', loadAllPOIS);
-} else {
-  loadAllPOIS();
-}
+// Carica subito (non aspettare DOMContentLoaded)
+console.log('[POI Dataset] Initializing...');
+loadAllPOIS().catch(err => console.error('[POI Dataset] Fatal error:', err));
