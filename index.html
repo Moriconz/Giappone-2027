@@ -1773,7 +1773,7 @@ const POIS_BASE = window.POIS_DATASET || [];
   }
   // ---- POI detail ----
   function gfTag(gf){
-    if (!gf) return '<span class="tag gf-none">GF: n/a</span>';
+    if (!gf || !gf.lvl || gf.lvl === 'unknown') return ''; // Non mostrare il tag se non disponibile
     const map = {full:['🌾 100% Gluten-Free','gf-full'], partial:['🌾 GF parziale','gf-partial'], none:['⚠️ Non GF','gf-none']};
     const [t,c] = map[gf.lvl] || map.none;
     return `<span class="tag ${c}">${t}</span>`;
@@ -3094,23 +3094,36 @@ const POIS_BASE = window.POIS_DATASET || [];
   }
 
   function renderGFView() {
-    const cities = [...new Set((typeof allPOIs === "function" ? allPOIs() : []).filter(p => p.gf && (p.gf.lvl === "full" || p.gf.lvl === "partial")).map(p => p.city))].sort();
-    const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;\"><option value=\"all\">Tutte le città</option>" + cities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\" style=\"position:relative;min-height:200px;\"><p style=\"color:var(--muted);text-align:center;padding:20px;\">⏳ Caricamento...</p></div>";
+    // Usa TUTTE le città da CITY_COORDS, non solo quelle con dati hardcoded
+    const allCities = Object.keys(CITY_COORDS).sort();
+    const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;\"><option value=\"all\">Tutte le città</option>" + allCities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\" style=\"position:relative;min-height:200px;\"></div>";
     window.openSheet("🌾 Gluten Free", html);
 
-    // Load GF shops from Google Places in background
+    // Mostra subito i dati hardcoded
+    renderGFList("all", "");
+
+    // Load GF shops from Google Places in background (non blocca UI)
     (async () => {
+      console.log('[renderGFView] Inizio caricamento GF shops da Google Places per', allCities.length, 'città');
       try {
         allGlutenFreeShops = [];
-        for (const city of cities) {
-          const shops = await loadGlutenFreeShopsForCity(city);
-          allGlutenFreeShops = allGlutenFreeShops.concat(shops);
+        for (const city of allCities) {
+          try {
+            const shops = await loadGlutenFreeShopsForCity(city);
+            if (shops.length > 0) {
+              console.log(`[renderGFView] ${city}: ${shops.length} GF shops trovati`);
+              allGlutenFreeShops = allGlutenFreeShops.concat(shops);
+            }
+          } catch (err) {
+            console.warn(`[renderGFView] Errore caricamento ${city}:`, err.message);
+          }
         }
-        console.log(`[renderGFView] Caricati ${allGlutenFreeShops.length} shop da Google Places`);
+        console.log(`[renderGFView] Caricati ${allGlutenFreeShops.length} shop totali da Google Places`);
+        // Aggiorna la lista con i nuovi dati
+        renderGFList("all", "");
       } catch (err) {
         console.error('[renderGFView] Error loading GF shops:', err);
       }
-      renderGFList("all", "");
     })();
 
     const searchInput = document.getElementById("gf-search");
@@ -3242,19 +3255,44 @@ const POIS_BASE = window.POIS_DATASET || [];
     }
   }
 
+  // GF Analysis cache
+  let gfAnalysisCache = {};
+
   async function analyzeGlutenFreeStatus(placeId, name, city) {
+    // Check cache first
+    const cacheKey = `${placeId}_${name}_${city}`;
+    if (gfAnalysisCache[cacheKey]) {
+      console.log('[analyzeGlutenFreeStatus] Cache HIT');
+      return gfAnalysisCache[cacheKey];
+    }
+
     const apiUrl = `/api/analyzeGlutenFree?place_id=${encodeURIComponent(placeId)}&name=${encodeURIComponent(name)}&city=${encodeURIComponent(city)}`;
     console.log(`[analyzeGlutenFreeStatus] Analyzing: ${apiUrl}`);
 
     try {
-      const response = await fetch(apiUrl);
+      // Fetch with 10s timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const response = await fetch(apiUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data = await response.json();
-      return data.gf || { lvl: 'unknown', confidence: 0 };
+      const result = data.gf || { lvl: 'unknown', confidence: 0 };
+
+      // Cache the result
+      gfAnalysisCache[cacheKey] = result;
+      console.log('[analyzeGlutenFreeStatus] Result cached:', result);
+
+      return result;
     } catch (err) {
       console.error('[analyzeGlutenFreeStatus] Error:', err.message);
-      return { lvl: 'unknown', confidence: 0 };
+      // Cache the error result too
+      const errorResult = { lvl: 'unknown', confidence: 0 };
+      gfAnalysisCache[cacheKey] = errorResult;
+      return errorResult;
     }
   }
 
