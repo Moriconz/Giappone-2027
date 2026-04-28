@@ -1,0 +1,491 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Y2K THEME OVERRIDE — Giappone 2027
+   
+   HOW TO USE:
+   Aggiungi nel <head> del tuo index.html, DOPO i tuoi stili esistenti:
+   <link rel="stylesheet" href="./y2k-override.css">
+   
+   Non tocca nulla della struttura HTML o della logica JS.
+   Sovrascrive solo i colori e lo stile visivo.
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── DESIGN TOKENS ──────────────────────────────────────────────── */
+:root {
+  --primary:     #2D3B7D;
+  --accent:      #FF1493;
+  --success:     #00FF88;
+  --warning:     #FFD700;
+  --bg:          #2D3B7D;
+  --surface:     #3D4E9A;
+  --surface-2:   #4A5BA8;
+  --text:        #FFFACD;
+  --muted:       #E0D5FF;
+  --border:      #FF1493;
+  --danger:      #FF4444;
+  --radius:      10px;
+  --shadow:      0 0 20px rgba(255,20,147,0.4);
+  --safe-top:    env(safe-area-inset-top,0);
+  --safe-bottom: env(safe-area-inset-bottom,0);
+}
+
+/* Force dark mode tokens always (no light override) */
+@media (prefers-color-scheme: light) {
+  :root {
+    --primary:   #2D3B7D;
+    --accent:    #FF1493;
+    --success:   #00FF88;
+    --warning:   #FFD700;
+    --bg:        #2D3B7D;
+    --surface:   #3D4E9A;
+    --surface-2: #4A5BA8;
+    --text:      #FFFACD;
+    --muted:     #E0D5FF;
+    --border:    #FF1493;
+    --danger:    #FF4444;
+  }
+}
+
+/* ── BASE ───────────────────────────────────────────────────────── */
+html, body {
+  font-family: 'Courier New', monospace !important;
+  background: var(--bg) !important;
+}
+
+/* ── HEADER ─────────────────────────────────────────────────────── */
+header {
+  background: linear-gradient(180deg, #4A5BA8 0%, #2D3B7D 100%) !important;
+  border-bottom: 3px solid #FF1493 !important;
+  box-shadow: 0 0 20px rgba(255,20,147,0.3) !important;
+}
+
+header h1 {
+  color: #FFD700 !important;
+  font-family: 'Comic Sans MS', cursive !important;
+  text-shadow: 0 0 10px rgba(255,215,0,0.5) !important;
+}
+
+header h1 .badge {
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  color: white !important;
+  border: 2px solid #E0D5FF !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 12px rgba(255,20,147,0.6) !important;
+}
+
+.icon-btn {
+  background: linear-gradient(180deg, #E0D5FF, #D8CCFF) !important;
+  border: 2px solid #FF1493 !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 12px rgba(255,20,147,0.6) !important;
+  transition: all 0.2s !important;
+}
+
+.icon-btn:hover {
+  box-shadow: 0 0 20px rgba(255,20,147,0.8) !important;
+  transform: scale(1.1) !important;
+}
+
+.icon-btn.active {
+  background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
+  border-color: #00FF88 !important;
+}
+
+.icon-btn.active::after {
+  background: #00FF88 !important;
+}
+
+/* ── MAP ────────────────────────────────────────────────────────── */
+#map {
+  background: linear-gradient(135deg, #2D3B7D 0%, #4A5BA8 50%, #2D3B7D 100%) !important;
+  transition: filter 0.3s ease !important;
+}
+
+#map.blur {
+  filter: blur(8px) brightness(0.7) !important;
+}
+
+/* ── FILTER CHIPS ───────────────────────────────────────────────── */
+.chip {
+  background: linear-gradient(180deg, #FFFACD, #FFE4B5) !important;
+  border: 2px solid #FF1493 !important;
+  color: #2D3B7D !important;
+  border-radius: 20px !important;
+  font-family: 'Comic Sans MS', cursive !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 8px rgba(255,20,147,0.4) !important;
+  backdrop-filter: none !important;
+  transition: all 0.2s !important;
+}
+
+.chip:hover {
+  box-shadow: 0 0 15px rgba(255,20,147,0.8) !important;
+  transform: scale(1.05) !important;
+}
+
+.chip.active {
+  background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
+  border-color: #00FF88 !important;
+  color: white !important;
+  box-shadow: 0 0 15px rgba(255,20,147,0.8), 0 0 8px rgba(0,255,136,0.5) !important;
+}
+
+.chip.gf {
+  background: linear-gradient(180deg, #C0FF9F, #D4FF9F) !important;
+  border-color: #00FF88 !important;
+  color: #2D3B7D !important;
+}
+
+.chip.gf.active {
+  background: linear-gradient(180deg, #00FF88, #C0FF9F) !important;
+  color: #2D3B7D !important;
+  box-shadow: 0 0 12px rgba(0,255,136,0.6) !important;
+}
+
+/* ── BOTTOM NAV ─────────────────────────────────────────────────── */
+nav.bottom {
+  background: linear-gradient(180deg, #4A5BA8, #2D3B7D) !important;
+  border-top: 3px solid #00FF88 !important;
+  box-shadow: 0 -4px 20px rgba(0,255,136,0.2) !important;
+  padding: 6px 4px calc(6px + var(--safe-bottom)) !important;
+  gap: 2px !important;
+}
+
+nav.bottom button {
+  background: linear-gradient(180deg, #8B9FD9, #6B7FB9) !important;
+  border: 2px solid #E0D5FF !important;
+  border-radius: 6px !important;
+  color: white !important;
+  font-family: 'Courier New', monospace !important;
+  transition: all 0.2s !important;
+  padding: 4px 2px 3px !important;
+  font-size: 8px !important;
+}
+
+nav.bottom button svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+nav.bottom button:hover {
+  box-shadow: 0 0 12px rgba(0,255,136,0.4) !important;
+  transform: translateY(-2px) !important;
+}
+
+nav.bottom button.active {
+  background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
+  border-color: #00FF88 !important;
+  color: white !important;
+  box-shadow: 0 0 15px rgba(255,20,147,0.6), 0 0 8px rgba(0,255,136,0.4) !important;
+}
+
+nav.bottom button svg {
+  stroke: currentColor !important;
+}
+
+/* ── SHEETS ─────────────────────────────────────────────────────── */
+.sheet {
+  background: rgba(45,59,125,0.7) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.sheet-inner {
+  background: linear-gradient(180deg, #FFFACD, #FFF8DC) !important;
+  color: #2D3B7D !important;
+  border-radius: 16px 16px 0 0 !important;
+  border-top: 3px solid #FF1493 !important;
+  box-shadow: 0 -8px 32px rgba(255,20,147,0.4) !important;
+}
+
+.sheet-handle {
+  background: #FF1493 !important;
+  width: 50px !important;
+  height: 5px !important;
+  box-shadow: 0 0 8px rgba(255,20,147,0.5) !important;
+}
+
+.sheet-header {
+  background: linear-gradient(180deg, #FFFACD, #FFF8DC) !important;
+  border-bottom: 2px solid #FF1493 !important;
+  color: #2D3B7D !important;
+}
+
+.sheet-header h2 {
+  color: #2D3B7D !important;
+  font-family: 'Comic Sans MS', cursive !important;
+}
+
+.sheet-body {
+  color: #2D3B7D !important;
+}
+
+/* ── TAGS ───────────────────────────────────────────────────────── */
+.tag {
+  background: linear-gradient(135deg, #E0D5FF, #F0E5FF) !important;
+  color: #2D3B7D !important;
+  border: 1px solid #E0D5FF !important;
+  border-radius: 6px !important;
+}
+
+.tag.cat {
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  color: white !important;
+  border-color: #FF1493 !important;
+}
+
+.tag.gf-full {
+  background: linear-gradient(135deg, #00FF88, #C0FF9F) !important;
+  color: #2D3B7D !important;
+  border-color: #00FF88 !important;
+}
+
+.tag.gf-partial {
+  background: linear-gradient(135deg, #FFD700, #FFE44D) !important;
+  color: #2D3B7D !important;
+  border-color: #FFD700 !important;
+}
+
+.tag.gf-none {
+  background: #4A5BA8 !important;
+  color: #E0D5FF !important;
+  border-color: #E0D5FF !important;
+}
+
+/* ── BUTTONS ────────────────────────────────────────────────────── */
+.btn {
+  background: linear-gradient(180deg, #E0D5FF, #F0E5FF) !important;
+  border: 2px solid #E0D5FF !important;
+  color: #2D3B7D !important;
+  border-radius: 8px !important;
+  font-family: 'Courier New', monospace !important;
+  font-weight: 700 !important;
+  transition: all 0.2s !important;
+}
+
+.btn:hover {
+  box-shadow: 0 0 12px rgba(224,213,255,0.6) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn:active {
+  transform: scale(0.96) !important;
+}
+
+.btn.primary {
+  background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
+  border-color: #00FF88 !important;
+  color: white !important;
+  box-shadow: 0 0 12px rgba(255,20,147,0.5) !important;
+}
+
+.btn.primary:hover {
+  box-shadow: 0 0 20px rgba(255,20,147,0.7) !important;
+}
+
+.btn.success {
+  background: linear-gradient(180deg, #00FF88, #C0FF9F) !important;
+  border-color: #FF1493 !important;
+  color: #2D3B7D !important;
+  box-shadow: 0 0 12px rgba(0,255,136,0.5) !important;
+}
+
+/* ── POI ROWS ───────────────────────────────────────────────────── */
+.poi-row {
+  background: linear-gradient(135deg, #3D4E9A, #4A5BA8) !important;
+  border: 2px solid #00FF88 !important;
+  border-radius: 8px !important;
+  color: #FFFACD !important;
+  transition: all 0.2s !important;
+}
+
+.poi-row:hover, .poi-row:active {
+  box-shadow: 0 0 12px rgba(0,255,136,0.4) !important;
+  transform: translateX(2px) !important;
+}
+
+.poi-row .icon {
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  box-shadow: 0 0 8px rgba(255,20,147,0.4) !important;
+}
+
+.poi-row .name {
+  color: #FFFACD !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+.poi-row .sub {
+  color: #E0D5FF !important;
+}
+
+/* ── SECTIONS ───────────────────────────────────────────────────── */
+.section h3 {
+  color: #FF1493 !important;
+  text-shadow: 0 0 8px rgba(255,20,147,0.3) !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+/* ── FORM INPUTS ────────────────────────────────────────────────── */
+.form-row input,
+.form-row textarea,
+.form-row select {
+  background: #FFFACD !important;
+  color: #2D3B7D !important;
+  border: 2px solid #E0D5FF !important;
+  border-radius: 8px !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+.form-row input:focus,
+.form-row textarea:focus,
+.form-row select:focus {
+  border-color: #FF1493 !important;
+  box-shadow: 0 0 8px rgba(255,20,147,0.3) !important;
+  outline: none !important;
+}
+
+.form-row label {
+  color: #E0D5FF !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+/* ── TOAST ──────────────────────────────────────────────────────── */
+#toast {
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  border: 2px solid #00FF88 !important;
+  border-radius: 10px !important;
+  color: white !important;
+  font-family: 'Comic Sans MS', cursive !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 20px rgba(255,20,147,0.6) !important;
+}
+
+/* ── BOOKING CARDS ──────────────────────────────────────────────── */
+.booking-card {
+  background: linear-gradient(135deg, #FFF8DC, #FFFACD) !important;
+  border: 2px solid #FFD700 !important;
+  border-radius: 10px !important;
+  color: #2D3B7D !important;
+  box-shadow: 0 0 8px rgba(255,215,0,0.2) !important;
+}
+
+.bc-status.confirmed {
+  background: rgba(0,255,136,0.2) !important;
+  color: #00FF88 !important;
+  border-color: #00FF88 !important;
+}
+
+.bc-status.pending {
+  background: rgba(255,215,0,0.2) !important;
+  color: #FFD700 !important;
+  border-color: #FFD700 !important;
+}
+
+/* ── SHOP CARDS ─────────────────────────────────────────────────── */
+.shop-card {
+  background: linear-gradient(135deg, #FFF8DC, #FFFACD) !important;
+  border: 2px solid #FFD700 !important;
+  border-radius: 10px !important;
+  color: #2D3B7D !important;
+}
+
+.shop-card .sc-name {
+  color: #2D3B7D !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+.shop-card .sc-rating {
+  color: #FFD700 !important;
+  text-shadow: 0 0 8px rgba(255,215,0,0.5) !important;
+}
+
+.item-tag {
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  color: white !important;
+  border-radius: 6px !important;
+}
+
+/* ── AI CHAT ────────────────────────────────────────────────────── */
+.ai-msg.user {
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.ai-msg.ai {
+  background: linear-gradient(135deg, #E8F4FF, #F0EDFF) !important;
+  border: 2px solid #00FF88 !important;
+  color: #2D3B7D !important;
+}
+
+/* ── LEAFLET POPUP ──────────────────────────────────────────────── */
+.leaflet-popup-content-wrapper {
+  background: linear-gradient(135deg, #FFFACD, #FFF8DC) !important;
+  color: #2D3B7D !important;
+  border: 2px solid #FF1493 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 12px rgba(255,20,147,0.4) !important;
+}
+
+.leaflet-popup-tip {
+  background: #FFFACD !important;
+}
+
+.popup-title {
+  color: #2D3B7D !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+.popup-btn {
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: white !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 8px rgba(255,20,147,0.4) !important;
+}
+
+/* ── OFFLINE BANNER ─────────────────────────────────────────────── */
+#offline-banner {
+  background: linear-gradient(90deg, #FFD700, #FFE44D) !important;
+  color: #2D3B7D !important;
+  font-family: 'Courier New', monospace !important;
+  font-weight: 700 !important;
+}
+
+/* ── CITY LABELS ────────────────────────────────────────────────── */
+.city-label {
+  background: rgba(45,59,125,0.95) !important;
+  color: #FFD700 !important;
+  border: 1px solid #FFD700 !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+/* ── ANIMATIONS ─────────────────────────────────────────────────── */
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.sheet.open .sheet-inner {
+  animation: floatIn 0.35s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+
+nav.bottom button {
+  animation: fadeInScale 0.3s ease-out both;
+}
+
+nav.bottom button:nth-child(1) { animation-delay: 0.05s; }
+nav.bottom button:nth-child(2) { animation-delay: 0.10s; }
+nav.bottom button:nth-child(3) { animation-delay: 0.15s; }
+nav.bottom button:nth-child(4) { animation-delay: 0.20s; }
+nav.bottom button:nth-child(5) { animation-delay: 0.25s; }
+nav.bottom button:nth-child(6) { animation-delay: 0.30s; }
+nav.bottom button:nth-child(7) { animation-delay: 0.35s; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
