@@ -3664,24 +3664,30 @@ window.addEventListener("load", () => {
   }
 
   function renderShoppingView() {
-    // Check cache first
-    const now = Date.now();
-    if (shoppingViewCache.html && (now - shoppingViewCache.timestamp) < SHOPPING_CACHE_TTL) {
-      console.log('[renderShoppingView] Using cached HTML');
-      window.openSheet('🛍️ Shopping', shoppingViewCache.html);
-      attachShoppingHandlers();
-      return;
+    console.log('[renderShoppingView] Generating shopping list...');
+
+    // Use SHOPPING_DB directly (always available)
+    const items = SHOPPING_DB || [];
+
+    // Sort by distance from user location if GPS available
+    let sortedItems = [...items];
+    if (state.gpsCurrentLat && state.gpsCurrentLng) {
+      sortedItems.sort((a, b) => {
+        const distA = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, a.coords[0], a.coords[1]);
+        const distB = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, b.coords[0], b.coords[1]);
+        return distA - distB;
+      });
+      console.log('[renderShoppingView] Sorted by distance from GPS');
     }
 
-    console.log('[renderShoppingView] Generating fresh view...');
-    const items = getCachedAllPOIs().filter(p => ['shop','market'].includes(p.cat));
-
     // Separazione: negozi normali vs vintage/second-hand
-    const regular = items.filter(p =>
-      !p.desc || (!p.desc.toLowerCase().includes('vintage') && !p.desc.toLowerCase().includes('second-hand') && !p.desc.toLowerCase().includes('used'))
+    const regular = sortedItems.filter(p =>
+      !p.items || (typeof p.items === 'string' ? !p.items.toLowerCase().includes('vintage') :
+        !p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand')))
     );
-    const secondhand = items.filter(p =>
-      p.desc && (p.desc.toLowerCase().includes('vintage') || p.desc.toLowerCase().includes('second-hand') || p.desc.toLowerCase().includes('used'))
+    const secondhand = sortedItems.filter(p =>
+      p.items && (typeof p.items === 'string' ? p.items.toLowerCase().includes('vintage') || p.items.toLowerCase().includes('second-hand') :
+        p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand')))
     );
 
     shoppingCache.data = items;
