@@ -1918,8 +1918,13 @@ const POIS_BASE = window.POIS_DATASET || [];
   }
 
   function openPOI(id){
+    console.log('%c[openPOI] Called with id:', 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold', id);
     const p = allPOIs().find(x => x.id===id);
-    if (!p) return;
+    console.log('[openPOI] Found POI:', p ? p.name : 'NOT FOUND');
+    if (!p) {
+      console.error('[openPOI] ❌ POI not found, returning');
+      return;
+    }
     openSheet(getPoiDisplayName(p), poiDetailHTML(p));
     if (!p.photos && !p.photo && typeof window.getPhotosForLocation === 'function') {
       loadPOIPhotos(p);
