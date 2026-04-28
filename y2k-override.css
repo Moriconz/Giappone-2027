@@ -561,3 +561,54 @@ nav.bottom button:nth-child(7) { animation-delay: 0.35s; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ── ENHANCED TEXT READABILITY ON LIGHT BACKGROUNDS ──────────────── */
+/* Fix for tab buttons and secondary text in sheets */
+
+.sheet-inner button[data-tab],
+.sheet-inner [data-tab] {
+  color: #2D3B7D !important;
+  font-weight: 700 !important;
+}
+
+.sheet-inner button[data-tab]:hover {
+  color: #1A2560 !important;
+}
+
+.sheet-inner button[data-tab].active {
+  color: #FF1493 !important;
+}
+
+/* Groq panel text readability */
+.groq-panel p,
+.groq-panel label,
+.groq-panel code {
+  color: #2D3B7D !important;
+}
+
+.groq-panel [style*="color:var(--muted)"] {
+  color: #4A3D8A !important;
+}
+
+/* All secondary text in sheets must be dark */
+.sheet-inner {
+  --muted: #2D3B7D !important;
+}
+
+.sheet-inner p,
+.sheet-inner label,
+.sheet-inner span,
+.sheet-inner li {
+  color: #2D3B7D !important;
+}
+
+/* GF Places panel */
+.gf-places-container p,
+.gf-places-container label {
+  color: #2D3B7D !important;
+}
+
+/* Ensure all text in sheet sections is readable */
+.sheet-body {
+  --muted: #2D3B7D !important;
+}

@@ -1845,6 +1845,14 @@ const POIS_BASE = window.POIS_DATASET || [];
         <a class="btn" href="${amaps}" target="_blank" rel="noopener">🍎 Apple Maps</a>
       </div>
       ${bookingBtns.length ? `<div class="section"><h3>🍴 Prenotazioni</h3><div class="action-row">${bookingBtns.join('')}</div></div>`:''}
+      ${['restaurant','cafe','bar','izakaya','shop','market','bakery'].includes(p.cat) ? `
+        <div class="section">
+          <h3>🌾 Gluten-Free Info</h3>
+          <div class="action-row">
+            <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener">🔍 Verifica su Find Me Gluten Free</a>
+          </div>
+        </div>
+      `:''}
     `;
   }
   // Rendi poiDetailHTML globale per poi-handlers.js
@@ -3817,11 +3825,6 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   window.openGroqPanel = async function() {
     const html = `
       <div class="groq-panel">
-        <div class="groq-api-setup">
-          <p><strong>🔑 Groq API Key</strong> è configurata sul server Vercel tramite <code>GRO_API_KEY</code>.</p>
-          <p style="color:var(--muted);font-size:12px;margin-top:6px">Imposta <code>GRO_API_KEY</code> nella dashboard Vercel e riavvia il deployment per abilitare l'analisi dei menu.</p>
-        </div>
-
         <div>
           <label style="font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:8px">Incolla il menu da analizzare:</label>
           <textarea id="groq-menu-textarea" class="groq-menu-textarea" placeholder="Es: Pasta al pomodoro, Risotto ai funghi, Petto di pollo..."></textarea>
