@@ -70,6 +70,23 @@ async function initGooglePlacesLoader() {
     );
   }
 
+  // Listen for map movements and load POIs accordingly
+  if (window.map) {
+    window.map.on('moveend', () => {
+      const view = window.map.getView();
+      const center = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326');
+      const newLat = center[1];
+      const newLng = center[0];
+
+      // Load POIs from new map center if moved significantly
+      if (!currentGPS || getDistance(currentGPS.lat, currentGPS.lng, newLat, newLng) > 1000) {
+        currentGPS = { lat: newLat, lng: newLng };
+        console.log(`[GooglePlacesLoader] Map moved, loading POIs from: ${newLat.toFixed(4)}, ${newLng.toFixed(4)}`);
+        loadNearbyPOIs(newLat, newLng);
+      }
+    });
+  }
+
   console.log('[GooglePlacesLoader] Initialized');
 }
 

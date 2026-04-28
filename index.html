@@ -85,9 +85,9 @@ main{flex:1;position:relative;overflow:hidden}
 #map{position:absolute;inset:0;background:#0a1320}
 .leaflet-container{background:#0a1320;font-family:inherit}
 /* Floating filter bar */
-#filters{position:absolute;top:10px;left:10px;right:10px;z-index:500;
+#filters{position:fixed;top:10px;left:10px;right:10px;z-index:500;
   display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;padding-bottom:4px}
+  scrollbar-width:none;padding-bottom:4px;max-height:42px;max-width:calc(100% - 20px)}
 #filters::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:6px 12px;border-radius:999px;background:rgba(30,49,72,.92);
   border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;
@@ -379,9 +379,9 @@ nav.bottom button{position:relative}
 
     <button class="icon-btn" id="info-btn" aria-label="Info">ℹ️</button>
   </header>
-  <main>
+  <main style="position:relative">
     <div id="filters"></div>
-    <div id="map"></div>
+    <div id="map" style="padding-top:50px"></div>
     <section id="view-gf" style="display:none;position:fixed;inset:0;z-index:1400;background:var(--bg);overflow-y:auto;padding-bottom:calc(60px + var(--safe-bottom));-webkit-overflow-scrolling:touch;">
   <div id="gf-list"></div>
 </section>
@@ -574,7 +574,7 @@ window.addEventListener("load", () => {
   window.saveState = saveState;
   console.log('[State] Init', { group: state.group });
   function saveState(){
-    console.log('[State] Save state', { group: state.group });
+    // console.log('[State] Save state', { group: state.group }); // Disabled: too verbose
     try{
       const serialized = JSON.stringify(state);
       if (serialized.length > 4_500_000) {
@@ -2137,6 +2137,9 @@ window.addEventListener("load", () => {
       return;
     }
 
+    // Capture displayName here for use in async functions
+    const displayName = getPoiDisplayName(p);
+
     // Syncronizza con Google Places se non ancora verificato
     (async () => {
       const verified = await window.POISync?.ensurePOIVerified?.(p);
@@ -2147,9 +2150,9 @@ window.addEventListener("load", () => {
         console.warn('[openPOI] ⚠️ POI verification failed, using local data');
       }
 
-      console.log('[openPOI] Calling openSheet with:', getPoiDisplayName(p));
+      console.log('[openPOI] Calling openSheet with:', displayName);
       const html = poiDetailHTML(p);
-      window.openSheet(getPoiDisplayName(p), html);
+      window.openSheet(displayName, html);
       console.log('[openPOI] ✅ openSheet called');
     })();
 
@@ -2238,7 +2241,7 @@ window.addEventListener("load", () => {
               <p><span class="tag ${cls}">${label}</span></p>
               <p style="font-size:12px;color:var(--muted);">Confidenza: ${gfStatus.confidence}% • ${gfStatus.mentions} menzioni su ${gfStatus.total_reviews} review</p>
               <div class="action-row" style="margin-top:8px">
-                <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
+                <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent((p.name || displayName) + ' ' + (p.city || '') + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
               </div>
             `;
 
@@ -2268,7 +2271,7 @@ window.addEventListener("load", () => {
               <p><span class="tag gf-none">❌ Nessun dato disponibile</span></p>
               <p style="font-size:12px;color:var(--muted);">Impossibile verificare lo stato gluten-free da Google Reviews. Verifica manualmente:</p>
               <div class="action-row" style="margin-top:8px">
-                <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
+                <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent((p.name || displayName) + ' ' + (p.city || '') + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
               </div>
             `;
 
@@ -2289,7 +2292,7 @@ window.addEventListener("load", () => {
             <p><span class="tag gf-none">❓ Nessun dato disponibile</span></p>
             <p style="font-size:12px;color:var(--muted);">Verifica lo status gluten-free:</p>
             <div class="action-row" style="margin-top:8px">
-              <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
+              <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent((p.name || displayName) + ' ' + (p.city || '') + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
             </div>
           `;
 
@@ -2309,21 +2312,24 @@ window.addEventListener("load", () => {
       loadPOIPhotos(p);
     }
     // Navigate btn — geo: with fallbacks
-    document.getElementById('navigate-poi').onclick = () => {
-      const lat = p.lat, lng = p.lng, name = getPoiDisplayName(p);
-      const isIOS2 = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      if (isIOS2) {
-        window.open(`https://maps.apple.com/?daddr=${lat},${lng}&dirflg=w`, '_blank');
-      } else {
-        // Try geo: first (Android opens with preferred nav app)
-        const geo = `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(name)})`;
-        window.location.href = geo;
-        // Fallback to Google Maps after 600ms if geo didn't open
-        setTimeout(() => {
-          window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`, '_blank');
-        }, 600);
-      }
-    };
+    const navigateBtn = document.getElementById('navigate-poi');
+    if (navigateBtn) {
+      navigateBtn.onclick = () => {
+        const lat = p.lat, lng = p.lng, name = getPoiDisplayName(p);
+        const isIOS2 = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if (isIOS2) {
+          window.open(`https://maps.apple.com/?daddr=${lat},${lng}&dirflg=w`, '_blank');
+        } else {
+          // Try geo: first (Android opens with preferred nav app)
+          const geo = `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(name)})`;
+          window.location.href = geo;
+          // Fallback to Google Maps after 600ms if geo didn't open
+          setTimeout(() => {
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`, '_blank');
+          }, 600);
+        }
+      };
+    }
     // Star rating
     const starsEl = document.getElementById(`stars-${id}`);
     if (starsEl) starsEl.querySelectorAll('.star').forEach(s => {
@@ -4181,10 +4187,14 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   // Override allPOIs() to use Google Places as source
   const originalAllPOIs = window.allPOIs;
   window.allPOIs = function() {
-    // If we have Google Places data, use only that
-    if (window.GOOGLE_PLACES_POIS.length > 0) {
-      console.log(`[allPOIs] Using ${window.GOOGLE_PLACES_POIS.length} Google Places POIs`);
-      return window.GOOGLE_PLACES_POIS;
+    // Combine Google Places POIs with local/custom POIs
+    const googlePOIs = window.GOOGLE_PLACES_POIS || [];
+    // Add user custom events
+    const custom = (state.customEvents || []).map(e => Object.assign({}, e, {custom:true}));
+
+    // If we have Google Places data, combine with custom; otherwise use original dataset
+    if (googlePOIs.length > 0) {
+      return googlePOIs.concat(custom);
     }
     // Fallback to original dataset if Google Places not loaded
     return originalAllPOIs();
