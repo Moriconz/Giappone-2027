@@ -15,6 +15,7 @@ window.groupPanel = (() => {
    */
   function renderGroupPanel() {
     const group = window.state?.group;
+    console.log('[GroupPanel] renderGroupPanel', { group });
     if (!group || !group.roomId) {
       return '<p>Non sei in nessun gruppo.</p>';
     }
