@@ -2889,6 +2889,16 @@ window.addEventListener("load", () => {
 
         console.log(`[renderListView] ✅ Caricati ${allPois.length} POI UNICI da tutto il Giappone`);
 
+        // Helper: estrai città dall'indirizzo (formato Google Places: "Name, City, Prefecture, Country")
+        function extractCityFromAddress(address) {
+          if (!address) return undefined;
+          const parts = address.split(',').map(p => p.trim());
+          if (parts.length >= 2) {
+            return parts[1];  // Ritorna City/Prefecture
+          }
+          return parts.length > 0 ? parts[0] : undefined;
+        }
+
         // Invalidate cache so getCachedAllPOIs() gets fresh data
         globalPOIsCache = null;
 
@@ -2899,6 +2909,7 @@ window.addEventListener("load", () => {
           lat: poi.geometry.location.lat,
           lng: poi.geometry.location.lng,
           address: poi.vicinity || poi.formatted_address || '',
+          city: extractCityFromAddress(poi.vicinity || poi.formatted_address || ''),
           rating: poi.rating || null,
           ratingCount: poi.user_ratings_total || 0,
           types: poi.types || [],
