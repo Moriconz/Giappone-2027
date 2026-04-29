@@ -1,12 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Y2K THEME OVERRIDE — Giappone 2027
-   
-   HOW TO USE:
-   Aggiungi nel <head> del tuo index.html, DOPO i tuoi stili esistenti:
-   <link rel="stylesheet" href="./y2k-override.css">
-   
-   Non tocca nulla della struttura HTML o della logica JS.
-   Sovrascrive solo i colori e lo stile visivo.
+   Y2K THEME OVERRIDE — Giappone 2027 (Modern Design 2024-2025)
+
+   Glassmorphism + Neumorphism design avec Y2K aesthetic
+   Clean, functional, no visual pollution
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ── DESIGN TOKENS ──────────────────────────────────────────────── */
@@ -15,91 +11,76 @@
   --accent:      #FF1493;
   --success:     #00FF88;
   --warning:     #FFD700;
-  --bg:          #2D3B7D;
-  --surface:     #3D4E9A;
-  --surface-2:   #4A5BA8;
-  --text:        #FFFACD;
-  --muted:       #E0D5FF;
-  --border:      #FF1493;
+  --bg:          #1a1f3a;
+  --surface:     #2a3355;
+  --surface-2:   #3d4a6a;
+  --text:        #E8EEF4;
+  --muted:       #9AAAB9;
+  --border:      rgba(255,20,147,0.3);
   --danger:      #FF4444;
-  --radius:      10px;
-  --shadow:      0 0 20px rgba(255,20,147,0.4);
+  --radius:      12px;
+  --shadow:      0 8px 32px rgba(0,0,0,0.3);
+  --glow:        0 0 20px rgba(255,20,147,0.3);
   --safe-top:    env(safe-area-inset-top,0);
   --safe-bottom: env(safe-area-inset-bottom,0);
 }
 
-/* Force dark mode tokens always (no light override) */
-@media (prefers-color-scheme: light) {
-  :root {
-    --primary:   #2D3B7D;
-    --accent:    #FF1493;
-    --success:   #00FF88;
-    --warning:   #FFD700;
-    --bg:        #2D3B7D;
-    --surface:   #3D4E9A;
-    --surface-2: #4A5BA8;
-    --text:      #FFFACD;
-    --muted:     #E0D5FF;
-    --border:    #FF1493;
-    --danger:    #FF4444;
-  }
-}
-
 /* ── BASE ───────────────────────────────────────────────────────── */
 html, body {
-  font-family: 'Courier New', monospace !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   background: var(--bg) !important;
 }
 
 /* ── HEADER ─────────────────────────────────────────────────────── */
 header {
-  background: linear-gradient(180deg, #4A5BA8 0%, #2D3B7D 100%) !important;
-  border-bottom: 1px solid rgba(255,20,147,0.3) !important;
-  box-shadow: 0 0 15px rgba(255,20,147,0.2) !important;
+  background: rgba(30,50,80,0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: 0 4px 30px rgba(255,20,147,0.1) !important;
   z-index: 100 !important;
 }
 
 header h1 {
   color: #FFD700 !important;
-  font-family: 'Comic Sans MS', cursive !important;
-  text-shadow: 0 0 10px rgba(255,215,0,0.5) !important;
+  font-family: 'Courier New', monospace !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
 }
 
 header h1 .badge {
   background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
   color: white !important;
-  border: 2px solid #E0D5FF !important;
-  border-radius: 8px !important;
-  box-shadow: 0 0 12px rgba(255,20,147,0.6) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  padding: 3px 8px !important;
+  box-shadow: 0 4px 15px rgba(255,20,147,0.3) !important;
 }
 
 .icon-btn {
-  background: linear-gradient(180deg, #E0D5FF, #D8CCFF) !important;
-  border: 2px solid #FF1493 !important;
-  border-radius: 50% !important;
-  box-shadow: 0 0 12px rgba(255,20,147,0.6) !important;
-  transition: all 0.2s !important;
+  background: rgba(224,213,255,0.15) !important;
+  border: 1px solid rgba(255,20,147,0.3) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(10px) !important;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1) !important;
 }
 
 .icon-btn:hover {
-  box-shadow: 0 0 20px rgba(255,20,147,0.8) !important;
-  transform: scale(1.1) !important;
+  background: rgba(224,213,255,0.25) !important;
+  box-shadow: 0 4px 20px rgba(255,20,147,0.2) !important;
+  transform: translateY(-2px) !important;
 }
 
 .icon-btn.active {
-  background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
-  border-color: #00FF88 !important;
-}
-
-.icon-btn.active::after {
-  background: #00FF88 !important;
+  background: linear-gradient(135deg, rgba(255,20,147,0.4), rgba(255,105,180,0.3)) !important;
+  border-color: #FF1493 !important;
+  box-shadow: 0 4px 25px rgba(255,20,147,0.4) !important;
 }
 
 /* ── MAP ────────────────────────────────────────────────────────── */
 #map {
-  background: linear-gradient(135deg, #2D3B7D 0%, #4A5BA8 50%, #2D3B7D 100%) !important;
-  transition: filter 0.3s ease !important;
-  z-index: 1 !important;
+  background: transparent !important;
   position: fixed !important;
   top: 50px !important;
   left: 0 !important;
@@ -108,529 +89,368 @@ header h1 .badge {
   width: 100% !important;
   height: auto !important;
   overflow: hidden !important;
+  z-index: 1 !important;
 }
 
 #map.blur {
-  filter: blur(8px) brightness(0.7) !important;
+  filter: blur(8px) brightness(0.6) !important;
 }
 
 /* ── FILTER BAR ─────────────────────────────────────────────────── */
 #filters {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  padding: 8px 10px !important;
-  position: relative !important;
-  z-index: 9999 !important;
+  position: fixed !important;
+  top: 50px !important;
+  left: 10px !important;
+  right: 10px !important;
+  z-index: 999 !important;
+  background: rgba(30,50,80,0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+  display: flex !important;
+  gap: 6px !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  max-height: 50px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+  border: 1px solid var(--border) !important;
+}
+
+#filters::-webkit-scrollbar {
+  display: none !important;
 }
 
 /* ── FILTER CHIPS ───────────────────────────────────────────────── */
 .chip {
-  background: rgba(255, 250, 205, 0.15) !important;
-  border: 2px solid #FF1493 !important;
-  color: #2D3B7D !important;
-  border-radius: 20px !important;
-  font-family: 'Comic Sans MS', cursive !important;
-  font-weight: 700 !important;
-  box-shadow: 0 0 8px rgba(255,20,147,0.3) !important;
-  backdrop-filter: blur(5px) !important;
-  transition: all 0.2s !important;
   flex-shrink: 0 !important;
+  padding: 7px 14px !important;
+  border-radius: 20px !important;
+  background: rgba(224,213,255,0.1) !important;
+  border: 1.5px solid rgba(255,20,147,0.4) !important;
+  color: var(--text) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  backdrop-filter: blur(10px) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  white-space: nowrap !important;
 }
 
 .chip:hover {
-  box-shadow: 0 0 15px rgba(255,20,147,0.8) !important;
-  transform: scale(1.05) !important;
+  background: rgba(224,213,255,0.2) !important;
+  border-color: #FF1493 !important;
+  box-shadow: 0 4px 15px rgba(255,20,147,0.2) !important;
+  transform: translateY(-2px) !important;
 }
 
 .chip.active {
-  background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
-  border-color: #00FF88 !important;
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  border-color: #FF1493 !important;
   color: white !important;
-  box-shadow: 0 0 15px rgba(255,20,147,0.8), 0 0 8px rgba(0,255,136,0.5) !important;
+  box-shadow: 0 4px 20px rgba(255,20,147,0.4), inset 0 1px 0 rgba(255,255,255,0.2) !important;
 }
 
 .chip.gf {
-  background: linear-gradient(180deg, #C0FF9F, #D4FF9F) !important;
-  border-color: #00FF88 !important;
-  color: #2D3B7D !important;
+  border-color: var(--success) !important;
 }
 
 .chip.gf.active {
-  background: linear-gradient(180deg, #00FF88, #C0FF9F) !important;
-  color: #2D3B7D !important;
-  box-shadow: 0 0 12px rgba(0,255,136,0.6) !important;
+  background: linear-gradient(135deg, #00FF88, #00DD66) !important;
+  border-color: #00FF88 !important;
+  color: #1a1f3a !important;
 }
 
 /* ── BOTTOM NAV ─────────────────────────────────────────────────── */
 nav.bottom {
-  background: linear-gradient(180deg, #4A5BA8, #2D3B7D) !important;
-  border-top: 3px solid #00FF88 !important;
-  box-shadow: 0 -4px 20px rgba(0,255,136,0.2) !important;
+  background: rgba(30,50,80,0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border-top: 1px solid var(--border) !important;
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.2) !important;
   padding: 6px 4px calc(6px + var(--safe-bottom)) !important;
   gap: 2px !important;
 }
 
 nav.bottom button {
-  background: linear-gradient(180deg, #8B9FD9, #6B7FB9) !important;
-  border: 2px solid #E0D5FF !important;
-  border-radius: 6px !important;
-  color: #FFFFFF !important;
-  font-family: 'Courier New', monospace !important;
-  font-weight: 700 !important;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.6) !important;
-  transition: all 0.2s !important;
-  padding: 4px 2px 3px !important;
+  background: rgba(61,74,154,0.4) !important;
+  border: 1px solid rgba(224,213,255,0.3) !important;
+  border-radius: 8px !important;
+  color: var(--text) !important;
   font-size: 10px !important;
-}
-
-nav.bottom button svg {
-  width: 18px !important;
-  height: 18px !important;
+  font-weight: 600 !important;
+  padding: 6px 4px !important;
+  backdrop-filter: blur(10px) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  flex: 1 !important;
 }
 
 nav.bottom button:hover {
-  box-shadow: 0 0 12px rgba(0,255,136,0.4) !important;
-  transform: translateY(-2px) !important;
-}
-
-nav.bottom button.active {
-  background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
-  border-color: #00FF88 !important;
-  color: white !important;
-  box-shadow: 0 0 15px rgba(255,20,147,0.6), 0 0 8px rgba(0,255,136,0.4) !important;
-}
-
-nav.bottom button svg {
-  stroke: currentColor !important;
-}
-
-/* ── SHEETS ─────────────────────────────────────────────────────── */
-.sheet {
-  background: rgba(45,59,125,0.7) !important;
-  backdrop-filter: blur(8px) !important;
-}
-
-.sheet-inner {
-  background: linear-gradient(180deg, #FFFACD, #FFF8DC) !important;
-  color: #2D3B7D !important;
-  border-radius: 16px 16px 0 0 !important;
-  border-top: 3px solid #FF1493 !important;
-  box-shadow: 0 -8px 32px rgba(255,20,147,0.4) !important;
-}
-
-.sheet-handle {
-  background: #FF1493 !important;
-  width: 50px !important;
-  height: 5px !important;
-  box-shadow: 0 0 8px rgba(255,20,147,0.5) !important;
-}
-
-.sheet-header {
-  background: linear-gradient(180deg, #FFFACD, #FFF8DC) !important;
-  border-bottom: 2px solid #FF1493 !important;
-  color: #2D3B7D !important;
-}
-
-.sheet-header h2 {
-  color: #1A2560 !important;
-  font-family: 'Comic Sans MS', cursive !important;
-  font-weight: 700 !important;
-}
-
-.sheet-body {
-  color: #1A2560 !important;
-}
-
-.sheet-body p,
-.sheet-body span,
-.sheet-body div,
-.sheet-body small,
-.sheet-body li {
-  color: #1A2560 !important;
-}
-
-/* ── TAGS ───────────────────────────────────────────────────────── */
-.tag {
-  background: linear-gradient(135deg, #E0D5FF, #F0E5FF) !important;
-  color: #2D3B7D !important;
-  border: 1px solid #E0D5FF !important;
-  border-radius: 6px !important;
-}
-
-.tag.cat {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  color: white !important;
-  border-color: #FF1493 !important;
-}
-
-.tag.gf-full {
-  background: linear-gradient(135deg, #00FF88, #C0FF9F) !important;
-  color: #2D3B7D !important;
-  border-color: #00FF88 !important;
-}
-
-.tag.gf-partial {
-  background: linear-gradient(135deg, #FFD700, #FFE44D) !important;
-  color: #2D3B7D !important;
-  border-color: #FFD700 !important;
-}
-
-.tag.gf-none {
-  background: #4A5BA8 !important;
-  color: #E0D5FF !important;
-  border-color: #E0D5FF !important;
-}
-
-/* ── BUTTONS ────────────────────────────────────────────────────── */
-.btn {
-  background: linear-gradient(180deg, #E0D5FF, #F0E5FF) !important;
-  border: 2px solid #E0D5FF !important;
-  color: #2D3B7D !important;
-  border-radius: 8px !important;
-  font-family: 'Courier New', monospace !important;
-  font-weight: 700 !important;
-  transition: all 0.2s !important;
-}
-
-.btn:hover {
-  box-shadow: 0 0 12px rgba(224,213,255,0.6) !important;
+  background: rgba(61,74,154,0.6) !important;
+  box-shadow: 0 4px 15px rgba(255,20,147,0.15) !important;
   transform: translateY(-1px) !important;
 }
 
-.btn:active {
-  transform: scale(0.96) !important;
+nav.bottom button.active {
+  background: linear-gradient(135deg, rgba(255,20,147,0.5), rgba(255,105,180,0.4)) !important;
+  border-color: #FF1493 !important;
+  box-shadow: 0 4px 20px rgba(255,20,147,0.3) !important;
 }
 
-.btn.primary {
-  background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
-  border-color: #00FF88 !important;
+/* ── SHEETS (Y2K FLOATING WINDOWS) ──────────────────────────────── */
+.y2k-win {
+  background: linear-gradient(135deg, rgba(255,250,205,0.98), rgba(255,248,220,0.98)) !important;
+  border: 2px solid #FF1493 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 60px rgba(255,20,147,0.3), inset 0 1px 0 rgba(255,255,255,0.5) !important;
+  backdrop-filter: blur(10px) !important;
+  max-height: 85vh !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.y2k-win-title {
+  background: linear-gradient(90deg, #FF1493, #FF69B4) !important;
+  padding: 14px 16px !important;
   color: white !important;
-  box-shadow: 0 0 12px rgba(255,20,147,0.5) !important;
-}
-
-.btn.primary:hover {
-  box-shadow: 0 0 20px rgba(255,20,147,0.7) !important;
-}
-
-.btn.success {
-  background: linear-gradient(180deg, #00FF88, #C0FF9F) !important;
-  border-color: #FF1493 !important;
-  color: #2D3B7D !important;
-  box-shadow: 0 0 12px rgba(0,255,136,0.5) !important;
-}
-
-/* ── POI ROWS ───────────────────────────────────────────────────── */
-.poi-row {
-  background: linear-gradient(135deg, #3D4E9A, #4A5BA8) !important;
-  border: 2px solid #00FF88 !important;
-  border-radius: 8px !important;
-  color: #FFFACD !important;
-  transition: all 0.2s !important;
-}
-
-.poi-row:hover, .poi-row:active {
-  box-shadow: 0 0 12px rgba(0,255,136,0.4) !important;
-  transform: translateX(2px) !important;
-}
-
-.poi-row .icon {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  box-shadow: 0 0 8px rgba(255,20,147,0.4) !important;
-}
-
-.poi-row .name {
-  color: #FFFACD !important;
-  font-family: 'Courier New', monospace !important;
-}
-
-.poi-row .sub {
-  color: #C8BDFF !important;
-  font-weight: 600 !important;
-}
-
-/* ── SECTIONS ───────────────────────────────────────────────────── */
-.section h3 {
-  color: #A8005A !important;
-  text-shadow: none !important;
-  font-family: 'Courier New', monospace !important;
+  font-size: 14px !important;
   font-weight: 700 !important;
+  font-family: 'Courier New', monospace !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  cursor: move !important;
+  user-select: none !important;
+  border-radius: 14px 14px 0 0 !important;
 }
 
-/* ── FORM INPUTS ────────────────────────────────────────────────── */
-.form-row input,
-.form-row textarea,
-.form-row select {
-  background: #FFFACD !important;
+.y2k-win-close {
+  background: rgba(255,255,255,0.2) !important;
+  border: 2px solid rgba(255,255,255,0.5) !important;
+  color: white !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 700 !important;
+  transition: all 0.2s ease !important;
+  padding: 0 !important;
+}
+
+.y2k-win-close:hover {
+  background: rgba(255,255,255,0.4) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+  transform: scale(1.1) !important;
+}
+
+.y2k-win-body {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 16px !important;
   color: #2D3B7D !important;
-  border: 2px solid #E0D5FF !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+.y2k-win-body::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+.y2k-win-body::-webkit-scrollbar-track {
+  background: rgba(255,20,147,0.1) !important;
+  border-radius: 10px !important;
+}
+
+.y2k-win-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
+  border-radius: 10px !important;
+}
+
+.y2k-win-body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FF69B4, #FF1493) !important;
+}
+
+.y2k-win-resize {
+  position: absolute !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+  cursor: se-resize !important;
+  background: linear-gradient(135deg, transparent 50%, rgba(255,20,147,0.6) 50%) !important;
+  border-radius: 0 0 14px 0 !important;
+  z-index: 10 !important;
+}
+
+/* ── BUTTONS IN SHEETS ──────────────────────────────────────────── */
+.y2k-win-body button,
+.sheet-body button {
+  background: linear-gradient(135deg, rgba(224,213,255,0.4), rgba(240,229,255,0.3)) !important;
+  border: 1px solid rgba(255,20,147,0.3) !important;
+  color: #2D3B7D !important;
+  padding: 8px 14px !important;
   border-radius: 8px !important;
-  font-family: 'Courier New', monospace !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-size: 12px !important;
+  white-space: nowrap !important;
 }
 
-.form-row input:focus,
-.form-row textarea:focus,
-.form-row select:focus {
+.y2k-win-body button:hover,
+.sheet-body button:hover {
+  background: linear-gradient(135deg, rgba(224,213,255,0.6), rgba(240,229,255,0.5)) !important;
+  box-shadow: 0 4px 15px rgba(255,20,147,0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+.y2k-win-body button[style*="accent"],
+.y2k-win-body button.primary,
+.sheet-body button.primary {
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
   border-color: #FF1493 !important;
-  box-shadow: 0 0 8px rgba(255,20,147,0.3) !important;
-  outline: none !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(255,20,147,0.3) !important;
 }
 
-.form-row label {
-  color: #E0D5FF !important;
-  font-family: 'Courier New', monospace !important;
+.y2k-win-body button[style*="accent"]:hover,
+.y2k-win-body button.primary:hover,
+.sheet-body button.primary:hover {
+  box-shadow: 0 6px 20px rgba(255,20,147,0.4) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ── INPUT FIELDS IN SHEETS ─────────────────────────────────────── */
+.y2k-win-body input,
+.y2k-win-body textarea,
+.sheet-body input,
+.sheet-body textarea {
+  background: rgba(255,255,255,0.8) !important;
+  border: 1px solid rgba(255,20,147,0.2) !important;
+  color: #2D3B7D !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-family: inherit !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.y2k-win-body input:focus,
+.y2k-win-body textarea:focus,
+.sheet-body input:focus,
+.sheet-body textarea:focus {
+  outline: none !important;
+  border-color: #FF1493 !important;
+  box-shadow: 0 0 12px rgba(255,20,147,0.2) !important;
+  background: white !important;
+}
+
+/* ── TEXT IN SHEETS ─────────────────────────────────────────────── */
+.y2k-win-body h3,
+.y2k-win-body h2,
+.sheet-body h3,
+.sheet-body h2 {
+  color: #FF1493 !important;
+  font-weight: 700 !important;
+  margin: 12px 0 8px !important;
+}
+
+.y2k-win-body p,
+.y2k-win-body label,
+.sheet-body p,
+.sheet-body label {
+  color: #2D3B7D !important;
+  margin: 6px 0 !important;
+}
+
+/* ── POI ROWS IN SHEETS ─────────────────────────────────────────── */
+.y2k-win-body .poi-row,
+.sheet-body .poi-row {
+  background: linear-gradient(135deg, rgba(61,78,154,0.3), rgba(74,91,168,0.3)) !important;
+  border: 1px solid rgba(0,255,136,0.3) !important;
+  border-radius: 8px !important;
+  padding: 10px !important;
+  margin: 8px 0 !important;
+  color: #2D3B7D !important;
 }
 
 /* ── TOAST ──────────────────────────────────────────────────────── */
 #toast {
   background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  border: 2px solid #00FF88 !important;
+  border: 1px solid rgba(255,255,255,0.3) !important;
   border-radius: 10px !important;
   color: white !important;
-  font-family: 'Comic Sans MS', cursive !important;
   font-weight: 700 !important;
-  box-shadow: 0 0 20px rgba(255,20,147,0.6) !important;
-}
-
-/* ── BOOKING CARDS ──────────────────────────────────────────────── */
-.booking-card {
-  background: linear-gradient(135deg, #FFF8DC, #FFFACD) !important;
-  border: 2px solid #FFD700 !important;
-  border-radius: 10px !important;
-  color: #1A2560 !important;
-  box-shadow: 0 0 8px rgba(255,215,0,0.2) !important;
-}
-
-.booking-card * {
-  color: #1A2560 !important;
-}
-
-.bc-status.confirmed {
-  background: rgba(0,255,136,0.2) !important;
-  color: #00FF88 !important;
-  border-color: #00FF88 !important;
-}
-
-.bc-status.pending {
-  background: rgba(255,215,0,0.2) !important;
-  color: #FFD700 !important;
-  border-color: #FFD700 !important;
-}
-
-/* ── SHOP CARDS ─────────────────────────────────────────────────── */
-.shop-card {
-  background: linear-gradient(135deg, #FFF8DC, #FFFACD) !important;
-  border: 2px solid #FFD700 !important;
-  border-radius: 10px !important;
-  color: #2D3B7D !important;
-}
-
-.shop-card .sc-name {
-  color: #1A2560 !important;
-  font-family: 'Courier New', monospace !important;
-  font-weight: 700 !important;
-}
-
-.shop-card .sc-rating {
-  color: #FFD700 !important;
-  text-shadow: 0 0 8px rgba(255,215,0,0.5) !important;
-}
-
-.item-tag {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  color: white !important;
-  border-radius: 6px !important;
-}
-
-/* ── AI CHAT ────────────────────────────────────────────────────── */
-.ai-msg.user {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  color: white !important;
-  border: none !important;
-}
-
-.ai-msg.ai {
-  background: linear-gradient(135deg, #E8F4FF, #F0EDFF) !important;
-  border: 2px solid #00BB66 !important;
-  color: #1A2560 !important;
-  font-weight: 600 !important;
-}
-
-/* ── LEAFLET POPUP ──────────────────────────────────────────────── */
-.leaflet-popup-content-wrapper {
-  background: linear-gradient(135deg, #FFFACD, #FFF8DC) !important;
-  color: #2D3B7D !important;
-  border: 2px solid #FF1493 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 0 12px rgba(255,20,147,0.4) !important;
-}
-
-.leaflet-popup-tip {
-  background: #FFFACD !important;
-}
-
-.popup-title {
-  color: #2D3B7D !important;
-  font-family: 'Courier New', monospace !important;
-}
-
-.popup-btn {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  border: none !important;
-  border-radius: 6px !important;
-  color: white !important;
-  font-weight: 700 !important;
-  box-shadow: 0 0 8px rgba(255,20,147,0.4) !important;
-}
-
-/* ── OFFLINE BANNER ─────────────────────────────────────────────── */
-#offline-banner {
-  background: linear-gradient(90deg, #FFD700, #FFE44D) !important;
-  color: #2D3B7D !important;
-  font-family: 'Courier New', monospace !important;
-  font-weight: 700 !important;
-}
-
-/* ── CITY LABELS ────────────────────────────────────────────────── */
-.city-label {
-  background: rgba(45,59,125,0.95) !important;
-  color: #FFD700 !important;
-  border: 1px solid #FFD700 !important;
-  font-family: 'Courier New', monospace !important;
+  box-shadow: 0 8px 32px rgba(255,20,147,0.4) !important;
+  backdrop-filter: blur(10px) !important;
+  padding: 12px 16px !important;
 }
 
 /* ── ANIMATIONS ─────────────────────────────────────────────────── */
-@keyframes floatIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-@keyframes fadeInScale {
-  from { opacity: 0; transform: scale(0.9); }
-  to   { opacity: 1; transform: scale(1); }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.sheet.open .sheet-inner {
-  animation: floatIn 0.35s cubic-bezier(0.34,1.56,0.64,1) !important;
-}
-
-nav.bottom button {
-  animation: fadeInScale 0.3s ease-out both;
-}
-
-nav.bottom button:nth-child(1) { animation-delay: 0.05s; }
-nav.bottom button:nth-child(2) { animation-delay: 0.10s; }
-nav.bottom button:nth-child(3) { animation-delay: 0.15s; }
-nav.bottom button:nth-child(4) { animation-delay: 0.20s; }
-nav.bottom button:nth-child(5) { animation-delay: 0.25s; }
-nav.bottom button:nth-child(6) { animation-delay: 0.30s; }
-nav.bottom button:nth-child(7) { animation-delay: 0.35s; }
-
-/* ── CONTRASTO TESTI GRIGI SU SUPERFICI CHIARE ──────────────────── */
-/* Nelle finestre/sheet (sfondo cream) il muted lavanda diventa illeggibile.
-   Queste regole forzano testi scuri su ogni superficie chiara.           */
-
-.sheet-inner .sub,
-.sheet-inner .muted,
-.sheet-inner small,
-.sheet-inner .tag:not(.cat):not(.gf-full):not(.gf-partial) {
-  color: #4A3D8A !important;
-  opacity: 1 !important;
-}
-
-/* Sottotitoli nelle poi-row dentro le sheet: testo scuro su bg chiaro */
-.sheet-inner .poi-row .sub {
-  color: #C8BDFF !important; /* rimane leggibile sul bg blu scuro dei poi-row */
-}
-
-/* Booking card: ogni testo secondario ben leggibile */
-.booking-card .sub,
-.booking-card small,
-.booking-card .muted,
-.booking-card [style*="color:var(--muted)"],
-.booking-card [style*="color: var(--muted)"] {
-  color: #4A3D8A !important;
-}
-
-/* Shop card */
-.shop-card .sub,
-.shop-card small,
-.shop-card .muted {
-  color: #4A3D8A !important;
-}
-
-/* Form labels su sfondo scuro: lavanda più brillante */
-.form-row label {
-  color: #C8BDFF !important;
-  font-weight: 600 !important;
-}
-
-/* Testi con var(--muted) inline su superfici chiare */
-.sheet-body [style*="color:var(--muted)"],
-.sheet-body [style*="color: var(--muted)"] {
-  color: #4A3D8A !important;
-}
-
-/* Section header nelle sheet: rosa scuro leggibile su cream */
-.sheet-inner .section h3,
-.sheet-body .section h3 {
-  color: #A8005A !important;
-  text-shadow: none !important;
-  letter-spacing: 0.06em !important;
+.y2k-win {
+  animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-/* ── ENHANCED TEXT READABILITY ON LIGHT BACKGROUNDS ──────────────── */
-/* Fix for tab buttons and secondary text in sheets */
-
-.sheet-inner button[data-tab],
-.sheet-inner [data-tab] {
-  color: #2D3B7D !important;
-  font-weight: 700 !important;
+/* ── DARK MODE FORCE ────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  background: rgba(0,0,0,0.2) !important;
 }
 
-.sheet-inner button[data-tab]:hover {
-  color: #1A2560 !important;
+/* ── LEAFLET OVERRIDES ──────────────────────────────────────────── */
+.leaflet-container {
+  background: transparent !important;
+  font-family: inherit !important;
 }
 
-.sheet-inner button[data-tab].active {
-  color: #FF1493 !important;
+.leaflet-popup-content-wrapper {
+  background: rgba(255,250,205,0.98) !important;
+  border: 2px solid #FF1493 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(255,20,147,0.3) !important;
 }
 
-/* Groq panel text readability */
-.groq-panel p,
-.groq-panel label,
-.groq-panel code {
-  color: #2D3B7D !important;
+.leaflet-popup-tip {
+  background: rgba(255,250,205,0.98) !important;
 }
 
-.groq-panel [style*="color:var(--muted)"] {
-  color: #4A3D8A !important;
+/* ── ACCESSIBILITY ──────────────────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid #FF1493 !important;
+  outline-offset: 2px !important;
 }
 
-/* All secondary text in sheets must be dark */
-.sheet-inner {
-  --muted: #2D3B7D !important;
-}
-
-.sheet-inner p,
-.sheet-inner label,
-.sheet-inner span,
-.sheet-inner li {
-  color: #2D3B7D !important;
-}
-
-/* GF Places panel */
-.gf-places-container p,
-.gf-places-container label {
-  color: #2D3B7D !important;
-}
-
-/* Ensure all text in sheet sections is readable */
-.sheet-body {
-  --muted: #2D3B7D !important;
+/* ── PRINT ──────────────────────────────────────────────────────── */
+@media print {
+  header, nav.bottom, #filters {
+    display: none !important;
+  }
 }
