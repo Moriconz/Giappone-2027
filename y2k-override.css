@@ -78,7 +78,12 @@ header h1 .badge {
 /* ══════════════════════════════════════════════════════════════════
    MAPPA + OFFLINE
 ══════════════════════════════════════════════════════════════════ */
-#map { transition: filter 0.3s ease !important; }
+#map {
+  width: 100% !important;
+  height: calc(100vh - 50px - 60px) !important;
+  position: relative !important;
+  transition: filter 0.3s ease !important;
+}
 #map.blur { filter: blur(8px) brightness(0.7) !important; }
 
 #offline-banner {
