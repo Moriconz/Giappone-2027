@@ -816,6 +816,11 @@ window.addEventListener("load", () => {
     zIndex: 998
   });
   map.addLayer(remotePeersLayer);
+
+  // Expose map to window so other modules can access it
+  window.map = map;
+  console.log('[App] Map exposed to window.map');
+
   // ============================================================
   // PEER GPS — WebRTC P2P via PeerJS
   // Architettura: ogni device crea un Peer con ID = roomId + '_' + myName
