@@ -151,19 +151,17 @@ async function loadNearbyPOIs(lat, lng) {
     if (pois && pois.length > 0) {
       loadedRadii.add(key);
       try {
+        // Save RAW POIs first (savePOIs expects raw Google Places format with geometry)
+        console.log(`[GooglePlacesLoader] Saving ${pois.length} raw POIs to cache...`);
+        await window.GooglePlacesCache.savePOIs(lat, lng, radiusM, pois);
+        console.log(`[GooglePlacesLoader] Cache save complete`);
+
+        // Then transform for display
         console.log(`[GooglePlacesLoader] About to transform ${pois.length} POIs...`);
-        // Transform FIRST, then save to cache (so city field is included)
-        const transformedPois = await renderMarkersFromGoogle(pois);
-        console.log(`[GooglePlacesLoader] Transform complete, got ${transformedPois?.length || 0} POIs`);
-        if (transformedPois && transformedPois.length > 0) {
-          console.log(`[GooglePlacesLoader] Saving ${transformedPois.length} to cache...`);
-          await window.GooglePlacesCache.savePOIs(lat, lng, radiusM, transformedPois);
-          console.log(`[GooglePlacesLoader] Cache save complete`);
-        }
-        console.log(`[GooglePlacesLoader] Loaded ${pois.length} POIs at ${radiusM}m`);
+        await renderMarkersFromGoogle(pois);
+        console.log(`[GooglePlacesLoader] Rendering complete`);
       } catch (err) {
         console.error(`[GooglePlacesLoader] ERROR at ${radiusM}m:`, err);
-        throw err; // Re-lancia l'errore per debug
       }
     } else if (pois === null) {
       // API error or rate limited, stop expanding
