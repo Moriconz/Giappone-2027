@@ -53,7 +53,7 @@
   <div id="install-banner">
     <span>📲 Installa l'app sul tuo telefono per uso offline</span>
     <button id="install-btn">Installa</button>
-    <button id="install-close">✕</button>
+    <button id="install-close" onclick="this.closest('#install-banner').style.display='none'; event.stopPropagation(); return false;">✕</button>
   </div>
   <div id="offline-banner">📶 Offline — dati in cache</div>
   <header>
@@ -5477,14 +5477,21 @@ if (installBtn) {
 }
 
 // Bottone Chiudi (X)
+console.log('[Install] Cerco install-close:', installClose);
 if (installClose) {
-  installClose.addEventListener('click', () => {
+  console.log('[Install] installClose trovato, aggiungo listener');
+  installClose.addEventListener('click', (e) => {
+    console.log('[Install] Click rilevato su X');
+    e.preventDefault();
+    e.stopPropagation();
     if (installBanner) {
       installBanner.style.display = 'none';
+      console.log('[Install] Banner nascosto');
     }
     deferredPrompt = null;
-    console.log('[Install] Banner chiuso');
   });
+} else {
+  console.error('[Install] ERRORE: installClose NON trovato!');
 }
 
 // Nascondi il banner se l'app è già installata
