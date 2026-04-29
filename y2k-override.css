@@ -98,6 +98,7 @@ header h1 .badge {
 #map {
   background: linear-gradient(135deg, #2D3B7D 0%, #4A5BA8 50%, #2D3B7D 100%) !important;
   transition: filter 0.3s ease !important;
+  z-index: 1 !important;
 }
 
 #map.blur {
@@ -111,6 +112,7 @@ header h1 .badge {
   box-shadow: none !important;
   backdrop-filter: none !important;
   padding: 8px 10px !important;
+  z-index: 9999 !important;
 }
 
 /* ── FILTER CHIPS ───────────────────────────────────────────────── */
