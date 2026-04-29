@@ -16,29 +16,117 @@
 <link rel="stylesheet" href="./y2k-override.css" />
 <title>Giappone 2027 · Travel Companion v3</title>
 <!-- ============================================================================ -->
-<!-- EARLY INITIALIZATION — PWA Install Prompt (must run BEFORE other scripts) -->
+<!-- EARLY INITIALIZATION — PWA Install (supports all browsers) -->
 <!-- ============================================================================ -->
 <script>
 (function() {
   'use strict';
-  console.log('[Install-Early] Initializing PWA install prompt listener...');
+  console.log('[Install] Initializing PWA install system...');
 
   window.__deferredPrompt = null;
 
+  // Detect browser and OS
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(ua);
+  const isAndroid = /android/.test(ua);
+  const isChrome = /chrome/.test(ua) && !/edg/.test(ua);
+  const isEdge = /edg/.test(ua);
+  const isFirefox = /firefox/.test(ua);
+  const isSafari = /safari/.test(ua) && !/chrome/.test(ua) && !/edg/.test(ua);
+
+  // Listen for beforeinstallprompt (Chrome/Edge)
   window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('[Install-Early] *** beforeinstallprompt EVENT FIRED! ***');
+    console.log('[Install] beforeinstallprompt FIRED');
     e.preventDefault();
     window.__deferredPrompt = e;
-
-    // Show banner
-    const banner = document.getElementById('install-banner');
-    if (banner) {
-      banner.classList.add('show');
-      console.log('[Install-Early] Banner shown');
-    }
+    showPrompt();
   });
 
-  console.log('[Install-Early] ✓ Listener attached (will catch beforeinstallprompt)');
+  function showPrompt() {
+    const prompt = document.getElementById('install-prompt');
+    const instructions = document.getElementById('install-instructions');
+    if (prompt) prompt.style.display = 'flex';
+    if (instructions) instructions.style.display = 'none';
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.classList.add('show');
+  }
+
+  function showInstructions() {
+    const prompt = document.getElementById('install-prompt');
+    const instructions = document.getElementById('install-instructions');
+    if (prompt) prompt.style.display = 'none';
+    if (instructions) instructions.style.display = 'block';
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.classList.add('show');
+    generateInstructions();
+  }
+
+  function generateInstructions() {
+    const stepsDiv = document.getElementById('install-steps');
+    if (!stepsDiv) return;
+
+    let steps = '';
+
+    if (isIOS) {
+      steps = `
+        <div style="margin-bottom: 12px;">
+          <strong>iPhone/iPad:</strong><br>
+          1. Tocca il pulsante <strong>Condividi</strong> (freccia in basso)<br>
+          2. Scorri e seleziona <strong>"Aggiungi a Schermata Iniziale"</strong><br>
+          3. Tocca <strong>"Aggiungi"</strong>
+        </div>
+      `;
+    } else if (isAndroid && isChrome) {
+      steps = `
+        <div style="margin-bottom: 12px;">
+          <strong>Android (Chrome):</strong><br>
+          1. Tocca i <strong>3 puntini</strong> in alto a destra<br>
+          2. Seleziona <strong>"Installa app"</strong><br>
+          3. Tocca <strong>"Installa"</strong>
+        </div>
+      `;
+    } else if (isAndroid && isFirefox) {
+      steps = `
+        <div style="margin-bottom: 12px;">
+          <strong>Android (Firefox):</strong><br>
+          1. Tocca il <strong>menu</strong> (3 linee)<br>
+          2. Seleziona <strong>"Installa"</strong><br>
+          3. Conferma l'installazione
+        </div>
+      `;
+    } else if (isFirefox) {
+      steps = `
+        <div style="margin-bottom: 12px;">
+          <strong>Firefox:</strong><br>
+          1. Clicca il <strong>menu</strong> (3 linee) in alto a destra<br>
+          2. Seleziona <strong>"Installa l'app"</strong><br>
+          3. Conferma
+        </div>
+      `;
+    } else {
+      steps = `
+        <div style="margin-bottom: 12px;">
+          <strong>Installazione manuale:</strong><br>
+          Questa app PWA funziona anche dal browser. Aggiungi il sito ai preferiti per un accesso veloce!
+        </div>
+      `;
+    }
+
+    stepsDiv.innerHTML = steps;
+  }
+
+  // Se beforeinstallprompt non è supportato, mostra istruzioni dopo un delay
+  setTimeout(() => {
+    if (!window.__deferredPrompt && 'serviceWorker' in navigator) {
+      console.log('[Install] beforeinstallprompt not supported, showing instructions');
+      showInstructions();
+    }
+  }, 1000);
+
+  window.__showInstallInstructions = showInstructions;
+  window.__showInstallPrompt = showPrompt;
+
+  console.log('[Install] ✓ System initialized');
 })();
 </script>
 <!-- ============================================================================ -->
@@ -77,9 +165,18 @@
 <body>
 <div id="app">
   <div id="install-banner">
-    <span>📲 Installa l'app sul tuo telefono per uso offline</span>
-    <button id="install-btn">Installa</button>
-    <button id="install-close" onclick="this.closest('#install-banner').style.display='none'; event.stopPropagation(); return false;">✕</button>
+    <div id="install-prompt" style="display: none;">
+      <span>📲 Installa l'app sul tuo telefono per uso offline</span>
+      <button id="install-btn">Installa</button>
+      <button id="install-close">✕</button>
+    </div>
+    <div id="install-instructions" style="display: none;">
+      <div style="text-align: center; padding: 16px;">
+        <h3 style="margin: 0 0 12px 0; font-size: 16px;">📲 Come installare l'app</h3>
+        <div id="install-steps" style="text-align: left; font-size: 13px; line-height: 1.6;"></div>
+        <button id="install-close-instructions" style="margin-top: 12px; padding: 8px 16px; background: #FF1493; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Chiudi</button>
+      </div>
+    </div>
   </div>
   <div id="offline-banner">📶 Offline — dati in cache</div>
   <header>
@@ -5472,90 +5569,68 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
 })();
 
 /* ============================================================
-   INSTALL PROMPT MANAGEMENT — PWA Installation Handler
-   (Listener for beforeinstallprompt is in <head> for early detection)
+   INSTALL BUTTON HANDLERS — Works for all browsers
    ============================================================ */
-console.log('[Install] ========== MAIN INSTALL PROMPT CODE ==========');
+console.log('[Install] Setting up button handlers...');
 
-const installBanner = document.getElementById('install-banner');
 const installBtn = document.getElementById('install-btn');
-const installClose = document.getElementById('install-close');
+const installClosePrompt = document.getElementById('install-close');
+const installCloseInstructions = document.getElementById('install-close-instructions');
+const installBanner = document.getElementById('install-banner');
 
-console.log('[Install] DOM Elements found:');
-console.log('[Install]   banner:', !!installBanner);
-console.log('[Install]   btn:', !!installBtn);
-console.log('[Install]   close:', !!installClose);
-
-// Remove inline onclick from install-close
-if (installClose && installClose.hasAttribute('onclick')) {
-  console.log('[Install] Removing inline onclick handler');
-  installClose.removeAttribute('onclick');
-}
-
-// Attach Install button listener
-console.log('[Install] Attaching install button listener...');
+// Install button (for automatic prompt)
 if (installBtn) {
   installBtn.addEventListener('click', function(e) {
-    console.log('[Install] *** INSTALL BUTTON CLICKED ***');
-    const deferredPrompt = window.__deferredPrompt;
-    console.log('[Install] deferredPrompt is:', deferredPrompt ? 'SET' : 'NULL/UNDEFINED');
-
     e.preventDefault();
     e.stopPropagation();
 
+    const deferredPrompt = window.__deferredPrompt;
     if (deferredPrompt) {
-      console.log('[Install] Showing native install prompt...');
+      console.log('[Install] Showing native install prompt');
       deferredPrompt.prompt();
 
-      deferredPrompt.userChoice
-        .then((choiceResult) => {
-          console.log('[Install] User response:', choiceResult.outcome);
-          if (installBanner) {
-            installBanner.classList.remove('show');
-            installBanner.style.setProperty('display', 'none', 'important');
-          }
-          window.__deferredPrompt = null;
-        })
-        .catch(err => console.error('[Install] Error:', err));
-    } else {
-      console.warn('[Install] ⚠️ deferredPrompt is NULL - beforeinstallprompt never fired');
+      deferredPrompt.userChoice.then((choice) => {
+        console.log('[Install] User response:', choice.outcome);
+        hideBanner();
+        window.__deferredPrompt = null;
+      }).catch(err => console.error('[Install] Error:', err));
     }
   });
-  console.log('[Install] Install button listener attached ✓');
-} else {
-  console.error('[Install] installBtn not found');
 }
 
-// Attach Close (X) button listener
-console.log('[Install] Attaching close button listener...');
-if (installClose) {
-  installClose.addEventListener('click', function(e) {
-    console.log('[Install] *** CLOSE BUTTON CLICKED ***');
+// Close prompt button
+if (installClosePrompt) {
+  installClosePrompt.addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
-
-    if (installBanner) {
-      installBanner.classList.remove('show');
-      installBanner.style.setProperty('display', 'none', 'important');
-    }
-    window.__deferredPrompt = null;
+    hideBanner();
   });
-  console.log('[Install] Close button listener attached ✓');
-} else {
-  console.error('[Install] installClose not found');
 }
 
-// Listen for successful app installation
-window.addEventListener('appinstalled', () => {
-  console.log('[Install] *** APP SUCCESSFULLY INSTALLED! ***');
+// Close instructions button
+if (installCloseInstructions) {
+  installCloseInstructions.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    hideBanner();
+  });
+}
+
+function hideBanner() {
   if (installBanner) {
     installBanner.classList.remove('show');
     installBanner.style.setProperty('display', 'none', 'important');
   }
+}
+
+// Listen for successful app installation
+window.addEventListener('appinstalled', () => {
+  console.log('[Install] *** APP INSTALLED! ***');
+  hideBanner();
   window.__deferredPrompt = null;
 });
 
-console.log('[Install] ========== SETUP COMPLETE ==========');
+console.log('[Install] ✓ All handlers ready');
 
 }); // close window.addEventListener load
 </script>
