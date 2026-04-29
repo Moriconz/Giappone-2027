@@ -4788,7 +4788,7 @@ let html = filtered.map(r => {
       <div class="icon">🌾</div>
       <div class="body">
         <div class="name">${r.name}</div>
-        <div class="sub">${r.city}${r.area?` · ${r.area}`:''}${r.cuisine?` · ${r.cuisine}`:'''}${distanceStr}</div>
+        <div class="sub">${r.city}${r.area?` · ${r.area}`:''}${r.cuisine?` · ${r.cuisine}`:''}${distanceStr}</div>
         ${tags ? `<div style="margin-top:6px;font-size:12px;">${tags}</div>` : ''}
         ${rating || reviewCount ? `<div style="margin-top:4px;font-size:12px;color:var(--text);">${rating} ${reviewCount}</div>` : ''}
         ${r.note ? `<div style="margin-top:8px;font-size:12px;color:var(--text);">${r.note}</div>` : ''}
