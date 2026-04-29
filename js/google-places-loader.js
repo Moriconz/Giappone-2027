@@ -375,16 +375,8 @@ async function renderMarkersFromGoogle(pois) {
   }));
 
   // Enrichisci POI con cities via reverse-geocoding (in background, non blocca UI)
-  enrichPOIsWithCities(transformedPois).then(async (enrichedPois) => {
-    console.log('[GooglePlacesLoader] Enrichment complete, updating cache...');
-    // Aggiorna il database cache con i POI arricchiti
-    for (const poi of enrichedPois) {
-      if (poi.city && !poi.city.includes('Unknown')) {
-        // Salva il POI aggiornato (la cache lo aggiorna)
-        await window.GooglePlacesCache.savePOIs(poi.lat, poi.lng, 1000, [poi]);
-      }
-    }
-  }).catch(err => console.warn('[GooglePlacesLoader] Enrichment error:', err));
+  // Disabilitato temporaneamente per debugging
+  // enrichPOIsWithCities(transformedPois)...
 
   // Restituisci i POI trasformati per salvarli in cache
   return transformedPois;
