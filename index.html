@@ -5440,23 +5440,19 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
 /* ============================================================
    INSTALL PROMPT MANAGEMENT
    ============================================================ */
+console.log('[Install] ========== STARTING INSTALL PROMPT CODE ==========');
 let deferredPrompt = null;
 const installBanner = document.getElementById('install-banner');
 const installBtn = document.getElementById('install-btn');
 const installClose = document.getElementById('install-close');
 
-// Nascondi il banner di default
-if (installBanner) {
-  installBanner.style.display = 'none';
-}
-
 // Ascolta beforeinstallprompt
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  // Mostra il banner
+  // Mostra il banner usando classe
   if (installBanner) {
-    installBanner.style.display = 'flex';
+    installBanner.classList.add('show');
   }
   console.log('[Install] Prompt disponibile - banner mostrato');
 });
@@ -5469,7 +5465,7 @@ if (installBtn) {
       const { outcome } = await deferredPrompt.userChoice;
       console.log(`[Install] User response: ${outcome}`);
       if (installBanner) {
-        installBanner.style.display = 'none';
+        installBanner.classList.remove('show');
       }
       deferredPrompt = null;
     }
@@ -5485,7 +5481,7 @@ if (installClose) {
     e.preventDefault();
     e.stopPropagation();
     if (installBanner) {
-      installBanner.style.display = 'none';
+      installBanner.classList.remove('show');
       console.log('[Install] Banner nascosto');
     }
     deferredPrompt = null;
