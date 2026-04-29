@@ -5458,18 +5458,29 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // Bottone Installa
+console.log('[Install] Cerco install-btn:', installBtn);
 if (installBtn) {
-  installBtn.addEventListener('click', async () => {
+  console.log('[Install] installBtn trovato, aggiungo listener');
+  installBtn.addEventListener('click', async (e) => {
+    console.log('[Install] Click su INSTALLA rilevato');
+    e.preventDefault();
+    e.stopPropagation();
     if (deferredPrompt) {
+      console.log('[Install] deferredPrompt esiste, mostrando prompt');
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       console.log(`[Install] User response: ${outcome}`);
       if (installBanner) {
         installBanner.classList.remove('show');
+        installBanner.style.setProperty('display', 'none', 'important');
       }
       deferredPrompt = null;
+    } else {
+      console.log('[Install] ERRORE: deferredPrompt è null/undefined');
     }
   });
+} else {
+  console.error('[Install] ERRORE: installBtn NON trovato!');
 }
 
 // Bottone Chiudi (X)
