@@ -47,346 +47,25 @@
 <script src="js/google-places-debug.js"></script>
 <script src="js/group-chat.js"></script>
 <script src="js/group-panel.js"></script>
-<style>
-/* ===== Design tokens ===== */
-:root{
-  --primary:#1A3C5E; --accent:#C85C3B; --success:#4A7C59; --warning:#E8A838;
-  --bg:#0F1923; --surface:#152435; --surface-2:#1E3148; --text:#E8EEF4; --muted:#9AAAB9;
-  --border:#24374F; --danger:#D9534F; --radius:12px; --shadow:0 8px 24px rgba(0,0,0,.4);
-  --safe-top:env(safe-area-inset-top,0); --safe-bottom:env(safe-area-inset-bottom,0);
-}
-@media (prefers-color-scheme: light){
-  :root{ --bg:#F5EFE0; --surface:#fff; --surface-2:#FAF4E5; --text:#1A2330; --muted:#5A6B7D; --border:#E0D6BE; }
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
-  font-size:15px;line-height:1.45;overscroll-behavior:none}
-body{overflow:hidden}
-button{font:inherit;color:inherit}
-a{color:var(--accent);text-decoration:none}
-/* ===== App shell ===== */
-#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
-header{background:var(--surface);border-bottom:1px solid var(--border);
-  padding:calc(8px + var(--safe-top)) 12px 8px;display:flex;align-items:center;gap:8px;
-  flex-shrink:0;z-index:1000}
-header h1{font-size:16px;margin:0;font-weight:700;letter-spacing:.02em;flex:1;
-  display:flex;align-items:center;gap:8px}
-header h1 .badge{background:var(--accent);color:#fff;font-size:10px;padding:2px 6px;
-  border-radius:4px;font-weight:600}
-.icon-btn{width:36px;height:36px;border:1px solid var(--border);border-radius:8px;
-  background:var(--surface-2);cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:18px;padding:0}
-.icon-btn:active{transform:scale(.95)}
-.icon-btn.active{background:var(--surface-2);border-color:var(--accent);position:relative}
-.icon-btn.active::after{content:'';position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--surface)}
-/* ===== Main view ===== */
-main{flex:1;position:relative;overflow:hidden}
-#map{position:fixed !important;top:50px !important;left:0 !important;right:0 !important;bottom:60px !important;width:100% !important;height:auto !important;overflow:hidden !important;background:transparent !important}
-.leaflet-container{background:transparent;font-family:inherit}
-/* Floating filter bar */
-#filters{position:fixed !important;top:50px !important;left:10px !important;right:10px !important;z-index:9999 !important;
-  display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;padding:0 !important;margin:0 !important;max-height:80px;max-width:calc(100% - 20px);
-  background:none !important;backdrop-filter:none;border:none !important;border-radius:0 !important;
-  pointer-events:auto;visibility:visible !important;opacity:1 !important;
-  box-shadow:none !important}
-#filters::-webkit-scrollbar{display:none}
-.chip{flex-shrink:0;padding:6px 12px;border-radius:999px;background:rgba(255,250,205,.9);
-  border:2px solid #FF1493;color:#2D3B7D;font-size:12px;font-weight:600;
-  backdrop-filter:none;cursor:pointer;white-space:nowrap;font-family:'Comic Sans MS',cursive}
-.chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.chip.gf{background:transparent;border:1.5px solid var(--success);color:var(--success);opacity:.8}
-.chip.gf.active{background:var(--success);border-color:var(--success);color:#fff;opacity:1;box-shadow:0 0 0 2px rgba(74,124,89,.3)}
-/* Bottom nav */
-nav.bottom{background:var(--surface);border-top:1px solid var(--border);
-  padding:6px 0 calc(6px + var(--safe-bottom));display:flex;flex-shrink:0}
-nav.bottom button{flex:1;background:none;border:0;padding:6px 2px;font-size:10px;
-  color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;
-  transition:color 0.2s ease-out}
-nav.bottom button.active{color:var(--accent);transition:color 0.2s ease-in}
-nav.bottom button svg{width:22px;height:22px}
-/* ===== Sheets / panels ===== */
-.sheet{position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.5);
-  backdrop-filter:blur(4px);display:none;align-items:flex-end}
-.sheet.open{display:flex;animation:fadeIn .2s ease}
-.sheet-inner{background:var(--surface);width:100%;max-height:88vh;border-radius:16px 16px 0 0;
-  overflow-y:auto;-webkit-overflow-scrolling:touch;animation:slideUp .25s ease;
-  padding-bottom:calc(16px + var(--safe-bottom))}
-.sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;
-  margin:8px auto 0;flex-shrink:0}
-.sheet-header{padding:12px 16px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:8px;position:sticky;top:0;background:var(--surface);z-index:2}
-.sheet-header h2{margin:0;font-size:17px;flex:1}
-.sheet-body{padding:14px 16px}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes slideUp{from{transform:translateY(20px);opacity:.5}to{transform:translateY(0);opacity:1}}
-/* POI card content */
-.poi-meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.tag{font-size:11px;padding:3px 8px;border-radius:4px;background:var(--surface-2);
-  color:var(--muted);border:1px solid var(--border)}
-.tag.cat{background:var(--primary);color:#fff;border-color:var(--primary)}
-.tag.gf-full{background:var(--success);color:#fff;border-color:var(--success)}
-.tag.gf-partial{background:var(--warning);color:#1a1a1a;border-color:var(--warning)}
-.tag.gf-none{background:var(--surface-2);color:var(--muted)}
-.section{margin:14px 0}
-.section h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;
-  color:var(--muted);font-weight:700}
-.section p{margin:0 0 6px}
-.do-list,.dont-list{list-style:none;padding:0;margin:0}
-.do-list li,.dont-list li{padding:4px 0 4px 22px;position:relative;font-size:14px}
-.do-list li::before{content:"✓";position:absolute;left:0;top:4px;color:var(--success);font-weight:700}
-.dont-list li::before{content:"✕";position:absolute;left:0;top:4px;color:var(--danger);font-weight:700}
-.action-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.btn{padding:10px 14px;border-radius:8px;border:1px solid var(--border);
-  background:var(--surface-2);color:var(--text);cursor:pointer;font-size:13px;font-weight:600;
-  display:inline-flex;align-items:center;gap:6px;text-decoration:none}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.success{background:var(--success);border-color:var(--success);color:#fff}
-.btn:active{transform:scale(.97)}
-/* Itinerary view */
-.city-section{margin-bottom:20px}
-.city-section>h3{font-size:16px;color:var(--text);text-transform:none;letter-spacing:0;
-  margin:0 0 8px;display:flex;align-items:center;gap:8px}
-.city-section .count{font-size:11px;background:var(--surface-2);padding:2px 6px;
-  border-radius:999px;color:var(--muted)}
-.poi-row{padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);
-  border-radius:8px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer}
-.poi-row .icon{width:32px;height:32px;border-radius:6px;background:var(--primary);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
-.poi-row .body{flex:1;min-width:0}
-.poi-row .name{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.poi-row .sub{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.poi-row .gf-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.gf-dot.full{background:var(--success)}
-.gf-dot.partial{background:var(--warning)}
-.gf-dot.none{background:var(--border)}
-/* Custom event form */
-.form-row{margin-bottom:10px}
-.form-row label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600}
-.form-row input,.form-row textarea,.form-row select{
-  width:100%;padding:10px;background:var(--surface-2);color:var(--text);
-  border:1px solid var(--border);border-radius:8px;font:inherit}
-.form-row textarea{min-height:60px;resize:vertical}
-/* Toast */
-#toast-container{position:fixed;bottom:calc(80px + var(--safe-bottom));left:50%;transform:translateX(-50%);
-  background:var(--primary);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;
-  box-shadow:var(--shadow);z-index:3000;opacity:0;transition:opacity .25s;pointer-events:none}
-#toast-container.show{opacity:1}
-/* Offline banner */
-#offline-banner{background:var(--warning);color:#1a1a1a;padding:4px 12px;font-size:12px;
-  text-align:center;font-weight:600;display:none}
-#offline-banner.show{display:block}
-/* Install banner */
-#install-banner{background:var(--primary);padding:10px 12px;display:none;
-  align-items:center;gap:10px;border-bottom:1px solid var(--border)}
-#install-banner.show{display:flex}
-#install-banner span{flex:1;font-size:13px}
-#install-banner button{padding:6px 12px;background:var(--accent);color:#fff;border:0;
-  border-radius:6px;font-weight:600;cursor:pointer;font-size:12px}
-/* Map popup */
-.leaflet-popup-content-wrapper{background:var(--surface);color:var(--text);border-radius:10px}
-.leaflet-popup-tip{background:var(--surface)}
-.leaflet-popup-content{margin:10px 12px;min-width:180px}
-.popup-title{font-weight:700;margin-bottom:4px}
-.popup-btn{margin-top:8px;padding:6px 10px;background:var(--accent);color:#fff;
-  border-radius:6px;border:0;font-weight:600;font-size:12px;cursor:pointer;width:100%}
-/* Custom marker icons */
-.poi-marker{background:var(--primary);border:2px solid #fff;border-radius:50% 50% 50% 0;
-  transform:rotate(-45deg);width:26px!important;height:26px!important;margin-left:-13px!important;
-  margin-top:-26px!important;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 6px rgba(0,0,0,.4)}
-.poi-marker span{transform:rotate(45deg);font-size:13px;line-height:1}
-.poi-marker.food{background:var(--accent)}
-.poi-marker.shrine,.poi-marker.temple{background:#8B5A3C}
-.poi-marker.nature{background:var(--success)}
-.poi-marker.vintage,.poi-marker.shopping,.poi-marker.market{background:#7A4E8A}
-.poi-marker.onsen{background:#C16A9B}
-.poi-marker.gf{box-shadow:0 0 0 3px var(--success),0 2px 6px rgba(0,0,0,.4)}
-.poi-marker.custom{background:var(--warning)}
-/* City cluster */
-.city-label{background:rgba(26,60,94,.95);color:#fff;padding:3px 8px;border-radius:6px;
-  font-weight:700;font-size:11px;border:1px solid #fff;white-space:nowrap}
-/* Performance: reduce animations on low-tier */
-body.low-tier *{animation:none!important;transition:none!important}
-/* Navigate button */
-.btn.navigate{background:linear-gradient(135deg,#1A6B3C,#2A9D5C);border-color:#1A6B3C;color:#fff;font-weight:700}
-.btn.navigate:active{filter:brightness(.9)}
-/* POI photo */
-.poi-photo{width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:10px;display:block}
-/* Star rating */
-.star-row{display:flex;gap:4px;margin:4px 0}
-.star{font-size:22px;cursor:pointer;opacity:.4;transition:opacity .15s,transform .15s}
-.star.on{opacity:1}
-.star:active{transform:scale(1.2)}
-/* Info chips */
-.info-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface-2);
-  border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;margin:2px}
-/* Photo upload zone */
-.photo-upload-zone{border:2px dashed var(--border);border-radius:10px;padding:18px;
-  text-align:center;color:var(--muted);font-size:13px;cursor:pointer;margin-bottom:8px}
-.photo-upload-zone:active{background:var(--surface-2)}
-.photo-preview{width:100%;max-height:140px;object-fit:cover;border-radius:8px;margin-top:6px;display:none}
-/* Desktop adjustments */
-@media (min-width:768px){
-  header h1{font-size:18px}
-  .sheet-inner{max-width:480px;margin:0 auto;border-radius:16px;max-height:80vh}
-  .sheet{align-items:center;justify-content:center}
-}
-/* ===== Feature 4: Bookings + SW Notifications ===== */
-.booking-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
-  padding:12px 14px;margin-bottom:10px;position:relative}
-.booking-card .bc-header{display:flex;align-items:flex-start;gap:10px}
-.booking-card .bc-icon{width:36px;height:36px;border-radius:8px;background:var(--primary);
-  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.booking-card .bc-title{font-weight:700;font-size:14px}
-.booking-card .bc-city{font-size:12px;color:var(--muted)}
-.booking-card .bc-status{margin-left:auto;font-size:11px;padding:3px 8px;border-radius:999px;font-weight:700}
-.bc-status.confirmed{background:rgba(74,124,89,.25);color:var(--success);border:1px solid var(--success)}
-.bc-status.pending{background:rgba(232,168,56,.2);color:var(--warning);border:1px solid var(--warning)}
-.bc-status.none{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
-.booking-card .bc-meta{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
-.booking-card .bc-actions{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
-.booking-card .bc-reminder{margin-top:8px;font-size:12px;color:var(--muted);
-  display:flex;align-items:center;gap:6px}
-.booking-card .bc-reminder .bell{font-size:14px}
-.notif-perm-banner{background:rgba(26,60,94,.7);border:1px solid var(--border);border-radius:10px;
-  padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.notif-perm-banner p{flex:1;font-size:13px;margin:0;color:var(--text)}
-.notif-perm-banner button{flex-shrink:0}
-.booking-date-badge{display:inline-flex;align-items:center;gap:4px;background:var(--primary);
-  color:#fff;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700}
-/* ===== Feature 6: Shopping ===== */
-.shop-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
-  padding:12px 14px;margin-bottom:10px}
-.shop-card .sc-header{display:flex;align-items:flex-start;gap:10px}
-.shop-card .sc-name{font-weight:700;font-size:14px}
-.shop-card .sc-meta{font-size:12px;color:var(--muted)}
-.shop-card .sc-rating{margin-left:auto;font-weight:700;font-size:12px;color:var(--accent)}
-.shop-card .sc-items{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
-.item-tag{display:inline-block;background:var(--primary);color:#fff;font-size:11px;padding:3px 8px;
-  border-radius:4px;font-weight:600}
-.shop-card .sc-hours{margin-top:6px;font-size:12px;color:var(--muted)}
-.shop-card .sc-notes{margin-top:6px;font-size:13px;color:var(--text);font-style:italic}
-.shop-card button{margin-top:10px;width:100%}
-/* ===== Feature 5: AI Itinerary ===== */
-.ai-shell{display:flex;flex-direction:column;min-height:460px;max-height:72vh;gap:14px;padding:12px}
-.ai-welcome{display:flex;flex-direction:column;gap:8px;text-align:center;padding:12px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:16px}
-.ai-welcome-title{font-size:16px;font-weight:700;color:var(--text)}
-.ai-welcome-sub{font-size:13px;color:var(--muted);line-height:1.6}
-.ai-messages{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  display:flex;flex-direction:column;gap:10px;padding:8px 2px;justify-content:flex-end}
-.ai-msg{padding:10px 12px;border-radius:10px;font-size:14px;line-height:1.55;max-width:90%;word-break:break-word}
-.ai-msg.placeholder{align-self:center;background:transparent;color:var(--muted);border:1px dashed var(--border);max-width:100%;width:100%;text-align:center;padding:16px 14px}
-.ai-input-row{display:flex;gap:8px;margin-top:0}
-.ai-input-row textarea{flex:1;padding:12px 14px;background:var(--surface-2);color:var(--text);
-  border:1px solid var(--border);border-radius:16px; font:inherit;resize:none;min-height:54px;
-  overflow:hidden;transition:height .15s}
-.ai-send{padding:0 18px;background:var(--accent);color:#fff;border:0;border-radius:16px;
-  font-weight:700;cursor:pointer;font-size:16px;flex-shrink:0;min-width:100px}
-.ai-quick-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 auto}
-.ai-quick-chip{font-size:12px;padding:8px 12px;border-radius:999px;background:var(--surface-2);
-  border:1px solid var(--border);color:var(--text);cursor:pointer;white-space:nowrap}
-.ai-quick-chip:hover{background:var(--surface);}
-.ai-footer-note{margin-top:6px;font-size:13px;color:var(--muted);text-align:center}
-.ai-msg.user{background:var(--primary);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
-.ai-msg.ai{background:var(--surface-2);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px}
-.ai-msg.thinking{opacity:.6;font-style:italic}
-.ai-input-row{display:flex;gap:8px;margin-top:10px}
-.ai-input-row textarea{flex:1;padding:10px;background:var(--surface-2);color:var(--text);
-  border:1px solid var(--border);border-radius:8px;font:inherit;resize:none;height:44px;
-  overflow:hidden;transition:height .15s}
-.ai-input-row textarea:focus{border-color:var(--accent);outline:none;height:88px}
-.ai-send{padding:0 14px;background:var(--accent);color:#fff;border:0;border-radius:8px;
-  font-weight:700;cursor:pointer;font-size:18px;flex-shrink:0}
-.ai-send:disabled{opacity:.4}
-.ai-quick-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.ai-quick-chip{font-size:12px;padding:5px 10px;border-radius:999px;background:var(--surface-2);
-  border:1px solid var(--border);color:var(--text);cursor:pointer;white-space:nowrap}
-.ai-quick-chip:active{background:var(--primary);color:#fff}
-.ai-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.ai-itinerary-day{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
-  padding:10px 12px;margin-bottom:8px}
-.ai-itinerary-day h4{margin:0 0 6px;font-size:14px;color:var(--accent)}
-.ai-itinerary-day ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7}
-.ai-badge{display:inline-block;background:var(--accent);color:#fff;font-size:9px;
-  padding:2px 5px;border-radius:4px;font-weight:700;vertical-align:middle;margin-left:4px}
-/* Notification badge on nav button */
-.nav-badge{position:absolute;top:4px;right:8px;background:var(--accent);color:#fff;
-  font-size:9px;border-radius:999px;padding:1px 5px;font-weight:700}
-nav.bottom button{position:relative}
-/* ===== Groq Menu Analyzer ===== */
-.groq-panel{display:flex;flex-direction:column;gap:12px;padding:12px}
-.groq-menu-textarea{width:100%;min-height:100px;padding:12px;background:var(--surface-2);
-  color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;resize:vertical}
-.groq-api-setup{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
-  padding:12px 14px;margin-bottom:12px}
-.groq-api-setup input{width:100%;padding:10px;background:var(--surface);color:var(--text);
-  border:1px solid var(--border);border-radius:6px;font:inherit;margin-top:6px;margin-bottom:6px}
-.groq-api-setup p{margin:0 0 8px;font-size:12px;color:var(--muted)}
-.groq-analyze-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:0;
-  border-radius:8px;font-weight:700;font-size:14px;cursor:pointer}
-.gf-analysis-result{margin-top:12px;display:flex;flex-direction:column;gap:10px}
-.gf-result-card{border-radius:10px;padding:12px 14px;border-left:4px solid;background:var(--surface-2)}
-.gf-result-card.safe{border-left-color:var(--success);background:rgba(74,124,89,.15)}
-.gf-result-card.risk{border-left-color:var(--warning);background:rgba(232,168,56,.15)}
-.gf-result-card.avoid{border-left-color:var(--danger);background:rgba(217,83,79,.15)}
-.gf-result-card h4{margin:0 0 6px;font-size:13px;font-weight:700;display:flex;gap:6px;align-items:center}
-.gf-result-card .emoji{font-size:18px}
-.gf-result-card ul{margin:0;padding-left:18px;font-size:13px;color:var(--text)}
-.gf-result-card li{margin:4px 0}
-/* ===== GF Places Database ===== */
-.gf-places-container{display:flex;flex-direction:column;gap:12px;padding:12px}
-.gf-place-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
-  padding:12px 14px;margin-bottom:10px}
-.gf-place-card .gpc-header{display:flex;align-items:flex-start;gap:10px}
-.gpc-name{font-weight:700;font-size:14px;flex:1}
-.gpc-city{font-size:12px;color:var(--muted)}
-.gpc-rating{margin-left:auto;color:var(--accent);font-weight:700}
-.gpc-meta{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;font-size:12px}
-.gpc-tag{background:var(--primary);color:#fff;padding:3px 8px;border-radius:4px;font-size:11px}
-.gpc-actions{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
-.gpc-actions button{flex:1;padding:8px 10px;background:var(--surface);border:1px solid var(--border);
-  border-radius:6px;color:var(--text);font-size:12px;cursor:pointer;font-weight:600}
-.gpc-actions button:active{background:var(--surface-2)}
-.gf-place-form{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
-  padding:12px 14px;margin-bottom:12px}
-.gf-place-form .form-row{margin-bottom:10px}
-.gf-place-form label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600}
-.gf-place-form input,.gf-place-form textarea{width:100%;padding:10px;background:var(--surface);
-  color:var(--text);border:1px solid var(--border);border-radius:6px;font:inherit}
-.gf-place-form textarea{min-height:60px;resize:vertical}
-.gf-place-form .tags-input{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.gf-place-form .tag-chip{display:inline-flex;align-items:center;gap:6px;background:var(--primary);
-  color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600}
-.gf-place-form .tag-chip button{background:none;border:0;color:#fff;cursor:pointer;padding:0;font-size:12px}
-.gf-place-form .form-actions{display:flex;gap:8px;margin-top:12px}
-.gf-place-form .form-actions button{flex:1;padding:10px;background:var(--accent);color:#fff;
-  border:0;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px}
-.gf-place-form .form-actions button.secondary{background:var(--surface);border:1px solid var(--border);color:var(--text)}
-.gf-empty-state{text-align:center;padding:20px 12px;color:var(--muted);font-size:13px}
-.gf-empty-state .icon{font-size:32px;margin-bottom:8px}
-
-</style>
 </head>
 <body>
 <div id="app">
   <div id="install-banner">
     <span>📲 Installa l'app sul tuo telefono per uso offline</span>
     <button id="install-btn">Installa</button>
-    <button id="install-close" style="background:transparent;padding:4px 8px;color:#fff">✕</button>
+    <button id="install-close">✕</button>
   </div>
   <div id="offline-banner">📶 Offline — dati in cache</div>
   <header>
-    <h1>Giappone <span class="badge">2027</span> <span class="badge" style="background:var(--success);font-size:9px">v3</span></h1>
+    <h1>Giappone <span class="badge">2027</span> <span class="badge badge-version">v3</span></h1>
     <button class="icon-btn" id="search-btn" aria-label="Cerca">🔍</button>
     <button class="icon-btn" id="refresh-pois-btn" aria-label="Ricarica POI" title="Ricarica i negozi per questa posizione">🔄</button>
     <button class="icon-btn" id="info-btn" aria-label="Info">ℹ️</button>
   </header>
-  <main style="position:relative">
+  <main>
     <div id="filters"></div>
-    <div id="map" style="padding-top:50px"></div>
-    <section id="view-gf" style="display:none;position:fixed;inset:0;z-index:1400;background:var(--bg);overflow-y:auto;padding-bottom:calc(60px + var(--safe-bottom));-webkit-overflow-scrolling:touch;">
+    <div id="map"></div>
+    <section id="view-gf">
   <div id="gf-list"></div>
 </section>
   </main>
@@ -440,18 +119,16 @@ nav.bottom button{position:relative}
   </div>
 </div>
 <div id="toast-container"></div>
-<div id="ol-error" style="display:none;position:fixed;inset:0;z-index:9999;background:#0F1923;color:#E8EEF4;
-  flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center">
-  <div style="font-size:40px">🗾</div>
-  <div style="font-size:18px;font-weight:700">Impossibile caricare la mappa</div>
-  <div style="font-size:14px;color:#9AAAB9;max-width:320px">
+<div id="ol-error" class="ol-error">
+  <div class="ol-error-emoji">🗾</div>
+  <div class="ol-error-title">Impossibile caricare la mappa</div>
+  <div class="ol-error-message">
     Lo script della mappa non si è caricato.<br>
     Controlla la connessione internet e ricarica la pagina.<br><br>
     Se usi un <strong>ad-blocker</strong> (uBlock, Brave Shield, ecc.),
     disabilitalo per questa pagina e ricarica.
   </div>
-  <button onclick="location.reload()" style="padding:12px 24px;background:#C85C3B;color:#fff;
-    border:0;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">🔄 Ricarica</button>
+  <button onclick="location.reload()" class="ol-error-btn">🔄 Ricarica</button>
 </div>
 <script>
 console.log('[Giappone2027] App loading...');
@@ -3071,6 +2748,9 @@ window.addEventListener("load", () => {
 
         console.log(`[renderListView] ✅ Caricati ${allPois.length} POI UNICI da tutto il Giappone`);
 
+        // Invalidate cache so getCachedAllPOIs() gets fresh data
+        globalPOIsCache = null;
+
         window.GOOGLE_PLACES_POIS = allPois.map((poi, idx) => ({
           id: `gp_${poi.place_id || `poi_${Date.now()}_${idx}`}`,
           googlePlaceId: poi.place_id,
@@ -3086,10 +2766,20 @@ window.addEventListener("load", () => {
           fromGooglePlaces: true
         }));
 
-        renderListView(); // Richiama per mostrare i dati
+        // Re-render immediately without recursive call
+        setTimeout(() => {
+          allPoisForList = getCachedAllPOIs();
+          renderMarkers();
+          // Manually refresh the tappe view if it's open
+          const sheet = document.querySelector('.sheet.open');
+          if (sheet) {
+            location.reload(); // Refresh the page to show updated data
+          }
+        }, 100);
       }).catch(e => {
         console.error('[renderListView] Errore nel caricamento delle regioni:', e);
-        renderListView(); // Richiama comunque per mostrare interfaccia
+        // Still show the interface even on error
+        setTimeout(() => location.reload(), 100);
       });
       return;
     }
