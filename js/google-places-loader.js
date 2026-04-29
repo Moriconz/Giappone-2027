@@ -246,33 +246,42 @@ async function renderMarkersFromGoogle(pois) {
   }
 
   // Transform POIs to standard format (extract lat/lng from geometry)
-  const transformedPois = pois.map((poi, idx) => ({
-    // Generate unique ID for Google Places POI
-    id: `gp_${poi.place_id || `poi_${Date.now()}_${idx}`}`,
-    googlePlaceId: poi.place_id,
-    name: poi.name,
-    lat: poi.geometry.location.lat,
-    lng: poi.geometry.location.lng,
-    address: poi.vicinity || poi.formatted_address || '',
-    city: extractCity(poi.vicinity || poi.formatted_address || ''),
-    rating: poi.rating || null,
-    ratingCount: poi.user_ratings_total || 0,
-    types: poi.types || [],
-    cat: mapGoogleTypesToCategory(poi.types),
-    businessStatus: poi.business_status || 'OPERATIONAL',
-    icon: poi.icon || null,
-    photos: (poi.photos || []).map((p, photoIdx) => ({
-      // Convert photo_reference to URL via backend endpoint
-      url: `/api/placePhoto?reference=${encodeURIComponent(p.photo_reference)}&maxwidth=800`,
-      reference: p.photo_reference,
-      height: p.height,
-      width: p.width,
-      attribution: p.html_attributions || []
-    })),
-    openNow: poi.opening_hours?.open_now || null,
-    // Mark as Google Places POI
-    fromGooglePlaces: true
-  }));
+  // Handle both raw Google Places data and already-transformed cache data
+  const transformedPois = pois.map((poi, idx) => {
+    // Check if POI is already transformed (from cache) or raw (from API)
+    const isAlreadyTransformed = poi.lat !== undefined && poi.lng !== undefined && !poi.geometry;
+
+    return {
+      // Generate unique ID for Google Places POI
+      id: poi.id || `gp_${poi.place_id || poi.googlePlaceId || `poi_${Date.now()}_${idx}`}`,
+      googlePlaceId: poi.googlePlaceId || poi.place_id,
+      name: poi.name,
+      lat: isAlreadyTransformed ? poi.lat : poi.geometry.location.lat,
+      lng: isAlreadyTransformed ? poi.lng : poi.geometry.location.lng,
+      address: poi.address || poi.vicinity || poi.formatted_address || '',
+      city: poi.city || extractCity(poi.vicinity || poi.formatted_address || ''),
+      rating: poi.rating || null,
+      ratingCount: poi.ratingCount || poi.user_ratings_total || 0,
+      types: poi.types || [],
+      cat: poi.cat || mapGoogleTypesToCategory(poi.types),
+      businessStatus: poi.businessStatus || poi.business_status || 'OPERATIONAL',
+      icon: poi.icon || null,
+      photos: (poi.photos || []).map((p, photoIdx) => {
+        // Handle both raw and transformed photo data
+        if (p.url) return p; // Already transformed
+        return {
+          url: `/api/placePhoto?reference=${encodeURIComponent(p.photo_reference)}&maxwidth=800`,
+          reference: p.photo_reference,
+          height: p.height,
+          width: p.width,
+          attribution: p.html_attributions || []
+        };
+      }),
+      openNow: poi.openNow !== undefined ? poi.openNow : (poi.opening_hours?.open_now || null),
+      // Mark as Google Places POI
+      fromGooglePlaces: poi.fromGooglePlaces !== undefined ? poi.fromGooglePlaces : true
+    };
+  });
 
   console.log(`[GooglePlacesLoader] Transformed ${transformedPois.length} POIs with IDs and categories`);
 
