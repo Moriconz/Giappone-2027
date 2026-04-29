@@ -78,11 +78,14 @@ async function initGooglePlacesLoader() {
       const newLat = center[1];
       const newLng = center[0];
 
-      // Load POIs from new map center if moved significantly
-      if (!currentGPS || getDistance(currentGPS.lat, currentGPS.lng, newLat, newLng) > 1000) {
+      // Load POIs from new map center if moved significantly (300m threshold for responsive updates)
+      const distance = currentGPS ? getDistance(currentGPS.lat, currentGPS.lng, newLat, newLng) : Infinity;
+      if (distance > 300) {
         currentGPS = { lat: newLat, lng: newLng };
-        console.log(`[GooglePlacesLoader] Map moved, loading POIs from: ${newLat.toFixed(4)}, ${newLng.toFixed(4)}`);
+        console.log(`[GooglePlacesLoader] Map moved ${distance.toFixed(0)}m, loading POIs from: ${newLat.toFixed(4)}, ${newLng.toFixed(4)}`);
         loadNearbyPOIs(newLat, newLng);
+      } else {
+        console.log(`[GooglePlacesLoader] Map moved ${distance.toFixed(0)}m (threshold 300m) - skipped load`);
       }
     });
   }
@@ -106,7 +109,9 @@ const toRad = (deg) => deg * (Math.PI / 180);
 
 // Load POIs progressively from GPS
 async function loadNearbyPOIs(lat, lng) {
-  console.log(`[GooglePlacesLoader] Loading nearby POIs from ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+  console.log(`%c[GooglePlacesLoader] Starting loadNearbyPOIs`, 'background: #4A7C59; color: white; font-weight: bold');
+  console.log(`📍 Coordinates: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+  console.log(`📊 Will check ${RADIUS_TIERS.length} radius tiers`);
 
   for (const radiusM of RADIUS_TIERS) {
     // Skip if already loaded this radius from this GPS

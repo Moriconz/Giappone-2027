@@ -379,7 +379,7 @@ nav.bottom button{position:relative}
   <header>
     <h1>Giappone <span class="badge">2027</span> <span class="badge" style="background:var(--success);font-size:9px">v3</span></h1>
     <button class="icon-btn" id="search-btn" aria-label="Cerca">🔍</button>
-
+    <button class="icon-btn" id="refresh-pois-btn" aria-label="Ricarica POI" title="Ricarica i negozi per questa posizione">🔄</button>
     <button class="icon-btn" id="info-btn" aria-label="Info">ℹ️</button>
   </header>
   <main style="position:relative">
@@ -1902,6 +1902,38 @@ window.addEventListener("load", () => {
       if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
     });
   }
+
+  // Refresh POIs button handler
+  const refreshBtn = document.getElementById('refresh-pois-btn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', async () => {
+      refreshBtn.style.opacity = '0.5';
+      refreshBtn.style.cursor = 'wait';
+
+      try {
+        const view = map.getView();
+        const center = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326');
+        const lat = center[1];
+        const lng = center[0];
+
+        console.log(`[App] Manual refresh clicked - reloading POIs from ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+
+        // Force reload by clearing cache and reloading
+        if (window.GooglePlacesLoader?.reloadArea) {
+          await window.GooglePlacesLoader.reloadArea(lat, lng);
+          console.log('[App] POI reload complete');
+        } else {
+          console.warn('[App] GooglePlacesLoader not available');
+        }
+      } catch (err) {
+        console.error('[App] Refresh error:', err);
+      } finally {
+        refreshBtn.style.opacity = '1';
+        refreshBtn.style.cursor = 'pointer';
+      }
+    });
+  }
+
   // ---- POI detail ----
   function gfTag(gf){
     if (!gf || !gf.lvl || gf.lvl === 'unknown') return ''; // Non mostrare il tag se non disponibile
@@ -4733,15 +4765,27 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     const newPois = e.detail.pois || [];
     console.log(`[App] Google Places loaded: ${newPois.length} POIs`);
 
-    // Add new POIs (avoid duplicates)
+    // Add new POIs (avoid duplicates by googlePlaceId)
     const existingIds = new Set(window.GOOGLE_PLACES_POIS.map(p => p.googlePlaceId));
-    const uniqueNewPois = newPois.filter(p => !existingIds.has(p.googlePlaceId));
+    const uniqueNewPois = newPois.filter(p => {
+      // Only add if we don't already have this googlePlaceId
+      if (existingIds.has(p.googlePlaceId)) {
+        console.log(`[App] Skipping duplicate: ${p.name} (${p.googlePlaceId})`);
+        return false;
+      }
+      return true;
+    });
 
     window.GOOGLE_PLACES_POIS.push(...uniqueNewPois);
-    console.log(`[App] Total Google Places POIs: ${window.GOOGLE_PLACES_POIS.length}`);
+    console.log(`[App] Added ${uniqueNewPois.length} new POIs | Total Google Places POIs: ${window.GOOGLE_PLACES_POIS.length}`);
 
-    // Re-render map with new POIs
-    renderMarkers();
+    // Re-render map with updated POIs
+    if (uniqueNewPois.length > 0) {
+      console.log('[App] Rendering markers with new POIs');
+      renderMarkers();
+    } else {
+      console.log('[App] No new POIs to add, skipping render');
+    }
   });
 
   // Override allPOIs() to use Google Places as source
