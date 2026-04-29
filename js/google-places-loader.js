@@ -314,7 +314,14 @@ async function renderMarkersFromGoogle(pois) {
   // Handle both raw Google Places data and already-transformed cache data
   const transformedPois = pois.map((poi, idx) => {
     // Check if POI is already transformed (from cache) or raw (from API)
-    const isAlreadyTransformed = poi.lat !== undefined && poi.lng !== undefined && !poi.geometry;
+    const isAlreadyTransformed = poi.lat !== undefined && poi.lng !== undefined;
+    const hasGeometry = poi.geometry && poi.geometry.location;
+
+    // Safety check: skip if can't determine coordinates
+    if (!isAlreadyTransformed && !hasGeometry) {
+      console.warn(`[GooglePlacesLoader] Skipping POI without valid coordinates:`, poi.name);
+      return null;
+    }
 
     return {
       // Generate unique ID for Google Places POI
@@ -346,7 +353,7 @@ async function renderMarkersFromGoogle(pois) {
       // Mark as Google Places POI
       fromGooglePlaces: poi.fromGooglePlaces !== undefined ? poi.fromGooglePlaces : true
     };
-  });
+  }).filter(p => p !== null); // Rimuovi POI saltati
 
   console.log(`[GooglePlacesLoader] Transformed ${transformedPois.length} POIs with IDs and categories`);
 
