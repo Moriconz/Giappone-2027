@@ -296,11 +296,9 @@ async function enrichPOIsWithCities(pois) {
   return pois;
 }
 
-// Render markers from Google Places POI data
-async function renderMarkersFromGoogle(pois) {
-  if (!pois || pois.length === 0) return;
-
-  console.log(`[GooglePlacesLoader] Rendering ${pois.length} markers from Google Places`);
+// Transform raw Google Places POI data to standard format
+function transformGooglePlacesPOIs(pois) {
+  if (!pois || pois.length === 0) return [];
 
   // Helper: estrai città dall'indirizzo (formato: "Name, City, Prefecture, Country")
   function extractCity(address) {
@@ -310,51 +308,55 @@ async function renderMarkersFromGoogle(pois) {
     return parts.length > 0 ? parts[0] : undefined;
   }
 
-  // Transform POIs to standard format (extract lat/lng from geometry)
-  // Handle both raw Google Places data and already-transformed cache data
-  const transformedPois = pois.map((poi, idx) => {
-    // Check if POI is already transformed (from cache) or raw (from API)
-    const isAlreadyTransformed = poi.lat !== undefined && poi.lng !== undefined;
-    const hasGeometry = poi.geometry && poi.geometry.location;
+  return pois.map((poi, idx) => {
+    // Se è già trasformato, restituiscilo così com'è
+    if (poi.lat !== undefined && poi.lng !== undefined && poi.id) {
+      return poi;
+    }
 
-    // Safety check: skip if can't determine coordinates
-    if (!isAlreadyTransformed && !hasGeometry) {
+    // Altrimenti, trasformalo da Google Places API format
+    const hasGeometry = poi.geometry && poi.geometry.location;
+    if (!hasGeometry) {
       console.warn(`[GooglePlacesLoader] Skipping POI without valid coordinates:`, poi.name);
       return null;
     }
 
     return {
       // Generate unique ID for Google Places POI
-      id: poi.id || `gp_${poi.place_id || poi.googlePlaceId || `poi_${Date.now()}_${idx}`}`,
-      googlePlaceId: poi.googlePlaceId || poi.place_id,
+      id: `gp_${poi.place_id || `poi_${Date.now()}_${idx}`}`,
+      googlePlaceId: poi.place_id,
       name: poi.name,
-      lat: isAlreadyTransformed ? poi.lat : poi.geometry.location.lat,
-      lng: isAlreadyTransformed ? poi.lng : poi.geometry.location.lng,
-      address: poi.address || poi.vicinity || poi.formatted_address || '',
-      city: poi.city || window.__searchCity || extractCity(poi.vicinity || poi.formatted_address || ''),
+      lat: poi.geometry.location.lat,
+      lng: poi.geometry.location.lng,
+      address: poi.vicinity || poi.formatted_address || '',
+      city: window.__searchCity || extractCity(poi.vicinity || poi.formatted_address || ''),
       rating: poi.rating || null,
-      ratingCount: poi.ratingCount || poi.user_ratings_total || 0,
+      ratingCount: poi.user_ratings_total || 0,
       types: poi.types || [],
-      cat: poi.cat || mapGoogleTypesToCategory(poi.types),
-      businessStatus: poi.businessStatus || poi.business_status || 'OPERATIONAL',
+      cat: mapGoogleTypesToCategory(poi.types),
+      businessStatus: poi.business_status || 'OPERATIONAL',
       icon: poi.icon || null,
-      photos: (poi.photos || []).map((p, photoIdx) => {
-        // Handle both raw and transformed photo data
-        if (p.url) return p; // Already transformed
-        return {
-          url: `/api/placePhoto?reference=${encodeURIComponent(p.photo_reference)}&maxwidth=800`,
-          reference: p.photo_reference,
-          height: p.height,
-          width: p.width,
-          attribution: p.html_attributions || []
-        };
-      }),
-      openNow: poi.openNow !== undefined ? poi.openNow : (poi.opening_hours?.open_now || null),
-      // Mark as Google Places POI
-      fromGooglePlaces: poi.fromGooglePlaces !== undefined ? poi.fromGooglePlaces : true
+      photos: (poi.photos || []).map((p) => ({
+        url: `/api/placePhoto?reference=${encodeURIComponent(p.photo_reference)}&maxwidth=800`,
+        reference: p.photo_reference,
+        height: p.height,
+        width: p.width,
+        attribution: p.html_attributions || []
+      })),
+      openNow: poi.opening_hours?.open_now || null,
+      fromGooglePlaces: true
     };
-  }).filter(p => p !== null); // Rimuovi POI saltati
+  }).filter(p => p !== null);
+}
 
+// Render markers from Google Places POI data
+async function renderMarkersFromGoogle(pois) {
+  if (!pois || pois.length === 0) return [];
+
+  console.log(`[GooglePlacesLoader] Rendering ${pois.length} markers from Google Places`);
+
+  // Transform POIs to standard format
+  const transformedPois = transformGooglePlacesPOIs(pois);
   console.log(`[GooglePlacesLoader] Transformed ${transformedPois.length} POIs with IDs and categories`);
 
   // Dispatch event for main app to render markers
