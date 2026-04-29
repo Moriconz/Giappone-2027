@@ -61,6 +61,7 @@ class GooglePlacesCache {
         lat: poi.geometry.location.lat,
         lng: poi.geometry.location.lng,
         address: poi.vicinity || poi.formatted_address || '',
+        city: poi.city || null,
         rating: poi.rating || null,
         ratingCount: poi.user_ratings_total || 0,
         types: poi.types || [],
