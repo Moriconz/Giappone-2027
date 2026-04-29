@@ -3855,16 +3855,14 @@ window.addEventListener("load", () => {
     // Separate: regular shops vs vintage/second-hand
     // ALL Google Places shopping POIs go to "regular" (Negozi Generali)
     // SHOPPING_DB items with vintage/second-hand metadata go to "secondhand"
-    const regular = shoppingPOIs.length > 0
-      ? shoppingPOIs.filter(p => !p.items || (typeof p.items === 'string' ? !p.items.toLowerCase().includes('vintage') : !p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand'))))
-      : (SHOPPING_DB || []).filter(p => !p.items || (typeof p.items === 'string' ? !p.items.toLowerCase().includes('vintage') : !p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand'))));
+    const regular = shoppingPOIs;
 
     const secondhand = (SHOPPING_DB || []).filter(p =>
       p.items && (typeof p.items === 'string' ? p.items.toLowerCase().includes('vintage') || p.items.toLowerCase().includes('second-hand') :
         p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand')))
     );
 
-    shoppingCache.data = items;
+    shoppingCache.data = shoppingPOIs;
     shoppingViewCache.regular = regular;
     shoppingViewCache.secondhand = secondhand;
 
@@ -4060,10 +4058,16 @@ window.addEventListener("load", () => {
         console.log('[renderShoppingView] Vintage shops HTML aggiornato');
       } else {
         console.error('[renderShoppingView] ERRORE: Elemento #google-vintage non trovato!');
+        return; // Exit se elemento non trovato
       }
 
       // Aggiungi click handlers per i negozi Google
-      const vintageRows = document.getElementById('google-vintage').querySelectorAll('.poi-row');
+      const vintageElement2 = document.getElementById('google-vintage');
+      if (!vintageElement2) {
+        console.warn('[renderShoppingView] Elemento #google-vintage sparito');
+        return;
+      }
+      const vintageRows = vintageElement2.querySelectorAll('.poi-row');
       console.log('[renderShoppingView] Attaching click handlers a', vintageRows.length, 'vintage shops');
       vintageRows.forEach(r => {
         r.onclick = () => {
