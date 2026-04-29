@@ -82,8 +82,8 @@ header h1 .badge{background:var(--accent);color:#fff;font-size:10px;padding:2px 
 .icon-btn.active::after{content:'';position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--surface)}
 /* ===== Main view ===== */
 main{flex:1;position:relative;overflow:hidden}
-#map{position:fixed !important;top:50px !important;left:0 !important;right:0 !important;bottom:60px !important;width:100% !important;height:auto !important;overflow:hidden !important;background:#0a1320 !important}
-.leaflet-container{background:#0a1320;font-family:inherit}
+#map{position:fixed !important;top:50px !important;left:0 !important;right:0 !important;bottom:60px !important;width:100% !important;height:auto !important;overflow:hidden !important;background:transparent !important}
+.leaflet-container{background:transparent;font-family:inherit}
 /* Floating filter bar */
 #filters{position:fixed !important;top:50px !important;left:10px !important;right:10px !important;z-index:9999 !important;
   display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
@@ -3451,12 +3451,13 @@ window.addEventListener("load", () => {
 
           console.log('[renderListView] Risultati ricerca:', searchResults.length, 'POI trovati');
 
-          // Se nessun risultato, mostra messaggio e suggerisci Google Search
+          // Se nessun risultato, mostra messaggio
           if (searchResults.length === 0) {
             resultsDiv.innerHTML = `
-              <div style="padding:20px;text-align:center;color:var(--muted)">
-                <p style="font-size:14px;margin:0 0 12px">❌ Nessun risultato per "${query}"</p>
-                <p style="font-size:12px;margin:0">Prova con Google Places o verifica l'ortografia</p>
+              <div style="padding:20px;text-align:center">
+                <p style="font-size:14px;margin:0 0 8px;color:#FF1493;font-weight:700">❌ Nessun risultato</p>
+                <p style="font-size:12px;margin:0;color:var(--muted)">Non trovato "${query}" nei POI locali</p>
+                <p style="font-size:11px;margin:8px 0 0;color:var(--muted)">💡 Usa 🌍 Google per cercare ovunque</p>
               </div>
             `;
             return;
