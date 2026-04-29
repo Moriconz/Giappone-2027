@@ -82,15 +82,15 @@ header h1 .badge{background:var(--accent);color:#fff;font-size:10px;padding:2px 
 .icon-btn.active::after{content:'';position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--surface)}
 /* ===== Main view ===== */
 main{flex:1;position:relative;overflow:hidden}
-#map{position:absolute;inset:0;background:#0a1320}
+#map{position:fixed !important;top:50px !important;left:0 !important;right:0 !important;bottom:60px !important;width:100% !important;height:auto !important;overflow:hidden !important;background:#0a1320 !important}
 .leaflet-container{background:#0a1320;font-family:inherit}
 /* Floating filter bar */
-#filters{position:fixed;top:68px;left:10px;right:10px;z-index:9999;
+#filters{position:fixed !important;top:50px !important;left:10px !important;right:10px !important;z-index:9999 !important;
   display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
   scrollbar-width:none;padding:8px 12px;max-height:80px;max-width:calc(100% - 20px);
-  background:rgba(15,25,35,.6);backdrop-filter:blur(10px);border-radius:12px;
+  background:rgba(15,25,35,.6) !important;backdrop-filter:blur(10px);border-radius:12px;
   pointer-events:auto;visibility:visible !important;opacity:1 !important;
-  box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  box-shadow:0 2px 8px rgba(0,0,0,.15) !important}
 #filters::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:6px 12px;border-radius:999px;background:rgba(30,49,72,.92);
   border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;
@@ -3411,7 +3411,9 @@ window.addEventListener("load", () => {
 
     // Setup ricerca (GLOBALE — cerca TUTTI i POI anche fuori dal raggio GPS)
     const searchInput = document.getElementById('list-search');
+    console.log('[renderListView] searchInput trovato?', !!searchInput);
     if (searchInput) {
+      console.log('[renderListView] ✅ Setup ricerca attivo');
       searchInput.oninput = debounce((e) => {
         const query = e.target.value.toLowerCase().trim();
         console.log('[renderListView] Ricerca:', query);
