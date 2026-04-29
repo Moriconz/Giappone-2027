@@ -150,8 +150,11 @@ async function loadNearbyPOIs(lat, lng) {
 
     if (pois && pois.length > 0) {
       loadedRadii.add(key);
-      await window.GooglePlacesCache.savePOIs(lat, lng, radiusM, pois);
-      await renderMarkersFromGoogle(pois);
+      // Transform FIRST, then save to cache (so city field is included)
+      const transformedPois = await renderMarkersFromGoogle(pois);
+      if (transformedPois && transformedPois.length > 0) {
+        await window.GooglePlacesCache.savePOIs(lat, lng, radiusM, transformedPois);
+      }
       console.log(`[GooglePlacesLoader] Loaded ${pois.length} POIs at ${radiusM}m`);
     } else if (pois === null) {
       // API error or rate limited, stop expanding
@@ -363,6 +366,9 @@ async function renderMarkersFromGoogle(pois) {
       }
     }
   }).catch(err => console.warn('[GooglePlacesLoader] Enrichment error:', err));
+
+  // Restituisci i POI trasformati per salvarli in cache
+  return transformedPois;
 }
 
 // Get all loaded POIs from cache
