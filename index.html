@@ -713,52 +713,64 @@ window.addEventListener("load", () => {
     transport:'🚆', poi:'📍', all:'📍'
   };
   function makePoiStyle(cat, isGF) {
-    const color = CAT_COLORS[cat] || '#C85C3B';
-    const emoji = CAT_EMOJI[cat] || '📍'; // Fallback a emoji universale
-    const canvas = document.createElement('canvas');
-    canvas.width = 40; canvas.height = 48;
-    const ctx = canvas.getContext('2d');
-
-    // Pin shape (cerchio + coda)
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(20, 18, 14, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Pin stroke
-    ctx.strokeStyle = isGF ? '#4A7C59' : '#ffffff';
-    ctx.lineWidth = isGF ? 3 : 2;
-    ctx.stroke();
-
-    // Pin tail
-    ctx.beginPath();
-    ctx.moveTo(15, 28);
-    ctx.lineTo(20, 45);
-    ctx.lineTo(25, 28);
-    ctx.closePath();
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.strokeStyle = isGF ? '#4A7C59' : '#ffffff';
-    ctx.stroke();
-
-    // Emoji (con fallback per font issues)
     try {
-      ctx.font = 'bold 20px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(emoji, 20, 18);
-    } catch(e) {
-      console.warn('[makePoiStyle] Emoji render failed for:', cat, e);
-    }
+      const color = CAT_COLORS[cat] || '#C85C3B';
+      const emoji = CAT_EMOJI[cat] || '📍'; // Fallback a emoji universale
+      const canvas = document.createElement('canvas');
+      canvas.width = 40; canvas.height = 48;
+      const ctx = canvas.getContext('2d');
 
-    return new ol.style.Style({
-      image: new ol.style.Icon({
-        img: canvas,
-        imgSize: [40, 48],
-        anchor: [0.5, 1],
-        scale: 1
-      })
-    });
+      if (!ctx) {
+        console.error('[makePoiStyle] Failed to get canvas context');
+        return null;
+      }
+
+      // Pin shape (cerchio + coda)
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(20, 18, 14, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pin stroke
+      ctx.strokeStyle = isGF ? '#4A7C59' : '#ffffff';
+      ctx.lineWidth = isGF ? 3 : 2;
+      ctx.stroke();
+
+      // Pin tail
+      ctx.beginPath();
+      ctx.moveTo(15, 28);
+      ctx.lineTo(20, 45);
+      ctx.lineTo(25, 28);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = isGF ? '#4A7C59' : '#ffffff';
+      ctx.stroke();
+
+      // Emoji (con fallback per font issues)
+      try {
+        ctx.font = 'bold 20px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(emoji, 20, 18);
+      } catch(e) {
+        console.warn('[makePoiStyle] Emoji render failed for:', cat, e);
+      }
+
+      const style = new ol.style.Style({
+        image: new ol.style.Icon({
+          img: canvas,
+          imgSize: [40, 48],
+          anchor: [0.5, 1],
+          scale: 1
+        })
+      });
+
+      return style;
+    } catch (err) {
+      console.error('[makePoiStyle] Error creating style for cat=' + cat, err);
+      return null;
+    }
   }
   // Cache styles per performance
   const _styleCache = {};
@@ -768,10 +780,27 @@ window.addEventListener("load", () => {
       const cat = feature.get('cat') || 'all';
       const isGF = feature.get('isGF') || false;
       const key = cat + (isGF ? '_gf' : '');
-      if (!_styleCache[key]) _styleCache[key] = makePoiStyle(cat, isGF);
+
+      if (!_styleCache[key]) {
+        const style = makePoiStyle(cat, isGF);
+        _styleCache[key] = style || createFallbackStyle(cat); // Fallback if style creation fails
+      }
+
       return _styleCache[key];
     }
   });
+
+  // Fallback style if canvas-based style fails
+  function createFallbackStyle(cat) {
+    const color = CAT_COLORS[cat] || '#C85C3B';
+    return new ol.style.Style({
+      image: new ol.style.Circle({
+        radius: 8,
+        fill: new ol.style.Fill({ color: color }),
+        stroke: new ol.style.Stroke({ color: '#ffffff', width: 2 })
+      })
+    });
+  }
   map.addLayer(vectorLayer);
   // GPS marker layer — nessuno style di default: ogni feature porta il proprio (iniziali o avatar)
   const gpsSource = new ol.source.Vector();
@@ -1374,8 +1403,14 @@ window.addEventListener("load", () => {
     console.log('[renderMarkers] toRender:', toRender.length);
 
     let added = 0;
-    toRender.forEach(p => {
+    toRender.forEach((p, idx) => {
       try {
+        // Validate coordinates
+        if (!p.lat || !p.lng || typeof p.lat !== 'number' || typeof p.lng !== 'number') {
+          console.warn(`[renderMarkers] Invalid coords for ${p.name}: lat=${p.lat}, lng=${p.lng}`);
+          return;
+        }
+
         const feature = new ol.Feature({
           geometry: new ol.geom.Point(ol.proj.fromLonLat([p.lng, p.lat])),
           name: getPoiDisplayName(p),
@@ -1385,6 +1420,11 @@ window.addEventListener("load", () => {
         });
         vectorSource.addFeature(feature);
         added++;
+
+        // Log first few POIs for debugging
+        if (idx < 3) {
+          console.log(`[renderMarkers] Sample POI #${idx+1}: ${p.name} at (${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}), cat=${p.cat}, fromGoogle=${p.fromGooglePlaces}`);
+        }
       } catch(e) {
         console.error('[renderMarkers] Error adding feature:', p.id, e);
       }
