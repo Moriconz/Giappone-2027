@@ -54,8 +54,8 @@ html, body {
 /* ── HEADER ─────────────────────────────────────────────────────── */
 header {
   background: linear-gradient(180deg, #4A5BA8 0%, #2D3B7D 100%) !important;
-  border-bottom: 3px solid #FF1493 !important;
-  box-shadow: 0 0 20px rgba(255,20,147,0.3) !important;
+  border-bottom: 1px solid rgba(255,20,147,0.3) !important;
+  box-shadow: 0 0 15px rgba(255,20,147,0.2) !important;
 }
 
 header h1 {
