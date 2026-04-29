@@ -5438,77 +5438,116 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
 })();
 
 /* ============================================================
-   INSTALL PROMPT MANAGEMENT
+   INSTALL PROMPT MANAGEMENT — PWA Installation Handler
    ============================================================ */
 console.log('[Install] ========== STARTING INSTALL PROMPT CODE ==========');
+
 let deferredPrompt = null;
 const installBanner = document.getElementById('install-banner');
 const installBtn = document.getElementById('install-btn');
 const installClose = document.getElementById('install-close');
 
-// Ascolta beforeinstallprompt
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Mostra il banner usando classe
-  if (installBanner) {
-    installBanner.classList.add('show');
-  }
-  console.log('[Install] Prompt disponibile - banner mostrato');
-});
+console.log('[Install] Step 1 - DOM Elements found:');
+console.log('[Install]   installBanner:', !!installBanner, installBanner);
+console.log('[Install]   installBtn:', !!installBtn, installBtn);
+console.log('[Install]   installClose:', !!installClose, installClose);
 
-// Bottone Installa
-console.log('[Install] Cerco install-btn:', installBtn);
-if (installBtn) {
-  console.log('[Install] installBtn trovato, aggiungo listener');
-  installBtn.addEventListener('click', async (e) => {
-    console.log('[Install] Click su INSTALLA rilevato');
-    e.preventDefault();
-    e.stopPropagation();
-    if (deferredPrompt) {
-      console.log('[Install] deferredPrompt esiste, mostrando prompt');
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`[Install] User response: ${outcome}`);
-      if (installBanner) {
-        installBanner.classList.remove('show');
-        installBanner.style.setProperty('display', 'none', 'important');
-      }
-      deferredPrompt = null;
-    } else {
-      console.log('[Install] ERRORE: deferredPrompt è null/undefined');
-    }
-  });
-} else {
-  console.error('[Install] ERRORE: installBtn NON trovato!');
+// Remove inline onclick from install-close if present
+if (installClose && installClose.hasAttribute('onclick')) {
+  console.log('[Install] Removing inline onclick from install-close');
+  installClose.removeAttribute('onclick');
 }
 
-// Bottone Chiudi (X)
-console.log('[Install] Cerco install-close:', installClose);
-if (installClose) {
-  console.log('[Install] installClose trovato, aggiungo listener');
-  installClose.addEventListener('click', (e) => {
-    console.log('[Install] Click rilevato su X');
+// Listen for beforeinstallprompt event
+console.log('[Install] Step 2 - Attaching beforeinstallprompt listener');
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('[Install] *** beforeinstallprompt event FIRED! ***');
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBanner) {
+    installBanner.classList.add('show');
+    console.log('[Install] Banner shown via .show class');
+  }
+  console.log('[Install] deferredPrompt saved, banner should now be visible');
+});
+
+// Attach Install button listener
+console.log('[Install] Step 3 - Setting up install button handler');
+if (installBtn) {
+  installBtn.addEventListener('click', function(e) {
+    console.log('[Install] *** INSTALL BUTTON CLICKED ***');
+    console.log('[Install] deferredPrompt is:', deferredPrompt ? 'SET' : 'NULL/UNDEFINED');
+
     e.preventDefault();
     e.stopPropagation();
+
+    if (deferredPrompt) {
+      console.log('[Install] Calling deferredPrompt.prompt()');
+      deferredPrompt.prompt();
+
+      deferredPrompt.userChoice
+        .then((choiceResult) => {
+          console.log('[Install] userChoice resolved');
+          console.log('[Install] User outcome:', choiceResult.outcome);
+
+          if (installBanner) {
+            installBanner.classList.remove('show');
+            installBanner.style.setProperty('display', 'none', 'important');
+            console.log('[Install] Banner hidden after installation');
+          }
+          deferredPrompt = null;
+        })
+        .catch(err => {
+          console.error('[Install] Error in userChoice:', err);
+        });
+    } else {
+      console.warn('[Install] ⚠️ Install button clicked but deferredPrompt is NULL');
+      console.warn('[Install] This means beforeinstallprompt event never fired');
+      console.warn('[Install] Possible causes:');
+      console.warn('[Install]   • App is served over file:// (needs http/https)');
+      console.warn('[Install]   • manifest.webmanifest is missing or invalid');
+      console.warn('[Install]   • App is already installed');
+      console.warn('[Install]   • Browser does not support PWA installation');
+    }
+  });
+  console.log('[Install] Install button listener attached ✓');
+} else {
+  console.error('[Install] ERRORE: installBtn NOT found! Cannot attach listener');
+}
+
+// Attach Close (X) button listener
+console.log('[Install] Step 4 - Setting up close button handler');
+if (installClose) {
+  installClose.addEventListener('click', function(e) {
+    console.log('[Install] *** CLOSE BUTTON (X) CLICKED ***');
+    e.preventDefault();
+    e.stopPropagation();
+
     if (installBanner) {
       installBanner.classList.remove('show');
       installBanner.style.setProperty('display', 'none', 'important');
-      console.log('[Install] Banner nascosto - style.display =', installBanner.style.display);
+      console.log('[Install] Banner hidden via close button');
     }
     deferredPrompt = null;
   });
+  console.log('[Install] Close button listener attached ✓');
 } else {
-  console.error('[Install] ERRORE: installClose NON trovato!');
+  console.error('[Install] ERRORE: installClose NOT found! Cannot attach listener');
 }
 
-// Nascondi il banner se l'app è già installata
+// Listen for app installation completion
+console.log('[Install] Step 5 - Attaching appinstalled listener');
 window.addEventListener('appinstalled', () => {
-  console.log('[Install] App installata con successo');
+  console.log('[Install] *** APP SUCCESSFULLY INSTALLED! ***');
   if (installBanner) {
-    installBanner.style.display = 'none';
+    installBanner.classList.remove('show');
+    installBanner.style.setProperty('display', 'none', 'important');
+    console.log('[Install] Installation banner auto-hidden');
   }
+  deferredPrompt = null;
 });
+
+console.log('[Install] ========== INSTALL PROMPT CODE SETUP COMPLETE ==========');
 
 }); // close window.addEventListener load
 </script>
