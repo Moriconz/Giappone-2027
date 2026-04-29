@@ -88,13 +88,13 @@ main{flex:1;position:relative;overflow:hidden}
 #filters{position:fixed !important;top:50px !important;left:10px !important;right:10px !important;z-index:9999 !important;
   display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
   scrollbar-width:none;padding:8px 12px;max-height:80px;max-width:calc(100% - 20px);
-  background:rgba(15,25,35,.6) !important;backdrop-filter:blur(10px);border-radius:12px;
+  background:transparent !important;backdrop-filter:none;border-radius:12px;
   pointer-events:auto;visibility:visible !important;opacity:1 !important;
-  box-shadow:0 2px 8px rgba(0,0,0,.15) !important}
+  box-shadow:none !important}
 #filters::-webkit-scrollbar{display:none}
-.chip{flex-shrink:0;padding:6px 12px;border-radius:999px;background:rgba(30,49,72,.92);
-  border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;
-  backdrop-filter:blur(8px);cursor:pointer;white-space:nowrap}
+.chip{flex-shrink:0;padding:6px 12px;border-radius:999px;background:rgba(255,250,205,.9);
+  border:2px solid #FF1493;color:#2D3B7D;font-size:12px;font-weight:600;
+  backdrop-filter:none;cursor:pointer;white-space:nowrap;font-family:'Comic Sans MS',cursive}
 .chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .chip.gf{background:transparent;border:1.5px solid var(--success);color:var(--success);opacity:.8}
 .chip.gf.active{background:var(--success);border-color:var(--success);color:#fff;opacity:1;box-shadow:0 0 0 2px rgba(74,124,89,.3)}
@@ -3020,10 +3020,83 @@ window.addEventListener("load", () => {
       return;
     }
 
+    // Se non ci sono POI caricati, carica TUTTI i POI del Giappone
+    let allPoisForList = getCachedAllPOIs();
+    if (allPoisForList.length === 0 && window.GOOGLE_PLACES_POIS.length === 0) {
+      console.log('[renderListView] ⏳ Nessun POI caricato. Caricamento di tutti i POI del Giappone...');
+      window.openSheet('🗺️ Tutte le tappe', `
+        <div style="padding:20px;text-align:center">
+          <p style="font-size:14px;color:var(--accent);margin-bottom:20px">⏳ Caricando TUTTI i POI del Giappone da Google Places...</p>
+          <p style="font-size:12px;color:var(--muted)">Potrebbero volerci alcuni secondi... (Hokkaido, Honshu, Kyushu, Okinawa)</p>
+        </div>
+      `);
+
+      // Regioni del Giappone per coprire tutto il territorio
+      const japanRegions = [
+        { name: 'Hokkaido', lat: 43.2332, lng: 142.5898, radius: 300000 },      // Nord
+        { name: 'Tohoku', lat: 40.3157, lng: 141.1352, radius: 280000 },        // Nord-est
+        { name: 'Kanto', lat: 35.6762, lng: 139.7694, radius: 250000 },         // Centro-est (Tokyo)
+        { name: 'Chubu', lat: 36.5627, lng: 137.5992, radius: 280000 },         // Centro
+        { name: 'Kansai', lat: 34.6937, lng: 135.5023, radius: 260000 },        // Centro-ovest (Osaka/Kyoto)
+        { name: 'Chugoku', lat: 34.3996, lng: 132.4743, radius: 280000 },       // Ovest
+        { name: 'Shikoku', lat: 33.5904, lng: 134.5644, radius: 220000 },       // Sud-ovest
+        { name: 'Kyushu', lat: 33.2381, lng: 130.8445, radius: 300000 },        // Sud
+        { name: 'Okinawa', lat: 26.2128, lng: 127.6790, radius: 200000 }        // Isole a sud
+      ];
+
+      // Carica POI da tutte le regioni in parallelo
+      Promise.all(japanRegions.map(region =>
+        fetchGooglePlacesPOIs(region.lat, region.lng, region.radius)
+          .then(pois => {
+            console.log(`[renderListView] ${region.name}: ${pois ? pois.length : 0} POI`);
+            return pois || [];
+          })
+          .catch(e => {
+            console.warn(`[renderListView] Errore caricamento ${region.name}:`, e);
+            return [];
+          })
+      )).then(allResults => {
+        // Unisci tutti i risultati, evita duplicati per place_id
+        const allPois = [];
+        const seenPlaceIds = new Set();
+
+        allResults.forEach(results => {
+          results.forEach(poi => {
+            if (!seenPlaceIds.has(poi.place_id)) {
+              seenPlaceIds.add(poi.place_id);
+              allPois.push(poi);
+            }
+          });
+        });
+
+        console.log(`[renderListView] ✅ Caricati ${allPois.length} POI UNICI da tutto il Giappone`);
+
+        window.GOOGLE_PLACES_POIS = allPois.map((poi, idx) => ({
+          id: `gp_${poi.place_id || `poi_${Date.now()}_${idx}`}`,
+          googlePlaceId: poi.place_id,
+          name: poi.name,
+          lat: poi.geometry.location.lat,
+          lng: poi.geometry.location.lng,
+          address: poi.vicinity || poi.formatted_address || '',
+          rating: poi.rating || null,
+          ratingCount: poi.user_ratings_total || 0,
+          types: poi.types || [],
+          cat: mapGoogleTypesToCategory(poi.types),
+          businessStatus: poi.business_status || 'OPERATIONAL',
+          fromGooglePlaces: true
+        }));
+
+        renderListView(); // Richiama per mostrare i dati
+      }).catch(e => {
+        console.error('[renderListView] Errore nel caricamento delle regioni:', e);
+        renderListView(); // Richiama comunque per mostrare interfaccia
+      });
+      return;
+    }
+
     // Filtra per GPS se attivo (default: entro 10km)
     const gpsEnabled = state.gpsEnabled && state.gpsCurrentLat && state.gpsCurrentLng;
     const gpsRadius = 10; // km
-    let allPoisForList = getCachedAllPOIs();
 
     console.log('[renderListView] ========== START ==========');
     console.log('[renderListView] GPS Settings:', {

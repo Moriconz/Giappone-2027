@@ -1,48 +1,39 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Y2K THEME OVERRIDE — Giappone 2027 (Modern Design 2024-2025)
+   Y2K FLOATING WINDOW SYSTEM — Giappone 2027
 
-   Glassmorphism + Neumorphism design avec Y2K aesthetic
-   Clean, functional, no visual pollution
+   Authentic Y2K Aesthetic (2000-2004 Era)
+   Comic Sans MS, Neon Colors, Glassmorphic Surfaces
 ═══════════════════════════════════════════════════════════════════ */
 
-/* ── DESIGN TOKENS ──────────────────────────────────────────────── */
+/* ── DESIGN TOKENS (Y2K PALETTE) ────────────────────────────────── */
 :root {
-  --primary:     #2D3B7D;
-  --accent:      #FF1493;
-  --success:     #00FF88;
-  --warning:     #FFD700;
-  --bg:          #1a1f3a;
-  --surface:     #2a3355;
-  --surface-2:   #3d4a6a;
-  --text:        #E8EEF4;
-  --muted:       #9AAAB9;
-  --border:      rgba(255,20,147,0.3);
-  --danger:      #FF4444;
+  --primary:     #2D3B7D;      /* Deep blue - text only */
+  --accent:      #FF1493;      /* Hot pink */
+  --success:     #00FF88;      /* Neon green */
+  --warning:     #FFD700;      /* Gold */
+  --text:        #FFFACD;      /* Lemon chiffon */
+  --muted:       #E0D5FF;      /* Lavender */
   --radius:      12px;
-  --shadow:      0 8px 32px rgba(0,0,0,0.3);
-  --glow:        0 0 20px rgba(255,20,147,0.3);
-  --safe-top:    env(safe-area-inset-top,0);
-  --safe-bottom: env(safe-area-inset-bottom,0);
+  --glow:        0 8px 32px rgba(255,20,147,0.4);
 }
 
 /* ── BASE ───────────────────────────────────────────────────────── */
 html, body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  background: var(--bg) !important;
+  font-family: 'Courier New', monospace !important;
+  background: transparent !important;
 }
 
 /* ── HEADER ─────────────────────────────────────────────────────── */
 header {
-  background: rgba(30,50,80,0.95) !important;
-  backdrop-filter: blur(10px) !important;
-  border-bottom: 1px solid var(--border) !important;
-  box-shadow: 0 4px 30px rgba(255,20,147,0.1) !important;
+  background: rgba(255,250,205,0.95) !important;
+  border-bottom: 2px solid #FF1493 !important;
+  box-shadow: 0 4px 20px rgba(255,20,147,0.2) !important;
   z-index: 100 !important;
 }
 
 header h1 {
-  color: #FFD700 !important;
-  font-family: 'Courier New', monospace !important;
+  color: #FF1493 !important;
+  font-family: 'Comic Sans MS', cursive !important;
   font-weight: 700 !important;
   letter-spacing: 0.05em !important;
 }
@@ -54,31 +45,10 @@ header h1 .badge {
   border-radius: 6px !important;
   font-size: 11px !important;
   padding: 3px 8px !important;
-  box-shadow: 0 4px 15px rgba(255,20,147,0.3) !important;
+  box-shadow: var(--glow) !important;
 }
 
-.icon-btn {
-  background: rgba(224,213,255,0.15) !important;
-  border: 1px solid rgba(255,20,147,0.3) !important;
-  border-radius: 8px !important;
-  backdrop-filter: blur(10px) !important;
-  cursor: pointer !important;
-  transition: all 0.3s cubic-bezier(0.4,0,0.2,1) !important;
-}
-
-.icon-btn:hover {
-  background: rgba(224,213,255,0.25) !important;
-  box-shadow: 0 4px 20px rgba(255,20,147,0.2) !important;
-  transform: translateY(-2px) !important;
-}
-
-.icon-btn.active {
-  background: linear-gradient(135deg, rgba(255,20,147,0.4), rgba(255,105,180,0.3)) !important;
-  border-color: #FF1493 !important;
-  box-shadow: 0 4px 25px rgba(255,20,147,0.4) !important;
-}
-
-/* ── MAP ────────────────────────────────────────────────────────── */
+/* ── MAP CONTAINER ──────────────────────────────────────────────── */
 #map {
   background: transparent !important;
   transition: filter 0.3s ease !important;
@@ -94,53 +64,52 @@ header h1 .badge {
 }
 
 #map.blur {
-  filter: blur(8px) brightness(0.6) !important;
+  filter: blur(8px) brightness(0.7) !important;
 }
 
-/* ── FILTER BAR ─────────────────────────────────────────────────── */
+/* ── FILTER BAR (NO BACKGROUND!) ────────────────────────────────── */
 #filters {
   position: fixed !important;
   top: 50px !important;
   left: 10px !important;
   right: 10px !important;
-  z-index: 999 !important;
-  background: rgba(30,50,80,0.7) !important;
-  backdrop-filter: blur(12px) !important;
-  border-radius: 12px !important;
-  padding: 8px 12px !important;
+  z-index: 9999 !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 8px 0 !important;
   display: flex !important;
   gap: 6px !important;
   overflow-x: auto !important;
   -webkit-overflow-scrolling: touch !important;
-  max-height: 50px !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
-  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
 }
 
 #filters::-webkit-scrollbar {
   display: none !important;
 }
 
-/* ── FILTER CHIPS ───────────────────────────────────────────────── */
+/* ── FILTER CHIPS (Y2K STYLE) ────────────────────────────────────── */
 .chip {
   flex-shrink: 0 !important;
-  padding: 7px 14px !important;
+  padding: 8px 16px !important;
   border-radius: 20px !important;
-  background: rgba(224,213,255,0.1) !important;
-  border: 1.5px solid rgba(255,20,147,0.4) !important;
-  color: var(--text) !important;
+  background: rgba(255,250,205,0.9) !important;
+  border: 2px solid #FF1493 !important;
+  color: #2D3B7D !important;
   font-size: 12px !important;
-  font-weight: 600 !important;
-  backdrop-filter: blur(10px) !important;
+  font-weight: 700 !important;
+  font-family: 'Comic Sans MS', cursive !important;
   cursor: pointer !important;
-  transition: all 0.3s ease !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
   white-space: nowrap !important;
+  box-shadow: 0 4px 12px rgba(255,20,147,0.2) !important;
 }
 
 .chip:hover {
-  background: rgba(224,213,255,0.2) !important;
-  border-color: #FF1493 !important;
-  box-shadow: 0 4px 15px rgba(255,20,147,0.2) !important;
+  background: rgba(255,250,205,1) !important;
+  box-shadow: 0 6px 16px rgba(255,20,147,0.3) !important;
   transform: translateY(-2px) !important;
 }
 
@@ -148,7 +117,7 @@ header h1 .badge {
   background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
   border-color: #FF1493 !important;
   color: white !important;
-  box-shadow: 0 4px 20px rgba(255,20,147,0.4), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+  box-shadow: 0 8px 24px rgba(255,20,147,0.4), inset 0 1px 0 rgba(255,255,255,0.3) !important;
 }
 
 .chip.gf {
@@ -158,79 +127,86 @@ header h1 .badge {
 .chip.gf.active {
   background: linear-gradient(135deg, #00FF88, #00DD66) !important;
   border-color: #00FF88 !important;
-  color: #1a1f3a !important;
+  color: #2D3B7D !important;
 }
 
-/* ── BOTTOM NAV ─────────────────────────────────────────────────── */
+/* ── BOTTOM NAVIGATION (NO BACKGROUND!) ────────────────────────── */
 nav.bottom {
-  background: rgba(30,50,80,0.95) !important;
-  backdrop-filter: blur(10px) !important;
-  border-top: 1px solid var(--border) !important;
-  box-shadow: 0 -4px 30px rgba(0,0,0,0.2) !important;
-  padding: 6px 4px calc(6px + var(--safe-bottom)) !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border: none !important;
+  border-top: 2px solid #FF1493 !important;
+  box-shadow: none !important;
+  padding: 6px 4px 6px 4px !important;
   gap: 2px !important;
+  z-index: 50 !important;
 }
 
 nav.bottom button {
-  background: rgba(61,74,154,0.4) !important;
-  border: 1px solid rgba(224,213,255,0.3) !important;
+  background: rgba(255,250,205,0.9) !important;
+  border: 2px solid #E0D5FF !important;
   border-radius: 8px !important;
-  color: var(--text) !important;
+  color: #2D3B7D !important;
   font-size: 10px !important;
-  font-weight: 600 !important;
-  padding: 6px 4px !important;
-  backdrop-filter: blur(10px) !important;
+  font-weight: 700 !important;
+  font-family: 'Comic Sans MS', cursive !important;
+  padding: 8px 4px !important;
   cursor: pointer !important;
   transition: all 0.3s ease !important;
   flex: 1 !important;
+  box-shadow: 0 4px 12px rgba(255,20,147,0.1) !important;
 }
 
 nav.bottom button:hover {
-  background: rgba(61,74,154,0.6) !important;
-  box-shadow: 0 4px 15px rgba(255,20,147,0.15) !important;
+  background: rgba(255,250,205,1) !important;
+  border-color: #FF1493 !important;
+  box-shadow: 0 6px 16px rgba(255,20,147,0.2) !important;
   transform: translateY(-1px) !important;
 }
 
 nav.bottom button.active {
-  background: linear-gradient(135deg, rgba(255,20,147,0.5), rgba(255,105,180,0.4)) !important;
+  background: linear-gradient(135deg, rgba(255,20,147,0.8), rgba(255,105,180,0.8)) !important;
   border-color: #FF1493 !important;
-  box-shadow: 0 4px 20px rgba(255,20,147,0.3) !important;
+  color: white !important;
+  box-shadow: 0 8px 20px rgba(255,20,147,0.4) !important;
 }
 
-/* ── SHEETS (Y2K FLOATING WINDOWS) ──────────────────────────────── */
+/* ── Y2K FLOATING WINDOWS ─────────────────────────────────────────── */
 .y2k-win {
   background: linear-gradient(135deg, rgba(255,250,205,0.98), rgba(255,248,220,0.98)) !important;
-  border: 2px solid #FF1493 !important;
-  border-radius: 16px !important;
-  box-shadow: 0 20px 60px rgba(255,20,147,0.3), inset 0 1px 0 rgba(255,255,255,0.5) !important;
-  backdrop-filter: blur(10px) !important;
+  border: 3px solid #FF1493 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(255,20,147,0.4) !important;
   max-height: 85vh !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
+  z-index: 2000 !important;
+  position: fixed !important;
 }
 
 .y2k-win-title {
-  background: linear-gradient(90deg, #FF1493, #FF69B4) !important;
-  padding: 14px 16px !important;
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  padding: 12px 16px !important;
   color: white !important;
   font-size: 14px !important;
   font-weight: 700 !important;
-  font-family: 'Courier New', monospace !important;
+  font-family: 'Comic Sans MS', cursive !important;
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
   cursor: move !important;
   user-select: none !important;
-  border-radius: 14px 14px 0 0 !important;
+  border-radius: 9px 9px 0 0 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3) !important;
 }
 
 .y2k-win-close {
-  background: rgba(255,255,255,0.2) !important;
-  border: 2px solid rgba(255,255,255,0.5) !important;
-  color: white !important;
-  width: 28px !important;
-  height: 28px !important;
+  background: transparent !important;
+  border: 2px solid #00FF88 !important;
+  color: #00FF88 !important;
+  width: 24px !important;
+  height: 24px !important;
   border-radius: 50% !important;
   cursor: pointer !important;
   display: flex !important;
@@ -239,12 +215,14 @@ nav.bottom button.active {
   font-weight: 700 !important;
   transition: all 0.2s ease !important;
   padding: 0 !important;
+  font-size: 14px !important;
+  box-shadow: 0 0 12px rgba(0,255,136,0.3) !important;
 }
 
 .y2k-win-close:hover {
-  background: rgba(255,255,255,0.4) !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
-  transform: scale(1.1) !important;
+  background: rgba(0,255,136,0.2) !important;
+  box-shadow: 0 0 20px rgba(0,255,136,0.6) !important;
+  transform: scale(1.15) !important;
 }
 
 .y2k-win-body {
@@ -254,6 +232,7 @@ nav.bottom button.active {
   padding: 16px 14px !important;
   color: #2D3B7D !important;
   font-size: 13px !important;
+  font-family: 'Courier New', monospace !important;
   line-height: 1.5 !important;
   word-break: break-word !important;
   overflow-wrap: break-word !important;
@@ -285,60 +264,61 @@ nav.bottom button.active {
   height: 20px !important;
   cursor: se-resize !important;
   background: linear-gradient(135deg, transparent 50%, rgba(255,20,147,0.6) 50%) !important;
-  border-radius: 0 0 14px 0 !important;
+  border-radius: 0 0 9px 0 !important;
   z-index: 10 !important;
 }
 
-/* ── BUTTONS IN SHEETS ──────────────────────────────────────────── */
+/* ── BUTTONS IN WINDOWS ────────────────────────────────────────── */
 .y2k-win-body button,
 .sheet-body button {
-  background: linear-gradient(135deg, rgba(224,213,255,0.4), rgba(240,229,255,0.3)) !important;
-  border: 1px solid rgba(255,20,147,0.3) !important;
+  background: linear-gradient(135deg, rgba(255,250,205,0.9), rgba(255,248,220,0.9)) !important;
+  border: 2px solid #FF1493 !important;
   color: #2D3B7D !important;
   padding: 8px 14px !important;
   border-radius: 8px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
+  font-family: 'Comic Sans MS', cursive !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
   font-size: 12px !important;
   white-space: nowrap !important;
+  box-shadow: 0 4px 12px rgba(255,20,147,0.2) !important;
 }
 
 .y2k-win-body button:hover,
 .sheet-body button:hover {
-  background: linear-gradient(135deg, rgba(224,213,255,0.6), rgba(240,229,255,0.5)) !important;
-  box-shadow: 0 4px 15px rgba(255,20,147,0.15) !important;
-  transform: translateY(-1px) !important;
+  background: linear-gradient(135deg, rgba(255,248,220,1), rgba(255,250,205,1)) !important;
+  border-color: #FF1493 !important;
+  box-shadow: 0 6px 16px rgba(255,20,147,0.3) !important;
+  transform: translateY(-2px) !important;
 }
 
-.y2k-win-body button[style*="accent"],
 .y2k-win-body button.primary,
 .sheet-body button.primary {
   background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
   border-color: #FF1493 !important;
   color: white !important;
-  box-shadow: 0 4px 15px rgba(255,20,147,0.3) !important;
+  box-shadow: 0 6px 20px rgba(255,20,147,0.4) !important;
 }
 
-.y2k-win-body button[style*="accent"]:hover,
 .y2k-win-body button.primary:hover,
 .sheet-body button.primary:hover {
-  box-shadow: 0 6px 20px rgba(255,20,147,0.4) !important;
-  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 28px rgba(255,20,147,0.5) !important;
+  transform: translateY(-3px) !important;
 }
 
-/* ── INPUT FIELDS IN SHEETS ─────────────────────────────────────── */
+/* ── INPUT FIELDS ──────────────────────────────────────────────── */
 .y2k-win-body input,
 .y2k-win-body textarea,
 .sheet-body input,
 .sheet-body textarea {
-  background: rgba(255,255,255,0.8) !important;
-  border: 1px solid rgba(255,20,147,0.2) !important;
+  background: white !important;
+  border: 2px solid #E0D5FF !important;
   color: #2D3B7D !important;
   padding: 8px 12px !important;
   border-radius: 8px !important;
   font-size: 13px !important;
-  font-family: inherit !important;
+  font-family: 'Courier New', monospace !important;
   transition: all 0.2s ease !important;
   width: 100% !important;
   box-sizing: border-box !important;
@@ -350,17 +330,18 @@ nav.bottom button.active {
 .sheet-body textarea:focus {
   outline: none !important;
   border-color: #FF1493 !important;
-  box-shadow: 0 0 12px rgba(255,20,147,0.2) !important;
-  background: white !important;
+  box-shadow: 0 0 16px rgba(255,20,147,0.4) !important;
+  background: rgba(255,255,255,1) !important;
 }
 
-/* ── TEXT IN SHEETS ─────────────────────────────────────────────── */
+/* ── TEXT STYLING ──────────────────────────────────────────────── */
 .y2k-win-body h3,
 .y2k-win-body h2,
 .sheet-body h3,
 .sheet-body h2 {
   color: #FF1493 !important;
   font-weight: 700 !important;
+  font-family: 'Comic Sans MS', cursive !important;
   margin: 12px 0 8px !important;
 }
 
@@ -370,50 +351,47 @@ nav.bottom button.active {
 .sheet-body label {
   color: #2D3B7D !important;
   margin: 6px 0 !important;
+  font-family: 'Courier New', monospace !important;
 }
 
-/* ── POI ROWS IN SHEETS ─────────────────────────────────────────── */
+/* ── POI ROWS ──────────────────────────────────────────────────── */
 .y2k-win-body .poi-row,
 .sheet-body .poi-row {
-  background: linear-gradient(135deg, rgba(61,78,154,0.3), rgba(74,91,168,0.3)) !important;
-  border: 1px solid rgba(0,255,136,0.3) !important;
+  background: linear-gradient(135deg, rgba(255,250,205,0.7), rgba(224,213,255,0.5)) !important;
+  border: 2px solid #00FF88 !important;
   border-radius: 8px !important;
   padding: 10px !important;
   margin: 8px 0 !important;
   color: #2D3B7D !important;
+  box-shadow: 0 4px 12px rgba(0,255,136,0.2) !important;
 }
 
-/* ── TOAST ──────────────────────────────────────────────────────── */
+/* ── TOAST NOTIFICATION ────────────────────────────────────────── */
 #toast {
   background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  border: 1px solid rgba(255,255,255,0.3) !important;
+  border: 2px solid rgba(255,255,255,0.5) !important;
   border-radius: 10px !important;
   color: white !important;
   font-weight: 700 !important;
+  font-family: 'Comic Sans MS', cursive !important;
   box-shadow: 0 8px 32px rgba(255,20,147,0.4) !important;
-  backdrop-filter: blur(10px) !important;
   padding: 12px 16px !important;
 }
 
-/* ── ANIMATIONS ─────────────────────────────────────────────────── */
-@keyframes slideUp {
+/* ── ANIMATIONS ────────────────────────────────────────────────── */
+@keyframes y2kWinIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translate(-50%, -48%) scale(0.88);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .y2k-win {
-  animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1) !important;
+  animation: y2kWinIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -423,35 +401,31 @@ nav.bottom button.active {
   }
 }
 
-/* ── DARK MODE FORCE ────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  background: rgba(0,0,0,0.2) !important;
-}
-
-/* ── LEAFLET OVERRIDES ──────────────────────────────────────────── */
+/* ── LEAFLET MAP OVERRIDES ──────────────────────────────────────── */
 .leaflet-container {
   background: transparent !important;
-  font-family: inherit !important;
+  font-family: 'Courier New', monospace !important;
 }
 
 .leaflet-popup-content-wrapper {
   background: rgba(255,250,205,0.98) !important;
   border: 2px solid #FF1493 !important;
   border-radius: 8px !important;
-  box-shadow: 0 8px 32px rgba(255,20,147,0.3) !important;
+  box-shadow: 0 8px 32px rgba(255,20,147,0.4) !important;
 }
 
 .leaflet-popup-tip {
   background: rgba(255,250,205,0.98) !important;
+  border: none !important;
 }
 
-/* ── ACCESSIBILITY ──────────────────────────────────────────────── */
+/* ── ACCESSIBILITY ─────────────────────────────────────────────── */
 *:focus-visible {
   outline: 2px solid #FF1493 !important;
   outline-offset: 2px !important;
 }
 
-/* ── PRINT ──────────────────────────────────────────────────────── */
+/* ── PRINT ─────────────────────────────────────────────────────── */
 @media print {
   header, nav.bottom, #filters {
     display: none !important;

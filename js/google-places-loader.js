@@ -303,8 +303,14 @@ window.GooglePlacesLoader = {
   getAllGooglePOIs,
   getLoaderStats,
   reloadArea,
+  fetchGooglePlacesPOIs,
+  mapGoogleTypesToCategory,
   RADIUS_TIERS
 };
+
+// Make functions globally available for use in main app
+window.fetchGooglePlacesPOIs = fetchGooglePlacesPOIs;
+window.mapGoogleTypesToCategory = mapGoogleTypesToCategory;
 
 console.log('[GooglePlacesLoader] Module loaded');
 
