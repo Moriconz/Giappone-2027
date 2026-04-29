@@ -2771,23 +2771,184 @@ window.addEventListener("load", () => {
   // Cache per lista tappe
   let listViewCache = { data: null, html: null };
 
+  // ===== PLANIFICATORE ITINERARIO (Tappe) =====
+  function exportItineraryWhatsApp() {
+    const itinerary = (state.itinerary || []).sort((a, b) => {
+      const dayA = a.day || 999, dayB = b.day || 999;
+      if (dayA !== dayB) return dayA - dayB;
+      return (a.time || '').localeCompare(b.time || '');
+    });
+
+    if (itinerary.length === 0) {
+      toast('❌ Itinerario vuoto. Aggiungi tappe prima!');
+      return;
+    }
+
+    let text = '🗾 GIAPPONE 2027 - ITINERARIO\n\n';
+    text += `📅 ${new Date().toLocaleDateString('it-IT')}\n`;
+    text += `📍 ${itinerary.length} tappe pianificate\n`;
+    text += '━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+
+    let currentDay = null;
+    itinerary.forEach((entry, idx) => {
+      if (entry.day !== currentDay) {
+        currentDay = entry.day;
+        text += `\n📅 GIORNO ${currentDay || '?'}\n`;
+        text += '─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─\n';
+      }
+      text += `${idx + 1}. 📍 ${entry.name || '?'}\n`;
+      if (entry.time) text += `   🕐 ${entry.time}\n`;
+      if (entry.city) text += `   🏙️ ${entry.city}\n`;
+      if (entry.cost) text += `   💰 ${entry.cost}\n`;
+    });
+
+    text += '\n━━━━━━━━━━━━━━━━━━━━━━━\n';
+    text += '✈️ Creato con Giappone 2027\n';
+    text += '📱 https://giappone2027.app';
+
+    // Copia e apri WhatsApp
+    navigator.clipboard.writeText(text).then(() => {
+      toast('✅ Itinerario copiato! Incollalo su WhatsApp');
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(whatsappUrl, '_blank');
+    }).catch(() => {
+      // Fallback: mostra il testo in un modal
+      showExportModal(text);
+    });
+  }
+
+  function showExportModal(text) {
+    const modal = document.createElement('div');
+    modal.innerHTML = `
+      <div style="position:fixed;inset:0;z-index:3001;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px" id="export-modal">
+        <div style="background:var(--surface);border-radius:12px;padding:20px;max-width:380px;width:100%;max-height:70vh;overflow-y:auto">
+          <h3 style="margin:0 0 14px;color:var(--accent)">📋 Itinerario da Esportare</h3>
+          <pre style="background:var(--surface-2);padding:12px;border-radius:8px;font-size:11px;color:var(--text);overflow-x:auto;max-height:300px">${text}</pre>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="flex:1;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">Chiudi</button>
+            <button onclick="navigator.clipboard.writeText(\`${text.replace(/`/g, '\\`')}\`);toast('✅ Copiato!')" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600">📋 Copia</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  function shareItineraryInGroup() {
+    const itinerary = state.itinerary || [];
+    if (itinerary.length === 0) {
+      toast('❌ Itinerario vuoto!');
+      return;
+    }
+    if (!window.peerGPS?.connections || Object.keys(window.peerGPS.connections).length === 0) {
+      toast('❌ Non sei in una stanza. Crea/accedi a una stanza prima!');
+      return;
+    }
+    broadcastItinerary();
+    toast('✅ Itinerario condiviso con il gruppo!');
+  }
+
+  // Ricerca Google Places API
+  async function searchGooglePlaces(query, callback) {
+    if (!window.googlePlacesService) {
+      toast('⏳ Caricando servizio Google Places...');
+      return;
+    }
+
+    const service = window.googlePlacesService;
+    const request = {
+      query: query,
+      fields: ['formatted_address', 'geometry', 'name', 'place_id', 'types']
+    };
+
+    service.textSearch(request, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+        callback(results.map(r => ({
+          id: r.place_id,
+          name: r.name,
+          city: extractCityFromAddress(r.formatted_address),
+          lat: r.geometry.location.lat(),
+          lng: r.geometry.location.lng(),
+          address: r.formatted_address,
+          types: r.types || [],
+          fromGoogle: true
+        })));
+      } else {
+        toast('❌ Nessun risultato trovato');
+        callback([]);
+      }
+    });
+  }
+
+  function extractCityFromAddress(address) {
+    if (!address) return 'Sconosciuto';
+    const parts = address.split(',');
+    return parts.length > 1 ? parts[parts.length - 2].trim() : parts[0].trim();
+  }
+
+  function addGooglePlaceToItinerary(place) {
+    showAddItineraryDialog(place, ({ day, time, cost }) => {
+      const entry = {
+        id: place.id,
+        name: place.name,
+        city: place.city,
+        lat: place.lat,
+        lng: place.lng,
+        address: place.address,
+        day: day ? parseInt(day) : null,
+        time: time || '',
+        cost: cost || '',
+        fromGoogle: true
+      };
+      addToItinerary(entry);
+      toast('✅ Tappa aggiunta all\'itinerario!');
+      renderListView();
+    });
+  }
+
+  function showGooglePlacesResults(results) {
+    const modal = document.createElement('div');
+    const resultsList = results.map((place, idx) => `
+      <div style="padding:10px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:6px" onclick="addGooglePlaceToItinerary({id:'${place.id}',name:'${place.name.replace(/'/g, "\\'")}',city:'${place.city.replace(/'/g, "\\'")}',lat:${place.lat},lng:${place.lng},address:'${place.address.replace(/'/g, "\\'")}'})">
+        <div style="font-weight:600;color:var(--accent)">${place.name}</div>
+        <div style="font-size:12px;color:var(--muted)">${place.city}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">${place.address}</div>
+      </div>
+    `).join('');
+
+    modal.innerHTML = `
+      <div style="position:fixed;inset:0;z-index:3001;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px">
+        <div style="background:var(--surface);border-radius:12px;padding:16px;max-width:380px;width:100%;max-height:70vh;overflow-y:auto">
+          <h3 style="margin:0 0 12px;color:var(--accent)">🌍 Risultati (${results.length})</h3>
+          <div>${resultsList}</div>
+          <button onclick="this.parentElement.parentElement.remove()" style="width:100%;margin-top:12px;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">Chiudi</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
   // Helper: Mostra dialog per aggiungere tappa con tempo e giorno
   function showAddItineraryDialog(poi, onConfirm) {
     const html = `
-      <div style="position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px" id="add-itin-overlay">
-        <div style="background:var(--surface);border-radius:12px;padding:20px;max-width:380px;width:100%">
+      <div style="position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto" id="add-itin-overlay">
+        <div style="background:var(--surface);border-radius:12px;padding:20px;max-width:380px;width:100%;margin:auto 0">
           <h3 style="margin:0 0 14px;font-size:16px;color:var(--text)">${poi.name || poi.bestname || 'Aggiungi tappa'}</h3>
           <div class="form-row">
-            <label>⏰ Orario (es. 09:30)</label>
-            <input id="itin-time" type="text" placeholder="09:30" style="font-size:16px" autocomplete="off" />
+            <label>📅 Giorno del viaggio (1, 2, 3...)</label>
+            <input id="itin-day" type="number" placeholder="1" min="1" max="30" style="font-size:16px;width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);color:var(--text)" />
           </div>
           <div class="form-row">
-            <label>📅 Giorno del viaggio (es. 1, 2, 3...)</label>
-            <input id="itin-day" type="number" placeholder="1" min="1" max="30" style="font-size:16px" />
+            <label>⏰ Orario (es. 09:30)</label>
+            <input id="itin-time" type="text" placeholder="09:30" style="font-size:16px;width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);color:var(--text)" autocomplete="off" />
+          </div>
+          <div class="form-row">
+            <label>💰 Costo (es. 10€, opzionale)</label>
+            <input id="itin-cost" type="text" placeholder="Gratis" style="font-size:16px;width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);color:var(--text)" />
           </div>
           <div style="display:flex;gap:8px;margin-top:16px">
             <button id="itin-cancel" style="flex:1;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-weight:600">Annulla</button>
-            <button id="itin-confirm" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600">Aggiungi</button>
+            <button id="itin-confirm" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600">✓ Aggiungi</button>
           </div>
         </div>
       </div>
@@ -2798,14 +2959,15 @@ window.addEventListener("load", () => {
     overlay.innerHTML = html;
     document.body.appendChild(overlay);
 
-    const timeInput = document.getElementById('itin-time');
     const dayInput = document.getElementById('itin-day');
+    const timeInput = document.getElementById('itin-time');
+    const costInput = document.getElementById('itin-cost');
     const cancelBtn = document.getElementById('itin-cancel');
     const confirmBtn = document.getElementById('itin-confirm');
     const overlayDiv = document.getElementById('add-itin-overlay');
 
     // Focus sul primo input
-    setTimeout(() => timeInput.focus(), 100);
+    setTimeout(() => dayInput.focus(), 100);
 
     // Handler chiusura
     const close = () => {
@@ -2820,19 +2982,25 @@ window.addEventListener("load", () => {
 
     // Bottone conferma
     confirmBtn.onclick = () => {
-      const time = timeInput.value.trim() || '';
       const day = dayInput.value.trim() || '';
-      onConfirm({ time, day });
+      const time = timeInput.value.trim() || '';
+      const cost = costInput.value.trim() || '';
+      onConfirm({ day, time, cost });
       close();
     };
 
-    // Enter key conferma
-    timeInput.onkeydown = (e) => {
+    // Enter key per muoversi tra campi
+    dayInput.onkeydown = (e) => {
       if (e.key === 'Enter') {
-        dayInput.focus();
+        timeInput.focus();
       }
     };
-    dayInput.onkeydown = (e) => {
+    timeInput.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        costInput.focus();
+      }
+    };
+    costInput.onkeydown = (e) => {
       if (e.key === 'Enter') {
         confirmBtn.click();
       }
@@ -2934,14 +3102,15 @@ window.addEventListener("load", () => {
       const km = poi && state.gpsCurrentLat
         ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, poi.lat, poi.lng) : null;
       const distStr = km !== null ? ` · <span style="color:var(--success);font-weight:600">${fmtDist(km)}</span>` : '';
+      const dayStr = entry.day ? ` · 📅 G${entry.day}` : '';
       const timeStr = entry.time ? ` · ⏰ ${entry.time}` : '';
-      const dayStr = entry.day ? ` · 📅 Giorno ${entry.day}` : '';
+      const costStr = entry.cost ? ` · 💰 ${entry.cost}` : '';
       return `<div class="poi-row" style="position:relative" data-itinerary-id="${entry.id}">
         <div style="position:absolute;top:8px;right:8px;font-size:11px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:4px">${idx+1}</div>
         <div class="icon">${poi ? (CATS[poi.cat]?.icon || '📍') : '📌'}</div>
         <div class="body">
           <div class="name">${entry.name || (poi ? getPoiDisplayName(poi) : '?')}</div>
-          <div class="sub">${entry.city || (poi ? poi.city : '?')}${distStr}${timeStr}${dayStr}</div>
+          <div class="sub">${entry.city || (poi ? poi.city : '?')}${distStr}${dayStr}${timeStr}${costStr}</div>
         </div>
         <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:var(--danger);border-color:var(--danger);color:#fff" data-remove-itinerary="${entry.id}">✕</button>
       </div>`;
@@ -2949,15 +3118,29 @@ window.addEventListener("load", () => {
 
     const searchHtml = `
       <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
-        <input id="list-search" type="text" placeholder="🔍 Cerca tappa..."
-          style="width:100%;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit">
+        <!-- Ricerca -->
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <input id="list-search" type="text" placeholder="🔍 Cerca tappa locale..."
+            style="flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit">
+          <button id="btn-google-search" style="padding:8px 12px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;white-space:nowrap">🌍 Google</button>
+        </div>
+
+        <!-- Pulsanti esporta/condividi -->
+        <div style="display:flex;gap:6px;font-size:12px">
+          <button id="btn-export-whatsapp" style="flex:1;padding:6px;background:rgba(76,175,80,.2);border:1px solid #4CAF50;border-radius:6px;color:var(--text);cursor:pointer;font-size:11px;font-weight:600">📤 WhatsApp</button>
+          <button id="btn-share-group" style="flex:1;padding:6px;background:rgba(255,20,147,.2);border:1px solid var(--accent);border-radius:6px;color:var(--text);cursor:pointer;font-size:11px;font-weight:600">👥 Condividi</button>
+        </div>
+
         ${gpsMessage}
       </div>
 
-      <!-- ITINERARIO DEL GRUPPO -->
+      <!-- ITINERARIO ORDINATO PER DATA -->
       <div class="section" style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid var(--success);border-radius:10px;padding:12px;margin-bottom:16px">
-        <h3 style="margin-top:0;color:var(--success)">🗓️ Itinerario del Gruppo</h3>
-        <p style="font-size:12px;color:var(--muted);margin:0 0 8px">Condiviso in tempo reale con i membri della stanza</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0;color:var(--success)">🗓️ Itinerario (${itinerary.length})</h3>
+          <span style="font-size:11px;color:var(--muted)">Tempo reale</span>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 8px">Condiviso con i membri della stanza</p>
         <div id="itinerary-list">${itineraryHtml}</div>
       </div>
 
@@ -3094,15 +3277,16 @@ window.addEventListener("load", () => {
                   const poiId = addBtn.dataset.addToItinerary;
                   const poi = allPOIs().find(p => p.id === poiId);
                   if (poi) {
-                    showAddItineraryDialog(poi, ({ time, day }) => {
+                    showAddItineraryDialog(poi, ({ day, time, cost }) => {
                       const entry = {
                         id: poi.id,
                         name: getPoiDisplayName(poi),
                         city: poi.city,
                         lat: poi.lat,
                         lng: poi.lng,
+                        day: day ? parseInt(day) : null,
                         time: time || '',
-                        day: day ? parseInt(day) : null
+                        cost: cost || ''
                       };
                       addToItinerary(entry);
                       toast('✓ Aggiunto a itinerario');
@@ -3196,6 +3380,34 @@ window.addEventListener("load", () => {
         }
       });
     });
+
+    // Setup pulsanti azione (Esporta, Condividi, Google Search)
+    const btnExportWhatsapp = document.getElementById('btn-export-whatsapp');
+    const btnShareGroup = document.getElementById('btn-share-group');
+    const btnGoogleSearch = document.getElementById('btn-google-search');
+
+    if (btnExportWhatsapp) {
+      btnExportWhatsapp.onclick = () => exportItineraryWhatsApp();
+    }
+    if (btnShareGroup) {
+      btnShareGroup.onclick = () => shareItineraryInGroup();
+    }
+    if (btnGoogleSearch) {
+      btnGoogleSearch.onclick = () => {
+        const searchQuery = prompt('🌍 Cerca su Google Places (es: "Senso-ji Temple Tokyo"):');
+        if (searchQuery) {
+          searchGooglePlaces(searchQuery, (results) => {
+            if (results.length === 0) return;
+            if (results.length === 1) {
+              addGooglePlaceToItinerary(results[0]);
+            } else {
+              // Mostra lista di risultati
+              showGooglePlacesResults(results);
+            }
+          });
+        }
+      };
+    }
 
     // Setup ricerca (GLOBALE — cerca TUTTI i POI anche fuori dal raggio GPS)
     const searchInput = document.getElementById('list-search');
@@ -3317,15 +3529,16 @@ window.addEventListener("load", () => {
                   const poiId = addBtn.dataset.addToItinerary;
                   const poi = allPOIs().find(p => p.id === poiId);
                   if (poi) {
-                    showAddItineraryDialog(poi, ({ time, day }) => {
+                    showAddItineraryDialog(poi, ({ day, time, cost }) => {
                       const entry = {
                         id: poi.id,
                         name: getPoiDisplayName(poi),
                         city: poi.city,
                         lat: poi.lat,
                         lng: poi.lng,
+                        day: day ? parseInt(day) : null,
                         time: time || '',
-                        day: day ? parseInt(day) : null
+                        cost: cost || ''
                       };
                       addToItinerary(entry);
                       toast('✓ Aggiunto a itinerario');
