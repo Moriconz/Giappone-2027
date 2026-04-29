@@ -74,11 +74,12 @@ header h1 .badge {
   left: 10px !important;
   right: 10px !important;
   z-index: 9999 !important;
-  background: transparent !important;
+  background: none !important;
   backdrop-filter: none !important;
   border: none !important;
   border-radius: 0 !important;
-  padding: 8px 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
   display: flex !important;
   gap: 6px !important;
   overflow-x: auto !important;
