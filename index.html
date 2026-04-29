@@ -88,9 +88,9 @@ main{flex:1;position:relative;overflow:hidden}
 #filters{position:fixed;top:55px;left:10px;right:10px;z-index:9999;
   display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
   scrollbar-width:none;padding:8px 12px;max-height:80px;max-width:calc(100% - 20px);
-  background:rgba(15,25,35,.9);backdrop-filter:blur(10px);border-radius:12px;
+  background:rgba(15,25,35,.7);backdrop-filter:blur(10px);border-radius:12px;
   pointer-events:auto;visibility:visible !important;opacity:1 !important;
-  box-shadow:0 4px 12px rgba(0,0,0,.3)}
+  box-shadow:0 2px 8px rgba(0,0,0,.2)}
 #filters::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:6px 12px;border-radius:999px;background:rgba(30,49,72,.92);
   border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;
@@ -1914,9 +1914,18 @@ window.addEventListener("load", () => {
     // Always reset tab buttons to "Mappa" when closing any sheet
     const bottomNav = document.querySelector('nav.bottom');
     if (bottomNav) {
-      bottomNav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      console.log('[closeSheet] Resetting all buttons to blue, activating map button');
+      bottomNav.querySelectorAll('button').forEach(b => {
+        b.classList.remove('active');
+        console.log('[closeSheet] Removed .active from button:', b.dataset.view);
+      });
       const mapBtn = bottomNav.querySelector('button[data-view="map"]');
-      if (mapBtn) mapBtn.classList.add('active');
+      if (mapBtn) {
+        mapBtn.classList.add('active');
+        console.log('[closeSheet] Added .active to map button');
+      }
+    } else {
+      console.warn('[closeSheet] bottomNav element not found');
     }
   }
   // Rendi globali per poi-handlers.js
@@ -4253,13 +4262,24 @@ window.addEventListener("load", () => {
     // Filter with different radii for regular vs vintage
     const REGULAR_MAX_KM = 20;
     const VINTAGE_MAX_KM = 50;
-    const VINTAGE_TYPES = ['antique_shop', 'thrift_store'];
+    // Expanded vintage types to catch more second-hand/vintage shops from Google Places
+    const VINTAGE_TYPES = ['antique_shop', 'thrift_store', 'clothing_store', 'secondhand_store'];
+    // Keywords to identify vintage shops by name
+    const VINTAGE_KEYWORDS = ['vintage', 'second hand', 'secondhand', 'thrift', 'antique', 'used', 'retro', 'old'];
+
+    // Helper to detect vintage shops by type OR name keywords
+    const isVintageShop = (poi) => {
+      const types = poi.types || [];
+      const nameKeyword = poi.name?.toLowerCase() || '';
+      // Check if has vintage type OR name contains vintage keyword
+      return VINTAGE_TYPES.some(t => types.includes(t)) ||
+             VINTAGE_KEYWORDS.some(k => nameKeyword.includes(k));
+    };
 
     // Filter regular shops (20km)
     let regularPOIs = googlePOIs.filter(p => {
       if (!p.lat || !p.lng) return false;
-      const types = p.types || [];
-      if (VINTAGE_TYPES.some(t => types.includes(t))) return false; // Skip vintage
+      if (isVintageShop(p)) return false; // Skip vintage
       const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
       return dist <= REGULAR_MAX_KM;
     });
@@ -4267,8 +4287,7 @@ window.addEventListener("load", () => {
     // Filter vintage/thrift shops (50km)
     let vintagePOIs = googlePOIs.filter(p => {
       if (!p.lat || !p.lng) return false;
-      const types = p.types || [];
-      if (!VINTAGE_TYPES.some(t => types.includes(t))) return false; // Only vintage
+      if (!isVintageShop(p)) return false; // Only vintage
       const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
       return dist <= VINTAGE_MAX_KM;
     });
@@ -4356,7 +4375,7 @@ window.addEventListener("load", () => {
         <!-- TAB 2: VINTAGE & SECOND-HAND -->
         <div id="tab-content-vintage" style="display:none">
           <div class="section">
-            <h3>👕 Negozi Vintage & Thrift (entro 20km)</h3>
+            <h3>👕 Negozi Vintage & Thrift (entro 50km)</h3>
             <div id="vintage-shops">${vintageHtml}</div>
           </div>
         </div>
@@ -4756,9 +4775,18 @@ const allItems = [
   ...allGlutenFreeShops.map(r => ({ ...r, source: 'google', id: r.place_id || r.id }))
 ];
 
-const filtered = (city && city !== "all")
+let filtered = (city && city !== "all")
 ? allItems.filter(r => r.city === city && (!searchText || r.name.toLowerCase().includes(searchText.toLowerCase())))
 : allItems.filter(r => !searchText || r.name.toLowerCase().includes(searchText.toLowerCase()));
+
+// Sort by distance if GPS available
+if (window.state?.gpsCurrentLat) {
+  filtered.sort((a, b) => {
+    const distA = a.distance ?? Infinity;
+    const distB = b.distance ?? Infinity;
+    return distA - distB;
+  });
+}
 
 const discoverUrl = FMGF_CITY_URLS[city] || "https://www.findmeglutenfree.com/map#loc=Japan";
 
