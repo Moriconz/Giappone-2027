@@ -5482,7 +5482,8 @@ if (installClose) {
     e.stopPropagation();
     if (installBanner) {
       installBanner.classList.remove('show');
-      console.log('[Install] Banner nascosto');
+      installBanner.style.setProperty('display', 'none', 'important');
+      console.log('[Install] Banner nascosto - style.display =', installBanner.style.display);
     }
     deferredPrompt = null;
   });
