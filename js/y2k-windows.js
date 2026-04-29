@@ -207,12 +207,15 @@
     delete wins[id];
     updateMapBlur();
 
-    // Reset tab button to active state
+    // Reset tab button to map (always return to map when closing a window)
     const bottomNav = document.querySelector('nav.bottom');
-    if (bottomNav && window.activeTabView) {
+    if (bottomNav) {
       bottomNav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-      const activeBtn = bottomNav.querySelector(`button[data-view="${window.activeTabView}"]`);
-      if (activeBtn) activeBtn.classList.add('active');
+      const mapBtn = bottomNav.querySelector('button[data-view="map"]');
+      if (mapBtn) {
+        mapBtn.classList.add('active');
+        console.log('[Y2K] closeWin: Reset button to map');
+      }
     }
   }
 
