@@ -5419,12 +5419,20 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   startGPS();
 
   // ===================== PHASE 7: Service Worker Registration =====================
-  // ✓ DISABLED: sw.js not on GitHub Pages
-  // if ('serviceWorker' in navigator) {
-  //   navigator.serviceWorker.register('./sw.js')
-  //     .then(reg => console.log('[SW] Registered, scope:', reg.scope))
-  //     .catch(err => console.warn('[SW] Registration failed:', err));
-  // }
+  // Service Worker è RICHIESTO per beforeinstallprompt su molti browser
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./js/sw.js', { scope: './' })
+      .then(reg => {
+        console.log('[SW] ✓ Service Worker Registered, scope:', reg.scope);
+        console.log('[SW] beforeinstallprompt dovrebbe ora funzionare');
+      })
+      .catch(err => {
+        console.warn('[SW] ✗ Service Worker Registration failed:', err);
+        console.warn('[SW] Installation prompt potrebbe non funzionare');
+      });
+  } else {
+    console.warn('[SW] Service Worker API non supportata');
+  }
 
   // ===================== EXPOSE HELPERS TO GLOBAL SCOPE =====================
   window.addToItinerary = addToItinerary;

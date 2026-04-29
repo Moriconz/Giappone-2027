@@ -1,105 +1,103 @@
-/* Giappone 2027 — Service Worker
- * Strategie:
- *   - /api/*                 → network-only (mai cache, foto/geocoding sempre fresche)
- *   - index.html / *.js / *.css → network-first (aggiornamenti propagano subito)
- *   - icons / manifest / leaflet CDN → cache-first (asset immutabili)
- *   - tiles mappa            → network-first con fallback cache (offline OK)
- *
- * IMPORTANT: bumpa CACHE_VERSION a ogni deploy che cambia HTML/JS, così
- * la cache vecchia viene invalidata.
+/**
+ * Service Worker Minimale — Giappone 2027
+ * Registrato per soddisfare i requisiti PWA
+ * Supporta caching offline e installazione app
  */
-const CACHE_VERSION = 'giappone-2027-v3';
 
-// Solo asset davvero immutabili (icone, CDN versionati, manifest)
-const STATIC_ASSETS = [
-  './icon-192.png',
-  './icon-512.png',
-  './manifest.webmanifest',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
-];
+const CACHE_NAME = 'giappone-2027-v3';
+const OFFLINE_URL = '../index.html';
 
+// Installa il service worker e crea la cache
 self.addEventListener('install', (event) => {
+  console.log('[SW] Installing service worker...');
   event.waitUntil(
-    caches.open(CACHE_VERSION)
-      .then((cache) => cache.addAll(STATIC_ASSETS).catch(() => {}))
-      .then(() => self.skipWaiting())
-  );
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
-});
-
-// Helper: network-first with cache fallback
-function networkFirst(event) {
-  event.respondWith(
-    fetch(event.request)
-      .then((resp) => {
-        if (resp && resp.ok && event.request.method === 'GET') {
-          const clone = resp.clone();
-          caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, clone));
-        }
-        return resp;
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('[SW] Cache opened:', CACHE_NAME);
+        // Cache solo le risorse essenziali
+        return cache.addAll([
+          '../',
+          '../index.html',
+          '../manifest.webmanifest',
+          '../y2k-override.css',
+        ]).catch(err => {
+          console.warn('[SW] Some resources could not be cached:', err);
+          // Non fallire completamente se alcuni file non possono essere cachati
+        });
       })
-      .catch(() => caches.match(event.request))
   );
-}
-
-// Helper: cache-first with network fallback
-function cacheFirst(event) {
-  event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request).then((resp) => {
-      if (resp && resp.ok && event.request.method === 'GET') {
-        const clone = resp.clone();
-        caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, clone));
-      }
-      return resp;
-    }).catch(() => cached))
-  );
-}
-
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // 1) /api/* → network-only, MAI cache (geocoding + Unsplash devono essere live)
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(event.request).catch(() => new Response(
-      JSON.stringify({ error: 'offline', results: [] }),
-      { status: 503, headers: { 'Content-Type': 'application/json' } }
-    )));
-    return;
-  }
-
-  // 2) Map tiles → network-first con fallback cache
-  if (url.hostname.includes('tile.openstreetmap') ||
-      url.hostname.includes('tile.opentopomap') ||
-      url.hostname.includes('basemaps.cartocdn') ||
-      url.hostname.includes('arcgisonline')) {
-    networkFirst(event);
-    return;
-  }
-
-  // 3) HTML / JS / CSS della stessa origine → network-first (aggiornamenti subito)
-  const isSameOrigin = url.origin === self.location.origin;
-  const isAppCode = isSameOrigin && (
-    url.pathname.endsWith('.html') ||
-    url.pathname.endsWith('.js')   ||
-    url.pathname.endsWith('.css')  ||
-    url.pathname === '/'
-  );
-  if (isAppCode) {
-    networkFirst(event);
-    return;
-  }
-
-  // 4) Tutto il resto (immagini, icone, CDN) → cache-first
-  cacheFirst(event);
+  // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
 });
+
+// Attiva il service worker
+self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating service worker...');
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('[SW] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+// Intercetta le richieste per il caching
+self.addEventListener('fetch', (event) => {
+  // Salta le richieste non-GET
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Salta le richieste a domini esterni (CDN, API)
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // Se la risorsa è in cache, restituiscila
+        if (response) {
+          return response;
+        }
+
+        // Altrimenti, fetcha dalla rete
+        return fetch(event.request).then((response) => {
+          // Verifica se la risposta è valida
+          if (!response || response.status !== 200 || response.type === 'error') {
+            return response;
+          }
+
+          // Clona la risposta
+          const responseToCache = response.clone();
+
+          // Cachala per usi futuri
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+
+          return response;
+        }).catch(() => {
+          // Se la rete fallisce, restituisci la versione cachata
+          return caches.match(event.request).then((cachedResponse) => {
+            return cachedResponse || new Response('Offline - resource not cached', {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: new Headers({
+                'Content-Type': 'text/plain'
+              })
+            });
+          });
+        });
+      })
+  );
+});
+
+console.log('[SW] Service worker script loaded');
