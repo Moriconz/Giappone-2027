@@ -29,7 +29,7 @@ async function waitForGPS(maxWaitMs = 25000, pollIntervalMs = 500) {
     await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
   }
 
-  console.warn('[GooglePlacesLoader] GPS coordinates not available after ${maxWaitMs}ms');
+  console.warn(`[GooglePlacesLoader] GPS coordinates not available after ${maxWaitMs}ms`);
   return null;
 }
 
@@ -237,6 +237,14 @@ async function renderMarkersFromGoogle(pois) {
 
   console.log(`[GooglePlacesLoader] Rendering ${pois.length} markers from Google Places`);
 
+  // Helper: estrai città dall'indirizzo (formato: "Name, City, Prefecture, Country")
+  function extractCity(address) {
+    if (!address) return undefined;
+    const parts = address.split(',').map(p => p.trim());
+    if (parts.length >= 2) return parts[1];  // Ritorna City/Prefecture
+    return parts.length > 0 ? parts[0] : undefined;
+  }
+
   // Transform POIs to standard format (extract lat/lng from geometry)
   const transformedPois = pois.map((poi, idx) => ({
     // Generate unique ID for Google Places POI
@@ -246,6 +254,7 @@ async function renderMarkersFromGoogle(pois) {
     lat: poi.geometry.location.lat,
     lng: poi.geometry.location.lng,
     address: poi.vicinity || poi.formatted_address || '',
+    city: extractCity(poi.vicinity || poi.formatted_address || ''),
     rating: poi.rating || null,
     ratingCount: poi.user_ratings_total || 0,
     types: poi.types || [],
