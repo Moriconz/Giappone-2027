@@ -151,9 +151,15 @@ async function loadNearbyPOIs(lat, lng) {
     if (pois && pois.length > 0) {
       loadedRadii.add(key);
       try {
-        // Save RAW POIs first (savePOIs expects raw Google Places format with geometry)
-        console.log(`[GooglePlacesLoader] Saving ${pois.length} raw POIs to cache...`);
-        await window.GooglePlacesCache.savePOIs(lat, lng, radiusM, pois);
+        // Add search city to all POIs before saving to cache
+        const poisWithCity = pois.map(poi => ({
+          ...poi,
+          city: window.__searchCity || undefined
+        }));
+
+        // Save POIs with city to cache
+        console.log(`[GooglePlacesLoader] Saving ${poisWithCity.length} POIs to cache (with city: ${window.__searchCity})...`);
+        await window.GooglePlacesCache.savePOIs(lat, lng, radiusM, poisWithCity);
         console.log(`[GooglePlacesLoader] Cache save complete`);
 
         // Then transform for display
