@@ -85,12 +85,12 @@ main{flex:1;position:relative;overflow:hidden}
 #map{position:absolute;inset:0;background:#0a1320}
 .leaflet-container{background:#0a1320;font-family:inherit}
 /* Floating filter bar */
-#filters{position:fixed;top:55px;left:10px;right:10px;z-index:9999;
+#filters{position:fixed;top:68px;left:10px;right:10px;z-index:9999;
   display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
   scrollbar-width:none;padding:8px 12px;max-height:80px;max-width:calc(100% - 20px);
-  background:rgba(15,25,35,.7);backdrop-filter:blur(10px);border-radius:12px;
+  background:rgba(15,25,35,.6);backdrop-filter:blur(10px);border-radius:12px;
   pointer-events:auto;visibility:visible !important;opacity:1 !important;
-  box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  box-shadow:0 2px 8px rgba(0,0,0,.15)}
 #filters::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:6px 12px;border-radius:999px;background:rgba(30,49,72,.92);
   border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;
@@ -102,8 +102,9 @@ main{flex:1;position:relative;overflow:hidden}
 nav.bottom{background:var(--surface);border-top:1px solid var(--border);
   padding:6px 0 calc(6px + var(--safe-bottom));display:flex;flex-shrink:0}
 nav.bottom button{flex:1;background:none;border:0;padding:6px 2px;font-size:10px;
-  color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
-nav.bottom button.active{color:var(--accent)}
+  color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;
+  transition:color 0.2s ease-out}
+nav.bottom button.active{color:var(--accent);transition:color 0.2s ease-in}
 nav.bottom button svg{width:22px;height:22px}
 /* ===== Sheets / panels ===== */
 .sheet{position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.5);
@@ -1916,8 +1917,12 @@ window.addEventListener("load", () => {
     if (bottomNav) {
       console.log('[closeSheet] Resetting all buttons to blue, activating map button');
       bottomNav.querySelectorAll('button').forEach(b => {
+        const wasActive = b.classList.contains('active');
         b.classList.remove('active');
-        console.log('[closeSheet] Removed .active from button:', b.dataset.view);
+        // Force color reset by explicitly setting style if CSS isn't applying
+        if (wasActive) {
+          console.log('[closeSheet] Removed .active from button:', b.dataset.view);
+        }
       });
       const mapBtn = bottomNav.querySelector('button[data-view="map"]');
       if (mapBtn) {
@@ -1927,6 +1932,15 @@ window.addEventListener("load", () => {
     } else {
       console.warn('[closeSheet] bottomNav element not found');
     }
+    // Double-check: wait a frame and verify state
+    requestAnimationFrame(() => {
+      const bottomNav = document.querySelector('nav.bottom');
+      if (bottomNav) {
+        const activeButtons = Array.from(bottomNav.querySelectorAll('button.active'));
+        console.log('[closeSheet] Verification: active buttons count:', activeButtons.length,
+          'Map button active?', activeButtons.some(b => b.dataset.view === 'map'));
+      }
+    });
   }
   // Rendi globali per poi-handlers.js
   window.openSheet = openSheet;
