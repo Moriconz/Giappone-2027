@@ -309,43 +309,53 @@ function transformGooglePlacesPOIs(pois) {
   }
 
   return pois.map((poi, idx) => {
-    // Se è già trasformato, restituiscilo così com'è
-    if (poi.lat !== undefined && poi.lng !== undefined && poi.id) {
-      return poi;
-    }
+    try {
+      // Verifica che poi sia valido
+      if (!poi || typeof poi !== 'object') {
+        console.warn(`[GooglePlacesLoader] Skipping invalid POI at index ${idx}`);
+        return null;
+      }
 
-    // Altrimenti, trasformalo da Google Places API format
-    const hasGeometry = poi.geometry && poi.geometry.location;
-    if (!hasGeometry) {
-      console.warn(`[GooglePlacesLoader] Skipping POI without valid coordinates:`, poi.name);
+      // Se è già trasformato, restituiscilo così com'è
+      if (poi.lat !== undefined && poi.lng !== undefined && poi.id) {
+        return poi;
+      }
+
+      // Altrimenti, trasformalo da Google Places API format
+      if (!poi.geometry?.location?.lat || !poi.geometry?.location?.lng) {
+        console.warn(`[GooglePlacesLoader] Skipping POI without valid coordinates:`, poi.name);
+        return null;
+      }
+
+      return {
+        // Generate unique ID for Google Places POI
+        id: `gp_${poi.place_id || `poi_${Date.now()}_${idx}`}`,
+        googlePlaceId: poi.place_id,
+        name: poi.name,
+        lat: poi.geometry.location.lat,
+        lng: poi.geometry.location.lng,
+        address: poi.vicinity || poi.formatted_address || '',
+        city: window.__searchCity || extractCity(poi.vicinity || poi.formatted_address || ''),
+        rating: poi.rating || null,
+        ratingCount: poi.user_ratings_total || 0,
+        types: poi.types || [],
+        cat: mapGoogleTypesToCategory(poi.types),
+        businessStatus: poi.business_status || 'OPERATIONAL',
+        icon: poi.icon || null,
+        photos: (poi.photos || []).map((p) => ({
+          url: `/api/placePhoto?reference=${encodeURIComponent(p.photo_reference)}&maxwidth=800`,
+          reference: p.photo_reference,
+          height: p.height,
+          width: p.width,
+          attribution: p.html_attributions || []
+        })),
+        openNow: poi.opening_hours?.open_now || null,
+        fromGooglePlaces: true
+      };
+    } catch (err) {
+      console.error(`[GooglePlacesLoader] Error transforming POI at index ${idx}:`, err, poi);
       return null;
     }
-
-    return {
-      // Generate unique ID for Google Places POI
-      id: `gp_${poi.place_id || `poi_${Date.now()}_${idx}`}`,
-      googlePlaceId: poi.place_id,
-      name: poi.name,
-      lat: poi.geometry.location.lat,
-      lng: poi.geometry.location.lng,
-      address: poi.vicinity || poi.formatted_address || '',
-      city: window.__searchCity || extractCity(poi.vicinity || poi.formatted_address || ''),
-      rating: poi.rating || null,
-      ratingCount: poi.user_ratings_total || 0,
-      types: poi.types || [],
-      cat: mapGoogleTypesToCategory(poi.types),
-      businessStatus: poi.business_status || 'OPERATIONAL',
-      icon: poi.icon || null,
-      photos: (poi.photos || []).map((p) => ({
-        url: `/api/placePhoto?reference=${encodeURIComponent(p.photo_reference)}&maxwidth=800`,
-        reference: p.photo_reference,
-        height: p.height,
-        width: p.width,
-        attribution: p.html_attributions || []
-      })),
-      openNow: poi.opening_hours?.open_now || null,
-      fromGooglePlaces: true
-    };
   }).filter(p => p !== null);
 }
 
