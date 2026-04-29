@@ -113,6 +113,20 @@ async function loadNearbyPOIs(lat, lng) {
   console.log(`📍 Coordinates: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
   console.log(`📊 Will check ${RADIUS_TIERS.length} radius tiers`);
 
+  // Determina la città della ricerca tramite reverse-geocoding
+  let searchCity = null;
+  try {
+    searchCity = await getCityFromCoordinates(lat, lng);
+    if (searchCity) {
+      console.log(`🏙️ Search city determined: ${searchCity}`);
+    }
+  } catch (err) {
+    console.warn('[GooglePlacesLoader] Failed to determine search city:', err);
+  }
+
+  // Salva la città della ricerca in una variabile globale per usarla nella trasformazione
+  window.__searchCity = searchCity;
+
   for (const radiusM of RADIUS_TIERS) {
     // Skip if already loaded this radius from this GPS
     const key = `${Math.round(lat * 100)}_${Math.round(lng * 100)}_${radiusM}`;
@@ -307,7 +321,7 @@ async function renderMarkersFromGoogle(pois) {
       lat: isAlreadyTransformed ? poi.lat : poi.geometry.location.lat,
       lng: isAlreadyTransformed ? poi.lng : poi.geometry.location.lng,
       address: poi.address || poi.vicinity || poi.formatted_address || '',
-      city: poi.city || extractCity(poi.vicinity || poi.formatted_address || ''),
+      city: poi.city || window.__searchCity || extractCity(poi.vicinity || poi.formatted_address || ''),
       rating: poi.rating || null,
       ratingCount: poi.ratingCount || poi.user_ratings_total || 0,
       types: poi.types || [],
