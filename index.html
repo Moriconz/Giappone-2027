@@ -4930,6 +4930,15 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   //     .catch(err => console.warn('[SW] Registration failed:', err));
   // }
 
+  // ===================== EXPOSE HELPERS TO GLOBAL SCOPE =====================
+  window.addToItinerary = addToItinerary;
+  window.removeFromItinerary = removeFromItinerary;
+  window.updateItinerary = updateItinerary;
+  window.isInItinerary = isInItinerary;
+  window.renderItineraryView = renderItineraryView;
+  window.peerGPS = peerGPS;
+  console.log('[Giappone2027] Itinerary helpers and peerGPS exposed to window');
+
 })();
 }); // close window.addEventListener load
 </script>
