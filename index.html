@@ -85,7 +85,7 @@ main{flex:1;position:relative;overflow:hidden}
 #map{position:absolute;inset:0;background:#0a1320}
 .leaflet-container{background:#0a1320;font-family:inherit}
 /* Floating filter bar */
-#filters{position:fixed;top:10px;left:10px;right:10px;z-index:9999;
+#filters{position:fixed;top:55px;left:10px;right:10px;z-index:9999;
   display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
   scrollbar-width:none;padding-bottom:4px;max-height:42px;max-width:calc(100% - 20px);
   background:transparent;pointer-events:auto;visibility:visible}
@@ -716,30 +716,50 @@ window.addEventListener("load", () => {
   };
   function makePoiStyle(cat, isGF) {
     const color = CAT_COLORS[cat] || '#C85C3B';
-    const emoji = CAT_EMOJI[cat] || 'Posizione rilevata';
+    const emoji = CAT_EMOJI[cat] || '📍'; // Fallback a emoji universale
     const canvas = document.createElement('canvas');
-    canvas.width = 32; canvas.height = 38;
+    canvas.width = 40; canvas.height = 48;
     const ctx = canvas.getContext('2d');
-    // Pin shape
-    ctx.beginPath();
-    ctx.arc(16, 16, 13, 0, Math.PI * 2);
+
+    // Pin shape (cerchio + coda)
     ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(20, 18, 14, 0, Math.PI * 2);
     ctx.fill();
+
+    // Pin stroke
     ctx.strokeStyle = isGF ? '#4A7C59' : '#ffffff';
     ctx.lineWidth = isGF ? 3 : 2;
     ctx.stroke();
+
     // Pin tail
     ctx.beginPath();
-    ctx.moveTo(12, 26); ctx.lineTo(16, 36); ctx.lineTo(20, 26);
+    ctx.moveTo(15, 28);
+    ctx.lineTo(20, 45);
+    ctx.lineTo(25, 28);
+    ctx.closePath();
     ctx.fillStyle = color;
     ctx.fill();
-    // Emoji
-    ctx.font = '13px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(emoji, 16, 16);
+    ctx.strokeStyle = isGF ? '#4A7C59' : '#ffffff';
+    ctx.stroke();
+
+    // Emoji (con fallback per font issues)
+    try {
+      ctx.font = 'bold 20px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(emoji, 20, 18);
+    } catch(e) {
+      console.warn('[makePoiStyle] Emoji render failed for:', cat, e);
+    }
+
     return new ol.style.Style({
-      image: new ol.style.Icon({ img: canvas, imgSize: [32, 38], anchor: [0.5, 1] })
+      image: new ol.style.Icon({
+        img: canvas,
+        imgSize: [40, 48],
+        anchor: [0.5, 1],
+        scale: 1
+      })
     });
   }
   // Cache styles per performance
@@ -1304,7 +1324,7 @@ window.addEventListener("load", () => {
   });
 
   function renderMarkers(){
-    console.log('[renderMarkers] START');
+    console.log('[renderMarkers] START - Rendering markers on map');
     vectorSource.clear();
     const zoom = map.getView().getZoom() || 5;
 
@@ -1318,7 +1338,7 @@ window.addEventListener("load", () => {
       // Nessun filtro → limita dinamicamente per zoom
       maxPOI = zoom < 5 ? 150 : zoom < 8 ? 400 : zoom < 11 ? 2000 : zoom < 13 ? 8000 : Infinity;
     }
-    console.log('[renderMarkers] zoom=', zoom, 'maxPOI=', maxPOI);
+    console.log('[renderMarkers] zoom=' + zoom + ', maxPOI=' + maxPOI + ', vectorLayer exists=' + (vectorLayer ? 'YES' : 'NO'));
 
     let visibleFilter = () => true;
     if (state.gpsEnabled && state.gpsCurrentLat && state.gpsCurrentLng) {
@@ -1357,17 +1377,21 @@ window.addEventListener("load", () => {
 
     let added = 0;
     toRender.forEach(p => {
-      const feature = new ol.Feature({
-        geometry: new ol.geom.Point(ol.proj.fromLonLat([p.lng, p.lat])),
-        name: getPoiDisplayName(p),
-        id: p.id,
-        cat: p.cat,
-        isGF: p.gf?.lvl === 'full'
-      });
-      vectorSource.addFeature(feature);
-      added++;
+      try {
+        const feature = new ol.Feature({
+          geometry: new ol.geom.Point(ol.proj.fromLonLat([p.lng, p.lat])),
+          name: getPoiDisplayName(p),
+          id: p.id,
+          cat: p.cat || 'poi',
+          isGF: p.gf?.lvl === 'full'
+        });
+        vectorSource.addFeature(feature);
+        added++;
+      } catch(e) {
+        console.error('[renderMarkers] Error adding feature:', p.id, e);
+      }
     });
-    console.log('[renderMarkers] DONE: added', added, '| total features:', vectorSource.getFeatures().length);
+    console.log('[renderMarkers] ✅ DONE: added ' + added + ' markers | total on map: ' + vectorSource.getFeatures().length);
   }
 
   function getPoiDisplayName(p){
@@ -2739,12 +2763,39 @@ window.addEventListener("load", () => {
       gpsMessage = `<p style="font-size:11px;color:var(--warning);margin:6px 0 0">⏳ Acquisendo posizione GPS... Nel frattempo vedi tutte le tappe.</p>`;
     }
 
+    // ===== ITINERARIO COLLABORATIVO DEL GRUPPO =====
+    const itinerary = state.itinerary || [];
+    const itineraryHtml = itinerary.length ? itinerary.map((entry, idx) => {
+      const poi = allPOIs().find(p => p.id === entry.id);
+      const km = poi && state.gpsCurrentLat
+        ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, poi.lat, poi.lng) : null;
+      const distStr = km !== null ? ` · <span style="color:var(--success);font-weight:600">${fmtDist(km)}</span>` : '';
+      const timeStr = entry.time ? ` · ⏰ ${entry.time}` : '';
+      return `<div class="poi-row" style="position:relative" data-itinerary-id="${entry.id}">
+        <div style="position:absolute;top:8px;right:8px;font-size:11px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:4px">${idx+1}</div>
+        <div class="icon">${poi ? (CATS[poi.cat]?.icon || '📍') : '📌'}</div>
+        <div class="body">
+          <div class="name">${entry.name || (poi ? getPoiDisplayName(poi) : '?')}</div>
+          <div class="sub">${entry.city || (poi ? poi.city : '?')}${distStr}${timeStr}</div>
+        </div>
+        <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:var(--danger);border-color:var(--danger);color:#fff" data-remove-itinerary="${entry.id}">✕</button>
+      </div>`;
+    }).join('') : '<p style="color:var(--muted);font-size:13px">📋 L\'itinerario del gruppo è vuoto. Aggiungi tappe da questo elenco!</p>';
+
     const searchHtml = `
       <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
         <input id="list-search" type="text" placeholder="🔍 Cerca tappa..."
           style="width:100%;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit">
         ${gpsMessage}
       </div>
+
+      <!-- ITINERARIO DEL GRUPPO -->
+      <div class="section" style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid var(--success);border-radius:10px;padding:12px;margin-bottom:16px">
+        <h3 style="margin-top:0;color:var(--success)">🗓️ Itinerario del Gruppo</h3>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 8px">Condiviso in tempo reale con i membri della stanza</p>
+        <div id="itinerary-list">${itineraryHtml}</div>
+      </div>
+
       <div id="list-results"></div>
     `;
 
@@ -2820,16 +2871,18 @@ window.addEventListener("load", () => {
         const allItems = bycity[cityName][cat];
         const { page1, hasMore, rest } = paginateItems(allItems);
 
-        const itemsHtml = page1.map(p => `
-          <div class="poi-row" data-id="${p.id}">
+        const itemsHtml = page1.map(p => {
+          const isInItin = isInItinerary(p.id);
+          return `
+          <div class="poi-row" data-id="${p.id}" style="position:relative">
             <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
             <div class="body">
               <div class="name">${getPoiDisplayName(p)}</div>
               <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
             </div>
-            <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+            <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓ Aggiunto':'+ Aggiungi'}</button>
           </div>
-        `).join('');
+        `}).join('');
 
         const loadMoreBtn = hasMore ? `
           <button data-city="${cityName}" data-cat="${cat}" data-rest-count="${rest.length}"
@@ -2862,7 +2915,48 @@ window.addEventListener("load", () => {
             cityContent.innerHTML = html;
 
             // Attacca click handler ai poi-row
-            cityContent.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+            cityContent.querySelectorAll('.poi-row').forEach(r => {
+              r.onclick = (e) => {
+                if (!e.target.closest('.btn')) {
+                  openPOI(r.dataset.id);
+                }
+              };
+              // Aggiungi handler per pulsanti
+              const addBtn = r.querySelector('[data-add-to-itinerary]');
+              if (addBtn) {
+                addBtn.onclick = (e) => {
+                  e.stopPropagation();
+                  const poiId = addBtn.dataset.addToItinerary;
+                  const poi = allPOIs().find(p => p.id === poiId);
+                  if (poi) {
+                    const timeInput = prompt('⏰ Inserisci l\'orario (es. 09:30):', '');
+                    if (timeInput !== null) {
+                      const entry = {
+                        id: poi.id,
+                        name: getPoiDisplayName(poi),
+                        city: poi.city,
+                        lat: poi.lat,
+                        lng: poi.lng,
+                        time: timeInput || ''
+                      };
+                      addToItinerary(entry);
+                      toast('✓ Aggiunto a itinerario');
+                      renderListView();
+                    }
+                  }
+                };
+              }
+              const removeBtn = r.querySelector('[data-remove-itinerary]');
+              if (removeBtn) {
+                removeBtn.onclick = (e) => {
+                  e.stopPropagation();
+                  const id = removeBtn.dataset.removeItinerary;
+                  removeFromItinerary(id);
+                  toast('Rimosso da itinerario');
+                  renderListView();
+                };
+              }
+            });
 
             // Attacca handler ai pulsanti "Carica altri"
             cityContent.querySelectorAll('[data-city]').forEach(btn => {
@@ -2876,16 +2970,18 @@ window.addEventListener("load", () => {
                 const nextItems = rest.slice(0, MAX_ITEMS_PER_PAGE);
                 const stillMore = rest.length > MAX_ITEMS_PER_PAGE;
 
-                const moreHtml = nextItems.map(p => `
-                  <div class="poi-row" data-id="${p.id}">
+                const moreHtml = nextItems.map(p => {
+                  const isInItin = isInItinerary(p.id);
+                  return `
+                  <div class="poi-row" data-id="${p.id}" style="position:relative">
                     <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
                     <div class="body">
                       <div class="name">${getPoiDisplayName(p)}</div>
                       <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
                     </div>
-                    <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+                    <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓ Aggiunto':'+ Aggiungi'}</button>
                   </div>
-                `).join('');
+                `}).join('');
 
                 const newDiv = document.createElement('div');
                 newDiv.innerHTML = moreHtml;
@@ -2898,7 +2994,37 @@ window.addEventListener("load", () => {
                   btn.remove();
                 }
 
-                newDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+                newDiv.querySelectorAll('.poi-row').forEach(r => {
+                  r.onclick = (e) => {
+                    if (!e.target.closest('.btn')) {
+                      openPOI(r.dataset.id);
+                    }
+                  };
+                  const addBtn = r.querySelector('[data-add-to-itinerary]');
+                  if (addBtn) {
+                    addBtn.onclick = (e) => {
+                      e.stopPropagation();
+                      const poiId = addBtn.dataset.addToItinerary;
+                      const poi = allPOIs().find(p => p.id === poiId);
+                      if (poi) {
+                        const timeInput = prompt('⏰ Inserisci l\'orario (es. 09:30):', '');
+                        if (timeInput !== null) {
+                          const entry = {
+                            id: poi.id,
+                            name: getPoiDisplayName(poi),
+                            city: poi.city,
+                            lat: poi.lat,
+                            lng: poi.lng,
+                            time: timeInput || ''
+                          };
+                          addToItinerary(entry);
+                          toast('✓ Aggiunto a itinerario');
+                          renderListView();
+                        }
+                      }
+                    };
+                  }
+                });
               };
             });
           }
@@ -2973,16 +3099,18 @@ window.addEventListener("load", () => {
               const allItems = bycitySearch[cityName][cat];
               const { page1, hasMore, rest } = paginateItems(allItems);
 
-              const itemsHtml = page1.map(p => `
-                <div class="poi-row" data-id="${p.id}">
+              const itemsHtml = page1.map(p => {
+                const isInItin = isInItinerary(p.id);
+                return `
+                <div class="poi-row" data-id="${p.id}" style="position:relative">
                   <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
                   <div class="body">
                     <div class="name">${getPoiDisplayName(p)}</div>
                     <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
                   </div>
-                  <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+                  <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓ Aggiunto':'+ Aggiungi'}</button>
                 </div>
-              `).join('');
+              `}).join('');
 
               const loadMoreBtn = hasMore ? `
                 <button data-city="${cityName}" data-cat="${cat}" data-search-load="true"
@@ -3003,7 +3131,48 @@ window.addEventListener("load", () => {
             cityContent.innerHTML = categoryHtml;
 
             // Attacca click handler ai poi-row
-            cityContent.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+            cityContent.querySelectorAll('.poi-row').forEach(r => {
+              r.onclick = (e) => {
+                if (!e.target.closest('.btn')) {
+                  openPOI(r.dataset.id);
+                }
+              };
+              // Aggiungi handler per pulsanti
+              const addBtn = r.querySelector('[data-add-to-itinerary]');
+              if (addBtn) {
+                addBtn.onclick = (e) => {
+                  e.stopPropagation();
+                  const poiId = addBtn.dataset.addToItinerary;
+                  const poi = allPOIs().find(p => p.id === poiId);
+                  if (poi) {
+                    const timeInput = prompt('⏰ Inserisci l\'orario (es. 09:30):', '');
+                    if (timeInput !== null) {
+                      const entry = {
+                        id: poi.id,
+                        name: getPoiDisplayName(poi),
+                        city: poi.city,
+                        lat: poi.lat,
+                        lng: poi.lng,
+                        time: timeInput || ''
+                      };
+                      addToItinerary(entry);
+                      toast('✓ Aggiunto a itinerario');
+                      renderListView();
+                    }
+                  }
+                };
+              }
+              const removeBtn = r.querySelector('[data-remove-itinerary]');
+              if (removeBtn) {
+                removeBtn.onclick = (e) => {
+                  e.stopPropagation();
+                  const id = removeBtn.dataset.removeItinerary;
+                  removeFromItinerary(id);
+                  toast('Rimosso da itinerario');
+                  renderListView();
+                };
+              }
+            });
 
             // Attacca handler ai pulsanti "Carica altri" della ricerca
             cityContent.querySelectorAll('[data-search-load="true"]').forEach(btn => {
@@ -3017,16 +3186,18 @@ window.addEventListener("load", () => {
                 const nextItems = rest.slice(0, MAX_ITEMS_PER_PAGE);
                 const stillMore = rest.length > MAX_ITEMS_PER_PAGE;
 
-                const moreHtml = nextItems.map(p => `
-                  <div class="poi-row" data-id="${p.id}">
+                const moreHtml = nextItems.map(p => {
+                  const isInItin = isInItinerary(p.id);
+                  return `
+                  <div class="poi-row" data-id="${p.id}" style="position:relative">
                     <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
                     <div class="body">
                       <div class="name">${getPoiDisplayName(p)}</div>
                       <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
                     </div>
-                    <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
+                    <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓ Aggiunto':'+ Aggiungi'}</button>
                   </div>
-                `).join('');
+                `}).join('');
 
                 const newDiv = document.createElement('div');
                 newDiv.innerHTML = moreHtml;
@@ -3038,7 +3209,37 @@ window.addEventListener("load", () => {
                   btn.remove();
                 }
 
-                newDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+                newDiv.querySelectorAll('.poi-row').forEach(r => {
+                  r.onclick = (e) => {
+                    if (!e.target.closest('.btn')) {
+                      openPOI(r.dataset.id);
+                    }
+                  };
+                  const addBtn = r.querySelector('[data-add-to-itinerary]');
+                  if (addBtn) {
+                    addBtn.onclick = (e) => {
+                      e.stopPropagation();
+                      const poiId = addBtn.dataset.addToItinerary;
+                      const poi = allPOIs().find(p => p.id === poiId);
+                      if (poi) {
+                        const timeInput = prompt('⏰ Inserisci l\'orario (es. 09:30):', '');
+                        if (timeInput !== null) {
+                          const entry = {
+                            id: poi.id,
+                            name: getPoiDisplayName(poi),
+                            city: poi.city,
+                            lat: poi.lat,
+                            lng: poi.lng,
+                            time: timeInput || ''
+                          };
+                          addToItinerary(entry);
+                          toast('✓ Aggiunto a itinerario');
+                          renderListView();
+                        }
+                      }
+                    };
+                  }
+                });
               };
             });
           });
@@ -3048,12 +3249,64 @@ window.addEventListener("load", () => {
 
     // Helper: attach click handlers a tutti i poi-row
     function attachRowClickHandlers() {
-      resultsDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+      resultsDiv.querySelectorAll('.poi-row').forEach(r => {
+        // Click sulla row apre il POI (non su pulsanti)
+        r.onclick = (e) => {
+          if (!e.target.closest('.btn')) {
+            openPOI(r.dataset.id);
+          }
+        };
+
+        // Gestore per aggiungere all'itinerario
+        const addBtn = r.querySelector('[data-add-to-itinerary]');
+        if (addBtn) {
+          addBtn.onclick = (e) => {
+            e.stopPropagation();
+            const poiId = addBtn.dataset.addToItinerary;
+            const poi = allPOIs().find(p => p.id === poiId);
+            if (poi) {
+              // Form per inserire l'orario
+              const timeInput = prompt('⏰ Inserisci l\'orario (es. 09:30):', '');
+              if (timeInput !== null) {
+                const entry = {
+                  id: poi.id,
+                  name: getPoiDisplayName(poi),
+                  city: poi.city,
+                  lat: poi.lat,
+                  lng: poi.lng,
+                  time: timeInput || ''
+                };
+                addToItinerary(entry);
+                toast('✓ Aggiunto a itinerario');
+                renderListView(); // Refresh
+              }
+            }
+          };
+        }
+
+        // Gestore per rimuovere dall'itinerario
+        const removeBtn = r.querySelector('[data-remove-itinerary]');
+        if (removeBtn) {
+          removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            const id = removeBtn.dataset.removeItinerary;
+            removeFromItinerary(id);
+            toast('Rimosso da itinerario');
+            renderListView(); // Refresh
+          };
+        }
+      });
     }
 
     // Attach initial handlers
     attachRowClickHandlers();
-    sheetBody.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+    sheetBody.querySelectorAll('.poi-row').forEach(r => {
+      r.onclick = (e) => {
+        if (!e.target.closest('.btn')) {
+          openPOI(r.dataset.id);
+        }
+      };
+    });
   }
   // ---- Itinerary / Agenda view ----
   function renderItineraryView(){
@@ -3817,6 +4070,8 @@ window.addEventListener("load", () => {
 
   function renderShoppingView() {
     console.log('[renderShoppingView] Loading shopping POIs from Google Places with radius expansion...');
+    console.log('[renderShoppingView] window.GOOGLE_PLACES_POIS exists:', window.GOOGLE_PLACES_POIS ? 'YES' : 'NO');
+    console.log('[renderShoppingView] Total POIs in GOOGLE_PLACES_POIS:', (window.GOOGLE_PLACES_POIS || []).length);
 
     // Load shopping POIs from Google Places API
     const googlePOIs = window.GOOGLE_PLACES_POIS || [];
@@ -3830,7 +4085,22 @@ window.addEventListener("load", () => {
       return SHOPPING_CATEGORIES.some(cat => types.includes(cat));
     });
 
-    console.log('[renderShoppingView] Total Google Places shopping POIs available:', shoppingPOIs.length);
+    console.log('[renderShoppingView] Filtered shopping POIs:', shoppingPOIs.length);
+    console.log('[renderShoppingView] GPS available:', state.gpsCurrentLat && state.gpsCurrentLng ? 'YES' : 'NO');
+    console.log('[renderShoppingView] GPS coords:', state.gpsCurrentLat?.toFixed(5), state.gpsCurrentLng?.toFixed(5));
+
+    // Show loading message if no data yet
+    if (googlePOIs.length === 0) {
+      const loadingHtml = `
+        <div style="padding:20px;text-align:center;color:var(--muted)">
+          <div style="font-size:14px;margin-bottom:10px">⏳ Caricamento negozi in corso...</div>
+          <p style="font-size:12px;margin:0">I negozi da Google Places stanno caricando basati sulla tua posizione GPS.</p>
+          <p style="font-size:11px;color:var(--muted);margin-top:8px">Se questo messaggio persiste, verifica che la Google Maps API key sia configurata in Vercel.</p>
+        </div>
+      `;
+      window.openSheet('🛍️ Shopping', loadingHtml);
+      return;
+    }
 
     // Filter by GPS distance (50km radius)
     const MAX_DISTANCE_KM = 50;
