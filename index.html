@@ -3353,12 +3353,14 @@ window.addEventListener("load", () => {
           const searchResults = allPois.filter(p => {
             const name = (p.name || '').toLowerCase();
             const city = (p.city || '').toLowerCase();
+            const address = (p.address || '').toLowerCase();
             const best = (p.best || '').toLowerCase();
             const desc = (p.desc || '').toLowerCase();
             const catLabel = (CATS[p.cat]?.label || '').toLowerCase();
 
             return name.includes(query) ||
                    city.includes(query) ||
+                   address.includes(query) ||
                    best.includes(query) ||
                    desc.includes(query) ||
                    catLabel.includes(query);

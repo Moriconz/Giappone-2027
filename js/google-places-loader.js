@@ -231,6 +231,54 @@ function mapGoogleTypesToCategory(types) {
   return 'poi';
 }
 
+// Reverse-geocode coordinates to get city name
+async function getCityFromCoordinates(lat, lng) {
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const address = data.address || {};
+
+    // Priorizza city > town > village > county
+    return address.city || address.town || address.village || address.county || null;
+  } catch (err) {
+    console.warn(`[GooglePlacesLoader] Reverse-geo error at ${lat}, ${lng}:`, err);
+    return null;
+  }
+}
+
+// Enrichisci POI con city da reverse-geocoding (in background)
+async function enrichPOIsWithCities(pois) {
+  const geoCache = {};
+  let enriched = 0;
+
+  for (const poi of pois) {
+    if (poi.city) continue; // Ha già city, skip
+
+    const cacheKey = `${Math.round(poi.lat * 1000)}_${Math.round(poi.lng * 1000)}`;
+
+    if (geoCache[cacheKey]) {
+      poi.city = geoCache[cacheKey];
+      enriched++;
+      continue;
+    }
+
+    const city = await getCityFromCoordinates(poi.lat, poi.lng);
+    if (city) {
+      geoCache[cacheKey] = city;
+      poi.city = city;
+      enriched++;
+
+      // Delay per evitare rate limiting di Nominatim (1 richiesta ogni 100ms)
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+
+  console.log(`[GooglePlacesLoader] Enriched ${enriched} POIs with cities via reverse-geocoding`);
+  return pois;
+}
+
 // Render markers from Google Places POI data
 async function renderMarkersFromGoogle(pois) {
   if (!pois || pois.length === 0) return;
@@ -289,6 +337,18 @@ async function renderMarkersFromGoogle(pois) {
   window.dispatchEvent(new CustomEvent('google-places-pois-loaded', {
     detail: { pois: transformedPois }
   }));
+
+  // Enrichisci POI con cities via reverse-geocoding (in background, non blocca UI)
+  enrichPOIsWithCities(transformedPois).then(async (enrichedPois) => {
+    console.log('[GooglePlacesLoader] Enrichment complete, updating cache...');
+    // Aggiorna il database cache con i POI arricchiti
+    for (const poi of enrichedPois) {
+      if (poi.city && !poi.city.includes('Unknown')) {
+        // Salva il POI aggiornato (la cache lo aggiorna)
+        await window.GooglePlacesCache.savePOIs(poi.lat, poi.lng, 1000, [poi]);
+      }
+    }
+  }).catch(err => console.warn('[GooglePlacesLoader] Enrichment error:', err));
 }
 
 // Get all loaded POIs from cache
