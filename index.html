@@ -87,9 +87,10 @@ main{flex:1;position:relative;overflow:hidden}
 /* Floating filter bar */
 #filters{position:fixed;top:55px;left:10px;right:10px;z-index:9999;
   display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;padding:8px 12px;max-height:50px;max-width:calc(100% - 20px);
-  background:rgba(15,25,35,.7);backdrop-filter:blur(10px);border-radius:12px;
-  pointer-events:auto;visibility:visible}
+  scrollbar-width:none;padding:8px 12px;max-height:80px;max-width:calc(100% - 20px);
+  background:rgba(15,25,35,.9);backdrop-filter:blur(10px);border-radius:12px;
+  pointer-events:auto;visibility:visible !important;opacity:1 !important;
+  box-shadow:0 4px 12px rgba(0,0,0,.3)}
 #filters::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:6px 12px;border-radius:999px;background:rgba(30,49,72,.92);
   border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;
@@ -3104,6 +3105,7 @@ window.addEventListener("load", () => {
       searchInput.oninput = debounce((e) => {
         const query = e.target.value.toLowerCase().trim();
         console.log('[renderListView] Ricerca:', query);
+        console.log('[renderListView] POIs disponibili:', allPOIs().length);
 
         if (!query) {
           // Torna a mostrare lista compatta (città chiuse)
@@ -3111,13 +3113,19 @@ window.addEventListener("load", () => {
           resultsDiv.innerHTML = compactHtml || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
           attachRowClickHandlers();
         } else {
-          // RICERCA GLOBALE — cerca in TUTTI i POI (anche lontani, fuori da GPS)
-          console.log('[renderListView] Ricerca globale nel database completo...');
-          const allPois = getCachedAllPOIs();
+          // RICERCA GLOBALE — cerca in TUTTI i POI
+          console.log('[renderListView] Ricerca globale nel database...');
+          const allPois = allPOIs();
+
+          if (allPois.length === 0) {
+            console.warn('[renderListView] ⚠️ Nessun POI caricato! Attendere il caricamento da Google Places...');
+            resultsDiv.innerHTML = '<p style="color:var(--warning);font-size:13px;padding:20px;text-align:center">⏳ Caricando POIs da Google Places... Riprova tra un momento.</p>';
+            return;
+          }
+
           const searchResults = allPois.filter(p =>
-            p.city && (
-              getPoiDisplayName(p).toLowerCase().includes(query) ||
-              (p.desc && p.desc.toLowerCase().includes(query)) ||
+            p.name && (
+              p.name.toLowerCase().includes(query) ||
               (p.city && p.city.toLowerCase().includes(query))
             )
           );
@@ -4135,113 +4143,99 @@ window.addEventListener("load", () => {
   }
 
   function renderShoppingView() {
-    console.log('[renderShoppingView] Loading shopping POIs from Google Places with radius expansion...');
-    console.log('[renderShoppingView] window.GOOGLE_PLACES_POIS exists:', window.GOOGLE_PLACES_POIS ? 'YES' : 'NO');
-    console.log('[renderShoppingView] Total POIs in GOOGLE_PLACES_POIS:', (window.GOOGLE_PLACES_POIS || []).length);
+    console.log('[renderShoppingView] Loading shopping POIs from Google Places...');
+    console.log('[renderShoppingView] window.GOOGLE_PLACES_POIS:', (window.GOOGLE_PLACES_POIS || []).length, 'POIs');
+    console.log('[renderShoppingView] GPS available:', state.gpsCurrentLat && state.gpsCurrentLng ? `${state.gpsCurrentLat.toFixed(5)}, ${state.gpsCurrentLng.toFixed(5)}` : 'NO');
 
-    // Load shopping POIs from Google Places API
+    // ONLY use Google Places data - NO HARDCODED SHOPPING_DB
     const googlePOIs = window.GOOGLE_PLACES_POIS || [];
-    const SHOPPING_CATEGORIES = ['shopping', 'clothing_store', 'shoe_store', 'department_store',
-                                 'home_goods_store', 'jewelry_store', 'book_store', 'electronics_store',
-                                 'furniture_store', 'supermarket', 'market', 'shopping_mall'];
 
-    // Filter Google POIs for shopping categories
-    let shoppingPOIs = googlePOIs.filter(p => {
-      const types = p.types || [];
-      return SHOPPING_CATEGORIES.some(cat => types.includes(cat));
-    });
+    // Show error if no GPS
+    if (!state.gpsCurrentLat || !state.gpsCurrentLng) {
+      const noGpsHtml = `
+        <div style="padding:20px;text-align:center;color:var(--muted)">
+          <div style="font-size:14px;margin-bottom:10px">📍 GPS necessario</div>
+          <p style="font-size:12px;margin:0">Abilita il GPS per vedere negozi entro 20km dalla tua posizione.</p>
+        </div>
+      `;
+      window.openSheet('🛍️ Shopping', noGpsHtml);
+      return;
+    }
 
-    console.log('[renderShoppingView] Filtered shopping POIs:', shoppingPOIs.length);
-    console.log('[renderShoppingView] GPS available:', state.gpsCurrentLat && state.gpsCurrentLng ? 'YES' : 'NO');
-    console.log('[renderShoppingView] GPS coords:', state.gpsCurrentLat?.toFixed(5), state.gpsCurrentLng?.toFixed(5));
-
-    // Show loading message if no data yet
+    // Show loading if no Google Places data yet
     if (googlePOIs.length === 0) {
       const loadingHtml = `
         <div style="padding:20px;text-align:center;color:var(--muted)">
           <div style="font-size:14px;margin-bottom:10px">⏳ Caricamento negozi in corso...</div>
-          <p style="font-size:12px;margin:0">I negozi da Google Places stanno caricando basati sulla tua posizione GPS.</p>
-          <p style="font-size:11px;color:var(--muted);margin-top:8px">Se questo messaggio persiste, verifica che la Google Maps API key sia configurata in Vercel.</p>
+          <p style="font-size:12px;margin:0">Caricando negozi entro 20km dalla tua posizione...</p>
+          <p style="font-size:11px;color:var(--warning);margin-top:8px">Se persiste, controlla: (1) Google Maps API key in Vercel, (2) Posizione GPS attiva</p>
         </div>
       `;
       window.openSheet('🛍️ Shopping', loadingHtml);
       return;
     }
 
-    // Filter by GPS distance (50km radius)
-    const MAX_DISTANCE_KM = 50;
-    const MIN_DISTANCE_KM = 0;
-    if (state.gpsCurrentLat && state.gpsCurrentLng) {
-      shoppingPOIs = shoppingPOIs.filter(p => {
-        const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
-        return dist >= MIN_DISTANCE_KM && dist <= MAX_DISTANCE_KM;
-      });
+    // Filter by 20km radius ONLY
+    const MAX_DISTANCE_KM = 20;
+    let shoppingPOIs = googlePOIs.filter(p => {
+      if (!p.lat || !p.lng) return false;
+      const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
+      return dist <= MAX_DISTANCE_KM;
+    });
 
-      // Sort by distance from GPS
-      shoppingPOIs.sort((a, b) => {
-        const distA = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, a.lat, a.lng);
-        const distB = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, b.lat, b.lng);
-        return distA - distB;
-      });
-      console.log('[renderShoppingView] Filtered to', shoppingPOIs.length, 'shops within 50km, sorted by distance');
-    } else {
-      console.warn('[renderShoppingView] GPS not available, showing all shopping POIs');
-    }
+    // Sort by distance
+    shoppingPOIs.sort((a, b) => {
+      const distA = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, a.lat, a.lng);
+      const distB = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, b.lat, b.lng);
+      return distA - distB;
+    });
 
-    // Separate: regular shops vs vintage/second-hand
-    // ALL Google Places shopping POIs go to "regular" (Negozi Generali)
-    // SHOPPING_DB items with vintage/second-hand metadata go to "secondhand"
-    const regular = shoppingPOIs;
+    console.log('[renderShoppingView] Found', shoppingPOIs.length, 'shops within 20km, sorted by distance');
 
-    const secondhand = (SHOPPING_DB || []).filter(p =>
-      p.items && (typeof p.items === 'string' ? p.items.toLowerCase().includes('vintage') || p.items.toLowerCase().includes('second-hand') :
-        p.items.some(item => item.toLowerCase().includes('vintage') || item.toLowerCase().includes('second-hand')))
-    );
+    // Separate regular shops from vintage/thrift based on Google Places types
+    const VINTAGE_TYPES = ['antique_shop', 'thrift_store'];
+    const regular = shoppingPOIs.filter(p => {
+      const types = p.types || [];
+      return !VINTAGE_TYPES.some(t => types.includes(t));
+    });
+
+    const vintage = shoppingPOIs.filter(p => {
+      const types = p.types || [];
+      return VINTAGE_TYPES.some(t => types.includes(t));
+    });
 
     shoppingCache.data = shoppingPOIs;
     shoppingViewCache.regular = regular;
-    shoppingViewCache.secondhand = secondhand;
+    shoppingViewCache.vintage = vintage;
 
-    // Render only first 100 for speed
-    const BATCH_SIZE = 100;
-    const regularBatch = regular.slice(0, BATCH_SIZE);
-    const secondhandBatch = secondhand.slice(0, BATCH_SIZE);
-
-    const regularHtml = regularBatch.length ? regularBatch.map(p => {
-      let distanceStr = '';
-      if (state.gpsCurrentLat && p.lat) {
-        const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
-        distanceStr = ` · <span style="color:var(--success);font-weight:600">${fmtDist(dist)}</span>`;
-      }
+    // Render all (no batch limit - all from Google Places)
+    const regularHtml = regular.length ? regular.map(p => {
+      const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
+      const distanceStr = ` · <span style="color:var(--success);font-weight:600">${fmtDist(dist)}</span>`;
+      const ratingStr = p.rating ? ` · ⭐ ${p.rating.toFixed(1)}` : '';
       return `
       <div class="poi-row" data-id="${p.id}">
-        <div class="icon">${CATS[p.cat]?.icon || '🛍️'}</div>
+        <div class="icon">🛍️</div>
         <div class="body">
-          <div class="name">${getPoiDisplayName(p)}</div>
-          <div class="sub">${p.city}${distanceStr} · ${p.desc?.slice(0, 50) || ''}</div>
+          <div class="name">${p.name}</div>
+          <div class="sub">${distanceStr}${ratingStr}</div>
         </div>
       </div>
-    `}).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio trovato</p>';
+    `}).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio trovato entro 20km</p>';
 
-    const regularLoadMore = regular.length > BATCH_SIZE ? `<button data-load-more="regular" style="width:100%;padding:10px;margin-top:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-weight:600;cursor:pointer">📥 Carica altri ${regular.length - BATCH_SIZE} negozi</button>` : '';
-
-    const secondhandHtml = secondhandBatch.length ? secondhandBatch.map(p => {
-      let distanceStr = '';
-      if (state.gpsCurrentLat && p.lat) {
-        const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
-        distanceStr = ` · <span style="color:var(--success);font-weight:600">${fmtDist(dist)}</span>`;
-      }
+    const vintageHtml = vintage.length ? vintage.map(p => {
+      const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
+      const distanceStr = ` · <span style="color:var(--success);font-weight:600">${fmtDist(dist)}</span>`;
+      const ratingStr = p.rating ? ` · ⭐ ${p.rating.toFixed(1)}` : '';
       return `
       <div class="poi-row" data-id="${p.id}">
-        <div class="icon">${CATS[p.cat]?.icon || '👕'}</div>
+        <div class="icon">👕</div>
         <div class="body">
-          <div class="name">${getPoiDisplayName(p)}</div>
-          <div class="sub">${p.city}${distanceStr} · ${p.desc?.slice(0, 50) || ''}</div>
+          <div class="name">${p.name}</div>
+          <div class="sub">${distanceStr}${ratingStr}</div>
         </div>
       </div>
-    `}).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio second-hand trovato</p>';
-
-    const secondhandLoadMore = secondhand.length > BATCH_SIZE ? `<button data-load-more="secondhand" style="width:100%;padding:10px;margin-top:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-weight:600;cursor:pointer">📥 Carica altri ${secondhand.length - BATCH_SIZE} articoli second-hand</button>` : '';
+    `}).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio vintage/thrift trovato entro 20km</p>';
 
     const html = `
       <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
@@ -4264,23 +4258,17 @@ window.addEventListener("load", () => {
       <div id="shopping-results">
         <!-- TAB 1: NEGOZI GENERALI -->
         <div id="tab-content-general" style="display:block">
-          <div class="section" style="margin-bottom:16px">
-            <h3>🛍️ Negozi & Mercati</h3>
+          <div class="section">
+            <h3>🛍️ Negozi & Mercati (entro 20km)</h3>
             <div id="regular-shops">${regularHtml}</div>
-            ${regularLoadMore}
           </div>
         </div>
 
         <!-- TAB 2: VINTAGE & SECOND-HAND -->
         <div id="tab-content-vintage" style="display:none">
-          <div class="section" style="margin-bottom:16px">
-            <h3>👕 Vintage Shops (da Google Places)</h3>
-            <div id="google-vintage" style="color:var(--muted);font-size:12px">⏳ Caricamento negozi vintage da Google Places...</div>
-          </div>
           <div class="section">
-            <h3>🔄 Second-Hand (Database locale)</h3>
-            <div id="secondhand-shops-tab2">${secondhandHtml}</div>
-            ${secondhandLoadMore}
+            <h3>👕 Negozi Vintage & Thrift (entro 20km)</h3>
+            <div id="vintage-shops">${vintageHtml}</div>
           </div>
         </div>
       </div>
@@ -4325,158 +4313,113 @@ window.addEventListener("load", () => {
       };
     }
 
-    // Carica vintage shops da Google Places in background
-    (async () => {
-      console.log('[renderShoppingView] Inizio caricamento vintage shops da Google Places...');
-
-      // Categorie che potrebbero avere articoli vintage/second-hand
-      const VINTAGE_CATEGORIES = ['clothing_store', 'shoe_store', 'antique_shop', 'thrift_store',
-                                  'department_store', 'shopping_mall', 'market'];
-
-      // Prendi tutti i Google Places POIs e filtra per categorie vintage
-      const googlePOIs = window.GOOGLE_PLACES_POIS || [];
-      let allVintageShops = googlePOIs.filter(p => {
-        const types = p.types || [];
-        return VINTAGE_CATEGORIES.some(cat => types.includes(cat));
-      });
-
-      // Filtra per distanza 50km
-      const MAX_DISTANCE_KM = 50;
-      if (state.gpsCurrentLat && state.gpsCurrentLng) {
-        allVintageShops = allVintageShops.filter(p => {
-          const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
-          return dist <= MAX_DISTANCE_KM;
-        });
-
-        // Ordina per distanza
-        allVintageShops.sort((a, b) => {
-          const distA = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, a.lat, a.lng);
-          const distB = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, b.lat, b.lng);
-          return distA - distB;
-        });
-      }
-
-      console.log('[renderShoppingView] Totale vintage shops caricati da Google Places:', allVintageShops.length);
-
-      // Renderizza vintage shops con distanza
-      const vintageHtml = allVintageShops.length
-        ? allVintageShops.map(p => {
-          let distanceStr = '';
-          if (state.gpsCurrentLat && p.lat) {
-            const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
-            distanceStr = ` · <span style="color:var(--success);font-weight:600">${fmtDist(dist)}</span>`;
-          }
-          return `
-          <div class="poi-row" data-id="${p.id}">
-            <div class="icon" style="background:linear-gradient(135deg, #FF1493, #FFD700);">🎯</div>
-            <div class="body">
-              <div class="name">${p.name}
-                ${p.rating ? `<span style="font-size:11px;color:var(--warning);margin-left:4px">⭐ ${p.rating.toFixed(1)}</span>` : ''}
-              </div>
-              <div class="sub">${p.city}${distanceStr} · ${p.desc.slice(0, 50)}</div>
-              <div style="font-size:11px;color:var(--success);margin-top:4px">📍 Google Places</div>
-            </div>
-          </div>
-        `}).join('')
-        : '<p style="font-size:12px;color:var(--muted)">Nessun negozio vintage trovato</p>';
-
-      console.log('[renderShoppingView] Cercando elemento #google-vintage...');
-      const vintageElement = document.getElementById('google-vintage');
-      console.log('[renderShoppingView] Elemento trovato:', vintageElement ? 'SÌ' : 'NO');
-
-      if (vintageElement) {
-        vintageElement.innerHTML = vintageHtml;
-        console.log('[renderShoppingView] Vintage shops HTML aggiornato');
-      } else {
-        console.error('[renderShoppingView] ERRORE: Elemento #google-vintage non trovato!');
-        return; // Exit se elemento non trovato
-      }
-
-      // Aggiungi click handlers per i negozi Google
-      const vintageElement2 = document.getElementById('google-vintage');
-      if (!vintageElement2) {
-        console.warn('[renderShoppingView] Elemento #google-vintage sparito');
-        return;
-      }
-      const vintageRows = vintageElement2.querySelectorAll('.poi-row');
-      console.log('[renderShoppingView] Attaching click handlers a', vintageRows.length, 'vintage shops');
-      vintageRows.forEach(r => {
-        r.onclick = () => {
-          const shopId = r.dataset.id;
-          console.log('[Vintage Shop Click] ID:', shopId);
-          const shop = allVintageShops.find(s => s.id === shopId);
-          console.log('[Vintage Shop Click] Shop trovato:', shop ? 'SÌ' : 'NO');
-          if (shop) {
-            const html = `
-              <div class="shop-card" style="border:none;padding:0">
-                <div class="sc-header">
-                  <div>
-                    <div class="sc-name">${shop.name}</div>
-                    <div class="sc-meta">${shop.city}</div>
+    // Aggiungi click handlers per regolari e vintage shops
+    const setupShoppingClickHandlers = () => {
+      const regularElement = document.getElementById('regular-shops');
+      if (regularElement) {
+        regularElement.querySelectorAll('.poi-row').forEach(r => {
+          r.onclick = () => {
+            const poiId = r.dataset.id;
+            const poi = regular.find(p => p.id === poiId);
+            if (poi) {
+              const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, poi.lat, poi.lng);
+              const html = `
+                <div class="shop-card" style="border:none;padding:0">
+                  <div class="sc-header">
+                    <div>
+                      <div class="sc-name">${poi.name}</div>
+                      <div class="sc-meta">${poi.rating ? `⭐ ${poi.rating.toFixed(1)}` : 'Valutazione N/A'}</div>
+                    </div>
                   </div>
-                  <div class="sc-rating">⭐ ${shop.rating ? shop.rating.toFixed(1) : '—'}</div>
+                  <div class="sc-hours" style="margin-top:10px">📍 ${fmtDist(dist)} da te</div>
+                  ${poi.ratingCount ? `<div class="sc-hours" style="margin-top:4px">📊 ${poi.ratingCount} recensioni</div>` : ''}
                 </div>
-                <div class="sc-hours" style="margin-top:10px"><strong>${shop.desc}</strong></div>
-                ${shop.review_count ? `<div class="sc-hours" style="margin-top:4px">📊 ${shop.review_count} recensioni</div>` : ''}
-                <div style="margin-top:12px;display:flex;gap:8px">
-                  <a class="btn success" href="${shop.google_maps_url}" target="_blank" style="flex:1;text-align:center;margin:0">🗺️ Apri su Maps</a>
+              `;
+              window.openSheet('🛍️ ' + poi.name, html);
+            }
+          };
+        });
+      }
+
+      const vintageElement = document.getElementById('vintage-shops');
+      if (vintageElement) {
+        vintageElement.querySelectorAll('.poi-row').forEach(r => {
+          r.onclick = () => {
+            const poiId = r.dataset.id;
+            const poi = vintage.find(p => p.id === poiId);
+            if (poi) {
+              const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, poi.lat, poi.lng);
+              const html = `
+                <div class="shop-card" style="border:none;padding:0">
+                  <div class="sc-header">
+                    <div>
+                      <div class="sc-name">${poi.name}</div>
+                      <div class="sc-meta">${poi.rating ? `⭐ ${poi.rating.toFixed(1)}` : 'Valutazione N/A'}</div>
+                    </div>
+                  </div>
+                  <div class="sc-hours" style="margin-top:10px">📍 ${fmtDist(dist)} da te</div>
+                  ${poi.ratingCount ? `<div class="sc-hours" style="margin-top:4px">📊 ${poi.ratingCount} recensioni</div>` : ''}
                 </div>
-              </div>
-            `;
-            window.openSheet('👕 ' + shop.name, html);
-          }
-        };
-      });
-    })();
+              `;
+              window.openSheet('👕 ' + poi.name, html);
+            }
+          };
+        });
+      }
+    };
+
+    setupShoppingClickHandlers();
 
     // Setup ricerca
     const searchInput = document.getElementById('shopping-search');
-    const resultsDiv = document.getElementById('shopping-results');
     if (searchInput) {
       searchInput.oninput = debounce((e) => {
         const query = e.target.value.toLowerCase().trim();
-        const filtered = shoppingCache.data;
 
         if (!query) {
           document.getElementById('regular-shops').innerHTML = regularHtml;
-          document.getElementById('secondhand-shops-tab2').innerHTML = secondhandHtml;
+          document.getElementById('vintage-shops').innerHTML = vintageHtml;
         } else {
           const filteredRegular = regular.filter(p =>
-            getPoiDisplayName(p).toLowerCase().includes(query) ||
-            (p.desc && p.desc.toLowerCase().includes(query)) ||
-            (p.city && p.city.toLowerCase().includes(query))
+            p.name.toLowerCase().includes(query)
           );
-          const filteredSecondhand = secondhand.filter(p =>
-            getPoiDisplayName(p).toLowerCase().includes(query) ||
-            (p.desc && p.desc.toLowerCase().includes(query)) ||
-            (p.city && p.city.toLowerCase().includes(query))
+          const filteredVintage = vintage.filter(p =>
+            p.name.toLowerCase().includes(query)
           );
 
-          const regularHtmlFiltered = filteredRegular.length ? filteredRegular.map(p => `
+          const regularHtmlFiltered = filteredRegular.length ? filteredRegular.map(p => {
+            const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
+            const distanceStr = ` · <span style="color:var(--success);font-weight:600">${fmtDist(dist)}</span>`;
+            const ratingStr = p.rating ? ` · ⭐ ${p.rating.toFixed(1)}` : '';
+            return `
             <div class="poi-row" data-id="${p.id}">
-              <div class="icon">${CATS[p.cat]?.icon || '🛍️'}</div>
+              <div class="icon">🛍️</div>
               <div class="body">
-                <div class="name">${getPoiDisplayName(p)}</div>
-                <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
+                <div class="name">${p.name}</div>
+                <div class="sub">${distanceStr}${ratingStr}</div>
               </div>
             </div>
-          `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio trovato</p>';
+          `}).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio trovato</p>';
 
-          const secondhandHtmlFiltered = filteredSecondhand.length ? filteredSecondhand.map(p => `
+          const vintageHtmlFiltered = filteredVintage.length ? filteredVintage.map(p => {
+            const dist = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
+            const distanceStr = ` · <span style="color:var(--success);font-weight:600">${fmtDist(dist)}</span>`;
+            const ratingStr = p.rating ? ` · ⭐ ${p.rating.toFixed(1)}` : '';
+            return `
             <div class="poi-row" data-id="${p.id}">
-              <div class="icon">${CATS[p.cat]?.icon || '👕'}</div>
+              <div class="icon">👕</div>
               <div class="body">
-                <div class="name">${getPoiDisplayName(p)}</div>
-                <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
+                <div class="name">${p.name}</div>
+                <div class="sub">${distanceStr}${ratingStr}</div>
               </div>
             </div>
-          `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio second-hand trovato</p>';
+          `}).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio vintage trovato</p>';
 
           document.getElementById('regular-shops').innerHTML = regularHtmlFiltered;
-          document.getElementById('secondhand-shops-tab2').innerHTML = secondhandHtmlFiltered;
+          document.getElementById('vintage-shops').innerHTML = vintageHtmlFiltered;
         }
 
-        resultsDiv.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
+        setupShoppingClickHandlers();
       }, 300);  // Debounce search input
     }
 
