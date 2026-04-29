@@ -5436,6 +5436,65 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   console.log('[Giappone2027] Itinerary helpers and peerGPS exposed to window');
 
 })();
+
+/* ============================================================
+   INSTALL PROMPT MANAGEMENT
+   ============================================================ */
+let deferredPrompt = null;
+const installBanner = document.getElementById('install-banner');
+const installBtn = document.getElementById('install-btn');
+const installClose = document.getElementById('install-close');
+
+// Nascondi il banner di default
+if (installBanner) {
+  installBanner.style.display = 'none';
+}
+
+// Ascolta beforeinstallprompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostra il banner
+  if (installBanner) {
+    installBanner.style.display = 'flex';
+  }
+  console.log('[Install] Prompt disponibile - banner mostrato');
+});
+
+// Bottone Installa
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`[Install] User response: ${outcome}`);
+      if (installBanner) {
+        installBanner.style.display = 'none';
+      }
+      deferredPrompt = null;
+    }
+  });
+}
+
+// Bottone Chiudi (X)
+if (installClose) {
+  installClose.addEventListener('click', () => {
+    if (installBanner) {
+      installBanner.style.display = 'none';
+    }
+    deferredPrompt = null;
+    console.log('[Install] Banner chiuso');
+  });
+}
+
+// Nascondi il banner se l'app è già installata
+window.addEventListener('appinstalled', () => {
+  console.log('[Install] App installata con successo');
+  if (installBanner) {
+    installBanner.style.display = 'none';
+  }
+});
+
 }); // close window.addEventListener load
 </script>
 <script src="./js/y2k-windows.js"></script>
