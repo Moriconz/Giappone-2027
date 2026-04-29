@@ -106,23 +106,11 @@ header h1 .badge {
 
 /* ── FILTER BAR ─────────────────────────────────────────────────── */
 #filters {
-  position: fixed !important;
-  top: 55px !important;
-  left: 10px !important;
-  right: 10px !important;
-  z-index: 9999 !important;
-  background: linear-gradient(180deg, rgba(45,59,125,0.95), rgba(74,91,168,0.95)) !important;
-  border: 2px solid #FF1493 !important;
-  border-radius: 12px !important;
-  box-shadow: 0 0 30px rgba(255,20,147,0.6) !important;
-  backdrop-filter: blur(10px) !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  padding: 8px 12px !important;
-  max-height: 80px !important;
-  display: flex !important;
-  gap: 6px !important;
-  overflow-x: auto !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  padding: 8px 10px !important;
 }
 
 /* ── FILTER CHIPS ───────────────────────────────────────────────── */

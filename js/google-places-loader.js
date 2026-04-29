@@ -8,7 +8,7 @@
  * - Auto-expands radius if needed
  */
 
-const RADIUS_TIERS = [1000, 2000, 5000, 10000, 20000]; // meters: 1km, 2km, 5km, 10km, 20km
+const RADIUS_TIERS = [1000, 2000, 5000, 10000, 20000, 50000]; // meters: 1km, 2km, 5km, 10km, 20km, 50km
 const GPS_UPDATE_INTERVAL = 30000; // Check GPS every 30s
 const LOAD_TIMEOUT = 10000; // 10s timeout per request
 
