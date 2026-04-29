@@ -87,8 +87,9 @@ main{flex:1;position:relative;overflow:hidden}
 /* Floating filter bar */
 #filters{position:fixed;top:55px;left:10px;right:10px;z-index:9999;
   display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;padding-bottom:4px;max-height:42px;max-width:calc(100% - 20px);
-  background:transparent;pointer-events:auto;visibility:visible}
+  scrollbar-width:none;padding:8px 12px;max-height:50px;max-width:calc(100% - 20px);
+  background:rgba(15,25,35,.7);backdrop-filter:blur(10px);border-radius:12px;
+  pointer-events:auto;visibility:visible}
 #filters::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:6px 12px;border-radius:999px;background:rgba(30,49,72,.92);
   border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;
@@ -395,10 +396,6 @@ nav.bottom button{position:relative}
     <button data-view="list">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
       Tappe
-    </button>
-    <button data-view="itinerary">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-      Agenda
     </button>
     <button data-view="bookings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"/><path d="m16 19 2 2 4-4"/><path d="M3 10h18"/></svg>
@@ -2675,6 +2672,74 @@ window.addEventListener("load", () => {
   // Cache per lista tappe
   let listViewCache = { data: null, html: null };
 
+  // Helper: Mostra dialog per aggiungere tappa con tempo e giorno
+  function showAddItineraryDialog(poi, onConfirm) {
+    const html = `
+      <div style="position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px" id="add-itin-overlay">
+        <div style="background:var(--surface);border-radius:12px;padding:20px;max-width:380px;width:100%">
+          <h3 style="margin:0 0 14px;font-size:16px;color:var(--text)">${poi.name || poi.bestname || 'Aggiungi tappa'}</h3>
+          <div class="form-row">
+            <label>⏰ Orario (es. 09:30)</label>
+            <input id="itin-time" type="text" placeholder="09:30" style="font-size:16px" autocomplete="off" />
+          </div>
+          <div class="form-row">
+            <label>📅 Giorno del viaggio (es. 1, 2, 3...)</label>
+            <input id="itin-day" type="number" placeholder="1" min="1" max="30" style="font-size:16px" />
+          </div>
+          <div style="display:flex;gap:8px;margin-top:16px">
+            <button id="itin-cancel" style="flex:1;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-weight:600">Annulla</button>
+            <button id="itin-confirm" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600">Aggiungi</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Aggiungi il dialog al body
+    const overlay = document.createElement('div');
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+
+    const timeInput = document.getElementById('itin-time');
+    const dayInput = document.getElementById('itin-day');
+    const cancelBtn = document.getElementById('itin-cancel');
+    const confirmBtn = document.getElementById('itin-confirm');
+    const overlayDiv = document.getElementById('add-itin-overlay');
+
+    // Focus sul primo input
+    setTimeout(() => timeInput.focus(), 100);
+
+    // Handler chiusura
+    const close = () => {
+      overlay.remove();
+    };
+
+    // Bottone annulla
+    cancelBtn.onclick = () => close();
+    overlayDiv.onclick = (e) => {
+      if (e.target === overlayDiv) close();
+    };
+
+    // Bottone conferma
+    confirmBtn.onclick = () => {
+      const time = timeInput.value.trim() || '';
+      const day = dayInput.value.trim() || '';
+      onConfirm({ time, day });
+      close();
+    };
+
+    // Enter key conferma
+    timeInput.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        dayInput.focus();
+      }
+    };
+    dayInput.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        confirmBtn.click();
+      }
+    };
+  }
+
   function renderListView(){
     // Se GPS è acceso ma NON ha coordinate ancora: aspetta
     if (state.gpsEnabled && (!state.gpsCurrentLat || !state.gpsCurrentLng)) {
@@ -2771,16 +2836,17 @@ window.addEventListener("load", () => {
         ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, poi.lat, poi.lng) : null;
       const distStr = km !== null ? ` · <span style="color:var(--success);font-weight:600">${fmtDist(km)}</span>` : '';
       const timeStr = entry.time ? ` · ⏰ ${entry.time}` : '';
+      const dayStr = entry.day ? ` · 📅 Giorno ${entry.day}` : '';
       return `<div class="poi-row" style="position:relative" data-itinerary-id="${entry.id}">
         <div style="position:absolute;top:8px;right:8px;font-size:11px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:4px">${idx+1}</div>
         <div class="icon">${poi ? (CATS[poi.cat]?.icon || '📍') : '📌'}</div>
         <div class="body">
           <div class="name">${entry.name || (poi ? getPoiDisplayName(poi) : '?')}</div>
-          <div class="sub">${entry.city || (poi ? poi.city : '?')}${distStr}${timeStr}</div>
+          <div class="sub">${entry.city || (poi ? poi.city : '?')}${distStr}${timeStr}${dayStr}</div>
         </div>
         <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:var(--danger);border-color:var(--danger);color:#fff" data-remove-itinerary="${entry.id}">✕</button>
       </div>`;
-    }).join('') : '<p style="color:var(--muted);font-size:13px">📋 L\'itinerario del gruppo è vuoto. Aggiungi tappe da questo elenco!</p>';
+    }).join('') : '<p style="color:var(--muted);font-size:13px;padding:12px">📋 L\'itinerario del gruppo è vuoto. Seleziona tappe dalla lista sottostante per aggiungerle!</p>';
 
     const searchHtml = `
       <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
@@ -2929,20 +2995,20 @@ window.addEventListener("load", () => {
                   const poiId = addBtn.dataset.addToItinerary;
                   const poi = allPOIs().find(p => p.id === poiId);
                   if (poi) {
-                    const timeInput = prompt('⏰ Inserisci l\'orario (es. 09:30):', '');
-                    if (timeInput !== null) {
+                    showAddItineraryDialog(poi, ({ time, day }) => {
                       const entry = {
                         id: poi.id,
                         name: getPoiDisplayName(poi),
                         city: poi.city,
                         lat: poi.lat,
                         lng: poi.lng,
-                        time: timeInput || ''
+                        time: time || '',
+                        day: day ? parseInt(day) : null
                       };
                       addToItinerary(entry);
                       toast('✓ Aggiunto a itinerario');
                       renderListView();
-                    }
+                    });
                   }
                 };
               }
@@ -3145,20 +3211,20 @@ window.addEventListener("load", () => {
                   const poiId = addBtn.dataset.addToItinerary;
                   const poi = allPOIs().find(p => p.id === poiId);
                   if (poi) {
-                    const timeInput = prompt('⏰ Inserisci l\'orario (es. 09:30):', '');
-                    if (timeInput !== null) {
+                    showAddItineraryDialog(poi, ({ time, day }) => {
                       const entry = {
                         id: poi.id,
                         name: getPoiDisplayName(poi),
                         city: poi.city,
                         lat: poi.lat,
                         lng: poi.lng,
-                        time: timeInput || ''
+                        time: time || '',
+                        day: day ? parseInt(day) : null
                       };
                       addToItinerary(entry);
                       toast('✓ Aggiunto a itinerario');
                       renderListView();
-                    }
+                    });
                   }
                 };
               }
@@ -4203,11 +4269,6 @@ window.addEventListener("load", () => {
             <div id="regular-shops">${regularHtml}</div>
             ${regularLoadMore}
           </div>
-          <div class="section">
-            <h3>🔄 Second-Hand (Database locale)</h3>
-            <div id="secondhand-shops-tab1">${secondhandHtml}</div>
-            ${secondhandLoadMore}
-          </div>
         </div>
 
         <!-- TAB 2: VINTAGE & SECOND-HAND -->
@@ -4378,7 +4439,6 @@ window.addEventListener("load", () => {
 
         if (!query) {
           document.getElementById('regular-shops').innerHTML = regularHtml;
-          document.getElementById('secondhand-shops-tab1').innerHTML = secondhandHtml;
           document.getElementById('secondhand-shops-tab2').innerHTML = secondhandHtml;
         } else {
           const filteredRegular = regular.filter(p =>
@@ -4413,7 +4473,6 @@ window.addEventListener("load", () => {
           `).join('') : '<p style="font-size:12px;color:var(--muted)">Nessun negozio second-hand trovato</p>';
 
           document.getElementById('regular-shops').innerHTML = regularHtmlFiltered;
-          document.getElementById('secondhand-shops-tab1').innerHTML = secondhandHtmlFiltered;
           document.getElementById('secondhand-shops-tab2').innerHTML = secondhandHtmlFiltered;
         }
 
