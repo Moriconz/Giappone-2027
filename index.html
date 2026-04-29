@@ -16,6 +16,32 @@
 <link rel="stylesheet" href="./y2k-override.css" />
 <title>Giappone 2027 · Travel Companion v3</title>
 <!-- ============================================================================ -->
+<!-- EARLY INITIALIZATION — PWA Install Prompt (must run BEFORE other scripts) -->
+<!-- ============================================================================ -->
+<script>
+(function() {
+  'use strict';
+  console.log('[Install-Early] Initializing PWA install prompt listener...');
+
+  window.__deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('[Install-Early] *** beforeinstallprompt EVENT FIRED! ***');
+    e.preventDefault();
+    window.__deferredPrompt = e;
+
+    // Show banner
+    const banner = document.getElementById('install-banner');
+    if (banner) {
+      banner.classList.add('show');
+      console.log('[Install-Early] Banner shown');
+    }
+  });
+
+  console.log('[Install-Early] ✓ Listener attached (will catch beforeinstallprompt)');
+})();
+</script>
+<!-- ============================================================================ -->
 <!-- CDN DEPENDENCIES — All external scripts -->
 <!-- ============================================================================ -->
 <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
@@ -5421,13 +5447,13 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   // ===================== PHASE 7: Service Worker Registration =====================
   // Service Worker è RICHIESTO per beforeinstallprompt su molti browser
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./js/sw.js', { scope: './' })
+    navigator.serviceWorker.register('./sw.js')
       .then(reg => {
         console.log('[SW] ✓ Service Worker Registered, scope:', reg.scope);
         console.log('[SW] beforeinstallprompt dovrebbe ora funzionare');
       })
       .catch(err => {
-        console.warn('[SW] ✗ Service Worker Registration failed:', err);
+        console.warn('[SW] ✗ Service Worker Registration failed:', err.message);
         console.warn('[SW] Installation prompt potrebbe non funzionare');
       });
   } else {
@@ -5447,115 +5473,89 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
 
 /* ============================================================
    INSTALL PROMPT MANAGEMENT — PWA Installation Handler
+   (Listener for beforeinstallprompt is in <head> for early detection)
    ============================================================ */
-console.log('[Install] ========== STARTING INSTALL PROMPT CODE ==========');
+console.log('[Install] ========== MAIN INSTALL PROMPT CODE ==========');
 
-let deferredPrompt = null;
 const installBanner = document.getElementById('install-banner');
 const installBtn = document.getElementById('install-btn');
 const installClose = document.getElementById('install-close');
 
-console.log('[Install] Step 1 - DOM Elements found:');
-console.log('[Install]   installBanner:', !!installBanner, installBanner);
-console.log('[Install]   installBtn:', !!installBtn, installBtn);
-console.log('[Install]   installClose:', !!installClose, installClose);
+console.log('[Install] DOM Elements found:');
+console.log('[Install]   banner:', !!installBanner);
+console.log('[Install]   btn:', !!installBtn);
+console.log('[Install]   close:', !!installClose);
 
-// Remove inline onclick from install-close if present
+// Remove inline onclick from install-close
 if (installClose && installClose.hasAttribute('onclick')) {
-  console.log('[Install] Removing inline onclick from install-close');
+  console.log('[Install] Removing inline onclick handler');
   installClose.removeAttribute('onclick');
 }
 
-// Listen for beforeinstallprompt event
-console.log('[Install] Step 2 - Attaching beforeinstallprompt listener');
-window.addEventListener('beforeinstallprompt', (e) => {
-  console.log('[Install] *** beforeinstallprompt event FIRED! ***');
-  e.preventDefault();
-  deferredPrompt = e;
-  if (installBanner) {
-    installBanner.classList.add('show');
-    console.log('[Install] Banner shown via .show class');
-  }
-  console.log('[Install] deferredPrompt saved, banner should now be visible');
-});
-
 // Attach Install button listener
-console.log('[Install] Step 3 - Setting up install button handler');
+console.log('[Install] Attaching install button listener...');
 if (installBtn) {
   installBtn.addEventListener('click', function(e) {
     console.log('[Install] *** INSTALL BUTTON CLICKED ***');
+    const deferredPrompt = window.__deferredPrompt;
     console.log('[Install] deferredPrompt is:', deferredPrompt ? 'SET' : 'NULL/UNDEFINED');
 
     e.preventDefault();
     e.stopPropagation();
 
     if (deferredPrompt) {
-      console.log('[Install] Calling deferredPrompt.prompt()');
+      console.log('[Install] Showing native install prompt...');
       deferredPrompt.prompt();
 
       deferredPrompt.userChoice
         .then((choiceResult) => {
-          console.log('[Install] userChoice resolved');
-          console.log('[Install] User outcome:', choiceResult.outcome);
-
+          console.log('[Install] User response:', choiceResult.outcome);
           if (installBanner) {
             installBanner.classList.remove('show');
             installBanner.style.setProperty('display', 'none', 'important');
-            console.log('[Install] Banner hidden after installation');
           }
-          deferredPrompt = null;
+          window.__deferredPrompt = null;
         })
-        .catch(err => {
-          console.error('[Install] Error in userChoice:', err);
-        });
+        .catch(err => console.error('[Install] Error:', err));
     } else {
-      console.warn('[Install] ⚠️ Install button clicked but deferredPrompt is NULL');
-      console.warn('[Install] This means beforeinstallprompt event never fired');
-      console.warn('[Install] Possible causes:');
-      console.warn('[Install]   • App is served over file:// (needs http/https)');
-      console.warn('[Install]   • manifest.webmanifest is missing or invalid');
-      console.warn('[Install]   • App is already installed');
-      console.warn('[Install]   • Browser does not support PWA installation');
+      console.warn('[Install] ⚠️ deferredPrompt is NULL - beforeinstallprompt never fired');
     }
   });
   console.log('[Install] Install button listener attached ✓');
 } else {
-  console.error('[Install] ERRORE: installBtn NOT found! Cannot attach listener');
+  console.error('[Install] installBtn not found');
 }
 
 // Attach Close (X) button listener
-console.log('[Install] Step 4 - Setting up close button handler');
+console.log('[Install] Attaching close button listener...');
 if (installClose) {
   installClose.addEventListener('click', function(e) {
-    console.log('[Install] *** CLOSE BUTTON (X) CLICKED ***');
+    console.log('[Install] *** CLOSE BUTTON CLICKED ***');
     e.preventDefault();
     e.stopPropagation();
 
     if (installBanner) {
       installBanner.classList.remove('show');
       installBanner.style.setProperty('display', 'none', 'important');
-      console.log('[Install] Banner hidden via close button');
     }
-    deferredPrompt = null;
+    window.__deferredPrompt = null;
   });
   console.log('[Install] Close button listener attached ✓');
 } else {
-  console.error('[Install] ERRORE: installClose NOT found! Cannot attach listener');
+  console.error('[Install] installClose not found');
 }
 
-// Listen for app installation completion
-console.log('[Install] Step 5 - Attaching appinstalled listener');
+// Listen for successful app installation
 window.addEventListener('appinstalled', () => {
   console.log('[Install] *** APP SUCCESSFULLY INSTALLED! ***');
   if (installBanner) {
     installBanner.classList.remove('show');
     installBanner.style.setProperty('display', 'none', 'important');
-    console.log('[Install] Installation banner auto-hidden');
   }
-  deferredPrompt = null;
+  window.__deferredPrompt = null;
 });
 
-console.log('[Install] ========== INSTALL PROMPT CODE SETUP COMPLETE ==========');
+console.log('[Install] ========== SETUP COMPLETE ==========');
 
 }); // close window.addEventListener load
 </script>
