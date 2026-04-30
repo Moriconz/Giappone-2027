@@ -2849,7 +2849,7 @@ window.addEventListener("load", () => {
 
     // HTML PRINCIPALE
     const searchHtml = `
-      <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
+      <div style="position:sticky;top:0;background:var(--surface) !important;padding:12px 0;margin-bottom:12px;z-index:200;border-bottom:1px solid var(--border)">
         <!-- Ricerca per città (searchCity) -->
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <input id="list-search" type="text" placeholder="🔍 Scrivi una città (Tokyo, Osaka, Kyoto...)"
@@ -2875,9 +2875,11 @@ window.addEventListener("load", () => {
       </div>
 
       <!-- MESSAGGIO INIZIALE -->
-      <div id="list-results" style="padding:20px;text-align:center;color:var(--muted);font-size:13px">
-        <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
-        <p style="font-size:11px;margin:8px 0 0">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+      <div id="list-results">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">
+          <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
+          <p style="font-size:11px;margin:8px 0 0">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+        </div>
       </div>
     `;
 
@@ -2977,18 +2979,22 @@ window.addEventListener("load", () => {
           const items = byCategory[cat];
           const itemsHtml = items.map(p => {
             const isInItin = isInItinerary(p.id);
-            const distStr = p.km !== Infinity ? `<span style="font-size:11px;color:var(--success)">📍 ${fmtDist(p.km)}</span>` : '';
-            const ratingStr = p.rating ? `<span style="font-size:11px;color:var(--warning)">⭐ ${p.rating}</span>` : '';
-            const costStr = p.cost ? `<span style="font-size:11px">💰 ${p.cost}</span>` : '';
+            const distStr = p.km !== Infinity ? `📍 ${fmtDist(p.km)}` : '';
+            const ratingStr = p.rating ? `⭐ ${p.rating}` : '';
+            const costStr = p.cost ? `💰 ${p.cost}` : '';
+            const photoUrl = p.photos && p.photos.length > 0
+              ? `/api/placePhoto?reference=${encodeURIComponent(p.photos[0].reference)}&maxwidth=150`
+              : '';
 
             return `
               <div class="poi-row" data-id="${p.id}">
                 <div class="icon">${CATS[p.cat]?.icon || '📍'}</div>
                 <div class="body">
                   <div class="name">${getPoiDisplayName(p)}</div>
-                  <div class="sub">${distStr}${ratingStr ? ' · ' + ratingStr : ''}${costStr ? ' · ' + costStr : ''}</div>
+                  <div class="sub">${CATS[cat]?.label || cat} · ${distStr}${ratingStr ? ' · ' + ratingStr : ''}${costStr ? ' · ' + costStr : ''}</div>
                 </div>
-                <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓ Aggiunto':'+ Aggiungi'}</button>
+                ${photoUrl ? `<img src="${photoUrl}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0">` : ''}
+                <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓':'+ Aggiungi'}</button>
               </div>
             `;
           }).join('');
