@@ -3074,16 +3074,28 @@ window.addEventListener("load", () => {
           };
         });
 
-        // ✅ DELEGATED EVENT LISTENER per bottone "Aggiungi" (più robusto)
+        // ✅ DELEGATED EVENT LISTENER per bottone "Aggiungi" (DEBUG MODE)
         resultsDiv.addEventListener('click', (e) => {
+          console.log('[CLICK] target:', e.target, 'tagName:', e.target.tagName, 'className:', e.target.className);
+
           const addBtn = e.target.closest('[data-add-to-itinerary]');
-          if (!addBtn) return;
+          console.log('[CLICK] addBtn trovato:', addBtn);
+
+          if (!addBtn) {
+            console.log('[CLICK] Non è un bottone aggiungi, skip');
+            return;
+          }
 
           e.preventDefault();
           e.stopPropagation();
 
           const poiId = addBtn.getAttribute('data-add-to-itinerary');
-          console.log('[AGGIUNGI CLICK] poiId:', poiId);
+          console.log('[AGGIUNGI DEBUG]', {
+            addBtn: addBtn,
+            poiId: poiId,
+            allAttributes: Array.from(addBtn.attributes).map(a => a.name + '=' + a.value),
+            allPOIsLength: allPOIs().length
+          });
 
           const poi = allPOIs().find(p => p.id === poiId);
           console.log('[AGGIUNGI CLICK] poi trovato:', poi);
