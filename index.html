@@ -907,7 +907,7 @@ window.addEventListener("load", () => {
       </div>
     `;
 
-    window.openWin('group-selection-modal', 'Aggiungi al Gruppo', html);
+    window.y2kWindows.open('group-selection-modal', 'Aggiungi al Gruppo', html);
 
     // Attach event listeners
     setTimeout(() => {
@@ -917,14 +917,14 @@ window.addEventListener("load", () => {
       if (confirmBtn) {
         confirmBtn.addEventListener('click', () => {
           addPOIToGroupItinerary(poi, roomId, itineraryId);
-          window.closeWin('group-selection-modal');
+          window.y2kWindows.close('group-selection-modal');
           toast('✅ Tappa aggiunta all\'itinerario di gruppo!');
         });
       }
 
       if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
-          window.closeWin('group-selection-modal');
+          window.y2kWindows.close('group-selection-modal');
         });
       }
     }, 0);
