@@ -239,6 +239,11 @@ nav.bottom button.active {
 .sheet-body {
   padding: 18px 20px !important;
   color: var(--y2k-ink) !important;
+  display: block !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: calc(100vh - 200px) !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 /* tutti i testi dentro la finestra ereditano colore scuro */
@@ -270,6 +275,9 @@ nav.bottom button.active {
 /* ── POI rows dentro le finestre ────────────────────────────────── */
 .sheet-inner .poi-row,
 .sheet-body .poi-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
   background: linear-gradient(135deg, #3D4E9A, #4A5BA8) !important;
   border: 2px solid var(--y2k-green) !important;
   border-radius: 10px !important;
@@ -779,11 +787,15 @@ nav.bottom button.active {
   max-width: 360px !important;
   width: 90% !important;
   text-align: center !important;
-  display: flex !important;
+  display: none !important;
   flex-direction: column !important;
   gap: 16px !important;
   font-family: 'Courier New', monospace !important;
   color: var(--y2k-ink) !important;
+}
+
+#install-banner.show {
+  display: flex !important;
 }
 
 #install-banner::before {
@@ -795,6 +807,7 @@ nav.bottom button.active {
   bottom: 0 !important;
   background: rgba(0,0,0,0.6) !important;
   z-index: -1 !important;
+  pointer-events: auto !important;
 }
 
 #install-banner span {
