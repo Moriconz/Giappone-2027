@@ -151,15 +151,15 @@ async function loadNearbyPOIs(lat, lng) {
     if (pois && pois.length > 0) {
       loadedRadii.add(key);
       try {
-        // Add search city to all POIs before saving to cache
-        const poisWithSearchCity = pois.map(poi => ({
+        // Add zone to all POIs based on their coordinates
+        const poisWithZone = pois.map(poi => ({
           ...poi,
-          searchCity: window.__searchCity || undefined
+          searchCity: getZoneFromCoordinates(poi.geometry.location.lat, poi.geometry.location.lng) || undefined
         }));
 
-        // Save POIs with searchCity to cache
-        console.log(`[GooglePlacesLoader] Saving ${poisWithSearchCity.length} POIs to cache (searchCity: ${window.__searchCity})...`);
-        await window.GooglePlacesCache.savePOIs(lat, lng, radiusM, poisWithSearchCity);
+        // Save POIs with zone to cache
+        console.log(`[GooglePlacesLoader] Saving ${poisWithZone.length} POIs to cache (zones determined by coordinates)...`);
+        await window.GooglePlacesCache.savePOIs(lat, lng, radiusM, poisWithZone);
         console.log(`[GooglePlacesLoader] Cache save complete`);
 
         // Then transform for display
@@ -261,23 +261,26 @@ function mapGoogleTypesToCategory(types) {
   return 'poi';
 }
 
-// Reverse-geocode coordinates to get prefecture/region name (not specific ward)
-async function getCityFromCoordinates(lat, lng) {
-  try {
-    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-    if (!response.ok) return null;
+// Zone geografiche giapponesi con bounding box (min_lat, max_lat, min_lng, max_lng)
+const JAPAN_ZONES = [
+  { name: 'Tokyo', min_lat: 35.4, max_lat: 35.9, min_lng: 139.4, max_lng: 140.3 },
+  { name: 'Osaka', min_lat: 34.3, max_lat: 34.8, min_lng: 135.3, max_lng: 135.9 },
+  { name: 'Kyoto', min_lat: 34.8, max_lat: 35.3, min_lng: 135.5, max_lng: 136.1 },
+  { name: 'Nagano', min_lat: 36.4, max_lat: 37.1, min_lng: 137.1, max_lng: 138.3 },
+  { name: 'Hokkaido', min_lat: 41.4, max_lat: 45.5, min_lng: 139.2, max_lng: 148.6 },
+  { name: 'Fukuoka', min_lat: 32.7, max_lat: 33.6, min_lng: 130.2, max_lng: 131.2 },
+  { name: 'Hiroshima', min_lat: 34.1, max_lat: 34.8, min_lng: 131.9, max_lng: 133.1 }
+];
 
-    const data = await response.json();
-    const address = data.address || {};
-
-    // Per il Giappone, priorizza state/province (prefettura) su city (quartiere)
-    // state/province contiene "Tokyo", "Osaka", etc.
-    // city contiene il quartiere specifico (Chuo, Shibuya, etc.)
-    return address.state || address.province || address.city || address.town || address.village || null;
-  } catch (err) {
-    console.warn(`[GooglePlacesLoader] Reverse-geo error at ${lat}, ${lng}:`, err);
-    return null;
+// Determina la zona basata sulle coordinate
+function getZoneFromCoordinates(lat, lng) {
+  for (const zone of JAPAN_ZONES) {
+    if (lat >= zone.min_lat && lat <= zone.max_lat &&
+        lng >= zone.min_lng && lng <= zone.max_lng) {
+      return zone.name;
+    }
   }
+  return null;
 }
 
 // Enrichisci POI con city da reverse-geocoding (in background)
