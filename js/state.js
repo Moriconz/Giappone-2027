@@ -36,6 +36,17 @@ window.state = Object.assign({
   knownMembers: []
 }, JSON.parse(localStorage.getItem(window.STATE_KEY) || '{}'));
 
+// Ensure critical objects are initialized (fallback if localStorage corrupted them)
+if (!window.state.groupItineraries || typeof window.state.groupItineraries !== 'object') {
+  window.state.groupItineraries = {};
+}
+if (!window.state.undoRedo || typeof window.state.undoRedo !== 'object') {
+  window.state.undoRedo = { stack: [], currentIndex: -1, maxSize: 100 };
+}
+if (!window.state.group || typeof window.state.group !== 'object') {
+  window.state.group = { name: 'Giappone 2027', members: [], myAvatar: null, myName: '' };
+}
+
 // Global save function
 window.saveState = function() {
   try {

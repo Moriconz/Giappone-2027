@@ -5500,6 +5500,11 @@ window.addEventListener("load", () => {
 
             // Phase 3: If user is in a group, show group selection modal
             if (state.group && state.group.roomId) {
+              // Initialize groupItineraries if not exists
+              if (!state.groupItineraries) {
+                state.groupItineraries = {};
+                console.log('[PHASE3] Initialized groupItineraries');
+              }
               console.log('[PHASE3] User in group, showing group selection modal');
               window.showGroupSelectionModal?.(poi);
             } else {
