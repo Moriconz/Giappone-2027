@@ -125,18 +125,59 @@
 
     .y2k-win { animation: y2kWinIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
 
+    /* Sticky header per liste */
+    .y2k-win-body [style*="position:sticky"] {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 300 !important;
+      background: linear-gradient(180deg, #FFFACD, #FFF8DC) !important;
+      padding: 12px !important;
+      border-bottom: 2px solid #FF1493 !important;
+      box-shadow: 0 3px 12px rgba(255,20,147,0.1) !important;
+    }
+
     /* Adatta contenuto sheet dentro la finestra */
     .y2k-win-body .sheet-handle { display: none !important; }
     .y2k-win-body .sheet-header { display: none !important; }
     .y2k-win-body .sheet-body { padding: 0 !important; }
     .y2k-win-body h2 { color: #2D3B7D !important; font-size: 15px !important; }
     .y2k-win-body .section h3 { color: #FF1493 !important; }
+    /* Input fields */
+    .y2k-win-body input[type="text"],
+    .y2k-win-body input[type="number"] {
+      background: white !important;
+      border: 2px solid #00FF88 !important;
+      color: #2D3B7D !important;
+      border-radius: 6px !important;
+      padding: 8px 10px !important;
+      font-size: 13px !important;
+    }
+
+    /* Buttons in sticky header */
+    .y2k-win-body [style*="position:sticky"] button {
+      background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
+      color: white !important;
+      border: 2px solid #FF1493 !important;
+      border-radius: 6px !important;
+      padding: 8px 12px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+    }
+    .y2k-win-body [style*="position:sticky"] button:hover {
+      box-shadow: 0 0 12px rgba(255,20,147,0.4) !important;
+      transform: scale(1.02) !important;
+    }
+
     .y2k-win-body .category-section { margin-bottom: 16px !important; }
     .y2k-win-body .category-section h4 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 14px !important; font-weight: 700 !important; margin: 12px 0 8px 0 !important; display: flex !important; gap: 8px !important; align-items: center !important; }
     .y2k-win-body .category-section h4 .count { background: #00FF88 !important; color: #2D3B7D !important; padding: 2px 8px !important; border-radius: 12px !important; font-size: 12px !important; font-weight: 600 !important; }
-    .y2k-win-body .poi-row { display: flex !important; align-items: center !important; gap: 12px !important; background: linear-gradient(135deg,#E8F4FF,#F0EDFF) !important; border: 2px solid #00FF88 !important; color: #2D3B7D !important; }
-    .y2k-win-body .poi-row .name { color: #2D3B7D !important; }
-    .y2k-win-body .poi-row .sub { color: #555 !important; }
+    .y2k-win-body .poi-row { display: flex !important; align-items: stretch !important; gap: 10px !important; background: linear-gradient(135deg,#E8F4FF,#F0EDFF) !important; border: 2px solid #00FF88 !important; color: #2D3B7D !important; padding: 10px !important; border-radius: 8px !important; min-height: 70px !important; }
+    .y2k-win-body .poi-row .icon { flex-shrink: 0; width: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .y2k-win-body .poi-row .body { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; overflow: hidden; }
+    .y2k-win-body .poi-row .body .name { color: #2D3B7D !important; font-weight: 700 !important; font-size: 13px !important; line-height: 1.2; word-break: break-word; }
+    .y2k-win-body .poi-row .body .sub { color: #666 !important; font-size: 11px !important; line-height: 1.3; margin-top: 2px; }
+    .y2k-win-body .poi-row img { flex-shrink: 0; width: 50px; height: 50px; border-radius: 6px; }
+    .y2k-win-body .poi-row .btn { flex-shrink: 0; }
     .y2k-win-body .btn { background: linear-gradient(180deg,#E0D5FF,#F0E5FF) !important; border: 2px solid #E0D5FF !important; color: #2D3B7D !important; font-family: 'Courier New',monospace !important; }
     .y2k-win-body .btn.primary { background: linear-gradient(180deg,#FF1493,#FF69B4) !important; border-color: #00FF88 !important; color: white !important; }
   `;
@@ -149,9 +190,14 @@
   function openWin(id, title, html) {
     console.log('%c[Y2K] openWin called', 'background: #FF1493; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold', 'id:', id, 'title:', title);
 
-    // Se già aperta, porta in foreground
+    // Se già aperta, AGGIORNA il contenuto e porta in foreground
     if (wins[id]) {
-      console.log('[Y2K] Window already open, bringing to front');
+      console.log('[Y2K] Window already open, updating content and bringing to front');
+      const body = wins[id].querySelector('.y2k-win-body');
+      if (body) {
+        body.innerHTML = html;
+        console.log('[Y2K] ✅ Content updated');
+      }
       wins[id].style.zIndex = ++topZ;
       return;
     }
