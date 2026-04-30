@@ -167,6 +167,34 @@ function setupPeerHandlersWithRelay(peer, amIHub) {
         }
       }
 
+      // ===== GROUP CHAT MESSAGE =====
+      else if (data.type === "groupchat") {
+        console.log('[GROUPCHAT] Received message from:', data.payload?.from);
+
+        // Ricevi il messaggio nella chat
+        if (window.groupChat && data.payload) {
+          window.groupChat.receive(data.payload);
+        }
+
+        // Se sei hub, riemetti a tutti gli altri peer
+        const isHub = (window.state.group?.myName === window.state.group?.createdByName);
+        if (isHub && window.peer?.connections) {
+          console.log('[GROUPCHAT] Hub relaying message to other peers');
+          Object.keys(window.peer.connections).forEach(peerId => {
+            if (peerId !== data.from) {
+              const conns = window.peer.connections[peerId];
+              if (conns && conns.length > 0) {
+                try {
+                  conns[0].send(data);
+                } catch (e) {
+                  console.warn('[GROUPCHAT] Relay failed to', peerId, ':', e.message);
+                }
+              }
+            }
+          });
+        }
+      }
+
       // ===== HEARTBEAT MESSAGE =====
       else if (data.type === "heartbeat") {
         onPeerMessage(data);

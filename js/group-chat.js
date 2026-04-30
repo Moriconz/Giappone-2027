@@ -70,9 +70,12 @@ window.groupChat = (() => {
       console.warn('[GroupChat] Not in a group');
       return;
     }
-    
-    if (!text || text.trim() === '') return;
-    
+
+    if (!text || text.trim() === '') {
+      console.warn('[GroupChat] Empty message ignored');
+      return;
+    }
+
     const rawMessage = {
       id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       from: group.myName || 'Anonimo',
@@ -82,19 +85,28 @@ window.groupChat = (() => {
       timestamp: new Date().toISOString(),
       type: 'message'
     };
+
+    console.log('[GroupChat] Raw message created:', rawMessage);
+
     const message = normalizeChatMessage(rawMessage);
     if (!message) {
-      console.warn('[GroupChat] Message normalization failed', { rawMessage });
+      console.warn('[GroupChat] ❌ Message normalization failed', { rawMessage });
       return;
     }
+
+    console.log('[GroupChat] ✓ Message normalized:', message);
 
     // Salva localmente
     chatHistory.messages = chatHistory.messages || [];
     chatHistory.messages.push(message);
+    console.log('[GroupChat] ✓ Message added to history. Total messages:', chatHistory.messages.length);
     saveChat(group.roomId);
-    
+
     // Invia P2P a tutti i peer connessi
     const peerConnections = window.peerGPS?.getPeerConnections?.() || {};
+    const peerIds = Object.keys(peerConnections);
+    console.log('[GroupChat] Sending to peers:', peerIds.length > 0 ? peerIds : 'none');
+
     for (const [peerId, conn] of Object.entries(peerConnections)) {
       if (conn && conn.open) {
         try {
@@ -102,16 +114,18 @@ window.groupChat = (() => {
             type: 'groupchat',
             payload: message
           });
+          console.log('[GroupChat] ✓ Sent to peer:', peerId);
         } catch (e) {
-          console.warn(`[GroupChat] Send to ${peerId} failed:`, e);
+          console.warn(`[GroupChat] ❌ Send to ${peerId} failed:`, e);
         }
       }
     }
-    
+
     // Rirenderizza
+    console.log('[GroupChat] Calling renderChatPanel to update UI...');
     renderChatPanel();
-    
-    console.log(`[GroupChat] Message sent by ${message.from}`);
+
+    console.log(`[GroupChat] ✓ Message sent by ${message.from} | Total in history: ${chatHistory.messages.length}`);
   }
   
   /**
@@ -119,25 +133,35 @@ window.groupChat = (() => {
    */
   function receiveGroupMessage(message) {
     const group = window.state?.group;
-    if (!group) return;
-
-    const normalizedMessage = normalizeChatMessage(message);
-    if (!normalizedMessage) {
-      console.warn('[GroupChat] Ignored invalid incoming payload', message);
+    if (!group) {
+      console.warn('[GroupChat] Received message but not in a group');
       return;
     }
 
+    console.log('[GroupChat] Receiving message from peer:', message);
+
+    const normalizedMessage = normalizeChatMessage(message);
+    if (!normalizedMessage) {
+      console.warn('[GroupChat] ❌ Ignored invalid incoming payload', message);
+      return;
+    }
+
+    console.log('[GroupChat] ✓ Message normalized:', normalizedMessage);
+
     chatHistory.messages = chatHistory.messages || [];
     chatHistory.messages.push(normalizedMessage);
+    console.log('[GroupChat] ✓ Message added to history. Total:', chatHistory.messages.length);
     saveChat(group.roomId);
-    
+
     // Notifica push (se pannello non aperto)
     if (!chatPanelOpen) {
+      console.log('[GroupChat] Panel closed - sending push notification');
       notifyNewMessage(normalizedMessage);
     }
-    
+
     // Rirenderizza se pannello aperto
     if (chatPanelOpen) {
+      console.log('[GroupChat] Panel open - re-rendering');
       renderChatPanel();
     }
   }
@@ -287,34 +311,49 @@ window.groupChat = (() => {
     `;
     
     container.innerHTML = html;
-    
-    // Event listeners
+
+    console.log('[GroupChat] renderChatPanel: rendered', messages.length, 'messages');
+
+    // Event listeners (con proper cleanup)
     const input = document.getElementById('group-chat-input');
     const sendBtn = document.getElementById('group-chat-send');
-    
+
     if (sendBtn) {
-      sendBtn.addEventListener('click', () => {
-        if (input) {
-          sendGroupMessage(input.value);
-          input.value = '';
-          input.focus();
+      // Rimuovi event listener vecchi
+      const newSendBtn = sendBtn.cloneNode(true);
+      sendBtn.parentNode.replaceChild(newSendBtn, sendBtn);
+
+      document.getElementById('group-chat-send').addEventListener('click', () => {
+        const inputVal = document.getElementById('group-chat-input').value;
+        if (inputVal && inputVal.trim()) {
+          sendGroupMessage(inputVal);
+          document.getElementById('group-chat-input').value = '';
+          document.getElementById('group-chat-input').focus();
         }
       });
     }
-    
-    if (input) {
-      input.addEventListener('keypress', (e) => {
+
+    const newInput = document.getElementById('group-chat-input');
+    if (newInput) {
+      newInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
-          sendGroupMessage(input.value);
-          input.value = '';
+          const inputVal = e.target.value;
+          if (inputVal && inputVal.trim()) {
+            sendGroupMessage(inputVal);
+            e.target.value = '';
+          }
         }
       });
+
       // Auto-focus e scroll a fine
       setTimeout(() => {
-        input.focus();
-        container.querySelector('[style*="overflow-y"]').scrollTop = container.querySelector('[style*="overflow-y"]').scrollHeight;
-      }, 0);
+        newInput.focus();
+        const scrollContainer = container.querySelector('[style*="overflow-y"]');
+        if (scrollContainer) {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        }
+      }, 50);
     }
   }
   
@@ -327,15 +366,31 @@ window.groupChat = (() => {
       console.warn('[GroupChat] Not in a group');
       return;
     }
-    
+
     chatPanelOpen = true;
-    
+
+    console.log('[GroupChat] openChatPanel: opening sheet for room', group.roomId);
+    console.log('[GroupChat] Current chat history:', chatHistory.messages.length, 'messages');
+
     // Apri sheet con chat
     const html = `<div id="group-chat-panel" style="height: 100%; display: flex; flex-direction: column;"></div>`;
     window.openSheet?.('💬 Chat Gruppo: ' + group.roomId, html);
-    
-    // Renderizza dopo che il sheet è aperto
-    setTimeout(() => renderChatPanel(), 100);
+
+    // Renderizza dopo che il sheet è aperto (aumentato a 300ms per mobile)
+    setTimeout(() => {
+      console.log('[GroupChat] Calling renderChatPanel...');
+      renderChatPanel();
+
+      // Double-check: se non renderizzato, retry
+      setTimeout(() => {
+        const container = document.getElementById('group-chat-panel');
+        const messagesDiv = container?.querySelector('[style*="overflow-y"]');
+        if (container && (!messagesDiv || messagesDiv.innerHTML.includes('Nessun messaggio'))) {
+          console.warn('[GroupChat] Re-rendering due to missing messages...');
+          renderChatPanel();
+        }
+      }, 200);
+    }, 300);
   }
   
   /**
