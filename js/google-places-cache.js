@@ -63,6 +63,7 @@ class GooglePlacesCache {
         address: poi.vicinity || poi.formatted_address || '',
         city: poi.city || null,
         searchCity: poi.searchCity || null,
+        cat: poi.cat || (window.mapGoogleTypesToCategory ? window.mapGoogleTypesToCategory(poi.types) : 'poi'),
         rating: poi.rating || null,
         ratingCount: poi.user_ratings_total || 0,
         types: poi.types || [],
