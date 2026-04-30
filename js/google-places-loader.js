@@ -262,14 +262,18 @@ function mapGoogleTypesToCategory(types) {
 }
 
 // Zone geografiche giapponesi con bounding box (min_lat, max_lat, min_lng, max_lng)
+// Expanded to cover gaps between zones
 const JAPAN_ZONES = [
-  { name: 'Tokyo', min_lat: 35.4, max_lat: 35.9, min_lng: 139.4, max_lng: 140.3 },
-  { name: 'Osaka', min_lat: 34.3, max_lat: 34.8, min_lng: 135.3, max_lng: 135.9 },
-  { name: 'Kyoto', min_lat: 34.8, max_lat: 35.3, min_lng: 135.5, max_lng: 136.1 },
-  { name: 'Nagano', min_lat: 36.4, max_lat: 37.1, min_lng: 137.1, max_lng: 138.3 },
   { name: 'Hokkaido', min_lat: 41.4, max_lat: 45.5, min_lng: 139.2, max_lng: 148.6 },
-  { name: 'Fukuoka', min_lat: 32.7, max_lat: 33.6, min_lng: 130.2, max_lng: 131.2 },
-  { name: 'Hiroshima', min_lat: 34.1, max_lat: 34.8, min_lng: 131.9, max_lng: 133.1 }
+  { name: 'Tokyo', min_lat: 35.3, max_lat: 36.1, min_lng: 139.2, max_lng: 140.5 },
+  { name: 'Nagano', min_lat: 36.1, max_lat: 37.2, min_lng: 137.0, max_lng: 138.6 },
+  { name: 'Kyoto', min_lat: 34.8, max_lat: 35.4, min_lng: 135.4, max_lng: 136.2 },
+  { name: 'Osaka', min_lat: 34.3, max_lat: 35.0, min_lng: 135.2, max_lng: 135.9 },
+  { name: 'Kobe', min_lat: 34.2, max_lat: 34.8, min_lng: 134.9, max_lng: 135.5 },
+  { name: 'Okayama', min_lat: 34.4, max_lat: 35.1, min_lng: 133.8, max_lng: 134.5 },
+  { name: 'Hiroshima', min_lat: 34.1, max_lat: 34.8, min_lng: 131.8, max_lng: 133.2 },
+  { name: 'Fukuoka', min_lat: 32.5, max_lat: 33.8, min_lng: 129.9, max_lng: 131.4 },
+  { name: 'Kitakyushu', min_lat: 33.7, max_lat: 34.2, min_lng: 130.7, max_lng: 131.1 }
 ];
 
 // Determina la zona basata sulle coordinate
