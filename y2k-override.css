@@ -272,6 +272,29 @@ nav.bottom button.active {
   margin: 0 0 8px !important;
 }
 
+/* ── Category headers in search results ────────────────────────── */
+.category-section {
+  margin-bottom: 16px !important;
+}
+.category-section h4 {
+  color: var(--y2k-pink) !important;
+  font-family: 'Comic Sans MS', cursive !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  margin: 12px 0 8px 0 !important;
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+.category-section h4 .count {
+  background: var(--y2k-green) !important;
+  color: var(--y2k-ink) !important;
+  padding: 2px 8px !important;
+  border-radius: 12px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
 /* ── POI rows dentro le finestre ────────────────────────────────── */
 .sheet-inner .poi-row,
 .sheet-body .poi-row {

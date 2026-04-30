@@ -131,7 +131,10 @@
     .y2k-win-body .sheet-body { padding: 0 !important; }
     .y2k-win-body h2 { color: #2D3B7D !important; font-size: 15px !important; }
     .y2k-win-body .section h3 { color: #FF1493 !important; }
-    .y2k-win-body .poi-row { background: linear-gradient(135deg,#E8F4FF,#F0EDFF) !important; border: 2px solid #00FF88 !important; color: #2D3B7D !important; }
+    .y2k-win-body .category-section { margin-bottom: 16px !important; }
+    .y2k-win-body .category-section h4 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 14px !important; font-weight: 700 !important; margin: 12px 0 8px 0 !important; display: flex !important; gap: 8px !important; align-items: center !important; }
+    .y2k-win-body .category-section h4 .count { background: #00FF88 !important; color: #2D3B7D !important; padding: 2px 8px !important; border-radius: 12px !important; font-size: 12px !important; font-weight: 600 !important; }
+    .y2k-win-body .poi-row { display: flex !important; align-items: center !important; gap: 12px !important; background: linear-gradient(135deg,#E8F4FF,#F0EDFF) !important; border: 2px solid #00FF88 !important; color: #2D3B7D !important; }
     .y2k-win-body .poi-row .name { color: #2D3B7D !important; }
     .y2k-win-body .poi-row .sub { color: #555 !important; }
     .y2k-win-body .btn { background: linear-gradient(180deg,#E0D5FF,#F0E5FF) !important; border: 2px solid #E0D5FF !important; color: #2D3B7D !important; font-family: 'Courier New',monospace !important; }
