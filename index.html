@@ -3107,8 +3107,69 @@ window.addEventListener("load", () => {
             e.stopPropagation();
             const poiName = img.dataset.poiName;
             const photoUrl = img.dataset.photoUrl;
-            const html = `<div style="text-align:center;padding:10px;display:flex;align-items:center;justify-content:center;min-height:60vh"><img src="${photoUrl}" style="max-width:95%;max-height:70vh;border-radius:8px;object-fit:contain;"></div>`;
-            window.openSheet(poiName, html);
+
+            // Crea fullscreen photo viewer modal
+            const overlay = document.createElement('div');
+            overlay.id = 'photo-viewer-overlay';
+            overlay.style.cssText = `
+              position:fixed;inset:0;z-index:9999;
+              background:rgba(0,0,0,.95);
+              display:flex;align-items:center;justify-content:center;
+              padding:20px;cursor:pointer
+            `;
+
+            const container = document.createElement('div');
+            container.style.cssText = `
+              max-width:90vw;max-height:90vh;
+              display:flex;flex-direction:column;align-items:center;
+              position:relative
+            `;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.style.cssText = `
+              position:absolute;top:20px;right:20px;
+              background:#fff;border:none;border-radius:50%;
+              width:44px;height:44px;font-size:22px;
+              cursor:pointer;z-index:10000;font-weight:700
+            `;
+            closeBtn.textContent = '✕';
+            closeBtn.onclick = () => overlay.remove();
+
+            const photoImg = document.createElement('img');
+            photoImg.src = photoUrl;
+            photoImg.style.cssText = `
+              max-width:100%;max-height:100%;
+              object-fit:contain;border-radius:8px;
+              box-shadow:0 0 30px rgba(255,255,255,.2)
+            `;
+
+            const titleDiv = document.createElement('p');
+            titleDiv.style.cssText = `
+              color:#fff;margin-top:16px;text-align:center;
+              font-size:14px;font-weight:600;max-width:90vw
+            `;
+            titleDiv.textContent = poiName;
+
+            container.appendChild(closeBtn);
+            container.appendChild(photoImg);
+            container.appendChild(titleDiv);
+            overlay.appendChild(container);
+
+            // Chiudi con click su sfondo
+            overlay.onclick = (e) => {
+              if (e.target === overlay) overlay.remove();
+            };
+
+            // Chiudi con tasto Escape
+            const closeOnEscape = (e) => {
+              if (e.key === 'Escape') {
+                overlay.remove();
+                document.removeEventListener('keydown', closeOnEscape);
+              }
+            };
+            document.addEventListener('keydown', closeOnEscape);
+
+            document.body.appendChild(overlay);
           };
         });
         }); // Chiudi il .then() di getAllCached()
