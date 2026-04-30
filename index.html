@@ -2951,9 +2951,17 @@ window.addEventListener("load", () => {
           return;
         }
 
-        // RAGGRUPPA PER CATEGORIA (non per città)
+        // CALCOLA DISTANZA PER OGNI POI e ORDINA
+        const poisWithDist = searchResults.map(p => {
+          const km = state.gpsCurrentLat && p.lat && p.lng
+            ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng)
+            : Infinity;
+          return { ...p, km };
+        }).sort((a, b) => a.km - b.km);  // Ordina per distanza (dal più vicino)
+
+        // RAGGRUPPA PER CATEGORIA
         const byCategory = {};
-        searchResults.forEach(p => {
+        poisWithDist.forEach(p => {
           const cat = p.cat || 'poi';
           if (!byCategory[cat]) byCategory[cat] = [];
           byCategory[cat].push(p);
@@ -2964,35 +2972,30 @@ window.addEventListener("load", () => {
           (CATS[a]?.label || a).localeCompare(CATS[b]?.label || b)
         );
 
-        // COSTRUISCI HTML — POI raggruppati per categoria con distanza, rating, costo
+        // COSTRUISCI HTML — POI raggruppati per categoria, ordinati per distanza
         const html = catOrder.map(cat => {
           const items = byCategory[cat];
           const itemsHtml = items.map(p => {
             const isInItin = isInItinerary(p.id);
-            const km = state.gpsCurrentLat && p.lat && p.lng
-              ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng)
-              : null;
-            const distStr = km !== null ? `<span style="font-size:11px;color:var(--success)">📍 ${fmtDist(km)}</span>` : '';
+            const distStr = p.km !== Infinity ? `<span style="font-size:11px;color:var(--success)">📍 ${fmtDist(p.km)}</span>` : '';
             const ratingStr = p.rating ? `<span style="font-size:11px;color:var(--warning)">⭐ ${p.rating}</span>` : '';
             const costStr = p.cost ? `<span style="font-size:11px">💰 ${p.cost}</span>` : '';
 
             return `
-              <div class="poi-row" data-id="${p.id}" style="position:relative">
+              <div class="poi-row" data-id="${p.id}">
                 <div class="icon">${CATS[p.cat]?.icon || '📍'}</div>
                 <div class="body">
                   <div class="name">${getPoiDisplayName(p)}</div>
-                  <div class="sub" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
-                    ${distStr}${ratingStr}${costStr}
-                  </div>
+                  <div class="sub">${distStr}${ratingStr ? ' · ' + ratingStr : ''}${costStr ? ' · ' + costStr : ''}</div>
                 </div>
-                <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓':'+ Aggiungi'}</button>
+                <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓ Aggiunto':'+ Aggiungi'}</button>
               </div>
             `;
           }).join('');
 
           return `
             <div class="category-section">
-              <h4 style="margin:0 0 12px">${CATS[cat]?.label || cat} <span class="count">${items.length}</span></h4>
+              <h4>${CATS[cat]?.label || cat} <span class="count">${items.length}</span></h4>
               ${itemsHtml}
             </div>
           `;
