@@ -3007,14 +3007,32 @@ window.addEventListener("load", () => {
           }).join('');
 
           return `
-            <div class="category-section">
-              <h4>${CATS[cat]?.label || cat} <span class="count">${items.length}</span></h4>
-              ${itemsHtml}
+            <div class="category-section" data-category="${cat}">
+              <h4 class="category-header" style="cursor:pointer;user-select:none;display:flex;gap:8px;align-items:center">
+                <span class="category-toggle" style="font-size:12px;font-weight:700">▼</span>
+                <span>${CATS[cat]?.label || cat}</span>
+                <span class="count">${items.length}</span>
+              </h4>
+              <div class="category-items">
+                ${itemsHtml}
+              </div>
             </div>
           `;
         }).join('');
 
         resultsDiv.innerHTML = html;
+
+        // ATTACH CATEGORY TOGGLE HANDLERS
+        resultsDiv.querySelectorAll('.category-header').forEach(header => {
+          header.onclick = (e) => {
+            const section = header.closest('.category-section');
+            const items = section.querySelector('.category-items');
+            const toggle = header.querySelector('.category-toggle');
+            const isOpen = items.style.display !== 'none';
+            items.style.display = isOpen ? 'none' : 'block';
+            toggle.textContent = isOpen ? '▶' : '▼';
+          };
+        });
 
         // ATTACH EVENT HANDLERS
         resultsDiv.querySelectorAll('.poi-row').forEach(r => {

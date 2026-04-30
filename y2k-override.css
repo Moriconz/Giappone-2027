@@ -294,6 +294,17 @@ nav.bottom button.active {
   font-size: 12px !important;
   font-weight: 600 !important;
 }
+.category-items {
+  transition: max-height 0.2s ease, opacity 0.2s ease !important;
+  overflow: hidden !important;
+}
+.category-header:hover {
+  opacity: 0.8 !important;
+  background: rgba(255,20,147,0.05) !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  margin: 8px -8px !important;
+}
 
 /* ── POI rows dentro le finestre ────────────────────────────────── */
 .sheet-inner .poi-row,
