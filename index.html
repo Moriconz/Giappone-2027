@@ -3066,9 +3066,9 @@ window.addEventListener("load", () => {
 
         // ATTACH EVENT HANDLERS
         resultsDiv.querySelectorAll('.poi-row').forEach(r => {
-          // Click per aprire POI
+          // Click per aprire POI (esclude bottone e foto)
           r.onclick = (e) => {
-            if (!e.target.closest('.btn')) {
+            if (!e.target.closest('.btn') && !e.target.closest('.poi-photo')) {
               openPOI(r.dataset.id);
             }
           };
