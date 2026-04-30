@@ -1383,6 +1383,134 @@ window.addEventListener("load", () => {
   }
 
   // ═════════════════════════════════════════════════════════════════
+  // ===== SHARE ITINERARY TO GROUP =====
+  // ═════════════════════════════════════════════════════════════════
+
+  /**
+   * Show modal to select which group to share itinerary with
+   */
+  function showShareItineraryModal() {
+    console.log('[ShareItin] Showing group selection modal');
+
+    if (!state.group || !state.group.roomId) {
+      toast('⚠️ Non sei in nessun gruppo');
+      return;
+    }
+
+    if (!state.itinerary || state.itinerary.length === 0) {
+      toast('⚠️ L\'itinerario personale è vuoto');
+      return;
+    }
+
+    // Initialize groupItineraries if needed
+    if (!state.groupItineraries) {
+      state.groupItineraries = {};
+    }
+
+    const roomId = state.group.roomId;
+    const html = `
+      <div style="padding: 0; min-width: 300px;">
+        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;">
+          <h3 style="margin:0 0 12px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📤 Condividi Itinerario</h3>
+
+          <div style="background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;padding:12px;margin-bottom:12px;">
+            <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:14px">Stanza: ${escapeHtml(roomId)}</p>
+            <p style="margin:0;color:#666;font-size:12px">Tappe: <strong>${state.itinerary.length}</strong></p>
+          </div>
+
+          <div style="display:flex;gap:8px">
+            <button id="confirm-share-itin" style="flex:1;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive">
+              ✅ Condividi
+            </button>
+            <button id="cancel-share-itin" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
+              ❌ Annulla
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    window.y2kWindows.open('share-itinerary-modal', 'Condividi Itinerario', html);
+
+    // Attach event listeners
+    setTimeout(() => {
+      const confirmBtn = document.getElementById('confirm-share-itin');
+      const cancelBtn = document.getElementById('cancel-share-itin');
+
+      if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+          sharePersonalItineraryToGroup(roomId);
+          window.y2kWindows.close('share-itinerary-modal');
+          toast('✅ Itinerario condiviso con il gruppo!');
+        });
+      }
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          window.y2kWindows.close('share-itinerary-modal');
+        });
+      }
+    }, 0);
+  }
+
+  /**
+   * Copy personal itinerary to group itinerary
+   */
+  function sharePersonalItineraryToGroup(roomId) {
+    console.log('[ShareItin] Sharing personal itinerary to group:', roomId);
+
+    if (!state.itinerary || state.itinerary.length === 0) {
+      console.warn('[ShareItin] Personal itinerary is empty');
+      return;
+    }
+
+    const itineraryId = `group_itin_${roomId}`;
+    const myPeerId = window.makePeerId?.(roomId, state.group.myName) ||
+                     `${roomId}_${state.group.myName}`;
+
+    // Create group itinerary from personal itinerary
+    const groupItinerary = {
+      id: itineraryId,
+      roomId: roomId,
+      name: { value: `Itinerario - ${state.group.myName}`, timestamp: Date.now(), peerId: myPeerId },
+      version: 1,
+      pois: state.itinerary.map(entry => ({
+        googlePlaceId: entry.id,
+        name: { value: entry.name, timestamp: Date.now(), peerId: myPeerId },
+        category: { value: entry.type || 'poi', timestamp: Date.now(), peerId: myPeerId },
+        notes: { value: entry.notes || '', timestamp: Date.now(), peerId: myPeerId },
+        lat: entry.lat,
+        lng: entry.lng,
+        timestamp: Date.now(),
+        addedByPeerId: myPeerId,
+        addedAt: Date.now()
+      })),
+      createdAt: Date.now(),
+      createdBy: state.group.myName
+    };
+
+    // Save to state
+    if (!state.groupItineraries) state.groupItineraries = {};
+    state.groupItineraries[itineraryId] = groupItinerary;
+    window.saveState();
+
+    console.log('[ShareItin] ✓ Shared. POIs:', groupItinerary.pois.length);
+
+    // Broadcast to group
+    window.broadcastItinerary?.(itineraryId);
+
+    // Emit event for UI refresh
+    window.dispatchEvent(new CustomEvent('itinerary_updated', {
+      detail: { itineraryId, itinerary: groupItinerary }
+    }));
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Export share functions globally
+  window.showShareItineraryModal = showShareItineraryModal;
+  window.sharePersonalItineraryToGroup = sharePersonalItineraryToGroup;
+
+  // ═════════════════════════════════════════════════════════════════
   // ===== OPENING HOURS FEATURE =====
   // ═════════════════════════════════════════════════════════════════
 
@@ -5303,7 +5431,7 @@ window.addEventListener("load", () => {
       btnExportWhatsapp.onclick = () => exportItineraryWhatsApp();
     }
     if (btnShareGroup) {
-      btnShareGroup.onclick = () => shareItineraryInGroup();
+      btnShareGroup.onclick = () => window.showShareItineraryModal?.();
     }
     if (btnGoogleSearch) {
       btnGoogleSearch.onclick = () => {
@@ -5498,38 +5626,27 @@ window.addEventListener("load", () => {
           if (poi) {
             console.log('[AGGIUNGI] POI trovato:', poi.name || poi.bestname);
 
-            // Phase 3: If user is in a group, show group selection modal
-            if (state.group && state.group.roomId) {
-              // Initialize groupItineraries if not exists
-              if (!state.groupItineraries) {
-                state.groupItineraries = {};
-                console.log('[PHASE3] Initialized groupItineraries');
-              }
-              console.log('[PHASE3] User in group, showing group selection modal');
-              window.showGroupSelectionModal?.(poi);
-            } else {
-              // Fallback: Show personal itinerary dialog
-              console.log('[AGGIUNGI] No group, showing personal itinerary dialog');
-              showAddItineraryDialog(poi, ({ day, time, cost }) => {
-                console.log('[DIALOG CALLBACK] TRIGGERED with:', { day, time, cost });
-                const entry = {
-                  id: poi.googlePlaceId,
-                  name: getPoiDisplayName(poi),
-                  city: poi.searchCity || poi.city,
-                  lat: poi.lat,
-                  lng: poi.lng,
-                  day: day ? parseInt(day) : null,
-                  time: time || '',
-                  cost: cost || ''
-                };
-                console.log('[DIALOG CALLBACK] entry created:', entry);
-                addToItinerary(entry);
-                console.log('[DIALOG CALLBACK] calling renderListView...');
-                toast('✓ Aggiunto a itinerario');
-                renderListView();
-                console.log('[DIALOG CALLBACK] renderListView completed');
-              });
-            }
+            // ALWAYS add to personal itinerary first
+            console.log('[AGGIUNGI] Showing personal itinerary dialog');
+            showAddItineraryDialog(poi, ({ day, time, cost }) => {
+              console.log('[DIALOG CALLBACK] TRIGGERED with:', { day, time, cost });
+              const entry = {
+                id: poi.googlePlaceId,
+                name: getPoiDisplayName(poi),
+                city: poi.searchCity || poi.city,
+                lat: poi.lat,
+                lng: poi.lng,
+                day: day ? parseInt(day) : null,
+                time: time || '',
+                cost: cost || ''
+              };
+              console.log('[DIALOG CALLBACK] entry created:', entry);
+              addToItinerary(entry);
+              console.log('[DIALOG CALLBACK] calling renderListView...');
+              toast('✓ Aggiunto a itinerario personale');
+              renderListView();
+              console.log('[DIALOG CALLBACK] renderListView completed');
+            });
           } else {
             console.error('[AGGIUNGI] POI non trovato con ID:', poiId);
           }
