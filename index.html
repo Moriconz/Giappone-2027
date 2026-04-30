@@ -3014,7 +3014,7 @@ window.addEventListener("load", () => {
               : '';
 
             return `
-              <div class="poi-row" data-id="${p.id}">
+              <div class="poi-row" data-id="${p.googlePlaceId}">
                 <div class="icon">${CATS[p.cat]?.icon || '📍'}</div>
                 <div class="body">
                   <div class="name">${getPoiDisplayName(p)}</div>
@@ -3029,7 +3029,7 @@ window.addEventListener("load", () => {
                   data-poi-name="${getPoiDisplayName(p).replace(/"/g, '&quot;')}"
                   data-photo-url="${photoUrl}"
                 >` : ''}
-                <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓':'+ Aggiungi'}</button>
+                <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.googlePlaceId}">${isInItin?'✓':'+ Aggiungi'}</button>
               </div>
             `;
           }).join('');
@@ -3097,7 +3097,8 @@ window.addEventListener("load", () => {
             allPOIsLength: allPOIs().length
           });
 
-          const poi = allPOIs().find(p => p.id === poiId);
+          // ✅ Cerca per googlePlaceId (l'ID univoco da Google Places)
+          const poi = allPOIs().find(p => p.googlePlaceId === poiId);
           console.log('[AGGIUNGI CLICK] poi trovato:', poi);
 
           if (poi) {
