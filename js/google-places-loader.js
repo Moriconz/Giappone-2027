@@ -261,7 +261,7 @@ function mapGoogleTypesToCategory(types) {
   return 'poi';
 }
 
-// Reverse-geocode coordinates to get city name
+// Reverse-geocode coordinates to get prefecture/region name (not specific ward)
 async function getCityFromCoordinates(lat, lng) {
   try {
     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
@@ -270,8 +270,10 @@ async function getCityFromCoordinates(lat, lng) {
     const data = await response.json();
     const address = data.address || {};
 
-    // Priorizza city > town > village > county
-    return address.city || address.town || address.village || address.county || null;
+    // Per il Giappone, priorizza state/province (prefettura) su city (quartiere)
+    // state/province contiene "Tokyo", "Osaka", etc.
+    // city contiene il quartiere specifico (Chuo, Shibuya, etc.)
+    return address.state || address.province || address.city || address.town || address.village || null;
   } catch (err) {
     console.warn(`[GooglePlacesLoader] Reverse-geo error at ${lat}, ${lng}:`, err);
     return null;
