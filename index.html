@@ -2826,190 +2826,6 @@ window.addEventListener("load", () => {
   }
 
   function renderListView(){
-    // Se GPS è acceso ma NON ha coordinate ancora: aspetta
-    if (state.gpsEnabled && (!state.gpsCurrentLat || !state.gpsCurrentLng)) {
-      window.openSheet('🗺️ Tutte le tappe', `
-        <div style="padding:20px;text-align:center">
-          <p style="font-size:14px;color:var(--accent);margin-bottom:20px">⏳ Acquisendo posizione GPS...</p>
-          <p style="font-size:12px;color:var(--muted)">Un attimo, il dispositivo sta localizzando...</p>
-        </div>
-      `);
-      console.log('[renderListView] GPS attivo ma coordinate NON acquisite — in attesa');
-      return;
-    }
-
-    // Se non ci sono POI caricati, carica TUTTI i POI del Giappone
-    let allPoisForList = getCachedAllPOIs();
-    if (allPoisForList.length === 0 && window.GOOGLE_PLACES_POIS.length === 0) {
-      console.log('[renderListView] ⏳ Nessun POI caricato. Caricamento di tutti i POI del Giappone...');
-      window.openSheet('🗺️ Tutte le tappe', `
-        <div style="padding:20px;text-align:center">
-          <p style="font-size:14px;color:var(--accent);margin-bottom:20px">⏳ Caricando TUTTI i POI del Giappone da Google Places...</p>
-          <p style="font-size:12px;color:var(--muted)">Potrebbero volerci alcuni secondi... (Hokkaido, Honshu, Kyushu, Okinawa)</p>
-        </div>
-      `);
-
-      // Regioni del Giappone per coprire tutto il territorio
-      const japanRegions = [
-        { name: 'Hokkaido', lat: 43.2332, lng: 142.5898, radius: 300000 },      // Nord
-        { name: 'Tohoku', lat: 40.3157, lng: 141.1352, radius: 280000 },        // Nord-est
-        { name: 'Kanto', lat: 35.6762, lng: 139.7694, radius: 250000 },         // Centro-est (Tokyo)
-        { name: 'Chubu', lat: 36.5627, lng: 137.5992, radius: 280000 },         // Centro
-        { name: 'Kansai', lat: 34.6937, lng: 135.5023, radius: 260000 },        // Centro-ovest (Osaka/Kyoto)
-        { name: 'Chugoku', lat: 34.3996, lng: 132.4743, radius: 280000 },       // Ovest
-        { name: 'Shikoku', lat: 33.5904, lng: 134.5644, radius: 220000 },       // Sud-ovest
-        { name: 'Kyushu', lat: 33.2381, lng: 130.8445, radius: 300000 },        // Sud
-        { name: 'Okinawa', lat: 26.2128, lng: 127.6790, radius: 200000 }        // Isole a sud
-      ];
-
-      // Carica POI da tutte le regioni in parallelo
-      Promise.all(japanRegions.map(region =>
-        fetchGooglePlacesPOIs(region.lat, region.lng, region.radius)
-          .then(pois => {
-            console.log(`[renderListView] ${region.name}: ${pois ? pois.length : 0} POI`);
-            return pois || [];
-          })
-          .catch(e => {
-            console.warn(`[renderListView] Errore caricamento ${region.name}:`, e);
-            return [];
-          })
-      )).then(allResults => {
-        // Unisci tutti i risultati, evita duplicati per place_id
-        const allPois = [];
-        const seenPlaceIds = new Set();
-
-        allResults.forEach(results => {
-          results.forEach(poi => {
-            if (!seenPlaceIds.has(poi.place_id)) {
-              seenPlaceIds.add(poi.place_id);
-              allPois.push(poi);
-            }
-          });
-        });
-
-        console.log(`[renderListView] ✅ Caricati ${allPois.length} POI UNICI da tutto il Giappone`);
-
-        // Helper: estrai città dall'indirizzo (formato Google Places: "Name, City, Prefecture, Country")
-        function extractCityFromAddress(address) {
-          if (!address) return undefined;
-          const parts = address.split(',').map(p => p.trim());
-          if (parts.length >= 2) {
-            return parts[1];  // Ritorna City/Prefecture
-          }
-          return parts.length > 0 ? parts[0] : undefined;
-        }
-
-        // Invalidate cache so getCachedAllPOIs() gets fresh data
-        globalPOIsCache = null;
-
-        window.GOOGLE_PLACES_POIS = allPois.map((poi, idx) => ({
-          id: `gp_${poi.place_id || `poi_${Date.now()}_${idx}`}`,
-          googlePlaceId: poi.place_id,
-          name: poi.name,
-          lat: poi.geometry.location.lat,
-          lng: poi.geometry.location.lng,
-          address: poi.vicinity || poi.formatted_address || '',
-          city: extractCityFromAddress(poi.vicinity || poi.formatted_address || ''),
-          rating: poi.rating || null,
-          ratingCount: poi.user_ratings_total || 0,
-          types: poi.types || [],
-          cat: mapGoogleTypesToCategory(poi.types),
-          businessStatus: poi.business_status || 'OPERATIONAL',
-          fromGooglePlaces: true
-        }));
-
-        // Re-render immediately without recursive call
-        setTimeout(() => {
-          allPoisForList = getCachedAllPOIs();
-          renderMarkers();
-          // Manually refresh the tappe view if it's open
-          const sheet = document.querySelector('.sheet.open');
-          if (sheet) {
-            location.reload(); // Refresh the page to show updated data
-          }
-        }, 100);
-      }).catch(e => {
-        console.error('[renderListView] Errore nel caricamento delle regioni:', e);
-        // Still show the interface even on error
-        setTimeout(() => location.reload(), 100);
-      });
-      return;
-    }
-
-    // Filtra per GPS se attivo (default: entro 10km)
-    const gpsEnabled = state.gpsEnabled && state.gpsCurrentLat && state.gpsCurrentLng;
-    const gpsRadius = 10; // km
-
-    console.log('[renderListView] ========== START ==========');
-    console.log('[renderListView] GPS Settings:', {
-      enabled: state.gpsEnabled,
-      currentLat: state.gpsCurrentLat,
-      currentLng: state.gpsCurrentLng,
-      gpsEnabled: gpsEnabled
-    });
-    console.log('[renderListView] Total POI nel cache:', allPoisForList.length);
-
-    // Se GPS attivo, pre-filtra per distanza
-    if (gpsEnabled) {
-      const beforeFilter = allPoisForList.length;
-      allPoisForList = allPoisForList.filter(p => {
-        if (!p.lat || !p.lng) return true;
-        const km = haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng);
-        return km <= gpsRadius;
-      });
-      console.log(`[renderListView] FILTRO GPS ATTIVO: ${beforeFilter} → ${allPoisForList.length} POI entro ${gpsRadius}km`);
-    } else {
-      console.log('[renderListView] GPS NON ATTIVO: mostrando tutti i POI');
-    }
-
-    // Costruisci struttura bycity SOLO per i POI che mostrerai
-    const bycity = {};
-    allPoisForList.forEach(p => {
-      if (!p.city) return;
-      const cityName = p.city || 'Senza città';
-      const cityKey = cityName.trim();
-      if (!bycity[cityKey]) bycity[cityKey] = {};
-      const cat = p.cat || 'all';
-      if (!bycity[cityKey][cat]) bycity[cityKey][cat] = [];
-      bycity[cityKey][cat].push(p);
-    });
-    listViewCache.data = bycity;
-
-    const known = CITIES.filter(c => bycity[c]);
-    const extra = Object.keys(bycity).filter(c => !CITIES.includes(c)).sort();
-    const order = [...known, ...extra];
-
-    const html = order.map(cityName => {
-      const categories = Object.keys(bycity[cityName]).sort((a,b) => (CATS[a]?.label||a).localeCompare(CATS[b]?.label||b));
-      const categoryHtml = categories.map(cat => {
-        const items = bycity[cityName][cat].map(p => `
-          <div class="poi-row" data-id="${p.id}">
-            <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
-            <div class="body">
-              <div class="name">${getPoiDisplayName(p)}</div>
-              <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
-            </div>
-            <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
-          </div>
-        `).join('');
-        return `<div class="category-section"><h4>${CATS[cat]?.label||cat} <span class="count">${bycity[cityName][cat].length}</span></h4>${items}</div>`;
-      }).join('');
-      return `
-        <details class="city-dropdown">
-          <summary>${cityName} <span class="count">${Object.values(bycity[cityName]).flat().length}</span></summary>
-          ${categoryHtml}
-        </details>
-      `;
-    }).join('');
-
-    // Messaggio GPS
-    let gpsMessage = '';
-    if (gpsEnabled) {
-      gpsMessage = `<p style="font-size:11px;color:var(--success);margin:6px 0 0">✅ 📍 Mostrando tappe entro ${gpsRadius}km. Scrivi per cercare ovunque.</p>`;
-    } else if (state.gpsEnabled && (!state.gpsCurrentLat || !state.gpsCurrentLng)) {
-      gpsMessage = `<p style="font-size:11px;color:var(--warning);margin:6px 0 0">⏳ Acquisendo posizione GPS... Nel frattempo vedi tutte le tappe.</p>`;
-    }
-
     // ===== ITINERARIO COLLABORATIVO DEL GRUPPO =====
     const itinerary = state.itinerary || [];
     const itineraryHtml = itinerary.length ? itinerary.map((entry, idx) => {
@@ -3031,11 +2847,12 @@ window.addEventListener("load", () => {
       </div>`;
     }).join('') : '<p style="color:var(--muted);font-size:13px;padding:12px">📋 L\'itinerario del gruppo è vuoto. Seleziona tappe dalla lista sottostante per aggiungerle!</p>';
 
+    // HTML PRINCIPALE
     const searchHtml = `
       <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
-        <!-- Ricerca -->
+        <!-- Ricerca per città (searchCity) -->
         <div style="display:flex;gap:6px;margin-bottom:8px">
-          <input id="list-search" type="text" placeholder="🔍 Cerca tappa locale..."
+          <input id="list-search" type="text" placeholder="🔍 Scrivi una città (Tokyo, Osaka, Kyoto...)"
             style="flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit">
           <button id="btn-google-search" style="padding:8px 12px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;white-space:nowrap">🌍 Google</button>
         </div>
@@ -3045,8 +2862,6 @@ window.addEventListener("load", () => {
           <button id="btn-export-whatsapp" style="flex:1;padding:6px;background:rgba(76,175,80,.2);border:1px solid #4CAF50;border-radius:6px;color:var(--text);cursor:pointer;font-size:11px;font-weight:600">📤 WhatsApp</button>
           <button id="btn-share-group" style="flex:1;padding:6px;background:rgba(255,20,147,.2);border:1px solid var(--accent);border-radius:6px;color:var(--text);cursor:pointer;font-size:11px;font-weight:600">👥 Condividi</button>
         </div>
-
-        ${gpsMessage}
       </div>
 
       <!-- ITINERARIO ORDINATO PER DATA -->
@@ -3059,244 +2874,16 @@ window.addEventListener("load", () => {
         <div id="itinerary-list">${itineraryHtml}</div>
       </div>
 
-      <div id="list-results"></div>
+      <!-- MESSAGGIO INIZIALE -->
+      <div id="list-results" style="padding:20px;text-align:center;color:var(--muted);font-size:13px">
+        <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
+        <p style="font-size:11px;margin:8px 0 0">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+      </div>
     `;
 
     window.openSheet('🗺️ Tutte le tappe', searchHtml);
 
-    // Rebuild HTML per lista filtrata GPS
-    const buildListHtml = (poisList) => {
-      const bycityGps = {};
-      poisList.forEach(p => {
-        if (!p.city) return;
-        const cityName = p.city || 'Senza città';
-        const cityKey = cityName.trim();
-        if (!bycityGps[cityKey]) bycityGps[cityKey] = {};
-        const cat = p.cat || 'all';
-        if (!bycityGps[cityKey][cat]) bycityGps[cityKey][cat] = [];
-        bycityGps[cityKey][cat].push(p);
-      });
-      const known = CITIES.filter(c => bycityGps[c]);
-      const extra = Object.keys(bycityGps).filter(c => !CITIES.includes(c)).sort();
-      const orderGps = [...known, ...extra];
-
-      return orderGps.map(cityName => {
-        const categories = Object.keys(bycityGps[cityName]).sort((a,b) => (CATS[a]?.label||a).localeCompare(CATS[b]?.label||b));
-        const categoryHtml = categories.map(cat => {
-          const items = bycityGps[cityName][cat].map(p => `
-            <div class="poi-row" data-id="${p.id}">
-              <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
-              <div class="body">
-                <div class="name">${getPoiDisplayName(p)}</div>
-                <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
-              </div>
-              <div class="gf-dot ${p.gf?.lvl||'none'}"></div>
-            </div>
-          `).join('');
-          return `<div class="category-section"><h4>${CATS[cat]?.label||cat} <span class="count">${bycityGps[cityName][cat].length}</span></h4>${items}</div>`;
-        }).join('');
-        return `
-          <details class="city-dropdown">
-            <summary>${cityName} <span class="count">${Object.values(bycityGps[cityName]).flat().length}</span></summary>
-            ${categoryHtml}
-          </details>
-        `;
-      }).join('');
-    };
-
-    // Mostra lista iniziale (filtrata GPS) - COMPATTA con PAGINAZIONE per città grandi
-    const resultsDiv = document.getElementById('list-results');
-    const MAX_ITEMS_PER_PAGE = 100; // Mostra max 100 POI per pagina
-
-    // Helper: pagina i POI di una categoria
-    function paginateItems(items, maxPerPage = MAX_ITEMS_PER_PAGE) {
-      if (items.length <= maxPerPage) {
-        return { page1: items, hasMore: false };
-      }
-      return { page1: items.slice(0, maxPerPage), rest: items.slice(maxPerPage), hasMore: true };
-    }
-
-    // Build COMPACT list - LAZY LOAD: genera HTML dei POI solo quando la città viene espansa
-    const compactHtml = order.map(cityName => {
-      const totalCount = Object.values(bycity[cityName]).flat().length;
-      return `
-        <details class="city-dropdown" data-city="${cityName}">
-          <summary>${cityName} <span class="count">${totalCount}</span></summary>
-          <div class="city-content">⏳ Caricamento...</div>
-        </details>
-      `;
-    }).join('');
-
-    // Function: genera l'HTML dei POI quando una città viene espansa
-    function renderCityContent(cityName) {
-      const categories = Object.keys(bycity[cityName]).sort((a,b) => (CATS[a]?.label||a).localeCompare(CATS[b]?.label||b));
-      const categoryHtml = categories.map(cat => {
-        const allItems = bycity[cityName][cat];
-        const { page1, hasMore, rest } = paginateItems(allItems);
-
-        const itemsHtml = page1.map(p => {
-          const isInItin = isInItinerary(p.id);
-          return `
-          <div class="poi-row" data-id="${p.id}" style="position:relative">
-            <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
-            <div class="body">
-              <div class="name">${getPoiDisplayName(p)}</div>
-              <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
-            </div>
-            <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓ Aggiunto':'+ Aggiungi'}</button>
-          </div>
-        `}).join('');
-
-        const loadMoreBtn = hasMore ? `
-          <button data-city="${cityName}" data-cat="${cat}" data-rest-count="${rest.length}"
-            style="width:100%;padding:8px;margin-top:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:11px">
-            ↓ Carica altri ${Math.min(rest.length, MAX_ITEMS_PER_PAGE)} (${rest.length - MAX_ITEMS_PER_PAGE > 0 ? '+' + (rest.length - MAX_ITEMS_PER_PAGE) : 'ultimi'})
-          </button>
-        ` : '';
-
-        return `
-          <div class="category-section">
-            <h4>${CATS[cat]?.label||cat} <span class="count">${allItems.length}${hasMore ? ' (mostrando ' + page1.length + ')' : ''}</span></h4>
-            ${itemsHtml}
-            ${loadMoreBtn}
-          </div>
-        `;
-      }).join('');
-      return categoryHtml;
-    }
-
-    resultsDiv.innerHTML = compactHtml || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
-
-    // Setup lazy-load: genera contenuto quando la città viene espansa
-    resultsDiv.querySelectorAll('[data-city]').forEach(details => {
-      details.addEventListener('toggle', () => {
-        if (details.open) {
-          const cityContent = details.querySelector('.city-content');
-          if (cityContent && cityContent.textContent.includes('Caricamento')) {
-            console.log('[renderListView] Lazy-loading città:', details.dataset.city);
-            const html = renderCityContent(details.dataset.city);
-            cityContent.innerHTML = html;
-
-            // Attacca click handler ai poi-row
-            cityContent.querySelectorAll('.poi-row').forEach(r => {
-              r.onclick = (e) => {
-                if (!e.target.closest('.btn')) {
-                  openPOI(r.dataset.id);
-                }
-              };
-              // Aggiungi handler per pulsanti
-              const addBtn = r.querySelector('[data-add-to-itinerary]');
-              if (addBtn) {
-                addBtn.onclick = (e) => {
-                  e.stopPropagation();
-                  const poiId = addBtn.dataset.addToItinerary;
-                  const poi = allPOIs().find(p => p.id === poiId);
-                  if (poi) {
-                    showAddItineraryDialog(poi, ({ day, time, cost }) => {
-                      const entry = {
-                        id: poi.id,
-                        name: getPoiDisplayName(poi),
-                        city: poi.city,
-                        lat: poi.lat,
-                        lng: poi.lng,
-                        day: day ? parseInt(day) : null,
-                        time: time || '',
-                        cost: cost || ''
-                      };
-                      addToItinerary(entry);
-                      toast('✓ Aggiunto a itinerario');
-                      renderListView();
-                    });
-                  }
-                };
-              }
-              const removeBtn = r.querySelector('[data-remove-itinerary]');
-              if (removeBtn) {
-                removeBtn.onclick = (e) => {
-                  e.stopPropagation();
-                  const id = removeBtn.dataset.removeItinerary;
-                  removeFromItinerary(id);
-                  toast('Rimosso da itinerario');
-                  renderListView();
-                };
-              }
-            });
-
-            // Attacca handler ai pulsanti "Carica altri"
-            cityContent.querySelectorAll('[data-city]').forEach(btn => {
-              btn.onclick = (e) => {
-                e.preventDefault();
-                const city = btn.dataset.city;
-                const cat = btn.dataset.cat;
-                const allItems = bycity[city][cat];
-                const { page1, rest } = paginateItems(allItems);
-
-                const nextItems = rest.slice(0, MAX_ITEMS_PER_PAGE);
-                const stillMore = rest.length > MAX_ITEMS_PER_PAGE;
-
-                const moreHtml = nextItems.map(p => {
-                  const isInItin = isInItinerary(p.id);
-                  return `
-                  <div class="poi-row" data-id="${p.id}" style="position:relative">
-                    <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
-                    <div class="body">
-                      <div class="name">${getPoiDisplayName(p)}</div>
-                      <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
-                    </div>
-                    <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓ Aggiunto':'+ Aggiungi'}</button>
-                  </div>
-                `}).join('');
-
-                const newDiv = document.createElement('div');
-                newDiv.innerHTML = moreHtml;
-                btn.parentNode.insertBefore(newDiv, btn);
-
-                if (stillMore) {
-                  const remaining = rest.length - MAX_ITEMS_PER_PAGE;
-                  btn.textContent = `↓ Carica altri ${Math.min(remaining, MAX_ITEMS_PER_PAGE)}`;
-                } else {
-                  btn.remove();
-                }
-
-                newDiv.querySelectorAll('.poi-row').forEach(r => {
-                  r.onclick = (e) => {
-                    if (!e.target.closest('.btn')) {
-                      openPOI(r.dataset.id);
-                    }
-                  };
-                  const addBtn = r.querySelector('[data-add-to-itinerary]');
-                  if (addBtn) {
-                    addBtn.onclick = (e) => {
-                      e.stopPropagation();
-                      const poiId = addBtn.dataset.addToItinerary;
-                      const poi = allPOIs().find(p => p.id === poiId);
-                      if (poi) {
-                        const timeInput = prompt('⏰ Inserisci l\'orario (es. 09:30):', '');
-                        if (timeInput !== null) {
-                          const entry = {
-                            id: poi.id,
-                            name: getPoiDisplayName(poi),
-                            city: poi.city,
-                            lat: poi.lat,
-                            lng: poi.lng,
-                            time: timeInput || ''
-                          };
-                          addToItinerary(entry);
-                          toast('✓ Aggiunto a itinerario');
-                          renderListView();
-                        }
-                      }
-                    };
-                  }
-                });
-              };
-            });
-          }
-        }
-      });
-    });
-
-    // Setup pulsanti azione (Esporta, Condividi, Google Search)
+    // Setup bottoni azione
     const btnExportWhatsapp = document.getElementById('btn-export-whatsapp');
     const btnShareGroup = document.getElementById('btn-share-group');
     const btnGoogleSearch = document.getElementById('btn-google-search');
@@ -3316,7 +2903,6 @@ window.addEventListener("load", () => {
             if (results.length === 1) {
               addGooglePlaceToItinerary(results[0]);
             } else {
-              // Mostra lista di risultati
               showGooglePlacesResults(results);
             }
           });
@@ -3324,312 +2910,144 @@ window.addEventListener("load", () => {
       };
     }
 
-    // Setup ricerca (GLOBALE — cerca TUTTI i POI anche fuori dal raggio GPS)
+    // Setup ricerca per città (FILTRA PER searchCity)
     const searchInput = document.getElementById('list-search');
-    console.log('[renderListView] searchInput trovato?', !!searchInput);
+    const resultsDiv = document.getElementById('list-results');
+
     if (searchInput) {
-      console.log('[renderListView] ✅ Setup ricerca attivo');
       searchInput.oninput = debounce((e) => {
         const query = e.target.value.toLowerCase().trim();
-        console.log('[renderListView] Ricerca:', query);
-        console.log('[renderListView] POIs disponibili:', allPOIs().length);
+        console.log('[renderListView] Ricerca per città:', query);
 
         if (!query) {
-          // Torna a mostrare lista compatta (città chiuse)
-          console.log('[renderListView] Ricerca svuotata, torna a lista GPS-filtrata compatta');
-          resultsDiv.innerHTML = compactHtml || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
-          attachRowClickHandlers();
-        } else {
-          // RICERCA GLOBALE — cerca in TUTTI i POI
-          console.log('[renderListView] Ricerca globale nel database...');
-          const allPois = allPOIs();
+          // Torna al messaggio iniziale
+          resultsDiv.innerHTML = `
+            <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">
+              <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
+              <p style="font-size:11px;margin:8px 0 0">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+            </div>
+          `;
+          return;
+        }
 
-          if (allPois.length === 0) {
-            console.warn('[renderListView] ⚠️ Nessun POI caricato! Attendere il caricamento da Google Places...');
-            resultsDiv.innerHTML = '<p style="color:var(--warning);font-size:13px;padding:20px;text-align:center">⏳ Caricando POIs da Google Places... Riprova tra un momento.</p>';
-            return;
-          }
+        // FILTRA POI PER searchCity (non per city, non per address)
+        const allPois = allPOIs();
+        const searchResults = allPois.filter(p => {
+          const searchCity = (p.searchCity || '').toLowerCase();
+          return searchCity.includes(query);
+        });
 
-          const searchResults = allPois.filter(p => {
-            const name = (p.name || '').toLowerCase();
-            const city = (p.city || '').toLowerCase();
-            const searchCity = (p.searchCity || '').toLowerCase();
-            const address = (p.address || '').toLowerCase();
-            const best = (p.best || '').toLowerCase();
-            const desc = (p.desc || '').toLowerCase();
-            const catLabel = (CATS[p.cat]?.label || '').toLowerCase();
+        console.log(`[renderListView] Trovati ${searchResults.length} POI per città: ${query}`);
 
-            return name.includes(query) ||
-                   city.includes(query) ||
-                   searchCity.includes(query) ||
-                   address.includes(query) ||
-                   best.includes(query) ||
-                   desc.includes(query) ||
-                   catLabel.includes(query);
-          });
+        // Se nessun risultato
+        if (searchResults.length === 0) {
+          resultsDiv.innerHTML = `
+            <div style="padding:20px;text-align:center">
+              <p style="font-size:14px;margin:0 0 8px;color:#FF1493;font-weight:700">❌ Nessun POI trovato</p>
+              <p style="font-size:12px;margin:0;color:var(--muted)">Non ci sono luoghi a "${query}"</p>
+              <p style="font-size:11px;margin:8px 0 0;color:var(--muted)">💡 Prova con: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima</p>
+            </div>
+          `;
+          return;
+        }
 
-          console.log('[renderListView] Risultati ricerca:', searchResults.length, 'POI trovati');
+        // RAGGRUPPA PER CATEGORIA (non per città)
+        const byCategory = {};
+        searchResults.forEach(p => {
+          const cat = p.cat || 'poi';
+          if (!byCategory[cat]) byCategory[cat] = [];
+          byCategory[cat].push(p);
+        });
 
-          // Se nessun risultato, mostra messaggio
-          if (searchResults.length === 0) {
-            resultsDiv.innerHTML = `
-              <div style="padding:20px;text-align:center">
-                <p style="font-size:14px;margin:0 0 8px;color:#FF1493;font-weight:700">❌ Nessun risultato</p>
-                <p style="font-size:12px;margin:0;color:var(--muted)">Non trovato "${query}" nei POI locali</p>
-                <p style="font-size:11px;margin:8px 0 0;color:var(--muted)">💡 Usa 🌍 Google per cercare ovunque</p>
-              </div>
-            `;
-            return;
-          }
+        // ORDINA CATEGORIE
+        const catOrder = Object.keys(byCategory).sort((a, b) =>
+          (CATS[a]?.label || a).localeCompare(CATS[b]?.label || b)
+        );
 
-          // Costruisci HTML con risultati raggruppati per città (città APERTE di default quando ci sono risultati)
-          const bycitySearch = {};
-          searchResults.forEach(p => {
-            if (!p.city) return;
-            const cityName = p.city || 'Senza città';
-            const cityKey = cityName.trim();
-            if (!bycitySearch[cityKey]) bycitySearch[cityKey] = {};
-            const cat = p.cat || 'all';
-            if (!bycitySearch[cityKey][cat]) bycitySearch[cityKey][cat] = [];
-            bycitySearch[cityKey][cat].push(p);
-          });
+        // COSTRUISCI HTML — POI raggruppati per categoria con distanza, rating, costo
+        const html = catOrder.map(cat => {
+          const items = byCategory[cat];
+          const itemsHtml = items.map(p => {
+            const isInItin = isInItinerary(p.id);
+            const km = state.gpsCurrentLat && p.lat && p.lng
+              ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng)
+              : null;
+            const distStr = km !== null ? `<span style="font-size:11px;color:var(--success)">📍 ${fmtDist(km)}</span>` : '';
+            const ratingStr = p.rating ? `<span style="font-size:11px;color:var(--warning)">⭐ ${p.rating}</span>` : '';
+            const costStr = p.cost ? `<span style="font-size:11px">💰 ${p.cost}</span>` : '';
 
-          const knownSearch = CITIES.filter(c => bycitySearch[c]);
-          const extraSearch = Object.keys(bycitySearch).filter(c => !CITIES.includes(c)).sort();
-          const orderSearch = [...knownSearch, ...extraSearch];
-
-          // Costruisci lista di ricerca con LAZY-LOAD (come la lista iniziale)
-          const searchHtml = orderSearch.map(cityName => {
-            const totalCount = Object.values(bycitySearch[cityName]).flat().length;
             return `
-              <details class="city-dropdown" open data-city="${cityName}" data-search="true">
-                <summary>${cityName} <span class="count">${totalCount}</span></summary>
-                <div class="city-content">⏳ Caricamento...</div>
-              </details>
+              <div class="poi-row" data-id="${p.id}" style="position:relative">
+                <div class="icon">${CATS[p.cat]?.icon || '📍'}</div>
+                <div class="body">
+                  <div class="name">${getPoiDisplayName(p)}</div>
+                  <div class="sub" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
+                    ${distStr}${ratingStr}${costStr}
+                  </div>
+                </div>
+                <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓':'+ Aggiungi'}</button>
+              </div>
             `;
           }).join('');
 
-          resultsDiv.innerHTML = searchHtml || '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata.</p>';
+          return `
+            <div class="category-section">
+              <h4 style="margin:0 0 12px">${CATS[cat]?.label || cat} <span class="count">${items.length}</span></h4>
+              ${itemsHtml}
+            </div>
+          `;
+        }).join('');
 
-          // Setup lazy-load per risultati di ricerca
-          resultsDiv.querySelectorAll('[data-search="true"]').forEach(details => {
-            // Genera contenuto subito (città OPEN di default nei risultati)
-            const cityName = details.dataset.city;
-            const cityContent = details.querySelector('.city-content');
+        resultsDiv.innerHTML = html;
 
-            // Genera contenuto di ricerca (con paginazione)
-            const categories = Object.keys(bycitySearch[cityName]).sort((a,b) => (CATS[a]?.label||a).localeCompare(CATS[b]?.label||b));
-            const categoryHtml = categories.map(cat => {
-              const allItems = bycitySearch[cityName][cat];
-              const { page1, hasMore, rest } = paginateItems(allItems);
-
-              const itemsHtml = page1.map(p => {
-                const isInItin = isInItinerary(p.id);
-                return `
-                <div class="poi-row" data-id="${p.id}" style="position:relative">
-                  <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
-                  <div class="body">
-                    <div class="name">${getPoiDisplayName(p)}</div>
-                    <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
-                  </div>
-                  <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓ Aggiunto':'+ Aggiungi'}</button>
-                </div>
-              `}).join('');
-
-              const loadMoreBtn = hasMore ? `
-                <button data-city="${cityName}" data-cat="${cat}" data-search-load="true"
-                  style="width:100%;padding:8px;margin-top:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:11px">
-                  ↓ Carica altri ${Math.min(rest.length, MAX_ITEMS_PER_PAGE)}
-                </button>
-              ` : '';
-
-              return `
-                <div class="category-section">
-                  <h4>${CATS[cat]?.label||cat} <span class="count">${allItems.length}${hasMore ? ' (mostrando ' + page1.length + ')' : ''}</span></h4>
-                  ${itemsHtml}
-                  ${loadMoreBtn}
-                </div>
-              `;
-            }).join('');
-
-            cityContent.innerHTML = categoryHtml;
-
-            // Attacca click handler ai poi-row
-            cityContent.querySelectorAll('.poi-row').forEach(r => {
-              r.onclick = (e) => {
-                if (!e.target.closest('.btn')) {
-                  openPOI(r.dataset.id);
-                }
-              };
-              // Aggiungi handler per pulsanti
-              const addBtn = r.querySelector('[data-add-to-itinerary]');
-              if (addBtn) {
-                addBtn.onclick = (e) => {
-                  e.stopPropagation();
-                  const poiId = addBtn.dataset.addToItinerary;
-                  const poi = allPOIs().find(p => p.id === poiId);
-                  if (poi) {
-                    showAddItineraryDialog(poi, ({ day, time, cost }) => {
-                      const entry = {
-                        id: poi.id,
-                        name: getPoiDisplayName(poi),
-                        city: poi.city,
-                        lat: poi.lat,
-                        lng: poi.lng,
-                        day: day ? parseInt(day) : null,
-                        time: time || '',
-                        cost: cost || ''
-                      };
-                      addToItinerary(entry);
-                      toast('✓ Aggiunto a itinerario');
-                      renderListView();
-                    });
-                  }
-                };
-              }
-              const removeBtn = r.querySelector('[data-remove-itinerary]');
-              if (removeBtn) {
-                removeBtn.onclick = (e) => {
-                  e.stopPropagation();
-                  const id = removeBtn.dataset.removeItinerary;
-                  removeFromItinerary(id);
-                  toast('Rimosso da itinerario');
-                  renderListView();
-                };
-              }
-            });
-
-            // Attacca handler ai pulsanti "Carica altri" della ricerca
-            cityContent.querySelectorAll('[data-search-load="true"]').forEach(btn => {
-              btn.onclick = (e) => {
-                e.preventDefault();
-                const city = btn.dataset.city;
-                const cat = btn.dataset.cat;
-                const allItems = bycitySearch[city][cat];
-                const { page1, rest } = paginateItems(allItems);
-
-                const nextItems = rest.slice(0, MAX_ITEMS_PER_PAGE);
-                const stillMore = rest.length > MAX_ITEMS_PER_PAGE;
-
-                const moreHtml = nextItems.map(p => {
-                  const isInItin = isInItinerary(p.id);
-                  return `
-                  <div class="poi-row" data-id="${p.id}" style="position:relative">
-                    <div class="icon">${CATS[p.cat]?.icon||'📍'}</div>
-                    <div class="body">
-                      <div class="name">${getPoiDisplayName(p)}</div>
-                      <div class="sub">${CATS[p.cat]?.label||p.cat} · ${p.best||p.desc?.slice(0,60)||''}</div>
-                    </div>
-                    <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓ Aggiunto':'+ Aggiungi'}</button>
-                  </div>
-                `}).join('');
-
-                const newDiv = document.createElement('div');
-                newDiv.innerHTML = moreHtml;
-                btn.parentNode.insertBefore(newDiv, btn);
-
-                if (stillMore) {
-                  btn.textContent = `↓ Carica altri ${Math.min(rest.length - MAX_ITEMS_PER_PAGE, MAX_ITEMS_PER_PAGE)}`;
-                } else {
-                  btn.remove();
-                }
-
-                newDiv.querySelectorAll('.poi-row').forEach(r => {
-                  r.onclick = (e) => {
-                    if (!e.target.closest('.btn')) {
-                      openPOI(r.dataset.id);
-                    }
-                  };
-                  const addBtn = r.querySelector('[data-add-to-itinerary]');
-                  if (addBtn) {
-                    addBtn.onclick = (e) => {
-                      e.stopPropagation();
-                      const poiId = addBtn.dataset.addToItinerary;
-                      const poi = allPOIs().find(p => p.id === poiId);
-                      if (poi) {
-                        const timeInput = prompt('⏰ Inserisci l\'orario (es. 09:30):', '');
-                        if (timeInput !== null) {
-                          const entry = {
-                            id: poi.id,
-                            name: getPoiDisplayName(poi),
-                            city: poi.city,
-                            lat: poi.lat,
-                            lng: poi.lng,
-                            time: timeInput || ''
-                          };
-                          addToItinerary(entry);
-                          toast('✓ Aggiunto a itinerario');
-                          renderListView();
-                        }
-                      }
-                    };
-                  }
-                });
-              };
-            });
-          });
-        }
-      }, 200);  // Debounce search input (fast response)
-    }
-
-    // Helper: attach click handlers a tutti i poi-row
-    function attachRowClickHandlers() {
-      resultsDiv.querySelectorAll('.poi-row').forEach(r => {
-        // Click sulla row apre il POI (non su pulsanti)
-        r.onclick = (e) => {
-          if (!e.target.closest('.btn')) {
-            openPOI(r.dataset.id);
-          }
-        };
-
-        // Gestore per aggiungere all'itinerario
-        const addBtn = r.querySelector('[data-add-to-itinerary]');
-        if (addBtn) {
-          addBtn.onclick = (e) => {
-            e.stopPropagation();
-            const poiId = addBtn.dataset.addToItinerary;
-            const poi = allPOIs().find(p => p.id === poiId);
-            if (poi) {
-              // Form per inserire l'orario
-              const timeInput = prompt('⏰ Inserisci l\'orario (es. 09:30):', '');
-              if (timeInput !== null) {
-                const entry = {
-                  id: poi.id,
-                  name: getPoiDisplayName(poi),
-                  city: poi.city,
-                  lat: poi.lat,
-                  lng: poi.lng,
-                  time: timeInput || ''
-                };
-                addToItinerary(entry);
-                toast('✓ Aggiunto a itinerario');
-                renderListView(); // Refresh
-              }
+        // ATTACH EVENT HANDLERS
+        resultsDiv.querySelectorAll('.poi-row').forEach(r => {
+          // Click per aprire POI
+          r.onclick = (e) => {
+            if (!e.target.closest('.btn')) {
+              openPOI(r.dataset.id);
             }
           };
-        }
 
-        // Gestore per rimuovere dall'itinerario
-        const removeBtn = r.querySelector('[data-remove-itinerary]');
-        if (removeBtn) {
-          removeBtn.onclick = (e) => {
-            e.stopPropagation();
-            const id = removeBtn.dataset.removeItinerary;
-            removeFromItinerary(id);
-            toast('Rimosso da itinerario');
-            renderListView(); // Refresh
-          };
-        }
-      });
+          // Click sul pulsante "Aggiungi"
+          const addBtn = r.querySelector('[data-add-to-itinerary]');
+          if (addBtn) {
+            addBtn.onclick = (e) => {
+              e.stopPropagation();
+              const poiId = addBtn.dataset.addToItinerary;
+              const poi = allPOIs().find(p => p.id === poiId);
+              if (poi) {
+                showAddItineraryDialog(poi, ({ day, time, cost }) => {
+                  const entry = {
+                    id: poi.id,
+                    name: getPoiDisplayName(poi),
+                    city: poi.searchCity || poi.city,
+                    lat: poi.lat,
+                    lng: poi.lng,
+                    day: day ? parseInt(day) : null,
+                    time: time || '',
+                    cost: cost || ''
+                  };
+                  addToItinerary(entry);
+                  toast('✓ Aggiunto a itinerario');
+                  renderListView();
+                });
+              }
+            };
+          }
+        });
+
+      }, 200);  // Debounce
     }
 
-    // Attach initial handlers
-    attachRowClickHandlers();
-    sheetBody.querySelectorAll('.poi-row').forEach(r => {
-      r.onclick = (e) => {
-        if (!e.target.closest('.btn')) {
-          openPOI(r.dataset.id);
-        }
+    // ATTACH ITINERARY HANDLERS
+    document.querySelectorAll('[data-remove-itinerary]').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.removeItinerary;
+        removeFromItinerary(id);
+        toast('Rimosso da itinerario');
+        renderListView();
       };
     });
   }
