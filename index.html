@@ -3076,12 +3076,16 @@ window.addEventListener("load", () => {
           // Click sul pulsante "Aggiungi"
           const addBtn = r.querySelector('[data-add-to-itinerary]');
           if (addBtn) {
-            addBtn.onclick = (e) => {
+            addBtn.addEventListener('click', (e) => {
+              e.preventDefault();
               e.stopPropagation();
+              e.stopImmediatePropagation();
+
               const poiId = addBtn.dataset.addToItinerary;
-              console.log('[addBtn.onclick] poiId:', poiId);
-              const poi = allPOIs().find(p => p.id === poiId);  // ✅ Usa funzione globale allPOIs()
-              console.log('[addBtn.onclick] poi trovato:', poi);
+              console.log('[addBtn CLICK] poiId:', poiId);
+              const poi = allPOIs().find(p => p.id === poiId);
+              console.log('[addBtn CLICK] poi trovato:', poi);
+
               if (poi) {
                 showAddItineraryDialog(poi, ({ day, time, cost }) => {
                   const entry = {
@@ -3098,8 +3102,10 @@ window.addEventListener("load", () => {
                   toast('✓ Aggiunto a itinerario');
                   renderListView();
                 });
+              } else {
+                console.error('[addBtn] POI non trovato con ID:', poiId, 'da allPOIs():', allPOIs().length);
               }
-            };
+            }, true); // ✅ usa capture phase
           }
         });
 
@@ -3140,9 +3146,10 @@ window.addEventListener("load", () => {
             const photoImg = document.createElement('img');
             photoImg.src = photoUrl;
             photoImg.style.cssText = `
-              max-width:95vw;max-height:85vh;
-              width:auto;height:auto;
-              object-fit:contain;border-radius:8px;
+              width:100%;
+              height:100%;
+              object-fit:contain;
+              border-radius:8px;
               box-shadow:0 0 40px rgba(255,255,255,.3)
             `;
             photoImg.loading = 'eager';
