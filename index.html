@@ -474,10 +474,16 @@ window.addEventListener("load", () => {
   // ---- Collaborative Itinerary Helpers ----
   function addToItinerary(entry) {
     // entry: { id, name, city, type?, lat?, lng?, date? }
+    console.log('[addToItinerary] CALLED with entry:', entry);
     if (!state.itinerary) state.itinerary = [];
     const exists = state.itinerary.find(e => e.id === entry.id);
-    if (exists) return false; // Already in itinerary
+    console.log('[addToItinerary] Entry exists?', exists, '| Current itinerary length:', state.itinerary.length);
+    if (exists) {
+      console.log('[addToItinerary] Already in itinerary, returning false');
+      return false; // Already in itinerary
+    }
     state.itinerary.push(entry);
+    console.log('[addToItinerary] ✓ ADDED to state.itinerary. New length:', state.itinerary.length);
     saveState();
     // ✅ Sincronizza con il gruppo via WebRTC
     if (peerGPS && peerGPS.broadcastItinerary) {
@@ -2841,11 +2847,14 @@ window.addEventListener("load", () => {
   }
 
   function renderListView(){
+    console.log('[renderListView] CALLED');
     // ===== ITINERARIO COLLABORATIVO DEL GRUPPO =====
     const itinerary = state.itinerary || [];
+    console.log('[renderListView] Itinerary from state:', itinerary);
     const itineraryHtml = itinerary.length ? itinerary.map((entry, idx) => {
       // ✅ Cerca per googlePlaceId (l'ID univoco da Google Places)
       const poi = allPOIs().find(p => p.googlePlaceId === entry.id);
+      console.log('[renderListView] Entry:', entry, '→ Found POI:', poi ? poi.name || poi.bestname : 'NOT FOUND');
       const km = poi && state.gpsCurrentLat
         ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, poi.lat, poi.lng) : null;
       const distStr = km !== null ? ` · <span style="color:var(--success);font-weight:600">${fmtDist(km)}</span>` : '';
@@ -2899,7 +2908,9 @@ window.addEventListener("load", () => {
       </div>
     `;
 
+    console.log('[renderListView] Opening sheet with itinerary length:', itinerary.length);
     window.openSheet('🗺️ Tutte le tappe', searchHtml);
+    console.log('[renderListView] Sheet opened');
 
     // Setup bottoni azione
     const btnExportWhatsapp = document.getElementById('btn-export-whatsapp');
@@ -3103,7 +3114,9 @@ window.addEventListener("load", () => {
           console.log('[AGGIUNGI CLICK] poi trovato:', poi);
 
           if (poi) {
+            console.log('[AGGIUNGI] POI trovato, mostrando dialog:', poi.name || poi.bestname);
             showAddItineraryDialog(poi, ({ day, time, cost }) => {
+              console.log('[DIALOG CALLBACK] TRIGGERED with:', { day, time, cost });
               const entry = {
                 id: poi.googlePlaceId,  // ✅ Usa googlePlaceId
                 name: getPoiDisplayName(poi),
@@ -3114,10 +3127,12 @@ window.addEventListener("load", () => {
                 time: time || '',
                 cost: cost || ''
               };
-              console.log('[addToItinerary] entry:', entry);
+              console.log('[DIALOG CALLBACK] entry created:', entry);
               addToItinerary(entry);
+              console.log('[DIALOG CALLBACK] calling renderListView...');
               toast('✓ Aggiunto a itinerario');
               renderListView();
+              console.log('[DIALOG CALLBACK] renderListView completed');
             });
           } else {
             console.error('[AGGIUNGI] POI non trovato con ID:', poiId);
