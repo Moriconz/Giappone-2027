@@ -297,6 +297,10 @@ nav.bottom button.active {
 .category-items {
   transition: max-height 0.2s ease, opacity 0.2s ease !important;
   overflow: hidden !important;
+  display: block !important;
+}
+.category-items.collapsed {
+  display: none !important;
 }
 .category-header:hover {
   opacity: 0.8 !important;
