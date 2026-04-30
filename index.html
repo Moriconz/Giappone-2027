@@ -2844,7 +2844,8 @@ window.addEventListener("load", () => {
     // ===== ITINERARIO COLLABORATIVO DEL GRUPPO =====
     const itinerary = state.itinerary || [];
     const itineraryHtml = itinerary.length ? itinerary.map((entry, idx) => {
-      const poi = allPOIs().find(p => p.id === entry.id);
+      // ✅ Cerca per googlePlaceId (l'ID univoco da Google Places)
+      const poi = allPOIs().find(p => p.googlePlaceId === entry.id);
       const km = poi && state.gpsCurrentLat
         ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, poi.lat, poi.lng) : null;
       const distStr = km !== null ? ` · <span style="color:var(--success);font-weight:600">${fmtDist(km)}</span>` : '';
@@ -3104,7 +3105,7 @@ window.addEventListener("load", () => {
           if (poi) {
             showAddItineraryDialog(poi, ({ day, time, cost }) => {
               const entry = {
-                id: poi.id,
+                id: poi.googlePlaceId,  // ✅ Usa googlePlaceId
                 name: getPoiDisplayName(poi),
                 city: poi.searchCity || poi.city,
                 lat: poi.lat,
@@ -3113,6 +3114,7 @@ window.addEventListener("load", () => {
                 time: time || '',
                 cost: cost || ''
               };
+              console.log('[addToItinerary] entry:', entry);
               addToItinerary(entry);
               toast('✓ Aggiunto a itinerario');
               renderListView();
