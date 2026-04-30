@@ -2875,7 +2875,7 @@ window.addEventListener("load", () => {
       </div>
 
       <!-- MESSAGGIO INIZIALE -->
-      <div id="list-results">
+      <div id="list-results" style="margin-top:20px">
         <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">
           <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
           <p style="font-size:11px;margin:8px 0 0">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
@@ -2993,7 +2993,7 @@ window.addEventListener("load", () => {
                   <div class="name">${getPoiDisplayName(p)}</div>
                   <div class="sub">${CATS[cat]?.label || cat} · ${distStr}${ratingStr ? ' · ' + ratingStr : ''}${costStr ? ' · ' + costStr : ''}</div>
                 </div>
-                ${photoUrl ? `<img src="${photoUrl}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0">` : ''}
+                ${photoUrl ? `<img src="${photoUrl}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;cursor:pointer" onclick="window.openSheet('${getPoiDisplayName(p).replace(/'/g, "\\'")}', '<div style=\\"text-align:center;padding:20px\\"><img src=\\"${photoUrl}\\" style=\\"max-width:100%;border-radius:8px\\"></div>')" title="Clicca per ingrandire">` : ''}
                 <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓':'+ Aggiungi'}</button>
               </div>
             `;
