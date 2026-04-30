@@ -201,15 +201,23 @@ nav.bottom button.active {
    Regola: tutto dentro .sheet-inner va in contrasto su crema.
 ══════════════════════════════════════════════════════════════════ */
 .sheet {
+  z-index: 50 !important;
   background: rgba(20,30,80,0.65) !important;
   backdrop-filter: blur(6px) !important;
 }
 .sheet-inner {
+  z-index: 51 !important;
   background: linear-gradient(170deg, #FFFDF0 0%, #FFF8DC 100%) !important;
   border-top: 3px solid var(--y2k-pink) !important;
   border-radius: 18px 18px 0 0 !important;
   box-shadow: 0 -8px 40px rgba(255,20,147,0.3) !important;
   padding-bottom: calc(20px + var(--safe-bottom)) !important;
+}
+/* ── Sticky search header dentro sheet (z-index sopra tutto) ── */
+.sheet-inner [style*="sticky"] {
+  z-index: 300 !important;
+  position: sticky !important;
+  top: 0 !important;
 }
 .sheet-handle {
   background: var(--y2k-pink) !important;

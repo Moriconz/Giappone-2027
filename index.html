@@ -2941,12 +2941,24 @@ window.addEventListener("load", () => {
 
         // FILTRA POI PER searchCity — LEGGI DALLA CACHE IndexedDB (dove hanno searchCity)
         window.GooglePlacesCache.getAllCached().then(allPois => {
-          const searchResults = allPois.filter(p => {
+          // ✅ DEDUPLICAZIONE PER googlePlaceId (ID univoco Google Places)
+          const seenIds = new Set();
+          const dedupedPois = [];
+          allPois.forEach(p => {
+            const id = p.googlePlaceId || p.id;
+            if (!seenIds.has(id)) {
+              seenIds.add(id);
+              dedupedPois.push(p);
+            }
+          });
+
+          // Filtra per searchCity (ora senza duplicati)
+          const searchResults = dedupedPois.filter(p => {
             const searchCity = (p.searchCity || '').toLowerCase();
             return searchCity.includes(query);
           });
 
-        console.log(`[renderListView] Trovati ${searchResults.length} POI per città: ${query}`);
+        console.log(`[renderListView] Cache: ${allPois.length} POI, Deduplicati: ${dedupedPois.length}, Filtrati per città "${query}": ${searchResults.length}`);
 
         // Se nessun risultato
         if (searchResults.length === 0) {
@@ -3000,7 +3012,15 @@ window.addEventListener("load", () => {
                   <div class="name">${getPoiDisplayName(p)}</div>
                   <div class="sub">${CATS[cat]?.label || cat} · ${distStr}${ratingStr ? ' · ' + ratingStr : ''}${costStr ? ' · ' + costStr : ''}</div>
                 </div>
-                ${photoUrl ? `<img src="${photoUrl}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;cursor:pointer" onclick="window.openSheet('${getPoiDisplayName(p).replace(/'/g, "\\'")}', '<div style=\\"text-align:center;padding:20px\\"><img src=\\"${photoUrl}\\" style=\\"max-width:100%;border-radius:8px\\"></div>')" title="Clicca per ingrandire">` : ''}
+                ${photoUrl ? `<img
+                  src="${photoUrl}"
+                  style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;cursor:pointer"
+                  alt="Foto"
+                  title="Clicca per ingrandire"
+                  class="poi-photo"
+                  data-poi-name="${getPoiDisplayName(p).replace(/"/g, '&quot;')}"
+                  data-photo-url="${photoUrl}"
+                >` : ''}
                 <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.id}">${isInItin?'✓':'+ Aggiungi'}</button>
               </div>
             `;
@@ -3025,12 +3045,14 @@ window.addEventListener("load", () => {
         // ATTACH CATEGORY TOGGLE HANDLERS
         resultsDiv.querySelectorAll('.category-header').forEach(header => {
           header.onclick = (e) => {
+            e.preventDefault();
             const section = header.closest('.category-section');
             const items = section.querySelector('.category-items');
             const toggle = header.querySelector('.category-toggle');
-            const isOpen = !items.classList.contains('collapsed');
+            // ✅ Leggi isOpen DOPO il toggle per freccia corretta
             items.classList.toggle('collapsed');
-            toggle.textContent = isOpen ? '▶' : '▼';
+            const isNowClosed = items.classList.contains('collapsed');
+            toggle.textContent = isNowClosed ? '▶' : '▼';
           };
         });
 
@@ -3069,6 +3091,17 @@ window.addEventListener("load", () => {
               }
             };
           }
+        });
+
+        // ✅ ATTACH PHOTO CLICK HANDLERS (poi-photo listener sicuro)
+        resultsDiv.querySelectorAll('.poi-photo').forEach(img => {
+          img.onclick = (e) => {
+            e.stopPropagation();
+            const poiName = img.dataset.poiName;
+            const photoUrl = img.dataset.photoUrl;
+            const html = `<div style="text-align:center;padding:20px"><img src="${photoUrl}" style="max-width:100%;border-radius:8px;"></div>`;
+            window.openSheet(poiName, html);
+          };
         });
         }); // Chiudi il .then() di getAllCached()
 
