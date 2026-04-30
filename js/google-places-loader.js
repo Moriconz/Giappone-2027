@@ -151,19 +151,15 @@ async function loadNearbyPOIs(lat, lng) {
     if (pois && pois.length > 0) {
       loadedRadii.add(key);
       try {
-        console.log(`[DEBUG] window.__searchCity = ${window.__searchCity}, pois count = ${pois.length}`);
-
         // Add search city to all POIs before saving to cache
-        const poisWithCity = pois.map(poi => ({
+        const poisWithSearchCity = pois.map(poi => ({
           ...poi,
-          city: window.__searchCity || undefined
+          searchCity: window.__searchCity || undefined
         }));
 
-        console.log(`[DEBUG] First POI after mapping: name=${poisWithCity[0].name}, city=${poisWithCity[0].city}`);
-
-        // Save POIs with city to cache
-        console.log(`[GooglePlacesLoader] Saving ${poisWithCity.length} POIs to cache (with city: ${window.__searchCity})...`);
-        await window.GooglePlacesCache.savePOIs(lat, lng, radiusM, poisWithCity);
+        // Save POIs with searchCity to cache
+        console.log(`[GooglePlacesLoader] Saving ${poisWithSearchCity.length} POIs to cache (searchCity: ${window.__searchCity})...`);
+        await window.GooglePlacesCache.savePOIs(lat, lng, radiusM, poisWithSearchCity);
         console.log(`[GooglePlacesLoader] Cache save complete`);
 
         // Then transform for display
