@@ -79,6 +79,25 @@ window.groupPanel = (() => {
           </p>
         </div>
 
+        <!-- ITINERARI DI GRUPPO (Phase 3) -->
+        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;margin-bottom:16px">
+          <h3 style="margin:0 0 10px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📋 Itinerari di Gruppo</h3>
+          <div id="group-itineraries-list" style="margin-bottom:10px;max-height:200px;overflow-y:auto">
+            <p style="font-size:12px;color:#666;margin:0;padding:8px">Nessun itinerario condiviso.</p>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:10px">
+            <button id="undo-group-btn" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:6px;padding:8px;font-weight:600;cursor:pointer;font-size:12px;opacity:0.6" disabled title="Annulla ultimo cambio">
+              ⬅️ Annulla
+            </button>
+            <button id="redo-group-btn" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:6px;padding:8px;font-weight:600;cursor:pointer;font-size:12px;opacity:0.6" disabled title="Rifai ultimo cambio">
+              ➡️ Rifai
+            </button>
+          </div>
+          <p style="font-size:11px;color:#666;margin:0">
+            Modifica condivisa e sincronizzazione in tempo reale.
+          </p>
+        </div>
+
         <!-- CHAT -->
         <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;margin-bottom:16px">
           <h3 style="margin:0 0 10px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">💬 Chat Gruppo</h3>
@@ -132,7 +151,11 @@ window.groupPanel = (() => {
         }
       });
     }
-    
+
+    // Phase 3: Update itineraries list and undo/redo buttons
+    updateGroupItinerariesList();
+    updateUndoRedoButtons();
+
     // Chat gruppo
     const chatBtn = document.getElementById('open-group-chat');
     if (chatBtn) {
@@ -152,7 +175,36 @@ window.groupPanel = (() => {
         }
       });
     }
-    
+
+    // Phase 3: Undo/Redo buttons
+    const undoBtn = document.getElementById('undo-group-btn');
+    if (undoBtn) {
+      undoBtn.addEventListener('click', () => {
+        const success = window.undo?.();
+        if (success) {
+          updateGroupItinerariesList();
+          updateUndoRedoButtons();
+          if (typeof toast === 'function') {
+            toast('⬅️ Cambio annullato');
+          }
+        }
+      });
+    }
+
+    const redoBtn = document.getElementById('redo-group-btn');
+    if (redoBtn) {
+      redoBtn.addEventListener('click', () => {
+        const success = window.redo?.();
+        if (success) {
+          updateGroupItinerariesList();
+          updateUndoRedoButtons();
+          if (typeof toast === 'function') {
+            toast('➡️ Cambio ripetuto');
+          }
+        }
+      });
+    }
+
     // Exit room
     const exitBtn = document.getElementById('exit-room');
     if (exitBtn) {
@@ -160,7 +212,7 @@ window.groupPanel = (() => {
         window.exitGroup?.();
       });
     }
-    
+
     // Delete room (solo creator)
     const deleteBtn = document.getElementById('delete-room');
     if (deleteBtn) {
@@ -170,6 +222,96 @@ window.groupPanel = (() => {
         }
       });
     }
+
+    // Listen for itinerary updates (Phase 3)
+    window.addEventListener('itinerary_updated', () => {
+      updateGroupItinerariesList();
+      updateUndoRedoButtons();
+    });
+  }
+
+  /**
+   * Update the list of group itineraries (Phase 3)
+   */
+  function updateGroupItinerariesList() {
+    const listDiv = document.getElementById('group-itineraries-list');
+    if (!listDiv) return;
+
+    const roomId = window.state?.group?.roomId;
+    if (!roomId) {
+      listDiv.innerHTML = '<p style="font-size:12px;color:#666;margin:0;padding:8px">Non sei in un gruppo.</p>';
+      return;
+    }
+
+    const itineraries = window.state?.groupItineraries || {};
+    const itineraryIds = Object.keys(itineraries);
+
+    if (itineraryIds.length === 0) {
+      listDiv.innerHTML = '<p style="font-size:12px;color:#666;margin:0;padding:8px">Nessun itinerario condiviso.</p>';
+      return;
+    }
+
+    const itinerariesList = itineraryIds.map(itinId => {
+      const itin = itineraries[itinId];
+      const poiCount = itin.pois?.length || 0;
+      const createdBy = itin.createdBy || 'Sconosciuto';
+
+      return `
+        <div style="background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="flex:1">
+              <div style="color:#FF1493;font-weight:600">${escapeHtml(itin.name?.value || itin.name || 'Itinerario')}</div>
+              <div style="color:#666;font-size:11px">📍 ${poiCount} tappe • v${itin.version || 1}</div>
+            </div>
+            <button data-delete-itinerary="${itinId}" style="background:#FF6B6B;border:none;color:white;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;font-weight:600">
+              🗑️
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    listDiv.innerHTML = itinerariesList;
+
+    // Attach delete handlers
+    listDiv.querySelectorAll('[data-delete-itinerary]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const itinId = btn.getAttribute('data-delete-itinerary');
+        if (confirm('Eliminare questo itinerario?')) {
+          if (window.state.groupItineraries[itinId]) {
+            delete window.state.groupItineraries[itinId];
+            window.saveState();
+            updateGroupItinerariesList();
+            if (typeof toast === 'function') {
+              toast('🗑️ Itinerario eliminato');
+            }
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * Update undo/redo button states (Phase 3)
+   */
+  function updateUndoRedoButtons() {
+    const undoBtn = document.getElementById('undo-group-btn');
+    const redoBtn = document.getElementById('redo-group-btn');
+
+    const undoRedo = window.state?.undoRedo;
+    if (!undoBtn || !redoBtn || !undoRedo) return;
+
+    // Enable undo if not at start
+    const canUndo = undoRedo.currentIndex > 0;
+    undoBtn.disabled = !canUndo;
+    undoBtn.style.opacity = canUndo ? '1' : '0.6';
+    undoBtn.style.cursor = canUndo ? 'pointer' : 'not-allowed';
+
+    // Enable redo if not at end
+    const canRedo = undoRedo.currentIndex < undoRedo.stack.length - 1;
+    redoBtn.disabled = !canRedo;
+    redoBtn.style.opacity = canRedo ? '1' : '0.6';
+    redoBtn.style.cursor = canRedo ? 'pointer' : 'not-allowed';
   }
   
   /**
@@ -188,6 +330,8 @@ window.groupPanel = (() => {
   return {
     render: renderGroupPanel,
     attachEvents: attachGroupPanelEvents,
-    getForceFakeGPS: () => FORCE_FAKE_GPS
+    getForceFakeGPS: () => FORCE_FAKE_GPS,
+    updateItinerariesList: updateGroupItinerariesList,
+    updateUndoRedoButtons: updateUndoRedoButtons
   };
 })();

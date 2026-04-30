@@ -115,6 +115,58 @@ function setupPeerHandlersWithRelay(peer, amIHub) {
         }
       }
 
+      // ===== ITINERARY SYNC MESSAGE (Phase 2) =====
+      else if (data.type === "itinerary_sync") {
+        console.log('[SYNC] Received itinerary_sync from:', data.from, '| itineraryId:', data.itineraryId);
+
+        // Verify hash for integrity
+        const computedHash = window.computeItineraryHash?.(data.payload);
+        if (computedHash && computedHash !== data.hash) {
+          console.warn('[SYNC] ❌ Hash mismatch! Computed:', computedHash, 'Received:', data.hash);
+          // Could request resync here, but for now skip
+          return;
+        }
+
+        // Merge incoming itinerary with local
+        if (window.mergeGroupItinerary && data.payload && data.itineraryId) {
+          const localItinerary = window.state.groupItineraries?.[data.itineraryId];
+          const remoteItinerary = data.payload;
+
+          console.log('[SYNC] Merging itinerary:', data.itineraryId);
+          const merged = window.mergeGroupItinerary(localItinerary, remoteItinerary);
+
+          // Update state
+          window.state.groupItineraries = window.state.groupItineraries || {};
+          window.state.groupItineraries[data.itineraryId] = merged;
+          window.saveState();
+
+          console.log('[SYNC] ✓ Merged. New version:', merged.version, '| POIs:', merged.pois?.length);
+
+          // Emit event for UI to refresh
+          window.dispatchEvent(new CustomEvent('itinerary_updated', {
+            detail: { itineraryId, itinerary: merged }
+          }));
+
+          // Hub: relay to other peers
+          const isHub = (window.state.group?.myName === window.state.group?.createdByName);
+          if (isHub && window.peer?.connections) {
+            console.log('[SYNC] Hub relaying itinerary to other peers');
+            Object.keys(window.peer.connections).forEach(peerId => {
+              if (peerId !== data.from) {
+                const conns = window.peer.connections[peerId];
+                if (conns && conns.length > 0) {
+                  try {
+                    conns[0].send(data);
+                  } catch (e) {
+                    console.warn('[SYNC] Relay failed to', peerId, ':', e.message);
+                  }
+                }
+              }
+            });
+          }
+        }
+      }
+
       // ===== HEARTBEAT MESSAGE =====
       else if (data.type === "heartbeat") {
         onPeerMessage(data);

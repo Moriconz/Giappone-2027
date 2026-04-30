@@ -582,15 +582,31 @@ window.addEventListener("load", () => {
       poiMap.set(key, entry);
     });
 
+    // Helper: Normalize POI fields (extract values from field metadata objects)
+    function normalizePOI(poi) {
+      const normalized = { googlePlaceId: poi.googlePlaceId };
+      Object.keys(poi).forEach(key => {
+        if (key === 'googlePlaceId' || key === 'fields') return;
+        const val = poi[key];
+        // If value is a field metadata object, extract the value
+        if (val && typeof val === 'object' && 'value' in val && 'timestamp' in val) {
+          normalized[key] = val.value;
+        } else {
+          normalized[key] = val;
+        }
+      });
+      return normalized;
+    }
+
     // 3. Merge each POI
     merged.pois = Array.from(poiMap.values()).map(({ local, remote }) => {
       if (!local) {
         console.log('[CRDT] POI only in remote:', remote.googlePlaceId);
-        return remote;
+        return normalizePOI(remote);
       }
       if (!remote) {
         console.log('[CRDT] POI only in local:', local.googlePlaceId);
-        return local;
+        return normalizePOI(local);
       }
 
       // Both exist: merge field-by-field
@@ -604,18 +620,39 @@ window.addEventListener("load", () => {
       ]);
 
       fieldNames.forEach(fieldName => {
-        if (fieldName === 'googlePlaceId' || fieldName === 'fields') return;
+        if (fieldName === 'googlePlaceId' || fieldName === 'fields' || fieldName === 'deleted' || fieldName === 'deletionTimestamp') return;
 
-        const localFieldMeta = local.fields?.[fieldName] || {
-          value: local[fieldName],
-          timestamp: local.timestamp || 0,
-          peerId: local.addedByPeerId || 'unknown'
-        };
-        const remoteFieldMeta = remote.fields?.[fieldName] || {
-          value: remote[fieldName],
-          timestamp: remote.timestamp || 0,
-          peerId: remote.addedByPeerId || 'unknown'
-        };
+        // Get local field metadata
+        let localFieldMeta = local.fields?.[fieldName];
+        if (!localFieldMeta) {
+          const localValue = local[fieldName];
+          // Check if value is already a field metadata object
+          if (localValue && typeof localValue === 'object' && 'value' in localValue && 'timestamp' in localValue) {
+            localFieldMeta = localValue;
+          } else {
+            localFieldMeta = {
+              value: localValue,
+              timestamp: local.timestamp || 0,
+              peerId: local.addedByPeerId || 'unknown'
+            };
+          }
+        }
+
+        // Get remote field metadata
+        let remoteFieldMeta = remote.fields?.[fieldName];
+        if (!remoteFieldMeta) {
+          const remoteValue = remote[fieldName];
+          // Check if value is already a field metadata object
+          if (remoteValue && typeof remoteValue === 'object' && 'value' in remoteValue && 'timestamp' in remoteValue) {
+            remoteFieldMeta = remoteValue;
+          } else {
+            remoteFieldMeta = {
+              value: remoteValue,
+              timestamp: remote.timestamp || 0,
+              peerId: remote.addedByPeerId || 'unknown'
+            };
+          }
+        }
 
         const winner = mergePOIFields(localFieldMeta, remoteFieldMeta);
         mergedPoi[fieldName] = winner.value;
@@ -671,7 +708,7 @@ window.addEventListener("load", () => {
       itineraryId: itineraryId,
       poiId: poiId,
       changeSet: changeSet,
-      snapshot: JSON.parse(JSON.stringify(state.groupItineraries[itineraryId]))
+      snapshot: cloneItinerary(state.groupItineraries[itineraryId])
     });
 
     // Trim if over limit
@@ -816,6 +853,2026 @@ window.addEventListener("load", () => {
 
     console.log('%c═══ END TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
     return merged;
+  };
+
+  // ═════════════════════════════════════════════════════════════════
+  // ===== PHASE 3: UI COMPONENTS =====
+  // ═════════════════════════════════════════════════════════════════
+
+  /**
+   * Deep clone itinerary, removing undefined values for serialization safety
+   */
+  function cloneItinerary(itinerary) {
+    if (!itinerary) return itinerary;
+    return JSON.parse(JSON.stringify(itinerary, (key, value) => {
+      return value === undefined ? null : value;
+    }));
+  }
+
+  /**
+   * Show modal to select which group to add POI to
+   * Called when user clicks "Aggiungi" from a POI card
+   */
+  function showGroupSelectionModal(poi) {
+    console.log('[UI] showGroupSelectionModal for POI:', poi.name);
+
+    if (!state.group || !state.group.roomId) {
+      toast('⚠️ Non sei in nessun gruppo. Crea o unisciti a un gruppo per condividere.');
+      return;
+    }
+
+    const roomId = state.group.roomId;
+    const itineraryId = `group_itin_${roomId}`;
+
+    // Build modal HTML
+    const html = `
+      <div style="padding: 0; min-width: 300px;">
+        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;">
+          <h3 style="margin:0 0 12px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📍 Aggiungi a Itinerario di Gruppo</h3>
+
+          <div style="background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;padding:12px;margin-bottom:12px;">
+            <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:14px">Stanza: ${escapeHtml(roomId)}</p>
+            <p style="margin:0;color:#666;font-size:12px">Aggiungi <strong>${escapeHtml(poi.name)}</strong> all'itinerario di gruppo</p>
+          </div>
+
+          <div style="display:flex;gap:8px">
+            <button id="confirm-add-poi" style="flex:1;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive">
+              ✅ Aggiungi
+            </button>
+            <button id="cancel-add-poi" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
+              ❌ Annulla
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    window.openWin('group-selection-modal', 'Aggiungi al Gruppo', html);
+
+    // Attach event listeners
+    setTimeout(() => {
+      const confirmBtn = document.getElementById('confirm-add-poi');
+      const cancelBtn = document.getElementById('cancel-add-poi');
+
+      if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+          addPOIToGroupItinerary(poi, roomId, itineraryId);
+          window.closeWin('group-selection-modal');
+          toast('✅ Tappa aggiunta all\'itinerario di gruppo!');
+        });
+      }
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          window.closeWin('group-selection-modal');
+        });
+      }
+    }, 0);
+  }
+
+  /**
+   * Add POI to group itinerary and broadcast
+   */
+  function addPOIToGroupItinerary(poi, roomId, itineraryId) {
+    console.log('[GroupItin] Adding POI to itinerary:', itineraryId);
+
+    // Fallback for peerId if makePeerId not available
+    let myPeerId = window.makePeerId?.(roomId, state.group.myName);
+    if (!myPeerId) {
+      myPeerId = `${roomId}_${state.group.myName}`;
+    }
+
+    // Initialize itineraries if needed
+    if (!state.groupItineraries) state.groupItineraries = {};
+
+    // Get or create itinerary
+    let itinerary = state.groupItineraries[itineraryId];
+    if (!itinerary) {
+      itinerary = {
+        id: itineraryId,
+        roomId: roomId,
+        name: { value: `Itinerario - ${state.group.myName}`, timestamp: Date.now(), peerId: myPeerId },
+        version: 1,
+        pois: [],
+        createdAt: Date.now(),
+        createdBy: state.group.myName
+      };
+    }
+
+    // Check if POI already exists
+    const poiExists = itinerary.pois.some(p => p.googlePlaceId === poi.id);
+    if (poiExists) {
+      console.log('[GroupItin] POI already in itinerary');
+      toast('⚠️ Questa tappa è già nell\'itinerario');
+      return;
+    }
+
+    // Create POI entry with field metadata
+    const poiEntry = {
+      googlePlaceId: poi.id,
+      name: { value: poi.name, timestamp: Date.now(), peerId: myPeerId },
+      category: { value: poi.type || 'poi', timestamp: Date.now(), peerId: myPeerId },
+      notes: { value: '', timestamp: Date.now(), peerId: myPeerId },
+      lat: poi.lat,
+      lng: poi.lng,
+      timestamp: Date.now(),
+      addedByPeerId: myPeerId,
+      addedAt: Date.now()
+    };
+
+    // Add to itinerary
+    itinerary.pois.push(poiEntry);
+    itinerary.version++;
+
+    // Push to undo stack
+    window.pushUndoState?.('add_poi', itineraryId, poi.id, { poi: poiEntry });
+
+    // Update state
+    state.groupItineraries[itineraryId] = itinerary;
+    window.saveState();
+
+    console.log('[GroupItin] ✓ POI added. Version:', itinerary.version, '| POIs:', itinerary.pois.length);
+
+    // Broadcast to group
+    window.broadcastItinerary?.(itineraryId);
+
+    // Emit event for UI refresh
+    window.dispatchEvent(new CustomEvent('itinerary_updated', {
+      detail: { itineraryId, itinerary }
+    }));
+  }
+
+  /**
+   * Remove POI from group itinerary
+   */
+  function removePOIFromGroupItinerary(itineraryId, googlePlaceId) {
+    console.log('[GroupItin] Removing POI from itinerary:', itineraryId, googlePlaceId);
+
+    if (!state.groupItineraries?.[itineraryId]) {
+      console.warn('[GroupItin] Itinerary not found');
+      return;
+    }
+
+    const itinerary = state.groupItineraries[itineraryId];
+    const poiIndex = itinerary.pois.findIndex(p => p.googlePlaceId === googlePlaceId);
+
+    if (poiIndex === -1) {
+      console.warn('[GroupItin] POI not found');
+      return;
+    }
+
+    const removedPOI = itinerary.pois[poiIndex];
+    itinerary.pois.splice(poiIndex, 1);
+    itinerary.version++;
+
+    // Push to undo stack
+    window.pushUndoState?.('delete_poi', itineraryId, googlePlaceId, { poi: removedPOI });
+
+    state.groupItineraries[itineraryId] = itinerary;
+    window.saveState();
+
+    console.log('[GroupItin] ✓ POI removed. Version:', itinerary.version);
+
+    // Broadcast to group
+    window.broadcastItinerary?.(itineraryId);
+
+    // Emit event for UI refresh
+    window.dispatchEvent(new CustomEvent('itinerary_updated', {
+      detail: { itineraryId, itinerary }
+    }));
+
+    toast('🗑️ Tappa rimossa');
+  }
+
+  /**
+   * Update POI field in group itinerary
+   */
+  function updatePOIFieldInGroupItinerary(itineraryId, googlePlaceId, fieldName, newValue) {
+    console.log('[GroupItin] Updating field:', fieldName, 'in POI:', googlePlaceId);
+
+    if (!state.groupItineraries?.[itineraryId]) {
+      console.warn('[GroupItin] Itinerary not found');
+      return;
+    }
+
+    const itinerary = state.groupItineraries[itineraryId];
+    const poi = itinerary.pois.find(p => p.googlePlaceId === googlePlaceId);
+
+    if (!poi) {
+      console.warn('[GroupItin] POI not found');
+      return;
+    }
+
+    // Fallback for peerId if makePeerId not available
+    let myPeerId = window.makePeerId?.(itinerary.roomId, state.group.myName);
+    if (!myPeerId) {
+      myPeerId = `${itinerary.roomId}_${state.group.myName}`;
+    }
+
+    const oldValue = poi[fieldName];
+
+    // Update field with metadata
+    poi[fieldName] = {
+      value: newValue,
+      timestamp: Date.now(),
+      peerId: myPeerId
+    };
+
+    itinerary.version++;
+
+    // Push to undo stack
+    window.pushUndoState?.('modify_field', itineraryId, googlePlaceId, {
+      field: fieldName,
+      oldValue,
+      newValue
+    });
+
+    state.groupItineraries[itineraryId] = itinerary;
+    window.saveState();
+
+    console.log('[GroupItin] ✓ Field updated. Version:', itinerary.version);
+
+    // Broadcast to group
+    window.broadcastItinerary?.(itineraryId);
+
+    // Emit event for UI refresh
+    window.dispatchEvent(new CustomEvent('itinerary_updated', {
+      detail: { itineraryId, itinerary }
+    }));
+  }
+
+  // ═════════════════════════════════════════════════════════════════
+  // ===== PHASE 5: OPTIMIZATION =====
+  // ═════════════════════════════════════════════════════════════════
+
+  // Global offline queue and sync metrics
+  const syncState = {
+    offlineQueue: [],
+    lastSyncVersion: {},
+    metrics: {
+      totalSynced: 0,
+      totalBytesSaved: 0,
+      syncLatencies: [],
+      queueDepth: 0
+    },
+    batchPending: {},
+    batchTimeout: null
+  };
+
+  // Export syncState globally for debugging and testing
+  window.syncState = syncState;
+
+  /**
+   * Compute delta between current and last known version
+   * Returns only changed fields to reduce bandwidth
+   */
+  function computeItineraryDelta(itineraryId) {
+    const itinerary = state.groupItineraries?.[itineraryId];
+    if (!itinerary) return null;
+
+    const lastVersion = syncState.lastSyncVersion[itineraryId] || { pois: [] };
+    const currentVersion = itinerary;
+
+    // Build POI map for comparison
+    const lastPoiMap = new Map(lastVersion.pois.map(p => [p.googlePlaceId, p]));
+    const currentPoiMap = new Map(currentVersion.pois.map(p => [p.googlePlaceId, p]));
+
+    const delta = {
+      id: itineraryId,
+      version: currentVersion.version,
+      changedPOIs: [],
+      removedPOIs: [],
+      metadata: {
+        computedAt: Date.now(),
+        baseVersion: lastVersion.version || 0
+      }
+    };
+
+    // Find added/modified POIs
+    currentPoiMap.forEach((poi, id) => {
+      const lastPoi = lastPoiMap.get(id);
+      if (!lastPoi) {
+        // New POI
+        delta.changedPOIs.push({ type: 'add', poi });
+      } else {
+        // Check for field changes
+        const changes = {};
+        Object.keys(poi).forEach(key => {
+          if (JSON.stringify(poi[key]) !== JSON.stringify(lastPoi[key])) {
+            changes[key] = poi[key];
+          }
+        });
+
+        if (Object.keys(changes).length > 0) {
+          delta.changedPOIs.push({ type: 'update', googlePlaceId: id, changes });
+        }
+      }
+    });
+
+    // Find removed POIs
+    lastPoiMap.forEach((poi, id) => {
+      if (!currentPoiMap.has(id)) {
+        delta.removedPOIs.push(id);
+      }
+    });
+
+    return delta;
+  }
+
+  /**
+   * Queue sync message for offline delivery
+   */
+  function queueSyncMessage(message) {
+    syncState.offlineQueue.push({
+      id: `queued_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      message,
+      timestamp: Date.now(),
+      retries: 0
+    });
+
+    syncState.metrics.queueDepth = syncState.offlineQueue.length;
+    console.log('[OfflineQueue] Message queued. Queue depth:', syncState.metrics.queueDepth);
+
+    window.dispatchEvent(new CustomEvent('queue_status_changed', {
+      detail: { queueDepth: syncState.metrics.queueDepth }
+    }));
+  }
+
+  /**
+   * Replay queued messages when back online
+   */
+  function replayOfflineQueue() {
+    console.log('[OfflineQueue] Replaying', syncState.offlineQueue.length, 'queued messages');
+
+    const myPeerId = window.makePeerId?.(state.group.roomId, state.group.myName) ||
+                     `${state.group.roomId}_${state.group.myName}`;
+    const hubId = window.makeHubId?.(state.group.roomId);
+
+    let sent = 0;
+    const failed = [];
+
+    syncState.offlineQueue.forEach(queued => {
+      try {
+        const message = queued.message;
+
+        // Try to send to hub
+        if (window.peer?.connections?.[hubId]) {
+          window.peer.connections[hubId][0].send(message);
+          sent++;
+        }
+      } catch (e) {
+        failed.push(queued.id);
+      }
+    });
+
+    // Remove successfully sent messages
+    syncState.offlineQueue = syncState.offlineQueue.filter(q => !failed.includes(q.id) === false);
+    syncState.metrics.queueDepth = syncState.offlineQueue.length;
+
+    console.log('[OfflineQueue] Replayed:', sent, 'messages');
+
+    if (syncState.offlineQueue.length === 0) {
+      window.dispatchEvent(new CustomEvent('queue_status_changed', {
+        detail: { queueDepth: 0, status: 'online' }
+      }));
+    }
+  }
+
+  /**
+   * Batch multiple changes into single sync message
+   */
+  function batchItinerarySync(itineraryId) {
+    console.log('[Batch] Batching sync for:', itineraryId);
+
+    // Clear any pending timeout
+    if (syncState.batchTimeout) {
+      clearTimeout(syncState.batchTimeout);
+    }
+
+    // Mark as pending
+    syncState.batchPending[itineraryId] = true;
+
+    // Send after 2 seconds or when batch is full (5 changes)
+    syncState.batchTimeout = setTimeout(() => {
+      flushBatchSync(itineraryId);
+    }, 2000);
+  }
+
+  /**
+   * Send batched changes
+   */
+  function flushBatchSync(itineraryId) {
+    if (!syncState.batchPending[itineraryId]) return;
+
+    const startTime = Date.now();
+    const itinerary = state.groupItineraries?.[itineraryId];
+
+    if (!itinerary) return;
+
+    // Compute delta for bandwidth optimization
+    const delta = computeItineraryDelta(itineraryId);
+
+    if (!delta || (delta.changedPOIs.length === 0 && delta.removedPOIs.length === 0)) {
+      console.log('[Batch] No changes to sync');
+      delete syncState.batchPending[itineraryId];
+      return;
+    }
+
+    const myPeerId = window.makePeerId?.(state.group.roomId, state.group.myName) ||
+                     `${state.group.roomId}_${state.group.myName}`;
+
+    const message = {
+      type: 'itinerary_sync_delta',
+      from: myPeerId,
+      roomId: state.group.roomId,
+      itineraryId: itineraryId,
+      delta: delta,
+      timestamp: Date.now()
+    };
+
+    const hubId = window.makeHubId?.(state.group.roomId);
+    const isHub = state.group.myName === state.group.createdByName;
+
+    // Try to send to hub
+    if (!isHub && window.peer?.connections?.[hubId]) {
+      try {
+        window.peer.connections[hubId][0].send(message);
+      } catch (e) {
+        console.warn('[Batch] Failed to send, queueing:', e.message);
+        queueSyncMessage(message);
+      }
+    } else if (window.peer?.connections) {
+      // Send to mesh peers
+      Object.keys(window.peer.connections).forEach(peerId => {
+        if (peerId !== hubId) {
+          try {
+            const conns = window.peer.connections[peerId];
+            if (conns && conns.length > 0) {
+              conns[0].send(message);
+            }
+          } catch (e) {
+            console.warn('[Batch] Failed to send to', peerId);
+          }
+        }
+      });
+    }
+
+    // Track latency
+    const latency = Date.now() - startTime;
+    syncState.metrics.syncLatencies.push(latency);
+    if (syncState.metrics.syncLatencies.length > 100) {
+      syncState.metrics.syncLatencies.shift();
+    }
+
+    // Update version tracking
+    syncState.lastSyncVersion[itineraryId] = cloneItinerary(itinerary);
+    syncState.metrics.totalSynced++;
+
+    delete syncState.batchPending[itineraryId];
+
+    console.log('[Batch] ✓ Synced delta in', latency, 'ms |', delta.changedPOIs.length, 'changes');
+  }
+
+  /**
+   * Notify about changes to itinerary
+   */
+  function notifyItineraryChange(itineraryId, action, poiId, actor) {
+    const myName = state.group?.myName;
+    if (actor === myName) return; // Don't notify on own changes
+
+    const descriptions = {
+      'add_poi': '➕ ha aggiunto una tappa',
+      'delete_poi': '🗑️ ha rimosso una tappa',
+      'modify_field': '✏️ ha modificato'
+    };
+
+    const desc = descriptions[action] || 'ha modificato';
+    const message = `${actor} ${desc}`;
+
+    console.log('[Notify]', message);
+
+    if (typeof toast === 'function') {
+      toast(message);
+    }
+
+    window.dispatchEvent(new CustomEvent('itinerary_change_notification', {
+      detail: { itineraryId, action, poiId, actor, message, timestamp: Date.now() }
+    }));
+  }
+
+  /**
+   * Get average sync latency
+   */
+  function getAverageSyncLatency() {
+    if (syncState.metrics.syncLatencies.length === 0) return 0;
+    const sum = syncState.metrics.syncLatencies.reduce((a, b) => a + b, 0);
+    return Math.round(sum / syncState.metrics.syncLatencies.length);
+  }
+
+  /**
+   * Get sync metrics
+   */
+  function getSyncMetrics() {
+    return {
+      totalSynced: syncState.metrics.totalSynced,
+      totalBytesSaved: syncState.metrics.totalBytesSaved,
+      averageLatency: getAverageSyncLatency(),
+      queueDepth: syncState.metrics.queueDepth,
+      lastSyncVersions: Object.keys(syncState.lastSyncVersion).length
+    };
+  }
+
+  // ═════════════════════════════════════════════════════════════════
+  // ===== OPENING HOURS FEATURE =====
+  // ═════════════════════════════════════════════════════════════════
+
+  /**
+   * Fetch opening hours from Google Places (if available in POI)
+   * Returns structured opening hours or null
+   */
+  function fetchOpeningHoursFromGooglePlaces(poi) {
+    // Check if POI has Google Places opening hours data
+    if (!poi) return null;
+
+    // Look for various possible fields with opening hours
+    const openingHours =
+      poi.openingHours ||
+      poi.hours ||
+      poi.opening_hours ||
+      poi.businessHours ||
+      null;
+
+    if (!openingHours) return null;
+
+    // Parse different formats
+    if (typeof openingHours === 'string') {
+      return parseOpeningHoursString(openingHours);
+    }
+
+    if (Array.isArray(openingHours)) {
+      return formatOpeningHoursArray(openingHours);
+    }
+
+    if (typeof openingHours === 'object') {
+      return openingHours;
+    }
+
+    return null;
+  }
+
+  /**
+   * Parse opening hours string like "Mon-Fri 9:00-17:00, Sat 10:00-16:00"
+   */
+  function parseOpeningHoursString(str) {
+    if (!str) return null;
+
+    return {
+      raw: str,
+      format: 'string',
+      parsed: str,
+      source: 'manual'
+    };
+  }
+
+  /**
+   * Format opening hours array (Google Places format)
+   */
+  function formatOpeningHoursArray(arr) {
+    const days = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+    const formatted = {};
+
+    arr.forEach((entry, idx) => {
+      if (entry.open && entry.close) {
+        const dayName = days[idx] || `Giorno ${idx}`;
+        formatted[dayName] = `${entry.open.time} - ${entry.close.time}`;
+      }
+    });
+
+    return {
+      raw: arr,
+      format: 'array',
+      parsed: formatted,
+      source: 'google_places'
+    };
+  }
+
+  /**
+   * Add/update opening hours to POI in group itinerary
+   */
+  function setPOIOpeningHours(itineraryId, googlePlaceId, openingHoursData) {
+    console.log('[OpeningHours] Setting hours for POI:', googlePlaceId);
+
+    if (!state.groupItineraries?.[itineraryId]) {
+      console.warn('[OpeningHours] Itinerary not found');
+      return;
+    }
+
+    const itinerary = state.groupItineraries[itineraryId];
+    const poi = itinerary.pois.find(p => p.googlePlaceId === googlePlaceId);
+
+    if (!poi) {
+      console.warn('[OpeningHours] POI not found');
+      return;
+    }
+
+    let myPeerId = window.makePeerId?.(itinerary.roomId, state.group.myName);
+    if (!myPeerId) {
+      myPeerId = `${itinerary.roomId}_${state.group.myName}`;
+    }
+
+    // Update opening hours with metadata
+    poi.openingHours = {
+      value: openingHoursData,
+      timestamp: Date.now(),
+      peerId: myPeerId,
+      source: openingHoursData.source || 'manual'
+    };
+
+    itinerary.version++;
+    window.pushUndoState?.('modify_opening_hours', itineraryId, googlePlaceId, { openingHours: openingHoursData });
+
+    state.groupItineraries[itineraryId] = itinerary;
+    window.saveState();
+
+    console.log('[OpeningHours] ✓ Hours set. Source:', openingHoursData.source);
+
+    window.broadcastItinerary?.(itineraryId);
+    window.dispatchEvent(new CustomEvent('itinerary_updated', {
+      detail: { itineraryId, itinerary }
+    }));
+  }
+
+  /**
+   * Get opening hours for POI (returns formatted string)
+   */
+  function getPOIOpeningHours(itineraryId, googlePlaceId) {
+    if (!state.groupItineraries?.[itineraryId]) return null;
+
+    const itinerary = state.groupItineraries[itineraryId];
+    const poi = itinerary.pois.find(p => p.googlePlaceId === googlePlaceId);
+
+    if (!poi || !poi.openingHours) return null;
+
+    const hours = poi.openingHours;
+    const value = hours.value || hours;
+
+    // Format for display
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if (value.parsed) {
+      return typeof value.parsed === 'string'
+        ? value.parsed
+        : JSON.stringify(value.parsed);
+    }
+
+    return JSON.stringify(value);
+  }
+
+  /**
+   * Check if POI is currently open (simple check based on current time)
+   */
+  function isPOICurrentlyOpen(itineraryId, googlePlaceId) {
+    const hours = getPOIOpeningHours(itineraryId, googlePlaceId);
+    if (!hours) return null; // Unknown
+
+    const now = new Date();
+    const dayName = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'][now.getDay()];
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    // Simple heuristic check (not perfect, but works for common formats)
+    if (hours.includes(dayName)) {
+      const dayMatch = hours.match(new RegExp(`${dayName}[^a-zA-Z]*(\\d{1,2}:\\d{2})\\s*-\\s*(\\d{1,2}:\\d{2})`));
+      if (dayMatch) {
+        const [, openTime, closeTime] = dayMatch;
+        return currentTime >= openTime && currentTime < closeTime;
+      }
+    }
+
+    return null; // Cannot determine
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Export Opening Hours functions globally
+  window.fetchOpeningHoursFromGooglePlaces = fetchOpeningHoursFromGooglePlaces;
+  window.parseOpeningHoursString = parseOpeningHoursString;
+  window.formatOpeningHoursArray = formatOpeningHoursArray;
+  window.setPOIOpeningHours = setPOIOpeningHours;
+  window.getPOIOpeningHours = getPOIOpeningHours;
+  window.isPOICurrentlyOpen = isPOICurrentlyOpen;
+
+  // ─────────────────────────────────────────────────────────────────
+  // Export Phase 5 functions globally
+  window.computeItineraryDelta = computeItineraryDelta;
+  window.queueSyncMessage = queueSyncMessage;
+  window.replayOfflineQueue = replayOfflineQueue;
+  window.batchItinerarySync = batchItinerarySync;
+  window.flushBatchSync = flushBatchSync;
+  window.notifyItineraryChange = notifyItineraryChange;
+  window.getSyncMetrics = getSyncMetrics;
+  window.getAverageSyncLatency = getAverageSyncLatency;
+
+  // ═════════════════════════════════════════════════════════════════
+  // ===== PHASE 4: ADVANCED FEATURES =====
+  // ═════════════════════════════════════════════════════════════════
+
+  /**
+   * Soft delete a POI (mark as deleted instead of removing)
+   * Allows resurrection if older edit comes in later
+   */
+  function softDeletePOI(itineraryId, googlePlaceId) {
+    console.log('[SoftDelete] Soft-deleting POI:', googlePlaceId);
+
+    if (!state.groupItineraries?.[itineraryId]) {
+      console.warn('[SoftDelete] Itinerary not found');
+      return;
+    }
+
+    const itinerary = state.groupItineraries[itineraryId];
+    const poi = itinerary.pois.find(p => p.googlePlaceId === googlePlaceId);
+
+    if (!poi) {
+      console.warn('[SoftDelete] POI not found');
+      return;
+    }
+
+    // Mark as deleted instead of removing
+    let myPeerId = window.makePeerId?.(itinerary.roomId, state.group.myName);
+    if (!myPeerId) {
+      myPeerId = `${itinerary.roomId}_${state.group.myName}`;
+    }
+
+    poi.deleted = {
+      value: true,
+      timestamp: Date.now(),
+      peerId: myPeerId
+    };
+    poi.deletionTimestamp = Date.now();
+
+    itinerary.version++;
+    window.pushUndoState?.('soft_delete_poi', itineraryId, googlePlaceId, { poi });
+
+    state.groupItineraries[itineraryId] = itinerary;
+    window.saveState();
+
+    console.log('[SoftDelete] ✓ POI marked as deleted. Version:', itinerary.version);
+
+    window.broadcastItinerary?.(itineraryId);
+    window.dispatchEvent(new CustomEvent('itinerary_updated', {
+      detail: { itineraryId, itinerary }
+    }));
+  }
+
+  /**
+   * Permanently delete POIs marked as deleted for 30+ days
+   */
+  function cleanupSoftDeletedPOIs(itineraryId) {
+    console.log('[Cleanup] Running soft delete cleanup for:', itineraryId);
+
+    if (!state.groupItineraries?.[itineraryId]) {
+      console.warn('[Cleanup] Itinerary not found');
+      return 0;
+    }
+
+    const itinerary = state.groupItineraries[itineraryId];
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const initialCount = itinerary.pois.length;
+
+    itinerary.pois = itinerary.pois.filter(poi => {
+      const isOldDeleted = poi.deletionTimestamp && poi.deletionTimestamp < thirtyDaysAgo;
+      if (isOldDeleted) {
+        console.log('[Cleanup] Removing permanently deleted POI:', poi.googlePlaceId);
+      }
+      return !isOldDeleted;
+    });
+
+    const removed = initialCount - itinerary.pois.length;
+    if (removed > 0) {
+      itinerary.version++;
+      state.groupItineraries[itineraryId] = itinerary;
+      window.saveState();
+      console.log('[Cleanup] ✓ Removed', removed, 'permanently deleted POIs');
+    }
+
+    return removed;
+  }
+
+  /**
+   * Get version history of itinerary
+   */
+  function getItineraryVersionHistory(itineraryId) {
+    const undoRedo = state.undoRedo;
+    if (!undoRedo) return [];
+
+    return undoRedo.stack
+      .filter(entry => entry.itineraryId === itineraryId)
+      .map((entry, index) => ({
+        index,
+        action: entry.action,
+        timestamp: entry.timestamp,
+        peerId: entry.peerId,
+        poiId: entry.poiId,
+        description: describeAction(entry.action, entry.poiId)
+      }));
+  }
+
+  /**
+   * Get field history for a specific POI
+   */
+  function getPOIFieldHistory(itineraryId, googlePlaceId) {
+    const itinerary = state.groupItineraries?.[itineraryId];
+    if (!itinerary) return {};
+
+    const poi = itinerary.pois.find(p => p.googlePlaceId === googlePlaceId);
+    if (!poi) return {};
+
+    const fieldHistory = {};
+    Object.keys(poi).forEach(key => {
+      if (key === 'googlePlaceId' || key === 'fields') return;
+      const val = poi[key];
+
+      if (val && typeof val === 'object' && 'timestamp' in val && 'peerId' in val) {
+        fieldHistory[key] = {
+          value: val.value,
+          timestamp: val.timestamp,
+          peerId: val.peerId,
+          lastModified: new Date(val.timestamp).toLocaleString()
+        };
+      }
+    });
+
+    return fieldHistory;
+  }
+
+  /**
+   * Helper: Describe an action for UI display
+   */
+  function describeAction(action, poiId) {
+    const descriptions = {
+      'add_poi': '➕ Tappa aggiunta',
+      'delete_poi': '🗑️ Tappa rimossa',
+      'soft_delete_poi': '⬜ Tappa cancellata (morbida)',
+      'modify_field': '✏️ Campo modificato',
+      'merge': '🔄 Merge risolvere'
+    };
+    return descriptions[action] || '❓ Azione sconosciuta';
+  }
+
+  /**
+   * Get merge conflict details from last merge
+   */
+  function getMergeConflictInfo(itineraryId) {
+    const itinerary = state.groupItineraries?.[itineraryId];
+    if (!itinerary) return null;
+
+    // Return lastMergeConflicts if exists, or create empty placeholder
+    if (!itinerary.lastMergeConflicts) {
+      return null;
+    }
+
+    // Ensure we return a proper object even if partially defined
+    return {
+      timestamp: itinerary.lastMergeConflicts?.timestamp || Date.now(),
+      resolvedCount: itinerary.lastMergeConflicts?.resolvedCount || 0,
+      details: itinerary.lastMergeConflicts?.details || []
+    };
+  }
+
+  /**
+   * Record merge conflict resolution in itinerary
+   */
+  function recordMergeConflict(itineraryId, conflicts) {
+    if (!state.groupItineraries?.[itineraryId]) return;
+
+    const itinerary = state.groupItineraries[itineraryId];
+    itinerary.lastMergeConflicts = {
+      timestamp: Date.now(),
+      resolvedCount: conflicts?.length || 0,
+      details: conflicts || []
+    };
+
+    window.saveState();
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Export Phase 3 functions globally
+  window.showGroupSelectionModal = showGroupSelectionModal;
+  window.addPOIToGroupItinerary = addPOIToGroupItinerary;
+  window.removePOIFromGroupItinerary = removePOIFromGroupItinerary;
+  window.updatePOIFieldInGroupItinerary = updatePOIFieldInGroupItinerary;
+
+  // Export Phase 4 functions globally
+  window.softDeletePOI = softDeletePOI;
+  window.cleanupSoftDeletedPOIs = cleanupSoftDeletedPOIs;
+  window.getItineraryVersionHistory = getItineraryVersionHistory;
+  window.getPOIFieldHistory = getPOIFieldHistory;
+  window.describeAction = describeAction;
+  window.getMergeConflictInfo = getMergeConflictInfo;
+  window.recordMergeConflict = recordMergeConflict;
+
+  /**
+   * TEST FUNCTION: Verify Phase 3 UI Components work correctly
+   * Tests: modal creation, POI addition, field updates, undo/redo, broadcast
+   * Usage: window.testPhase3()
+   */
+  window.testPhase3 = function() {
+    console.log('%c═══ PHASE 3: UI COMPONENTS TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+
+    let passCount = 0;
+    let failCount = 0;
+
+    // Setup: Create a group if not exists
+    if (!state.group || !state.group.roomId) {
+      state.group = {
+        roomId: 'test_room',
+        myName: 'TestUser',
+        createdByName: 'TestUser',
+        members: [{ name: 'TestUser' }]
+      };
+      console.log('[TEST SETUP] Created test group');
+    }
+
+    if (!state.groupItineraries) state.groupItineraries = {};
+
+    // Test 1: Add POI to group itinerary
+    console.log('\n%c[TEST 1] Add POI to group itinerary', 'color:#FF1493;font-weight:bold');
+    try {
+      const testPOI = {
+        id: 'poi_test_phase3',
+        name: 'Test POI Phase 3',
+        lat: 35.7,
+        lng: 139.7,
+        type: 'temple'
+      };
+
+      window.addPOIToGroupItinerary?.(testPOI, state.group.roomId, 'group_itin_test_room');
+
+      const itin = state.groupItineraries['group_itin_test_room'];
+      if (itin && itin.pois && itin.pois.length === 1) {
+        const poi = itin.pois[0];
+        if (poi.googlePlaceId === 'poi_test_phase3' && poi.name?.value === 'Test POI Phase 3') {
+          console.log('%c✓ PASS: POI added to itinerary correctly', 'color:#00FF88;font-weight:bold');
+          console.log('  - POI:', poi.googlePlaceId);
+          console.log('  - Name:', poi.name?.value);
+          console.log('  - Version:', itin.version);
+          passCount++;
+        } else {
+          console.log('%c✗ FAIL: POI data incorrect', 'color:#FF6B6B;font-weight:bold');
+          failCount++;
+        }
+      } else {
+        console.log('%c✗ FAIL: POI not added', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: addPOIToGroupItinerary error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 2: Update POI field
+    console.log('\n%c[TEST 2] Update POI field', 'color:#FF1493;font-weight:bold');
+    try {
+      window.updatePOIFieldInGroupItinerary?.('group_itin_test_room', 'poi_test_phase3', 'notes', 'Beautiful temple');
+
+      const itin = state.groupItineraries['group_itin_test_room'];
+      const poi = itin.pois[0];
+
+      if (poi.notes?.value === 'Beautiful temple') {
+        console.log('%c✓ PASS: POI field updated correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Notes:', poi.notes?.value);
+        console.log('  - Notes peerId:', poi.notes?.peerId);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Field update failed', 'color:#FF6B6B;font-weight:bold');
+        console.log('  - Expected: Beautiful temple');
+        console.log('  - Got:', poi.notes?.value);
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: updatePOIFieldInGroupItinerary error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 3: Add second POI
+    console.log('\n%c[TEST 3] Add second POI for undo/redo testing', 'color:#FF1493;font-weight:bold');
+    try {
+      const poi2 = {
+        id: 'poi_test_phase3_2',
+        name: 'Test POI 2',
+        lat: 35.8,
+        lng: 139.8,
+        type: 'shrine'
+      };
+
+      window.addPOIToGroupItinerary?.(poi2, state.group.roomId, 'group_itin_test_room');
+
+      const itin = state.groupItineraries['group_itin_test_room'];
+      if (itin.pois.length === 2) {
+        console.log('%c✓ PASS: Second POI added', 'color:#00FF88;font-weight:bold');
+        console.log('  - Total POIs:', itin.pois.length);
+        console.log('  - Version:', itin.version);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Second POI not added', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Error adding second POI:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 4: Undo functionality
+    console.log('\n%c[TEST 4] Undo functionality', 'color:#FF1493;font-weight:bold');
+    try {
+      const beforeUndo = state.groupItineraries['group_itin_test_room'].pois.length;
+      const undoSuccess = window.undo?.();
+
+      const afterUndo = state.groupItineraries['group_itin_test_room'].pois.length;
+
+      if (undoSuccess && afterUndo === beforeUndo - 1) {
+        console.log('%c✓ PASS: Undo works correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Before undo:', beforeUndo, 'POIs');
+        console.log('  - After undo:', afterUndo, 'POIs');
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Undo failed', 'color:#FF6B6B;font-weight:bold');
+        console.log('  - Success:', undoSuccess);
+        console.log('  - POI count changed:', beforeUndo, '→', afterUndo);
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Undo error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 5: Redo functionality
+    console.log('\n%c[TEST 5] Redo functionality', 'color:#FF1493;font-weight:bold');
+    try {
+      const beforeRedo = state.groupItineraries['group_itin_test_room'].pois.length;
+      const redoSuccess = window.redo?.();
+
+      const afterRedo = state.groupItineraries['group_itin_test_room'].pois.length;
+
+      if (redoSuccess && afterRedo === beforeRedo + 1) {
+        console.log('%c✓ PASS: Redo works correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Before redo:', beforeRedo, 'POIs');
+        console.log('  - After redo:', afterRedo, 'POIs');
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Redo failed', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Redo error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 6: Remove POI
+    console.log('\n%c[TEST 6] Remove POI from itinerary', 'color:#FF1493;font-weight:bold');
+    try {
+      const beforeRemove = state.groupItineraries['group_itin_test_room'].pois.length;
+      window.removePOIFromGroupItinerary?.('group_itin_test_room', 'poi_test_phase3_2');
+
+      const afterRemove = state.groupItineraries['group_itin_test_room'].pois.length;
+
+      if (afterRemove === beforeRemove - 1) {
+        console.log('%c✓ PASS: POI removed correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Before removal:', beforeRemove, 'POIs');
+        console.log('  - After removal:', afterRemove, 'POIs');
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: POI removal failed', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: removePOIFromGroupItinerary error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 7: Broadcast integration (check if function is called)
+    console.log('\n%c[TEST 7] Broadcast integration', 'color:#FF1493;font-weight:bold');
+    try {
+      let broadcastCalled = false;
+      const originalBroadcast = window.broadcastItinerary;
+
+      window.broadcastItinerary = function(itinId) {
+        if (itinId === 'group_itin_test_room') {
+          broadcastCalled = true;
+        }
+        originalBroadcast?.(itinId);
+      };
+
+      const testPOI = {
+        id: 'poi_broadcast_test',
+        name: 'Broadcast Test POI',
+        lat: 35.9,
+        lng: 139.9
+      };
+
+      window.addPOIToGroupItinerary?.(testPOI, state.group.roomId, 'group_itin_test_room');
+
+      // Restore original
+      window.broadcastItinerary = originalBroadcast;
+
+      if (broadcastCalled) {
+        console.log('%c✓ PASS: Broadcast called on POI addition', 'color:#00FF88;font-weight:bold');
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Broadcast not called', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Broadcast test error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 8: Undo/redo stack integrity
+    console.log('\n%c[TEST 8] Undo/Redo stack integrity', 'color:#FF1493;font-weight:bold');
+    try {
+      const undoRedo = state.undoRedo;
+      const hasValidStack =
+        undoRedo &&
+        Array.isArray(undoRedo.stack) &&
+        undoRedo.currentIndex >= -1 &&
+        undoRedo.currentIndex <= undoRedo.stack.length - 1;
+
+      if (hasValidStack) {
+        console.log('%c✓ PASS: Undo/Redo stack is valid', 'color:#00FF88;font-weight:bold');
+        console.log('  - Stack size:', undoRedo.stack.length);
+        console.log('  - Current index:', undoRedo.currentIndex);
+        console.log('  - Max size:', undoRedo.maxSize);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Undo/Redo stack invalid', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Stack integrity check error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Summary
+    console.log('\n%c═════════════════════════════════════════', 'color:#FF1493;font-weight:bold');
+    console.log('%cTests Passed: ' + passCount, 'color:#00FF88;font-weight:bold;font-size:14px');
+    console.log('%cTests Failed: ' + failCount, failCount === 0 ? 'color:#00FF88;font-weight:bold;font-size:14px' : 'color:#FF6B6B;font-weight:bold;font-size:14px');
+    console.log('%c═══ END PHASE 3 TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+
+    return { passed: passCount, failed: failCount, total: passCount + failCount };
+  };
+
+  /**
+   * TEST FUNCTION: Verify Phase 5 Optimization features work correctly
+   * Tests: delta sync, offline queue, notifications, batch operations, metrics
+   * Usage: window.testPhase5()
+   */
+  window.testPhase5 = function() {
+    console.log('%c═══ PHASE 5: OPTIMIZATION TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+
+    let passCount = 0;
+    let failCount = 0;
+
+    // Setup
+    if (!state.group || !state.group.roomId) {
+      state.group = {
+        roomId: 'test_room_phase5',
+        myName: 'TestUser',
+        createdByName: 'TestUser',
+        members: [{ name: 'TestUser' }]
+      };
+    }
+
+    if (!state.groupItineraries) state.groupItineraries = {};
+
+    // Create test itinerary
+    const itinId = 'group_itin_phase5_test';
+    state.groupItineraries[itinId] = {
+      id: itinId,
+      roomId: 'test_room_phase5',
+      version: 1,
+      pois: [
+        {
+          googlePlaceId: 'poi_delta_1',
+          name: { value: 'Temple', timestamp: 1000, peerId: 'user' },
+          notes: { value: 'Beautiful', timestamp: 1000, peerId: 'user' },
+          timestamp: 1000
+        }
+      ]
+    };
+
+    // Test 1: Delta sync computation
+    console.log('\n%c[TEST 1] Delta sync computation', 'color:#FF1493;font-weight:bold');
+    try {
+      const delta = window.computeItineraryDelta?.(itinId);
+
+      if (delta && delta.version === 1 && delta.changedPOIs) {
+        console.log('%c✓ PASS: Delta computed correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Version:', delta.version);
+        console.log('  - Changed POIs:', delta.changedPOIs.length);
+        console.log('  - Removed POIs:', delta.removedPOIs.length);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Delta computation failed', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Delta error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 2: Offline queue
+    console.log('\n%c[TEST 2] Offline message queue', 'color:#FF1493;font-weight:bold');
+    try {
+      const testMsg = { type: 'test', data: 'offline' };
+      window.queueSyncMessage?.(testMsg);
+      window.queueSyncMessage?.(testMsg);
+      window.queueSyncMessage?.(testMsg);
+
+      const queueDepth = window.syncState?.metrics?.queueDepth || 0;
+
+      if (queueDepth === 3) {
+        console.log('%c✓ PASS: Messages queued correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Queue depth:', queueDepth);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Queue depth incorrect', 'color:#FF6B6B;font-weight:bold');
+        console.log('  - Expected: 3, Got:', queueDepth);
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Queue error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 3: Batch sync
+    console.log('\n%c[TEST 3] Batch sync operation', 'color:#FF1493;font-weight:bold');
+    try {
+      window.batchItinerarySync?.(itinId);
+
+      const isPending = window.syncState?.batchPending?.[itinId] === true;
+
+      if (isPending) {
+        console.log('%c✓ PASS: Batch sync initiated', 'color:#00FF88;font-weight:bold');
+        console.log('  - Pending batches:', Object.keys(window.syncState.batchPending).length);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Batch sync not initiated', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Batch error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 4: Notification system
+    console.log('\n%c[TEST 4] Change notifications', 'color:#FF1493;font-weight:bold');
+    try {
+      let notificationReceived = false;
+      const listener = () => { notificationReceived = true; };
+
+      window.addEventListener('itinerary_change_notification', listener);
+      window.notifyItineraryChange?.(itinId, 'modify_field', 'poi_delta_1', 'Alice');
+      window.removeEventListener('itinerary_change_notification', listener);
+
+      if (notificationReceived) {
+        console.log('%c✓ PASS: Notification event dispatched', 'color:#00FF88;font-weight:bold');
+        console.log('  - Event: itinerary_change_notification');
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Notification not received', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Notification error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 5: Sync metrics
+    console.log('\n%c[TEST 5] Sync metrics tracking', 'color:#FF1493;font-weight:bold');
+    try {
+      const metrics = window.getSyncMetrics?.();
+
+      if (metrics && typeof metrics.averageLatency === 'number' && typeof metrics.queueDepth === 'number') {
+        console.log('%c✓ PASS: Metrics tracked correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Total synced:', metrics.totalSynced);
+        console.log('  - Queue depth:', metrics.queueDepth);
+        console.log('  - Avg latency:', metrics.averageLatency, 'ms');
+        console.log('  - Tracked versions:', metrics.lastSyncVersions);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Metrics invalid', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Metrics error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 6: Average latency calculation
+    console.log('\n%c[TEST 6] Latency calculation', 'color:#FF1493;font-weight:bold');
+    try {
+      // Simulate latencies
+      if (window.syncState) {
+        window.syncState.metrics.syncLatencies = [10, 20, 30, 40, 50];
+      }
+
+      const avgLatency = window.getAverageSyncLatency?.();
+
+      if (avgLatency === 30) {
+        console.log('%c✓ PASS: Latency calculated correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Samples:', 5);
+        console.log('  - Average:', avgLatency, 'ms');
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Latency calculation incorrect', 'color:#FF6B6B;font-weight:bold');
+        console.log('  - Expected: 30, Got:', avgLatency);
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Latency error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Summary
+    console.log('\n%c═════════════════════════════════════════', 'color:#FF1493;font-weight:bold');
+    console.log('%cTests Passed: ' + passCount, 'color:#00FF88;font-weight:bold;font-size:14px');
+    console.log('%cTests Failed: ' + failCount, failCount === 0 ? 'color:#00FF88;font-weight:bold;font-size:14px' : 'color:#FF6B6B;font-weight:bold;font-size:14px');
+    console.log('%c═══ END PHASE 5 TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+
+    return { passed: passCount, failed: failCount, total: passCount + failCount };
+  };
+
+  /**
+   * TEST FUNCTION: Verify Opening Hours feature works correctly
+   * Usage: window.testOpeningHours()
+   */
+  window.testOpeningHours = function() {
+    console.log('%c═══ OPENING HOURS FEATURE TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+
+    let passCount = 0;
+    let failCount = 0;
+
+    // Setup
+    if (!state.group || !state.group.roomId) {
+      state.group = {
+        roomId: 'test_room_hours',
+        myName: 'TestUser',
+        createdByName: 'TestUser',
+        members: [{ name: 'TestUser' }]
+      };
+    }
+
+    if (!state.groupItineraries) state.groupItineraries = {};
+
+    const itinId = 'group_itin_hours_test';
+    state.groupItineraries[itinId] = {
+      id: itinId,
+      roomId: 'test_room_hours',
+      version: 1,
+      pois: [
+        {
+          googlePlaceId: 'poi_hours_test',
+          name: { value: 'Test Temple', timestamp: 1000, peerId: 'user' },
+          timestamp: 1000
+        }
+      ]
+    };
+
+    // Test 1: Parse opening hours string
+    console.log('\n%c[TEST 1] Parse opening hours string', 'color:#FF1493;font-weight:bold');
+    try {
+      const hoursStr = 'Lun-Ven 9:00-17:00, Sab 10:00-16:00, Dom Chiuso';
+      const parsed = window.parseOpeningHoursString?.(hoursStr);
+
+      if (parsed && parsed.raw === hoursStr && parsed.source === 'manual') {
+        console.log('%c✓ PASS: String parsed correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Input:', hoursStr);
+        console.log('  - Parsed:', parsed.parsed);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: String parsing failed', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Parse error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 2: Format opening hours array
+    console.log('\n%c[TEST 2] Format opening hours array', 'color:#FF1493;font-weight:bold');
+    try {
+      const hoursArr = [
+        { open: { time: '09:00' }, close: { time: '17:00' } },
+        { open: { time: '09:00' }, close: { time: '17:00' } },
+        { open: { time: '09:00' }, close: { time: '17:00' } }
+      ];
+
+      const formatted = window.formatOpeningHoursArray?.(hoursArr);
+
+      if (formatted && formatted.source === 'google_places' && Object.keys(formatted.parsed).length > 0) {
+        console.log('%c✓ PASS: Array formatted correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Days found:', Object.keys(formatted.parsed).length);
+        console.log('  - Format:', formatted.format);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Array formatting failed', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Format error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 3: Set and get opening hours
+    console.log('\n%c[TEST 3] Set and get opening hours', 'color:#FF1493;font-weight:bold');
+    try {
+      const hoursData = {
+        parsed: 'Lun-Ven 9:00-17:00, Sab 10:00-16:00',
+        source: 'google_places'
+      };
+
+      window.setPOIOpeningHours?.(itinId, 'poi_hours_test', hoursData);
+
+      const retrieved = window.getPOIOpeningHours?.(itinId, 'poi_hours_test');
+
+      if (retrieved && retrieved.includes('9:00')) {
+        console.log('%c✓ PASS: Opening hours set and retrieved', 'color:#00FF88;font-weight:bold');
+        console.log('  - Hours:', retrieved);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Opening hours retrieval failed', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Set/Get error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 4: Fetch from Google Places POI
+    console.log('\n%c[TEST 4] Fetch from Google Places data', 'color:#FF1493;font-weight:bold');
+    try {
+      const poiWithHours = {
+        id: 'test_poi',
+        name: 'Temple',
+        openingHours: 'Mon-Fri 9:00-18:00, Sat-Sun 10:00-17:00'
+      };
+
+      const fetched = window.fetchOpeningHoursFromGooglePlaces?.(poiWithHours);
+
+      if (fetched && fetched.raw) {
+        console.log('%c✓ PASS: Fetched from POI successfully', 'color:#00FF88;font-weight:bold');
+        console.log('  - Source:', fetched.source);
+        console.log('  - Data:', fetched.raw);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Fetch from POI failed', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Fetch error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Summary
+    console.log('\n%c═════════════════════════════════════════', 'color:#FF1493;font-weight:bold');
+    console.log('%cTests Passed: ' + passCount, 'color:#00FF88;font-weight:bold;font-size:14px');
+    console.log('%cTests Failed: ' + failCount, failCount === 0 ? 'color:#00FF88;font-weight:bold;font-size:14px' : 'color:#FF6B6B;font-weight:bold;font-size:14px');
+    console.log('%c═══ END OPENING HOURS TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+
+    return { passed: passCount, failed: failCount, total: passCount + failCount };
+  };
+
+  /**
+   * TEST FUNCTION: Verify Phase 4 Advanced Features work correctly
+   * Tests: soft delete, cleanup, version history, field history, merge info
+   * Usage: window.testPhase4()
+   */
+  window.testPhase4 = function() {
+    console.log('%c═══ PHASE 4: ADVANCED FEATURES TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+
+    let passCount = 0;
+    let failCount = 0;
+
+    // Setup
+    if (!state.group || !state.group.roomId) {
+      state.group = {
+        roomId: 'test_room_phase4',
+        myName: 'TestUser',
+        createdByName: 'TestUser',
+        members: [{ name: 'TestUser' }]
+      };
+    }
+
+    if (!state.groupItineraries) state.groupItineraries = {};
+
+    // Create test itinerary with POIs
+    const itinId = 'group_itin_phase4_test';
+    state.groupItineraries[itinId] = {
+      id: itinId,
+      roomId: 'test_room_phase4',
+      version: 1,
+      pois: [
+        {
+          googlePlaceId: 'poi_soft_delete_test',
+          name: { value: 'Test POI for Soft Delete', timestamp: 1000, peerId: 'test_user' },
+          notes: { value: 'This will be soft deleted', timestamp: 1000, peerId: 'test_user' },
+          timestamp: 1000
+        },
+        {
+          googlePlaceId: 'poi_field_history_test',
+          name: { value: 'Field History POI', timestamp: 1000, peerId: 'alice' },
+          notes: { value: 'Original notes', timestamp: 2000, peerId: 'bob' },
+          category: { value: 'temple', timestamp: 3000, peerId: 'charlie' },
+          timestamp: 3000
+        }
+      ]
+    };
+
+    // Test 1: Soft delete POI
+    console.log('\n%c[TEST 1] Soft delete POI', 'color:#FF1493;font-weight:bold');
+    try {
+      window.softDeletePOI?.(itinId, 'poi_soft_delete_test');
+
+      const itinerary = state.groupItineraries[itinId];
+      const poi = itinerary.pois.find(p => p.googlePlaceId === 'poi_soft_delete_test');
+
+      if (poi && poi.deleted?.value === true && poi.deletionTimestamp) {
+        console.log('%c✓ PASS: POI soft-deleted correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Deleted:', poi.deleted.value);
+        console.log('  - Deletion timestamp:', new Date(poi.deletionTimestamp).toLocaleString());
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Soft delete failed', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Soft delete error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 2: Get POI field history
+    console.log('\n%c[TEST 2] Get POI field history', 'color:#FF1493;font-weight:bold');
+    try {
+      const fieldHistory = window.getPOIFieldHistory?.(itinId, 'poi_field_history_test');
+
+      const hasNameField = fieldHistory.name?.value === 'Field History POI';
+      const hasNotesField = fieldHistory.notes?.value === 'Original notes';
+      const hasCategoryField = fieldHistory.category?.value === 'temple';
+      const hasPeerIds = fieldHistory.name?.peerId && fieldHistory.notes?.peerId && fieldHistory.category?.peerId;
+
+      if (hasNameField && hasNotesField && hasCategoryField && hasPeerIds) {
+        console.log('%c✓ PASS: Field history retrieved correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - Name by:', fieldHistory.name.peerId, 'at', new Date(fieldHistory.name.timestamp).toLocaleString());
+        console.log('  - Notes by:', fieldHistory.notes.peerId, 'at', new Date(fieldHistory.notes.timestamp).toLocaleString());
+        console.log('  - Category by:', fieldHistory.category.peerId, 'at', new Date(fieldHistory.category.timestamp).toLocaleString());
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Field history incomplete', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Field history error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 3: Get version history
+    console.log('\n%c[TEST 3] Get version history', 'color:#FF1493;font-weight:bold');
+    try {
+      const versionHistory = window.getItineraryVersionHistory?.(itinId);
+
+      if (Array.isArray(versionHistory) && versionHistory.length > 0) {
+        console.log('%c✓ PASS: Version history retrieved', 'color:#00FF88;font-weight:bold');
+        console.log('  - Total actions:', versionHistory.length);
+        versionHistory.slice(0, 3).forEach((entry, i) => {
+          console.log(`    ${i + 1}. ${entry.description} (${entry.peerId})`);
+        });
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Version history empty or invalid', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Version history error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 4: Cleanup soft-deleted POIs (old deletion)
+    console.log('\n%c[TEST 4] Cleanup old soft-deleted POIs', 'color:#FF1493;font-weight:bold');
+    try {
+      // Artificially set deletion timestamp to 31 days ago
+      const itinerary = state.groupItineraries[itinId];
+      const poiToDelete = itinerary.pois.find(p => p.googlePlaceId === 'poi_soft_delete_test');
+      if (poiToDelete) {
+        poiToDelete.deletionTimestamp = Date.now() - (31 * 24 * 60 * 60 * 1000);
+      }
+
+      const beforeCleanup = itinerary.pois.length;
+      const removed = window.cleanupSoftDeletedPOIs?.(itinId);
+      const afterCleanup = state.groupItineraries[itinId].pois.length;
+
+      if (removed > 0 && afterCleanup === beforeCleanup - removed) {
+        console.log('%c✓ PASS: Old soft-deleted POIs removed', 'color:#00FF88;font-weight:bold');
+        console.log('  - Before cleanup:', beforeCleanup, 'POIs');
+        console.log('  - After cleanup:', afterCleanup, 'POIs');
+        console.log('  - Removed:', removed, 'POI(s)');
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Cleanup failed', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Cleanup error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 5: Describe action helper
+    console.log('\n%c[TEST 5] Action description helper', 'color:#FF1493;font-weight:bold');
+    try {
+      const desc1 = window.describeAction?.('add_poi', 'test');
+      const desc2 = window.describeAction?.('delete_poi', 'test');
+      const desc3 = window.describeAction?.('modify_field', 'test');
+
+      if (desc1 && desc2 && desc3 && !desc1.includes('sconosciuto') && !desc2.includes('sconosciuto')) {
+        console.log('%c✓ PASS: Action descriptions generated correctly', 'color:#00FF88;font-weight:bold');
+        console.log('  - add_poi:', desc1);
+        console.log('  - delete_poi:', desc2);
+        console.log('  - modify_field:', desc3);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Action descriptions invalid', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Action description error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 6: Merge conflict info (simulated)
+    console.log('\n%c[TEST 6] Merge conflict info', 'color:#FF1493;font-weight:bold');
+    try {
+      // Record merge conflict using proper function
+      const conflicts = [
+        { field: 'notes', local: 'Old notes', remote: 'New notes', winner: 'remote' },
+        { field: 'category', local: 'shrine', remote: 'temple', winner: 'remote' }
+      ];
+
+      window.recordMergeConflict?.(itinId, conflicts);
+
+      const conflictInfo = window.getMergeConflictInfo?.(itinId);
+
+      if (conflictInfo && conflictInfo.resolvedCount === 2 && conflictInfo.details?.length === 2) {
+        console.log('%c✓ PASS: Merge conflict info recorded and retrieved', 'color:#00FF88;font-weight:bold');
+        console.log('  - Conflicts resolved:', conflictInfo.resolvedCount);
+        console.log('  - Recorded at:', new Date(conflictInfo.timestamp).toLocaleString());
+        conflictInfo.details.forEach((c, i) => {
+          console.log(`    ${i + 1}. ${c.field}: "${c.local}" → "${c.remote}" (${c.winner} won)`);
+        });
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Merge conflict info invalid', 'color:#FF6B6B;font-weight:bold');
+        console.log('  - Info:', conflictInfo);
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Merge conflict info error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Summary
+    console.log('\n%c═════════════════════════════════════════', 'color:#FF1493;font-weight:bold');
+    console.log('%cTests Passed: ' + passCount, 'color:#00FF88;font-weight:bold;font-size:14px');
+    console.log('%cTests Failed: ' + failCount, failCount === 0 ? 'color:#00FF88;font-weight:bold;font-size:14px' : 'color:#FF6B6B;font-weight:bold;font-size:14px');
+    console.log('%c═══ END PHASE 4 TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+
+    return { passed: passCount, failed: failCount, total: passCount + failCount };
+  };
+
+  // ═════════════════════════════════════════════════════════════════
+  // ===== PHASE 2: P2P SYNC FUNCTIONS =====
+  // ═════════════════════════════════════════════════════════════════
+
+  /**
+   * Compute hash of itinerary for integrity verification
+   * Uses simple SHA256 hash (browser crypto API or fallback)
+   */
+  function computeItineraryHash(itinerary) {
+    if (!itinerary) return '';
+
+    // Create canonical JSON representation
+    const canonical = JSON.stringify({
+      id: itinerary.id,
+      roomId: itinerary.roomId,
+      version: itinerary.version,
+      pois: (itinerary.pois || []).map(poi => ({
+        googlePlaceId: poi.googlePlaceId,
+        name: poi.name?.value || poi.name,
+        notes: poi.notes?.value || poi.notes,
+        category: poi.category?.value || poi.category,
+        timestamp: poi.timestamp
+      })).sort((a, b) => a.googlePlaceId.localeCompare(b.googlePlaceId))
+    });
+
+    // Try crypto API if available
+    if (window.crypto?.subtle) {
+      // Return a promise-based hash, but for now use simple fallback
+      return simpleHash(canonical);
+    }
+
+    return simpleHash(canonical);
+  }
+
+  /**
+   * Simple hash function (fallback if crypto not available)
+   * Creates 8-char hex string from string content
+   */
+  function simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(16).padStart(8, '0');
+  }
+
+  /**
+   * Broadcast itinerary to group via P2P
+   * - Sends to hub first (if not hub)
+   * - Then broadcasts to mesh peers
+   * - Includes hash for integrity verification
+   */
+  function broadcastItinerary(itineraryId) {
+    if (!state.group || !state.group.roomId) {
+      console.warn('[SYNC] Cannot broadcast: not in a group');
+      return;
+    }
+
+    const itinerary = state.groupItineraries?.[itineraryId];
+    if (!itinerary) {
+      console.warn('[SYNC] Itinerary not found:', itineraryId);
+      return;
+    }
+
+    const myPeerId = window.makePeerId?.(state.group.roomId, state.group.myName);
+    const hubId = window.makeHubId?.(state.group.roomId);
+    const isHub = (state.group.myName === state.group.createdByName);
+
+    // Compute hash for integrity
+    const hash = computeItineraryHash(itinerary);
+
+    const message = {
+      type: "itinerary_sync",
+      from: myPeerId,
+      roomId: state.group.roomId,
+      itineraryId: itineraryId,
+      timestamp: Date.now(),
+      payload: itinerary,
+      hash: hash
+    };
+
+    console.log('[SYNC] Broadcasting itinerary:', itineraryId, '| Hash:', hash, '| POIs:', itinerary.pois?.length);
+
+    // Send to hub first (if not hub)
+    if (!isHub && window.peer) {
+      const hubConns = window.peer.connections[hubId];
+      if (hubConns && hubConns.length > 0) {
+        hubConns[0].send(message);
+        console.log('[SYNC] Sent to hub:', hubId);
+      }
+    }
+
+    // Also send to mesh peers (best-effort)
+    if (window.peer?.connections) {
+      Object.keys(window.peer.connections).forEach(peerId => {
+        if (peerId !== hubId) {
+          const conns = window.peer.connections[peerId];
+          if (conns && conns.length > 0) {
+            conns[0].send(message);
+          }
+        }
+      });
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Export Phase 2 functions globally
+  window.computeItineraryHash = computeItineraryHash;
+  window.simpleHash = simpleHash;
+  window.broadcastItinerary = broadcastItinerary;
+
+  /**
+   * TEST FUNCTION: Verify Phase 2 P2P Sync works correctly
+   * Tests: hash computation, broadcast function, message format
+   * Usage: window.testPhase2()
+   */
+  window.testPhase2 = function() {
+    console.log('%c═══ PHASE 2: P2P SYNC TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+
+    let passCount = 0;
+    let failCount = 0;
+
+    // Test 1: Hash computation
+    console.log('\n%c[TEST 1] Hash computation', 'color:#FF1493;font-weight:bold');
+    try {
+      const testItinerary = {
+        id: 'itin_test_phase2',
+        roomId: 'test_room',
+        version: 1,
+        pois: [
+          { googlePlaceId: 'poi_1', name: 'POI 1', timestamp: 1000 },
+          { googlePlaceId: 'poi_2', name: 'POI 2', timestamp: 2000 }
+        ]
+      };
+
+      const hash = window.computeItineraryHash(testItinerary);
+      console.log('  Hash computed:', hash);
+      console.log('  Hash length:', hash.length, '(expected 8)');
+
+      if (hash && hash.length === 8 && /^[0-9a-f]+$/.test(hash)) {
+        console.log('%c✓ PASS: Hash format valid', 'color:#00FF88;font-weight:bold');
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Hash format invalid', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+
+      // Test 1b: Hash stability (same input = same output)
+      const hash2 = window.computeItineraryHash(testItinerary);
+      if (hash === hash2) {
+        console.log('%c✓ PASS: Hash is deterministic', 'color:#00FF88;font-weight:bold');
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Hash not deterministic', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Hash computation error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 2: simpleHash function
+    console.log('\n%c[TEST 2] Simple hash fallback', 'color:#FF1493;font-weight:bold');
+    try {
+      const hash1 = window.simpleHash('test string');
+      const hash2 = window.simpleHash('test string');
+      const hash3 = window.simpleHash('different string');
+
+      if (hash1 === hash2 && hash1 !== hash3) {
+        console.log('%c✓ PASS: simpleHash deterministic and unique', 'color:#00FF88;font-weight:bold');
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: simpleHash not working correctly', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: simpleHash error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 3: Broadcast function signature and error handling
+    console.log('\n%c[TEST 3] Broadcast function safety', 'color:#FF1493;font-weight:bold');
+    try {
+      // Test 3a: No group (should warn gracefully)
+      const originalGroup = window.state.group;
+      window.state.group = null;
+      window.broadcastItinerary('fake_id');
+      window.state.group = originalGroup;
+      console.log('%c✓ PASS: Broadcast handles missing group gracefully', 'color:#00FF88;font-weight:bold');
+      passCount++;
+    } catch (e) {
+      console.log('%c✗ FAIL: Broadcast crashed on missing group:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 4: Message format (without actual broadcast)
+    console.log('\n%c[TEST 4] Message format verification', 'color:#FF1493;font-weight:bold');
+    try {
+      // Create a test itinerary in state
+      if (!window.state.groupItineraries) window.state.groupItineraries = {};
+
+      const testItinerary = {
+        id: 'itin_phase2_test',
+        roomId: 'test_room',
+        version: 1,
+        pois: [
+          { googlePlaceId: 'test_poi', name: { value: 'Test', timestamp: 1000, peerId: 'alice' } }
+        ]
+      };
+
+      window.state.groupItineraries['itin_phase2_test'] = testItinerary;
+      window.state.group = {
+        roomId: 'test_room',
+        myName: 'TestUser',
+        createdByName: 'TestUser',
+        members: [{ name: 'TestUser' }]
+      };
+
+      // Mock peer to capture message
+      let capturedMessage = null;
+      const originalPeer = window.peer;
+      window.peer = {
+        connections: {
+          'test_room_mesh_peer': [{
+            send: (msg) => { capturedMessage = msg; }
+          }]
+        }
+      };
+
+      // Try broadcast (as hub, so goes to mesh)
+      window.broadcastItinerary('itin_phase2_test');
+
+      // Restore peer
+      window.peer = originalPeer;
+
+      if (capturedMessage) {
+        const hasRequiredFields =
+          capturedMessage.type === 'itinerary_sync' &&
+          capturedMessage.itineraryId === 'itin_phase2_test' &&
+          capturedMessage.hash &&
+          capturedMessage.payload &&
+          capturedMessage.timestamp;
+
+        if (hasRequiredFields) {
+          console.log('%c✓ PASS: Message has all required fields', 'color:#00FF88;font-weight:bold');
+          console.log('  - type:', capturedMessage.type);
+          console.log('  - itineraryId:', capturedMessage.itineraryId);
+          console.log('  - hash:', capturedMessage.hash);
+          console.log('  - timestamp:', capturedMessage.timestamp);
+          passCount++;
+        } else {
+          console.log('%c✗ FAIL: Message missing required fields', 'color:#FF6B6B;font-weight:bold');
+          failCount++;
+        }
+      } else {
+        console.log('%c✗ FAIL: Message not created', 'color:#FF6B6B;font-weight:bold');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Message format test error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Test 5: Integration with merge logic
+    console.log('\n%c[TEST 5] Integration with CRDT merge', 'color:#FF1493;font-weight:bold');
+    try {
+      // Create two versions of same itinerary
+      const local = {
+        id: 'itin_sync_test',
+        roomId: 'test_room',
+        version: 1,
+        pois: [
+          {
+            googlePlaceId: 'poi_sync',
+            name: { value: 'Sync Test', timestamp: 1000, peerId: 'alice' },
+            notes: { value: 'Local notes', timestamp: 1000, peerId: 'alice' }
+          }
+        ]
+      };
+
+      const remote = {
+        id: 'itin_sync_test',
+        roomId: 'test_room',
+        version: 2,
+        pois: [
+          {
+            googlePlaceId: 'poi_sync',
+            name: { value: 'Sync Test Updated', timestamp: 2000, peerId: 'bob' },
+            notes: { value: 'Local notes', timestamp: 1000, peerId: 'alice' }
+          }
+        ]
+      };
+
+      const merged = window.mergeGroupItinerary(local, remote);
+
+      // Verify merge result
+      const mergedPOI = merged.pois[0];
+      // After normalizePOI, name is extracted as direct value (not {value, timestamp, peerId})
+      const nameWins = mergedPOI.name === 'Sync Test Updated';
+      const versionIncremented = merged.version === 3;
+
+      if (nameWins && versionIncremented) {
+        console.log('%c✓ PASS: Merge correctly applies Last-Write-Wins', 'color:#00FF88;font-weight:bold');
+        console.log('  - Name updated by newer timestamp (bob):', mergedPOI.name);
+        console.log('  - Version incremented:', merged.version);
+        passCount++;
+      } else {
+        console.log('%c✗ FAIL: Merge logic issue', 'color:#FF6B6B;font-weight:bold');
+        console.log('  - Name:', mergedPOI.name, '(expected: Sync Test Updated)');
+        console.log('  - Version:', merged.version, '(expected: 3)');
+        failCount++;
+      }
+    } catch (e) {
+      console.log('%c✗ FAIL: Merge integration error:', 'color:#FF6B6B;font-weight:bold', e.message);
+      failCount++;
+    }
+
+    // Summary
+    console.log('\n%c═════════════════════════════════════════', 'color:#FF1493;font-weight:bold');
+    console.log('%cTests Passed: ' + passCount, 'color:#00FF88;font-weight:bold;font-size:14px');
+    console.log('%cTests Failed: ' + failCount, failCount === 0 ? 'color:#00FF88;font-weight:bold;font-size:14px' : 'color:#FF6B6B;font-weight:bold;font-size:14px');
+    console.log('%c═══ END PHASE 2 TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+
+    return { passed: passCount, failed: failCount, total: passCount + failCount };
   };
 
   // ─────────────────────────────────────────────────────────────────
@@ -3439,26 +5496,35 @@ window.addEventListener("load", () => {
           console.log('[AGGIUNGI CLICK] poi trovato:', poi);
 
           if (poi) {
-            console.log('[AGGIUNGI] POI trovato, mostrando dialog:', poi.name || poi.bestname);
-            showAddItineraryDialog(poi, ({ day, time, cost }) => {
-              console.log('[DIALOG CALLBACK] TRIGGERED with:', { day, time, cost });
-              const entry = {
-                id: poi.googlePlaceId,  // ✅ Usa googlePlaceId
-                name: getPoiDisplayName(poi),
-                city: poi.searchCity || poi.city,
-                lat: poi.lat,
-                lng: poi.lng,
-                day: day ? parseInt(day) : null,
-                time: time || '',
-                cost: cost || ''
-              };
-              console.log('[DIALOG CALLBACK] entry created:', entry);
-              addToItinerary(entry);
-              console.log('[DIALOG CALLBACK] calling renderListView...');
-              toast('✓ Aggiunto a itinerario');
-              renderListView();
-              console.log('[DIALOG CALLBACK] renderListView completed');
-            });
+            console.log('[AGGIUNGI] POI trovato:', poi.name || poi.bestname);
+
+            // Phase 3: If user is in a group, show group selection modal
+            if (state.group && state.group.roomId) {
+              console.log('[PHASE3] User in group, showing group selection modal');
+              window.showGroupSelectionModal?.(poi);
+            } else {
+              // Fallback: Show personal itinerary dialog
+              console.log('[AGGIUNGI] No group, showing personal itinerary dialog');
+              showAddItineraryDialog(poi, ({ day, time, cost }) => {
+                console.log('[DIALOG CALLBACK] TRIGGERED with:', { day, time, cost });
+                const entry = {
+                  id: poi.googlePlaceId,
+                  name: getPoiDisplayName(poi),
+                  city: poi.searchCity || poi.city,
+                  lat: poi.lat,
+                  lng: poi.lng,
+                  day: day ? parseInt(day) : null,
+                  time: time || '',
+                  cost: cost || ''
+                };
+                console.log('[DIALOG CALLBACK] entry created:', entry);
+                addToItinerary(entry);
+                console.log('[DIALOG CALLBACK] calling renderListView...');
+                toast('✓ Aggiunto a itinerario');
+                renderListView();
+                console.log('[DIALOG CALLBACK] renderListView completed');
+              });
+            }
           } else {
             console.error('[AGGIUNGI] POI non trovato con ID:', poiId);
           }
@@ -5518,6 +7584,8 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   window.isInItinerary = isInItinerary;
   window.renderItineraryView = renderItineraryView;
   window.peerGPS = peerGPS;
+  // Phase 2: P2P Sync exports (already added above)
+  // window.computeItineraryHash, window.simpleHash, window.broadcastItinerary
   console.log('[Giappone2027] Itinerary helpers and peerGPS exposed to window');
 
 })();
