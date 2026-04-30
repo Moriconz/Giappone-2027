@@ -14,6 +14,13 @@ window.state = Object.assign({
   notes: {},
   customEvents: [],
   dismissInstall: false,
+  // Personal itinerary (legacy)
+  itinerary: [],
+  // GROUP ITINERARIES (NEW - CRDT based)
+  groupItineraries: {},
+  // UNDO/REDO STACK (NEW)
+  undoRedo: { stack: [], currentIndex: -1, maxSize: 100 },
+  // Collaborative features
   group: { name: 'Giappone 2027', members: [], myAvatar: null, myName: '' },
   // AI Features
   ai: {},

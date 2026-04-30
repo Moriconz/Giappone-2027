@@ -512,6 +512,314 @@ window.addEventListener("load", () => {
     if (!state.itinerary) return false;
     return state.itinerary.some(e => e.id === id);
   }
+
+  // ═════════════════════════════════════════════════════════════════
+  // ===== CRDT MERGE FUNCTIONS (Phase 1: Foundation) =====
+  // ═════════════════════════════════════════════════════════════════
+
+  /**
+   * Merge a single POI field using Last-Write-Wins strategy
+   * Input: { value, timestamp, peerId } from both local and remote
+   * Returns: winning field value
+   */
+  function mergePOIFields(localField, remoteField) {
+    if (!localField) return remoteField;
+    if (!remoteField) return localField;
+
+    // 1. Compare timestamps (higher wins)
+    if (remoteField.timestamp > localField.timestamp) {
+      return remoteField;
+    }
+    if (localField.timestamp > remoteField.timestamp) {
+      return localField;
+    }
+
+    // 2. Timestamps equal: use peerId as tiebreaker (lexicographically later wins)
+    if (remoteField.peerId > localField.peerId) {
+      return remoteField;
+    }
+    return localField;
+  }
+
+  /**
+   * Merge two group itineraries using CRDT Last-Write-Wins with tiebreaker
+   * Resolves conflicts at the field level for each POI
+   */
+  function mergeGroupItinerary(localItinerary, remoteItinerary) {
+    console.log('[CRDT] mergeGroupItinerary START', {
+      localVersion: localItinerary?.version || 0,
+      remoteVersion: remoteItinerary?.version || 0,
+      localPOIs: localItinerary?.pois?.length || 0,
+      remotePOIs: remoteItinerary?.pois?.length || 0
+    });
+
+    if (!localItinerary) return remoteItinerary;
+    if (!remoteItinerary) return localItinerary;
+
+    const merged = { ...localItinerary };
+
+    // 1. Merge itinerary-level metadata
+    merged.version = Math.max(localItinerary.version || 0, remoteItinerary.version || 0) + 1;
+
+    // Merge name by timestamp
+    if (remoteItinerary.name?.timestamp > (localItinerary.name?.timestamp || 0)) {
+      merged.name = remoteItinerary.name;
+    }
+
+    // 2. Build map of POIs by googlePlaceId
+    const poiMap = new Map();
+
+    // Load local POIs
+    (localItinerary.pois || []).forEach(poi => {
+      poiMap.set(poi.googlePlaceId, { local: poi, remote: null });
+    });
+
+    // Load remote POIs
+    (remoteItinerary.pois || []).forEach(remotePoi => {
+      const key = remotePoi.googlePlaceId;
+      const entry = poiMap.get(key) || { local: null, remote: null };
+      entry.remote = remotePoi;
+      poiMap.set(key, entry);
+    });
+
+    // 3. Merge each POI
+    merged.pois = Array.from(poiMap.values()).map(({ local, remote }) => {
+      if (!local) {
+        console.log('[CRDT] POI only in remote:', remote.googlePlaceId);
+        return remote;
+      }
+      if (!remote) {
+        console.log('[CRDT] POI only in local:', local.googlePlaceId);
+        return local;
+      }
+
+      // Both exist: merge field-by-field
+      console.log('[CRDT] Merging POI:', local.googlePlaceId);
+      const mergedPoi = { googlePlaceId: local.googlePlaceId };
+
+      // Collect all field names
+      const fieldNames = new Set([
+        ...Object.keys(local),
+        ...Object.keys(remote)
+      ]);
+
+      fieldNames.forEach(fieldName => {
+        if (fieldName === 'googlePlaceId' || fieldName === 'fields') return;
+
+        const localFieldMeta = local.fields?.[fieldName] || {
+          value: local[fieldName],
+          timestamp: local.timestamp || 0,
+          peerId: local.addedByPeerId || 'unknown'
+        };
+        const remoteFieldMeta = remote.fields?.[fieldName] || {
+          value: remote[fieldName],
+          timestamp: remote.timestamp || 0,
+          peerId: remote.addedByPeerId || 'unknown'
+        };
+
+        const winner = mergePOIFields(localFieldMeta, remoteFieldMeta);
+        mergedPoi[fieldName] = winner.value;
+      });
+
+      // 4. Handle soft deletes
+      const localDeleted = local.deleted || false;
+      const remoteDeleted = remote.deleted || false;
+      const localDeleteTime = local.deletionTimestamp || 0;
+      const remoteDeleteTime = remote.deletionTimestamp || 0;
+
+      if (remoteDeleteTime > localDeleteTime) {
+        mergedPoi.deleted = remoteDeleted;
+        mergedPoi.deletionTimestamp = remoteDeleteTime;
+      } else {
+        mergedPoi.deleted = localDeleted;
+        mergedPoi.deletionTimestamp = localDeleteTime;
+      }
+
+      mergedPoi.timestamp = Math.max(local.timestamp || 0, remote.timestamp || 0);
+
+      return mergedPoi;
+    }).filter(poi => !poi.deleted);  // Hide soft-deleted items
+
+    console.log('[CRDT] mergeGroupItinerary COMPLETE', {
+      resultVersion: merged.version,
+      resultPOIs: merged.pois.length
+    });
+
+    return merged;
+  }
+
+  /**
+   * Push a state change to undo stack
+   */
+  function pushUndoState(action, itineraryId, poiId, changeSet) {
+    if (!state.undoRedo) {
+      state.undoRedo = { stack: [], currentIndex: -1, maxSize: 100 };
+    }
+
+    const undoRedo = state.undoRedo;
+    const myPeerId = window.peerGPS?.getMyPeerId?.() || 'local';
+
+    // Trim redo stack (can no longer redo after new change)
+    undoRedo.stack = undoRedo.stack.slice(0, undoRedo.currentIndex + 1);
+
+    // Add new undo state
+    undoRedo.stack.push({
+      id: `undo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      peerId: myPeerId,
+      action: action,  // "add_poi" | "modify_field" | "delete_poi"
+      itineraryId: itineraryId,
+      poiId: poiId,
+      changeSet: changeSet,
+      snapshot: JSON.parse(JSON.stringify(state.groupItineraries[itineraryId]))
+    });
+
+    // Trim if over limit
+    if (undoRedo.stack.length > undoRedo.maxSize) {
+      undoRedo.stack.shift();
+    } else {
+      undoRedo.currentIndex++;
+    }
+
+    console.log('[Undo] Pushed:', action, '| Stack size:', undoRedo.stack.length, '| Index:', undoRedo.currentIndex);
+
+    saveState();
+  }
+
+  /**
+   * Undo last change
+   */
+  function undo() {
+    const undoRedo = state.undoRedo;
+    if (!undoRedo || undoRedo.currentIndex <= 0) {
+      console.log('[Undo] Cannot undo (at start or no stack)');
+      return false;
+    }
+
+    undoRedo.currentIndex--;
+    const targetState = undoRedo.stack[undoRedo.currentIndex];
+
+    if (targetState?.snapshot) {
+      const itineraryId = targetState.itineraryId;
+      state.groupItineraries[itineraryId] = JSON.parse(JSON.stringify(targetState.snapshot));
+      console.log('[Undo] Restored to index:', undoRedo.currentIndex);
+      saveState();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Redo last undone change
+   */
+  function redo() {
+    const undoRedo = state.undoRedo;
+    if (!undoRedo || undoRedo.currentIndex >= undoRedo.stack.length - 1) {
+      console.log('[Redo] Cannot redo (at end or no stack)');
+      return false;
+    }
+
+    undoRedo.currentIndex++;
+    const targetState = undoRedo.stack[undoRedo.currentIndex];
+
+    if (targetState?.snapshot) {
+      const itineraryId = targetState.itineraryId;
+      state.groupItineraries[itineraryId] = JSON.parse(JSON.stringify(targetState.snapshot));
+      console.log('[Redo] Restored to index:', undoRedo.currentIndex);
+      saveState();
+      return true;
+    }
+    return false;
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Export CRDT functions globally for testing and WebRTC handlers
+  window.mergePOIFields = mergePOIFields;
+  window.mergeGroupItinerary = mergeGroupItinerary;
+  window.pushUndoState = pushUndoState;
+  window.undo = undo;
+  window.redo = redo;
+
+  /**
+   * TEST FUNCTION: Verify CRDT merge works correctly
+   * Usage: window.testCRDTMerge()
+   */
+  window.testCRDTMerge = function() {
+    console.log('%c═══ CRDT MERGE TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+
+    // Create local itinerary (version 1)
+    const local = {
+      id: 'itin_test_1',
+      roomId: 'test_room',
+      name: 'Tokyo Trip',
+      version: 1,
+      pois: [
+        {
+          googlePlaceId: 'poi_sensoji',
+          name: { value: 'Senso-ji Temple', timestamp: 1000, peerId: 'alice' },
+          notes: { value: 'Original note', timestamp: 1000, peerId: 'alice' },
+          timestamp: 1000,
+          addedByPeerId: 'alice'
+        }
+      ]
+    };
+
+    // Create remote itinerary (version 2, with conflict)
+    const remote = {
+      id: 'itin_test_1',
+      roomId: 'test_room',
+      name: 'Tokyo Trip',
+      version: 2,
+      pois: [
+        {
+          googlePlaceId: 'poi_sensoji',
+          name: { value: 'Senso-ji Temple', timestamp: 1000, peerId: 'alice' },
+          notes: { value: 'Updated note from Bob', timestamp: 1500, peerId: 'bob' },  // Bob's edit is newer
+          timestamp: 1500,
+          addedByPeerId: 'alice'
+        },
+        {
+          googlePlaceId: 'poi_meiji',
+          name: { value: 'Meiji Shrine', timestamp: 1200, peerId: 'bob' },
+          timestamp: 1200,
+          addedByPeerId: 'bob'
+        }
+      ]
+    };
+
+    console.log('[TEST] Local version:', local.version, '| Remote version:', remote.version);
+    console.log('[TEST] Local POIs:', local.pois.length, '| Remote POIs:', remote.pois.length);
+
+    // Perform merge
+    const merged = mergeGroupItinerary(local, remote);
+
+    console.log('%c✓ MERGE RESULT', 'background:#00FF88;color:#2D3B7D;padding:6px;border-radius:3px;font-weight:bold');
+    console.log('[TEST] Merged version:', merged.version);
+    console.log('[TEST] Merged POIs:', merged.pois.length);
+    console.log('[TEST] Merged data:', merged);
+
+    // Verify results
+    const sensoji = merged.pois.find(p => p.googlePlaceId === 'poi_sensoji');
+    const meiji = merged.pois.find(p => p.googlePlaceId === 'poi_meiji');
+
+    if (sensoji?.notes === 'Updated note from Bob') {
+      console.log('%c✓ PASS: Conflict resolved correctly (Bob\'s newer edit won)', 'color:#00FF88;font-weight:bold');
+    } else {
+      console.log('%c✗ FAIL: Conflict resolution failed', 'color:#FF6B6B;font-weight:bold');
+    }
+
+    if (meiji?.name === 'Meiji Shrine') {
+      console.log('%c✓ PASS: Remote POI merged correctly', 'color:#00FF88;font-weight:bold');
+    } else {
+      console.log('%c✗ FAIL: Remote POI not merged', 'color:#FF6B6B;font-weight:bold');
+    }
+
+    console.log('%c═══ END TEST ═══', 'background:#FF1493;color:white;padding:8px;border-radius:3px;font-weight:bold');
+    return merged;
+  };
+
+  // ─────────────────────────────────────────────────────────────────
+
   // ---- MAP (OpenLayers) ----
   const map = new ol.Map({
     target: 'map',
@@ -2594,16 +2902,33 @@ window.addEventListener("load", () => {
   // Invalida cache quando state cambia (custom events, category overrides)
   const origSaveState = saveState;
   let lastItineraryLength = 0;
+  let lastGroupItinerariesHash = {};
   saveState = function() {
     globalPOIsCache = null;
-    // Check if itinerary changed, and broadcast to group
+
+    // Check if personal itinerary changed, and broadcast to group
     const currentLength = (state.itinerary || []).length;
     if (currentLength !== lastItineraryLength) {
       lastItineraryLength = currentLength;
+      console.log('[saveState] Personal itinerary changed:', currentLength, 'items');
       if (window.peerGPS?.broadcastItinerary) {
         window.peerGPS.broadcastItinerary();
       }
     }
+
+    // Check if group itineraries changed
+    const groupItineraries = state.groupItineraries || {};
+    Object.entries(groupItineraries).forEach(([itineraryId, itinerary]) => {
+      const currentHash = JSON.stringify({
+        version: itinerary.version,
+        poiCount: itinerary.pois?.length || 0
+      });
+      if (lastGroupItinerariesHash[itineraryId] !== currentHash) {
+        lastGroupItinerariesHash[itineraryId] = currentHash;
+        console.log('[saveState] Group itinerary changed:', itineraryId, '| v' + itinerary.version, '|', itinerary.pois?.length || 0, 'POIs');
+      }
+    });
+
     origSaveState.apply(this, arguments);
   };
 
@@ -3634,7 +3959,7 @@ window.addEventListener("load", () => {
       console.log('[renderGFView] Città attuale da GPS:', currentCity, '- distanza:', minDist.toFixed(2));
     }
 
-    const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;\"><option value=\"all\">Tutte le città</option>" + allCities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\" style=\"position:relative;min-height:200px;\"><p style=\"color:var(--muted);text-align:center;padding:20px;\">⏳ Caricamento città attuale...</p></div>";
+    const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"flex:0 0 auto;max-width:180px;padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;overflow:hidden;text-overflow:ellipsis;\"><option value=\"all\">Tutte le città</option>" + allCities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\" style=\"position:relative;min-height:200px;\"><p style=\"color:var(--muted);text-align:center;padding:20px;\">⏳ Caricamento città attuale...</p></div>";
     window.openSheet("🌾 Gluten Free", html);
 
     // Mostra subito i dati hardcoded
