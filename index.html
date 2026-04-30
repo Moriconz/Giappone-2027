@@ -2930,12 +2930,12 @@ window.addEventListener("load", () => {
           return;
         }
 
-        // FILTRA POI PER searchCity (non per city, non per address)
-        const allPois = allPOIs();
-        const searchResults = allPois.filter(p => {
-          const searchCity = (p.searchCity || '').toLowerCase();
-          return searchCity.includes(query);
-        });
+        // FILTRA POI PER searchCity — LEGGI DALLA CACHE IndexedDB (dove hanno searchCity)
+        window.GooglePlacesCache.getAllCached().then(allPois => {
+          const searchResults = allPois.filter(p => {
+            const searchCity = (p.searchCity || '').toLowerCase();
+            return searchCity.includes(query);
+          });
 
         console.log(`[renderListView] Trovati ${searchResults.length} POI per città: ${query}`);
 
@@ -3015,7 +3015,7 @@ window.addEventListener("load", () => {
             addBtn.onclick = (e) => {
               e.stopPropagation();
               const poiId = addBtn.dataset.addToItinerary;
-              const poi = allPOIs().find(p => p.id === poiId);
+              const poi = allPois.find(p => p.id === poiId);  // Usa allPois dalla cache
               if (poi) {
                 showAddItineraryDialog(poi, ({ day, time, cost }) => {
                   const entry = {
@@ -3036,6 +3036,7 @@ window.addEventListener("load", () => {
             };
           }
         });
+        }); // Chiudi il .then() di getAllCached()
 
       }, 200);  // Debounce
     }
