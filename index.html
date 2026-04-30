@@ -479,6 +479,10 @@ window.addEventListener("load", () => {
     if (exists) return false; // Already in itinerary
     state.itinerary.push(entry);
     saveState();
+    // ✅ Sincronizza con il gruppo via WebRTC
+    if (peerGPS && peerGPS.broadcastItinerary) {
+      peerGPS.broadcastItinerary();
+    }
     return true;
   }
   function removeFromItinerary(id) {
@@ -487,6 +491,10 @@ window.addEventListener("load", () => {
     if (idx === -1) return false;
     state.itinerary.splice(idx, 1);
     saveState();
+    // ✅ Sincronizza con il gruppo via WebRTC
+    if (peerGPS && peerGPS.broadcastItinerary) {
+      peerGPS.broadcastItinerary();
+    }
     return true;
   }
   function updateItinerary(entries) {
@@ -3071,7 +3079,7 @@ window.addEventListener("load", () => {
             addBtn.onclick = (e) => {
               e.stopPropagation();
               const poiId = addBtn.dataset.addToItinerary;
-              const poi = allPois.find(p => p.id === poiId);  // Usa allPois dalla cache
+              const poi = dedupedPois.find(p => p.id === poiId);  // ✅ Usa dedupedPois (senza duplicati)
               if (poi) {
                 showAddItineraryDialog(poi, ({ day, time, cost }) => {
                   const entry = {
