@@ -36,76 +36,76 @@ window.groupPanel = (() => {
         </div>
       `;
       return `
-      <div style="display: flex; gap: 10px; align-items: center; padding: 8px; background: var(--surface-2); border-radius: 8px; margin-bottom: 8px;">
+      <div style="display:flex;gap:10px;align-items:center;padding:10px;background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;margin-bottom:8px">
         ${avatarHtml}
-        <div style="flex: 1; min-width: 0;">
-          <div style="font-weight: 600; font-size: 14px;">${escapeHtml(m.name || 'Unnamed')}</div>
-          <div style="font-size: 11px; color: var(--muted);">${m.peerId ? '🟢 Online' : '🔴 Offline'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:14px;color:#FF1493">${escapeHtml(m.name || 'Unnamed')}</div>
+          <div style="font-size:11px;color:#666">${m.peerId ? '🟢 Online' : '🔴 Offline'}</div>
         </div>
       </div>
     `;
     }).join('');
     
     const html = `
-      <div style="padding: 14px;">
-        
-        <div class="section">
-          <h3>🏠 Stanza: <strong>${escapeHtml(group.roomId)}</strong></h3>
-          <p style="font-size: 12px; color: var(--muted); margin: 0;">
-            Creata da: <strong>${escapeHtml(group.createdBy || 'Sconosciuto')}</strong>
-          </p>
+      <div style="padding: 0;">
+
+        <!-- STANZA INFO -->
+        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin-bottom:16px;margin:12px;">
+          <h3 style="margin:0 0 6px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">🏠 Stanza: <strong>${escapeHtml(group.roomId)}</strong></h3>
+          <p style="font-size:12px;color:#666;margin:0;">Creata da: <strong style="color:#FF1493">${escapeHtml(group.createdBy || 'Sconosciuto')}</strong></p>
         </div>
-        
-        <div class="section">
-          <h3>👥 Membri (${members.length})</h3>
-          ${membersList || '<p style="color: var(--muted);">Nessun membro.</p>'}
+
+        <!-- MEMBRI -->
+        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;margin-bottom:16px">
+          <h3 style="margin:0 0 12px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">👥 Membri (${members.length})</h3>
+          ${membersList ? `<div style="display:flex;flex-direction:column;gap:8px">${membersList}</div>` : '<p style="color:#999;font-size:13px">Nessun membro.</p>'}
         </div>
-        
-        <div class="section">
-          <h3>📍 Condivisione GPS</h3>
-          <div style="display: flex; gap: 10px; align-items: center; padding: 10px; background: var(--surface-2); border-radius: 8px;">
-            <input type="checkbox" id="gps-share-toggle" ${gpsEnabled ? 'checked' : ''} 
-              style="width: 18px; height: 18px; cursor: pointer;">
-            <label for="gps-share-toggle" style="flex: 1; cursor: pointer; margin: 0;">
-              <strong>${gpsEnabled ? '✅ Posizione in diretta' : '⬜ Posizione inattiva'}</strong>
-              <div style="font-size: 11px; color: var(--muted);">
+
+        <!-- GPS SHARING -->
+        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;margin-bottom:16px">
+          <h3 style="margin:0 0 10px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📍 Condivisione GPS</h3>
+          <div style="display:flex;gap:10px;align-items:center;padding:10px;background:#E8F4FF;border:2px solid #00FF88;border-radius:8px">
+            <input type="checkbox" id="gps-share-toggle" ${gpsEnabled ? 'checked' : ''}
+              style="width:18px;height:18px;cursor:pointer;accent-color:#FF1493">
+            <label for="gps-share-toggle" style="flex:1;cursor:pointer;margin:0">
+              <strong style="color:#FF1493">${gpsEnabled ? '✅ Posizione in diretta' : '⬜ Posizione inattiva'}</strong>
+              <div style="font-size:11px;color:#666;margin-top:2px">
                 ${FORCE_FAKE_GPS ? '📍 Usando Tokyo (test mode)' : '📍 Usando posizione reale'}
               </div>
             </label>
           </div>
-          <p style="font-size: 11px; color: var(--muted); margin-top: 6px;">
+          <p style="font-size:11px;color:#666;margin-top:8px;margin-bottom:0">
             La tua posizione è visibile ai membri del gruppo solo se attiva.
           </p>
         </div>
-        
-        <div class="section">
-          <h3>💬 Chat Gruppo</h3>
-          <button class="btn primary" id="open-group-chat" style="width: 100%; margin-bottom: 10px;">
+
+        <!-- CHAT -->
+        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;margin-bottom:16px">
+          <h3 style="margin:0 0 10px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">💬 Chat Gruppo</h3>
+          <button class="btn primary" id="open-group-chat" style="width:100%;margin-bottom:8px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;font-family:'Comic Sans MS',cursive;cursor:pointer;box-shadow:0 0 12px rgba(255,20,147,0.3)">
             💬 Apri chat stanza
           </button>
-          <button class="btn" id="clear-group-chat" style="width: 100%; margin-bottom: 10px; background: var(--warning); border-color: var(--warning); color: #1a1a1a;">
-            🧹 Pulisci chat locale
+          <button class="btn" id="clear-group-chat" style="width:100%;margin-bottom:10px;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
+            🧹 Pulisci chat
           </button>
-          <p style="font-size: 11px; color: var(--muted);">
+          <p style="font-size:11px;color:#666;margin:0">
             Comunica con i membri della stanza (messaggi P2P).
           </p>
         </div>
-        
-        <div class="section">
-          <h3>⚙️ Gestione Stanza</h3>
+
+        <!-- GESTIONE STANZA -->
+        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;margin-bottom:16px">
+          <h3 style="margin:0 0 10px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">⚙️ Gestione Stanza</h3>
           ${isCreator ? `
-            <button class="btn" id="delete-room" style="width: 100%; background: var(--danger); border-color: var(--danger); color: white;">
+            <button class="btn" id="delete-room" style="width:100%;margin-bottom:8px;background:#FF6B6B;border:2px solid #FF6B6B;color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer">
               🗑️ Elimina stanza (solo creatore)
             </button>
-            <p style="font-size: 11px; color: var(--muted); margin-top: 6px;">
-              Elimina la stanza. Tutti i membri verranno disconnessi.
-            </p>
           ` : ''}
-          <button class="btn" id="exit-room" style="width: 100%; margin-top: 10px; background: var(--warning); border-color: var(--warning); color: #1a1a1a;">
+          <button class="btn" id="exit-room" style="width:100%;background:#FFB84D;border:2px solid #FFB84D;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer">
             ❌ Esci dalla stanza
           </button>
-          <p style="font-size: 11px; color: var(--muted); margin-top: 6px;">
-            Esci dal gruppo. Non riceverai più messaggi P2P.
+          <p style="font-size:11px;color:#666;margin-top:8px;margin-bottom:0">
+            Esci dal gruppo. Non riceverai più messaggi.
           </p>
         </div>
       </div>

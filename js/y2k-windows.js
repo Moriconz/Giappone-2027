@@ -140,17 +140,83 @@
     .y2k-win-body .sheet-handle { display: none !important; }
     .y2k-win-body .sheet-header { display: none !important; }
     .y2k-win-body .sheet-body { padding: 0 !important; }
-    .y2k-win-body h2 { color: #2D3B7D !important; font-size: 15px !important; }
-    .y2k-win-body .section h3 { color: #FF1493 !important; }
-    /* Input fields */
+    /* ══ TYPOGRAPHY ══════════════════════════════════── */
+    .y2k-win-body h1 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 18px !important; font-weight: 700 !important; }
+    .y2k-win-body h2 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 16px !important; font-weight: 700 !important; }
+    .y2k-win-body h3 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 14px !important; font-weight: 700 !important; }
+    .y2k-win-body h4 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 13px !important; font-weight: 700 !important; }
+    .y2k-win-body p { color: #2D3B7D !important; line-height: 1.4 !important; }
+    .y2k-win-body strong { color: #FF1493 !important; font-weight: 700 !important; }
+
+    /* ══ SECTIONS ════════════════════════════════════ */
+    .y2k-win-body .section {
+      background: linear-gradient(135deg, rgba(74,124,89,.15), rgba(201,76,76,.1)) !important;
+      border: 1px solid #00FF88 !important;
+      border-radius: 10px !important;
+      padding: 14px !important;
+      margin-bottom: 16px !important;
+    }
+
+    /* ══ BUTTONS ═════════════════════════════════════ */
+    .y2k-win-body .btn {
+      border-radius: 8px !important;
+      padding: 10px 12px !important;
+      font-weight: 600 !important;
+      font-family: 'Comic Sans MS', cursive !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      border: 2px solid !important;
+    }
+    .y2k-win-body .btn:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    }
+    .y2k-win-body .btn.primary {
+      background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
+      color: white !important;
+      border-color: #FF1493 !important;
+      box-shadow: 0 0 12px rgba(255,20,147,0.3) !important;
+    }
+    .y2k-win-body .btn.success {
+      background: linear-gradient(180deg, #00FF88, #00DD77) !important;
+      color: #2D3B7D !important;
+      border-color: #00FF88 !important;
+    }
+    .y2k-win-body .btn.warning {
+      background: #FFD700 !important;
+      color: #2D3B7D !important;
+      border-color: #FFD700 !important;
+    }
+    .y2k-win-body .btn.danger {
+      background: #FF6B6B !important;
+      color: white !important;
+      border-color: #FF6B6B !important;
+    }
+    /* ══ FORM ELEMENTS ══════════════════════════════ */
     .y2k-win-body input[type="text"],
-    .y2k-win-body input[type="number"] {
+    .y2k-win-body input[type="number"],
+    .y2k-win-body input[type="email"],
+    .y2k-win-body input[type="password"],
+    .y2k-win-body textarea,
+    .y2k-win-body select {
       background: white !important;
       border: 2px solid #00FF88 !important;
       color: #2D3B7D !important;
       border-radius: 6px !important;
       padding: 8px 10px !important;
       font-size: 13px !important;
+      font-family: 'Courier New', monospace !important;
+    }
+    .y2k-win-body input::placeholder,
+    .y2k-win-body textarea::placeholder {
+      color: #999 !important;
+    }
+    .y2k-win-body label {
+      color: #FF1493 !important;
+      font-weight: 700 !important;
+      font-size: 12px !important;
+      display: block !important;
+      margin-bottom: 6px !important;
     }
 
     /* Buttons in sticky header */
@@ -171,7 +237,28 @@
     .y2k-win-body .category-section { margin-bottom: 16px !important; }
     .y2k-win-body .category-section h4 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 14px !important; font-weight: 700 !important; margin: 12px 0 8px 0 !important; display: flex !important; gap: 8px !important; align-items: center !important; }
     .y2k-win-body .category-section h4 .count { background: #00FF88 !important; color: #2D3B7D !important; padding: 2px 8px !important; border-radius: 12px !important; font-size: 12px !important; font-weight: 600 !important; }
-    .y2k-win-body .poi-row { display: flex !important; align-items: stretch !important; gap: 10px !important; background: linear-gradient(135deg,#E8F4FF,#F0EDFF) !important; border: 2px solid #00FF88 !important; color: #2D3B7D !important; padding: 10px !important; border-radius: 8px !important; min-height: 70px !important; }
+    /* ══ LISTS & CARDS ══════════════════════════════ */
+    .y2k-win-body .action-row {
+      display: flex !important;
+      gap: 10px !important;
+      flex-wrap: wrap !important;
+      margin: 12px 0 !important;
+    }
+    .y2k-win-body .action-row .btn {
+      flex: 1 !important;
+      min-width: 120px !important;
+    }
+    .y2k-win-body ul, .y2k-win-body ol {
+      color: #2D3B7D !important;
+      padding-left: 20px !important;
+    }
+    .y2k-win-body li {
+      margin-bottom: 6px !important;
+      line-height: 1.4 !important;
+    }
+
+    /* ══ POI ROWS ════════════════════════════════════ */
+    .y2k-win-body .poi-row { display: flex !important; align-items: stretch !important; gap: 10px !important; background: linear-gradient(135deg,#E8F4FF,#F0EDFF) !important; border: 2px solid #00FF88 !important; color: #2D3B7D !important; padding: 10px !important; border-radius: 8px !important; min-height: 70px !important; transition: all 0.15s ease !important; }
     .y2k-win-body .poi-row .icon { flex-shrink: 0; width: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
     .y2k-win-body .poi-row .body { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; overflow: hidden; }
     .y2k-win-body .poi-row .body .name { color: #2D3B7D !important; font-weight: 700 !important; font-size: 13px !important; line-height: 1.2; word-break: break-word; }
