@@ -15,6 +15,24 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css" />
 <link rel="stylesheet" href="./y2k-override.css" />
 <title>Giappone 2027 · Travel Companion v3</title>
+<!-- Firebase Realtime Database for PeerJS signaling -->
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB9Vg9zxFExZQrgVMIT7bA3iTOgl9Xy9OI",
+    authDomain: "giappone2027-af0da.firebaseapp.com",
+    databaseURL: "https://giappone2027-af0da-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "giappone2027-af0da",
+    storageBucket: "giappone2027-af0da.firebasestorage.app",
+    messagingSenderId: "438954518165",
+    appId: "1:438954518165:web:4c4a9e8763ffd9a7435d9c",
+    measurementId: "G-SECYN7D1MV"
+  };
+  firebase.initializeApp(firebaseConfig);
+  window.firebaseDB = firebase.database();
+  console.log('[Firebase] Initialized successfully');
+</script>
 <!-- ============================================================================ -->
 <!-- EARLY INITIALIZATION — PWA Install (supports all browsers) -->
 <!-- ============================================================================ -->
@@ -3756,17 +3774,18 @@ window.addEventListener("load", () => {
             ]
           }
         };
-        // Configurazione PeerJS con server stable + retry
+        // Configurazione PeerJS - Server pubblico stabile
         const peerConfig = {
           ...ICE,
-          host: 'peerjs.com',  // Server pubblico più stabile
+          host: 'peerjs.com',
           port: 443,
           secure: true,
           path: '/',
-          pingInterval: 5000,  // Heartbeat per connessioni stabili
-          debug: 2  // Debug level per logging
+          key: 'peerjs',
+          pingInterval: 5000,
+          debug: 2
         };
-        console.log('[PeerGPS] Using PeerJS config:', peerConfig.host);
+        console.log('[PeerGPS] Using PeerJS server:', peerConfig.host, '(Firebase for signaling backup)');
         // PROVA 1: registrati come HUB
         let hubAttempt = new Peer(hubId, peerConfig);
         let resolved = false;
