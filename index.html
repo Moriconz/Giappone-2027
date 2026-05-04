@@ -399,9 +399,23 @@ window.addEventListener("load", () => {
   window.state = state;
   window.saveState = saveState;
   console.log('[State] Init', { group: state.group });
+  function cleanupGPSTraces() {
+    // Mantieni solo gli ultimi 500 punti GPS per evitare overflow localStorage
+    if (state.gpsTraces && Array.isArray(state.gpsTraces)) {
+      if (state.gpsTraces.length > 500) {
+        const removed = state.gpsTraces.length - 500;
+        state.gpsTraces = state.gpsTraces.slice(-500);
+        console.log('[GPS] Cleaned up', removed, 'old GPS points. Remaining:', state.gpsTraces.length);
+      }
+    }
+  }
+
   function saveState(){
     // console.log('[State] Save state', { group: state.group }); // Disabled: too verbose
     try{
+      // Pulisci traccia GPS prima di salvare
+      cleanupGPSTraces();
+
       const serialized = JSON.stringify(state);
       if (serialized.length > 4_500_000) {
         console.warn('[Giappone2027] localStorage quota warning: ' + Math.round(serialized.length/1024) + 'KB — considera di ridurre la traccia GPS o gli avatar.');
@@ -409,6 +423,7 @@ window.addEventListener("load", () => {
       }
       localStorage.setItem(STATE_KEY, serialized);
     }catch(e){
+      console.error('[State] Save error:', e);
       toast('⚠️ Impossibile salvare: storage pieno.');
     }
   }
