@@ -3756,8 +3756,19 @@ window.addEventListener("load", () => {
             ]
           }
         };
+        // Configurazione PeerJS con server stable + retry
+        const peerConfig = {
+          ...ICE,
+          host: 'peerjs.com',  // Server pubblico più stabile
+          port: 443,
+          secure: true,
+          path: '/',
+          pingInterval: 5000,  // Heartbeat per connessioni stabili
+          debug: 2  // Debug level per logging
+        };
+        console.log('[PeerGPS] Using PeerJS config:', peerConfig.host);
         // PROVA 1: registrati come HUB
-        let hubAttempt = new Peer(hubId, ICE);
+        let hubAttempt = new Peer(hubId, peerConfig);
         let resolved = false;
         hubAttempt.on('open', () => {
           if (resolved) return;
@@ -3796,7 +3807,8 @@ window.addEventListener("load", () => {
             resolved = true;
             try { hubAttempt.destroy(); } catch(e) {}
             hubAttempt = null;
-            peer = new Peer(myPeerId, ICE);
+            console.log('[PeerGPS] Registering as client with peerConfig');
+            peer = new Peer(myPeerId, peerConfig);
             isHub = false;
             setupPeerHandlers(peer, false);
             peer.on('open', () => {
@@ -7437,8 +7449,11 @@ window.addEventListener("load", () => {
       renderGroupView();
 
       // Avvia peerGPS IN BACKGROUND
+      console.log('[Group] Checking peerGPS...', { peerGPS: !!peerGPS, hasStart: typeof peerGPS?.start, room, name });
       if (peerGPS && typeof peerGPS.start === 'function') {
+        console.log('[Group] peerGPS available, starting in 100ms...');
         setTimeout(() => {
+          console.log('[Group] NOW calling peerGPS.start()');
           peerGPS.start(room, name, (status) => {
             console.log('[Group] Status:', status);
           }, (state.group.members||[]).map(m => m.name).filter(n => n && n !== name));
@@ -7455,6 +7470,8 @@ window.addEventListener("load", () => {
             renderGroupView();
           }, 900);
         }, 100);
+      } else {
+        console.error('[Group] ❌ peerGPS not available!', { peerGPS: !!peerGPS, hasStart: typeof peerGPS?.start });
       }
     };
   }
