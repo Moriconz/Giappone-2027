@@ -41,23 +41,31 @@ window.groupChat = (() => {
    */
   function initChat(roomId) {
     const cacheKey = `groupchat_${roomId}`;
-    
+
+    console.log('[GroupChat] initChat called for roomId:', roomId, '| cacheKey:', cacheKey);
+
     try {
       const cached = localStorage.getItem(cacheKey);
+      console.log('[GroupChat] localStorage data for', cacheKey, ':', cached ? cached.substring(0, 100) + '...' : 'null');
+
       chatHistory = cached ? JSON.parse(cached) : { messages: [], members: [] };
+      console.log('[GroupChat] ✓ Parsed chat history:', chatHistory.messages?.length, 'messages');
     } catch (e) {
+      console.error('[GroupChat] ❌ Error parsing chat history:', e);
       chatHistory = { messages: [], members: [] };
     }
 
     if (!chatHistory || typeof chatHistory !== 'object') {
+      console.warn('[GroupChat] chatHistory is not an object, resetting');
       chatHistory = { messages: [], members: [] };
     }
     if (!Array.isArray(chatHistory.messages)) {
+      console.warn('[GroupChat] messages is not an array, resetting');
       chatHistory.messages = [];
     }
     chatHistory.messages = chatHistory.messages.filter(msg => msg && typeof msg === 'object' && typeof msg.text === 'string');
-    
-    console.log(`[GroupChat] Initialized for room ${roomId}`, { chatHistory });
+
+    console.log(`[GroupChat] ✓ Initialized for room ${roomId}`, { totalMessages: chatHistory.messages.length });
   }
   
   /**
@@ -196,28 +204,37 @@ window.groupChat = (() => {
    */
   function renderChatPanel() {
     const container = document.getElementById('group-chat-panel');
-    if (!container) return;
-    
+    if (!container) {
+      console.warn('[GroupChat] renderChatPanel: container NOT found - sheet might be closed');
+      return;
+    }
+    console.log('[GroupChat] renderChatPanel: container found, rendering messages...');
+
     const messages = chatHistory.messages || [];
+    console.log('[GroupChat] renderChatPanel: messages array:', messages.length, 'items -', messages);
+
     const group = window.state?.group;
     const myPeerId = group?.myPeerId || window.peerGPS?.getMyPeerId?.();
-    
-    const messagesHtml = messages.slice(-50).map(msg => {
+
+    const messagesHtml = messages.slice(-50).map((msg, idx) => {
       const messageFrom = msg?.from || 'Anonimo';
       const messageText = msg?.text || '';
       const messageTime = msg?.timestamp ? new Date(msg.timestamp) : new Date();
       const avatar = isValidAvatarString(msg?.avatar) ? msg.avatar : null;
       const isOwn = myPeerId ? msg.fromPeerId === myPeerId : messageFrom === group?.myName;
       const time = messageTime.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-      
+      const senderColor = getColorForName(messageFrom);
+
+      console.log(`[GroupChat] Message ${idx}:`, { from: messageFrom, text: messageText, isOwn, color: senderColor });
+
       const avatarHtml = avatar ? `
-            <img src="${avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--primary);" />
+            <img src="${avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: ${senderColor};" />
           ` : `
             <div style="
               width: 32px;
               height: 32px;
               border-radius: 50%;
-              background: var(--primary);
+              background: ${senderColor};
               display: flex;
               align-items: center;
               justify-content: center;
@@ -237,16 +254,17 @@ window.groupChat = (() => {
           align-items: flex-end;
         ">
           ${!isOwn ? avatarHtml : ''}
-          
+
           <div style="max-width: 70%;">
-            ${!isOwn ? `<div style="font-size: 12px; font-weight: 600; margin-bottom: 3px; padding: 0 8px; color: var(--muted);">${escapeHtml(messageFrom)}</div>` : ''}
+            ${!isOwn ? `<div style="font-size: 12px; font-weight: 600; margin-bottom: 3px; padding: 0 8px; color: ${senderColor};">${escapeHtml(messageFrom)}</div>` : ''}
             <div style="
-              background: ${isOwn ? 'var(--accent)' : 'var(--surface-2)'};
-              color: ${isOwn ? '#fff' : 'var(--text)'};
+              background: ${isOwn ? '#ff1493' : '#e0e0e0'};
+              color: ${isOwn ? '#fff' : '#333'};
               padding: 8px 12px;
               border-radius: 8px;
               word-wrap: break-word;
               font-size: 13px;
+              font-weight: ${isOwn ? '500' : '400'};
             ">
               ${escapeHtml(messageText)}
             </div>
@@ -256,46 +274,50 @@ window.groupChat = (() => {
               margin-top: 3px;
               padding: 0 8px;
               text-align: ${isOwn ? 'right' : 'left'};
+              color: #999;
             ">${time}</div>
           </div>
         </div>
       `;
     }).join('');
+
+    console.log('[GroupChat] messagesHtml generated:', messagesHtml.length, 'characters');
     
     const html = `
       <div style="display: flex; flex-direction: column; height: 100%; gap: 10px;">
         <div style="
           flex: 1;
           overflow-y: auto;
-          background: var(--surface);
+          background: #fafafa;
           border-radius: 8px;
           padding: 12px;
           -webkit-overflow-scrolling: touch;
+          min-height: 0;
         ">
-          ${messagesHtml || '<p style="color: var(--muted); text-align: center; margin-top: 20px;">Nessun messaggio ancora.</p>'}
+          ${messagesHtml || '<p style="color: #999; text-align: center; margin-top: 20px;">Nessun messaggio ancora.</p>'}
         </div>
-        
+
         <div style="display: flex; gap: 8px; align-items: flex-end;">
-          <input 
+          <input
             type="text"
             id="group-chat-input"
             placeholder="Scrivi un messaggio..."
             style="
               flex: 1;
               padding: 10px;
-              background: var(--surface-2);
-              color: var(--text);
-              border: 1px solid var(--border);
+              background: #fff;
+              color: #333;
+              border: 1px solid #ddd;
               border-radius: 8px;
               font: inherit;
               resize: none;
             "
           />
-          <button 
+          <button
             id="group-chat-send"
             style="
               padding: 10px 16px;
-              background: var(--accent);
+              background: #00bcd4;
               color: white;
               border: none;
               border-radius: 8px;
@@ -367,6 +389,9 @@ window.groupChat = (() => {
       return;
     }
 
+    // ✅ IMPORTANTE: Inizializza chat prima di accedere ai messaggi
+    initChat(group.roomId);
+
     chatPanelOpen = true;
 
     console.log('[GroupChat] openChatPanel: opening sheet for room', group.roomId);
@@ -376,21 +401,30 @@ window.groupChat = (() => {
     const html = `<div id="group-chat-panel" style="height: 100%; display: flex; flex-direction: column;"></div>`;
     window.openSheet?.('💬 Chat Gruppo: ' + group.roomId, html);
 
-    // Renderizza dopo che il sheet è aperto (aumentato a 300ms per mobile)
-    setTimeout(() => {
-      console.log('[GroupChat] Calling renderChatPanel...');
+    // Renderizza dopo che il sheet è aperto
+    const renderWithRetry = () => {
+      const container = document.getElementById('group-chat-panel');
+      if (!container) {
+        console.warn('[GroupChat] Container not found yet, retrying...');
+        setTimeout(renderWithRetry, 100);
+        return;
+      }
+
+      console.log('[GroupChat] Container found! Rendering with', chatHistory.messages.length, 'messages');
       renderChatPanel();
 
-      // Double-check: se non renderizzato, retry
+      // Verifica che il rendering sia effettivamente avvenuto
       setTimeout(() => {
-        const container = document.getElementById('group-chat-panel');
-        const messagesDiv = container?.querySelector('[style*="overflow-y"]');
-        if (container && (!messagesDiv || messagesDiv.innerHTML.includes('Nessun messaggio'))) {
-          console.warn('[GroupChat] Re-rendering due to missing messages...');
-          renderChatPanel();
+        const messagesArea = container.querySelector('[style*="overflow-y"]');
+        if (messagesArea) {
+          console.log('[GroupChat] Rendered messages area with content:', messagesArea.innerHTML.length, 'characters');
+        } else {
+          console.warn('[GroupChat] Messages area not found after rendering');
         }
-      }, 200);
-    }, 300);
+      }, 100);
+    };
+
+    setTimeout(renderWithRetry, 200);
   }
   
   /**
@@ -422,6 +456,27 @@ window.groupChat = (() => {
     }
   }
   
+  /**
+   * Genera colore unico basato sul nome (come WhatsApp)
+   */
+  function getColorForName(name) {
+    const colors = [
+      '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+      '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B88B', '#ABEBC6',
+      '#F5B7B1', '#85C1E9', '#F9E79F', '#D7BDE2', '#A9DFBF'
+    ];
+
+    // Hash semplice del nome
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = ((hash << 5) - hash) + name.charCodeAt(i);
+      hash = hash & hash; // Converti a 32-bit integer
+    }
+
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+  }
+
   /**
    * Escapa HTML
    */
