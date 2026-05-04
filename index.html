@@ -3774,10 +3774,10 @@ window.addEventListener("load", () => {
             ]
           }
         };
-        // Configurazione PeerJS - Server pubblico stabile
+        // Configurazione PeerJS - Tenta server multipli
         const peerConfig = {
           ...ICE,
-          host: 'peerjs.com',
+          host: 'cloud.peerjs.com',  // Server pubblico di fallback
           port: 443,
           secure: true,
           path: '/',
@@ -3785,7 +3785,7 @@ window.addEventListener("load", () => {
           pingInterval: 5000,
           debug: 2
         };
-        console.log('[PeerGPS] Using PeerJS server:', peerConfig.host, '(Firebase for signaling backup)');
+        console.log('[PeerGPS] Using PeerJS server:', peerConfig.host);
         // PROVA 1: registrati come HUB
         let hubAttempt = new Peer(hubId, peerConfig);
         let resolved = false;
