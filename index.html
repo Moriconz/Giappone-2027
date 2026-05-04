@@ -3545,10 +3545,15 @@ window.addEventListener("load", () => {
       });
     }
     function connectToPeer(targetId) {
-      if (connections[targetId] || targetId === peer.id) return;
+      if (connections[targetId] || targetId === peer.id) {
+        console.log('[PeerGPS] Already connecting/connected to', targetId, '| connections:', Object.keys(connections));
+        return;
+      }
+      console.log('[PeerGPS] Attempting to connect to:', targetId, '| My ID:', peer.id, '| isHub:', isHub);
       const conn = peer.connect(targetId, { reliable: true, serialization: 'json' });
       connections[targetId] = conn;
       conn.on('open', () => {
+        console.log('[PeerGPS] ✅ Connection to', targetId, 'established!');
         statusCallback('connected', Object.keys(connections).length);
         // Manda subito la posizione
         if (state.gpsCurrentLat) {
@@ -3560,13 +3565,17 @@ window.addEventListener("load", () => {
       });
       conn.on('data', (data) => handleData(conn.peer, data));
       conn.on('close', () => {
+        console.log('[PeerGPS] Connection to', targetId, 'closed');
         delete connections[targetId];
         remotePeersSource.getFeatures()
           .filter(f => f.getId() === targetId)
           .forEach(f => remotePeersSource.removeFeature(f));
         statusCallback('connected', Object.keys(connections).length);
       });
-      conn.on('error', () => { delete connections[targetId]; });
+      conn.on('error', (err) => {
+        console.error('[PeerGPS] Connection error to', targetId, ':', err);
+        delete connections[targetId];
+      });
     }
     function handleData(fromId, data) {
       if (data.type === 'gps') {
@@ -3669,8 +3678,10 @@ window.addEventListener("load", () => {
     }
     function setupPeerHandlers(p, amIHub) {
       p.on('connection', (conn) => {
+        console.log('[PeerGPS] Incoming connection from:', conn.peer, '| I am hub:', amIHub);
         connections[conn.peer] = conn;
         conn.on('open', () => {
+          console.log('[PeerGPS] ✅ Incoming connection from', conn.peer, 'is now open! (I am hub:', amIHub, ')');
           statusCallback('connected', Object.keys(connections).length);
           // Se sono l'hub, manda la lista dei peer al nuovo arrivato
           if (amIHub) {
@@ -3701,8 +3712,10 @@ window.addEventListener("load", () => {
     let isHub = false;
     return {
       start(room, myName, onStatus, memberNames) {
+        console.log('[PeerGPS] START called:', { room, myName, memberNames });
         // Se peer esiste ma è disconnesso/distrutto → reset prima di ripartire
         if (peer && (peer.disconnected || peer.destroyed)) {
+          console.log('[PeerGPS] Destroying old peer instance');
           try { peer.destroy(); } catch(e) {}
           peer = null;
           clearInterval(broadcastTimer); broadcastTimer = null;
@@ -3710,12 +3723,16 @@ window.addEventListener("load", () => {
           Object.keys(connections).forEach(k => { try { connections[k].close(); } catch(e) {} });
           connections = {};
         }
-        if (peer) return; // già avviato e connesso
+        if (peer) {
+          console.log('[PeerGPS] Peer already exists, returning');
+          return; // già avviato e connesso
+        }
         roomId = room;
         statusCallback = onStatus || (() => {});
         knownMembers = memberNames || [];
         const hubId = makeHubId(room);
         const myPeerId = makePeerId(room, myName);
+        console.log('[PeerGPS] Initialized:', { hubId, myPeerId });
         const ICE = {
           config: {
             iceServers: [
@@ -3729,6 +3746,7 @@ window.addEventListener("load", () => {
         let resolved = false;
         hubAttempt.on('open', () => {
           if (resolved) return;
+          console.log('[PeerGPS] ✅ HUB registration SUCCESS! ID:', hubId);
           resolved = true;
           peer = hubAttempt;
           isHub = true;
@@ -3757,7 +3775,9 @@ window.addEventListener("load", () => {
         });
         hubAttempt.on('error', (err) => {
           if (resolved) return;
+          console.log('[PeerGPS] Hub attempt error:', err.type, err);
           if (err.type === 'unavailable-id' || err.type === 'unavailable' || err.type === 'peer-unavailable') {
+            console.log('[PeerGPS] Hub taken by someone else, registering as client:', myPeerId);
             resolved = true;
             try { hubAttempt.destroy(); } catch(e) {}
             hubAttempt = null;
@@ -3765,9 +3785,13 @@ window.addEventListener("load", () => {
             isHub = false;
             setupPeerHandlers(peer, false);
             peer.on('open', () => {
+              console.log('[PeerGPS] Client peer open:', myPeerId, '| Attempting to connect to hub:', hubId);
               statusCallback('waiting', 0);
               broadcastTimer = setInterval(broadcast, 5000);
-              setTimeout(() => connectToPeer(hubId), 500);
+              setTimeout(() => {
+                console.log('[PeerGPS] Now attempting to connect to hub...');
+                connectToPeer(hubId);
+              }, 500);
               autoConnectTimer = setInterval(() => {
                 // Riconnetti all'hub se perso
                 if (!connections[hubId] || !connections[hubId].open) {
