@@ -206,6 +206,11 @@
   <main>
     <div id="filters"></div>
     <div id="map"></div>
+    <!-- DEBUG PANEL: Mostra errori e log PeerGPS sul telefono -->
+    <div id="debug-panel" style="position:fixed;bottom:80px;right:10px;width:280px;max-height:200px;background:rgba(0,0,0,0.9);color:#00FF88;font-size:10px;padding:8px;border-radius:6px;overflow-y:auto;font-family:monospace;z-index:9999;border:1px solid #FF1493;display:none">
+      <div style="margin-bottom:4px;font-weight:bold;color:#FF1493">🔍 Debug Log:</div>
+      <div id="debug-content"></div>
+    </div>
     <section id="view-gf">
   <div id="gf-list"></div>
 </section>
@@ -399,6 +404,39 @@ window.addEventListener("load", () => {
   window.state = state;
   window.saveState = saveState;
   console.log('[State] Init', { group: state.group });
+
+  // ========== DEBUG PANEL: Mostra log visibili sul telefono ==========
+  const debugLogs = [];
+  const origLog = console.log;
+  const origError = console.error;
+  const origWarn = console.warn;
+
+  function addDebugLog(msg, type = 'log') {
+    if (debugLogs.length > 20) debugLogs.shift();
+    debugLogs.push({ msg, type, time: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) });
+    updateDebugPanel();
+  }
+
+  function updateDebugPanel() {
+    const panel = document.getElementById('debug-panel');
+    const content = document.getElementById('debug-content');
+    if (!panel || !content) return;
+
+    // Mostra il pannello se ci sono errori o messaggi PeerGPS
+    const hasErrors = debugLogs.some(l => l.type === 'error');
+    const hasPeerGPS = debugLogs.some(l => l.msg.includes('[PeerGPS]'));
+    panel.style.display = (hasErrors || hasPeerGPS) ? 'block' : 'none';
+
+    content.innerHTML = debugLogs
+      .filter(l => l.msg.includes('[PeerGPS]') || l.msg.includes('[Group]') || l.type === 'error')
+      .map(l => `<div style="color:${l.type==='error'?'#FF6B6B':'#00FF88'};margin:2px 0">[${l.time}] ${l.msg.substring(0,70)}...</div>`)
+      .join('');
+  }
+
+  console.log = function(...args) { origLog(...args); addDebugLog(args.join(' ')); };
+  console.error = function(...args) { origError(...args); addDebugLog(args.join(' '), 'error'); };
+  console.warn = function(...args) { origWarn(...args); addDebugLog(args.join(' '), 'warn'); };
+
   function cleanupGPSTraces() {
     // Mantieni solo gli ultimi 500 punti GPS per evitare overflow localStorage
     if (state.gpsTraces && Array.isArray(state.gpsTraces)) {
