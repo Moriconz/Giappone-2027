@@ -36,13 +36,18 @@ console.log('[RTDB] Loading ntfy.sh transport...');
   // ── Pubblica un messaggio su ntfy.sh ─────────────────────────────────────────
   async function pub(topicName, payload) {
     try {
-      await fetch(`${NTFY_BASE}/${topicName}`, {
+      const resp = await fetch(`${NTFY_BASE}/${topicName}`, {
         method : 'POST',
         headers: { 'Content-Type': 'text/plain' },
         body   : JSON.stringify(payload),
       });
+      if (!resp.ok) {
+        console.error(`[RTDB] ❌ PUB FAILED ${resp.status} → topic:${topicName} type:${payload.type}`);
+      } else {
+        console.log(`[RTDB] ✅ pub ok → topic:${topicName} type:${payload.type}`);
+      }
     } catch (e) {
-      console.warn('[RTDB] pub error:', e.message);
+      console.error('[RTDB] ❌ pub fetch error:', e.message);
     }
   }
 
@@ -61,8 +66,16 @@ console.log('[RTDB] Loading ntfy.sh transport...');
   // ── Gestisce messaggi in arrivo ───────────────────────────────────────────────
   function handleIncoming(raw) {
     let data;
-    try { data = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch { return; }
-    if (!data || data.from === myName) return;
+    try { data = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch(e) {
+      console.warn('[RTDB] handleIncoming parse fail:', e.message, String(raw).substring(0,80));
+      return;
+    }
+    if (!data) return;
+    if (data.from === myName) {
+      // echo del proprio messaggio — normale
+      return;
+    }
+    console.log('[RTDB] ← ricevuto da', data.from, '| tipo:', data.type);
 
     // Aggiorna presenza
     if (data.from) {
@@ -161,17 +174,22 @@ console.log('[RTDB] Loading ntfy.sh transport...');
   // ── Apre SSE su un topic e chiama handler sui messaggi ───────────────────────
   function openSSE(topicName, handler) {
     const url = `${NTFY_BASE}/${topicName}/sse`;
+    console.log('[RTDB] SSE aperta su', url);
     const es  = new EventSource(url);
+    es.onopen = () => console.log('[RTDB] ✅ SSE connessa a', topicName);
     es.onmessage = (e) => {
       try {
         const wrapper = JSON.parse(e.data);
+        console.log('[RTDB] SSE raw event:', wrapper.event, '| message:', String(wrapper.message).substring(0,80));
         if (wrapper.event === 'message' && wrapper.message) {
           handler(wrapper.message);
         }
-      } catch {}
+      } catch(err) {
+        console.warn('[RTDB] SSE parse error:', err.message, '| data:', String(e.data).substring(0,100));
+      }
     };
-    es.onerror = () => {
-      console.warn('[RTDB] SSE error su', topicName, '— riconnessione automatica');
+    es.onerror = (e) => {
+      console.error('[RTDB] ❌ SSE error su', topicName, '| readyState:', es.readyState);
     };
     return es;
   }
