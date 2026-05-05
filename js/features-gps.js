@@ -215,28 +215,18 @@ function startGPSBroadcast() {
       name: window.state.group.myName,
       lat: window.state.gpsCurrentLat,
       lng: window.state.gpsCurrentLng,
+      avatar: window.state.group.myAvatar || null,
       timestamp: Date.now()
     };
 
-    const isHub = (window.state.group.myName === window.state.group.createdByName);
-
-    // Se non sei hub, manda all'hub
-    if (!isHub && window.peer) {
-      const hubId = makeHubId(window.state.group.roomId);
-      const hubConns = window.peer.connections[hubId];
-      if (hubConns && hubConns.length > 0) {
-        hubConns[0].send(msg);
-      }
-    }
-
-    // Anche mesh (best-effort)
-    if (window.peer?.connections) {
-      Object.keys(window.peer.connections).forEach(peerId => {
-        if (peerId !== makeHubId(window.state.group.roomId)) {
-          const conns = window.peer.connections[peerId];
-          if (conns && conns.length > 0) {
-            conns[0].send(msg);
-          }
+    // Firebase RTDB (primary) — scrive direttamente su rooms/{room}/gps/{name}
+    if (window.rtdbBroadcast) {
+      window.rtdbBroadcast(msg);
+    } else if (window.peer?.connections) {
+      // Fallback legacy PeerJS
+      Object.values(window.peer.connections).forEach(conns => {
+        if (conns && conns.length > 0) {
+          try { conns[0].send(msg); } catch (e) {}
         }
       });
     }
@@ -375,12 +365,14 @@ function startHeartbeatSender() {
       timestamp: Date.now()
     };
 
-    if (window.state.group.myName !== window.state.group.createdByName) {
+    // Firebase RTDB (primary)
+    if (window.rtdbBroadcast) {
+      window.rtdbBroadcast(msg);
+    } else if (window.peer?.connections) {
+      // Fallback legacy PeerJS
       const hubId = makeHubId(window.state.group.roomId);
-      const hubConns = window.peer?.connections[hubId];
-      if (hubConns?.length > 0) {
-        hubConns[0].send(msg);
-      }
+      const hubConns = window.peer.connections[hubId];
+      if (hubConns?.length > 0) hubConns[0].send(msg);
     }
   }, 15 * 1000);
 
