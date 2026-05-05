@@ -151,7 +151,8 @@
 <!-- ============================================================================ -->
 <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<!-- P2P via ntfy.sh — zero config, nessun SDK richiesto -->
+<!-- P2P via MQTT (broker.emqx.io) — zero config, nessun limite di messaggi -->
+<script src="https://unpkg.com/mqtt@5.3.4/dist/mqtt.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.12.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
 
@@ -7041,19 +7042,17 @@ window.addEventListener("load", () => {
         return;
       }
 
-      state.group = state.group || {};
-      state.group.roomId = room;
-      state.group.myName = name;
-      state.group.myAvatar = avatarUrl || createAvatarDataUrl(name);
-      state.group.isCreator = isCreating; // Only creator if creating new room
-
-      if (isCreating) {
-        state.group.createdBy = name;
-        state.group.createdByName = name;
-      }
-      // If joining, createdBy/createdByName will be set when syncing members
-
-      state.group.members = state.group.members || [];
+      // Reset completo ogni volta che si entra/crea una stanza
+      state.group = {
+        roomId        : room,
+        myName        : name,
+        myAvatar      : avatarUrl || createAvatarDataUrl(name),
+        isCreator     : isCreating,
+        createdBy     : isCreating ? name : null,
+        createdByName : isCreating ? name : null,
+        // Aggiunge subito se stesso alla lista membri
+        members       : [{ name: name, role: isCreating ? 'hub' : 'member', lastHeartbeat: Date.now() }],
+      };
       console.log('[Group] init room', { room, name, isCreating, group: state.group });
       saveState();
 
@@ -7880,8 +7879,11 @@ window.addEventListener('appinstalled', () => {
 
 console.log('[Install] ✓ All handlers ready');
 
-// ── Esporta su window le funzioni usate da firebase-rtdb.js ─────────────────
-window.renderGroupView = renderGroupView;
+// ── firebase-rtdb.js non può accedere a renderGroupView per scope Safari ─────
+// Usa custom event per triggerare il re-render senza dipendenze dirette.
+window.addEventListener('rtdb:group_updated', () => {
+  renderGroupView();
+});
 
 }); // close window.addEventListener load
 </script>

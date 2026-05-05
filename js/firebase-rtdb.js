@@ -1,23 +1,23 @@
 // ============================================================================
-// FIREBASE-RTDB.JS — P2P Sync via ntfy.sh (zero signup, zero config)
-// Transport: ntfy.sh pub/sub over HTTPS — funziona su qualsiasi rete/firewall.
+// FIREBASE-RTDB.JS — P2P Sync via MQTT (broker.emqx.io, zero config)
+// Transport: MQTT over WebSocket — nessun limite di messaggi, zero signup.
+// ntfy.sh aveva un limite di 250 msg/giorno per IP — incompatibile col testing.
 // API identica al vecchio PeerJS peerGPS — nessuna modifica al resto del codice.
 // ============================================================================
 
-console.log('[RTDB] Loading ntfy.sh transport...');
+console.log('[RTDB] Loading MQTT transport...');
 
 (function () {
   'use strict';
 
-  const NTFY_BASE   = 'https://ntfy.sh';
-  const TOPIC_PFX   = 'giap2027v2_';   // prefisso topic ntfy
-  const HB_INTERVAL  = 45000;          // ms tra heartbeat (ridotto per rispettare rate limit ntfy.sh)
+  const MQTT_BROKER  = 'wss://broker.emqx.io:8084/mqtt';
+  const TOPIC_PFX    = 'giap2027v2/';   // prefisso topic MQTT
+  const HB_INTERVAL  = 20000;           // ms tra heartbeat (20s)
 
   let myRoomId    = null;
   let myName      = null;
   let statusCb    = () => {};
-  let evtSrc      = null;   // EventSource SSE
-  let gpsTimer    = null;
+  let mqttClient  = null;
   let hbTimer     = null;
   let presTimer   = null;
   let isStarted   = false;
@@ -26,28 +26,20 @@ console.log('[RTDB] Loading ntfy.sh transport...');
   // Mappa presenze: name → lastSeen timestamp
   const presence = {};
 
-  // ── topic names ──────────────────────────────────────────────────────────────
-  // Un solo topic per stanza — GPS e messaggi sullo stesso canale.
-  // Due topic separati richiedono 2 SSE per device = 4 connessioni dallo stesso
-  // IP WiFi → ntfy.sh risponde 429 quasi subito.
-  function topic(room)    { return TOPIC_PFX + room; }
-  function gpsTopic(room) { return TOPIC_PFX + room; } // alias → stesso topic
+  // ── topic name ───────────────────────────────────────────────────────────────
+  function roomTopic(room) { return TOPIC_PFX + room; }
 
-  // ── Pubblica un messaggio su ntfy.sh ─────────────────────────────────────────
-  async function pub(topicName, payload) {
+  // ── Pubblica un messaggio MQTT ────────────────────────────────────────────────
+  function pub(topicName, payload) {
+    if (!mqttClient || !mqttClient.connected) {
+      console.warn('[RTDB] pub skipped — not connected');
+      return;
+    }
     try {
-      const resp = await fetch(`${NTFY_BASE}/${topicName}`, {
-        method : 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body   : JSON.stringify(payload),
-      });
-      if (!resp.ok) {
-        console.error(`[RTDB] ❌ PUB FAILED ${resp.status} → topic:${topicName} type:${payload.type}`);
-      } else {
-        console.log(`[RTDB] ✅ pub ok → topic:${topicName} type:${payload.type}`);
-      }
+      mqttClient.publish(topicName, JSON.stringify(payload));
+      console.log('[RTDB] ✅ pub ok → type:', payload.type);
     } catch (e) {
-      console.error('[RTDB] ❌ pub fetch error:', e.message);
+      console.error('[RTDB] ❌ pub error:', e.message);
     }
   }
 
@@ -55,11 +47,7 @@ console.log('[RTDB] Loading ntfy.sh transport...');
   function rtdbBroadcast(data) {
     if (!isStarted || !myRoomId) return;
     const msg = { ...data, from: myName, ts: Date.now() };
-    if (data.type === 'gps') {
-      pub(gpsTopic(myRoomId), msg);
-    } else {
-      pub(topic(myRoomId), msg);
-    }
+    pub(roomTopic(myRoomId), msg);
   }
   window.rtdbBroadcast = rtdbBroadcast;
 
@@ -67,19 +55,16 @@ console.log('[RTDB] Loading ntfy.sh transport...');
   function handleIncoming(raw) {
     let data;
     try { data = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch(e) {
-      console.warn('[RTDB] handleIncoming parse fail:', e.message, String(raw).substring(0,80));
+      console.warn('[RTDB] handleIncoming parse fail:', e.message);
       return;
     }
     if (!data) return;
-    if (data.from === myName) {
-      // echo del proprio messaggio — normale
-      return;
-    }
+    if (data.from === myName) return; // echo proprio
+
     console.log('[RTDB] ← ricevuto da', data.from, '| tipo:', data.type);
 
     // Aggiorna presenza
     if (data.from) {
-      const isNew = !presence[data.from];
       presence[data.from] = Date.now();
       const cnt = Object.keys(presence).filter(n => n !== myName).length;
       if (cnt !== onlineCount) {
@@ -92,18 +77,22 @@ console.log('[RTDB] Loading ntfy.sh transport...');
         window.state.group.members = window.state.group.members || [];
         const alreadyIn = window.state.group.members.some(m => m.name === data.from);
         if (!alreadyIn) {
+          // Assicura anche che myName sia nella lista prima di aggiungere l'altro
+          if (!window.state.group.members.some(m => m.name === myName)) {
+            window.state.group.members.unshift({ name: myName, role: window.state.group.createdByName === myName ? 'hub' : 'member', lastHeartbeat: Date.now() });
+          }
           window.state.group.members.push({
             name: data.from,
-            role: '',
+            role: 'member',
             lastHeartbeat: Date.now(),
           });
           if (window.saveState) window.saveState();
-          // Chi è il creatore aggiorna tutti con la lista aggiornata
+          // Il creatore aggiorna tutti con la lista completa
           if (window.state.group.createdByName === myName) {
             setTimeout(() => window.peerGPS?.broadcastGroupSync?.(), 300);
           }
-          // Ri-renderizza la group view se è aperta
-          if (window.renderGroupView) window.renderGroupView();
+          // Notifica UI tramite event (no dipendenza diretta da renderGroupView)
+          window.dispatchEvent(new CustomEvent('rtdb:group_updated'));
         }
       }
     }
@@ -123,7 +112,7 @@ console.log('[RTDB] Loading ntfy.sh transport...');
         break;
 
       case 'presence':
-        // Aggiornamento presenza già gestito sopra
+        // già gestito sopra
         break;
 
       case 'group_sync':
@@ -133,13 +122,12 @@ console.log('[RTDB] Loading ntfy.sh transport...');
           window.state.knownMembers = (data.members || [])
             .filter(m => m.name && m.name !== myName)
             .map(m => m.name);
-          // Aggiorna createdByName se arriva nel sync (chi si unisce lo riceve dal creatore)
           if (data.createdByName && !window.state.group.createdByName) {
             window.state.group.createdByName = data.createdByName;
             window.state.group.createdBy     = data.createdByName;
           }
           if (window.saveState) window.saveState();
-          if (window.renderGroupView) window.renderGroupView();
+          window.dispatchEvent(new CustomEvent('rtdb:group_updated'));
         }
         break;
 
@@ -171,29 +159,6 @@ console.log('[RTDB] Loading ntfy.sh transport...');
     }
   }
 
-  // ── Apre SSE su un topic e chiama handler sui messaggi ───────────────────────
-  function openSSE(topicName, handler) {
-    const url = `${NTFY_BASE}/${topicName}/sse`;
-    console.log('[RTDB] SSE aperta su', url);
-    const es  = new EventSource(url);
-    es.onopen = () => console.log('[RTDB] ✅ SSE connessa a', topicName);
-    es.onmessage = (e) => {
-      try {
-        const wrapper = JSON.parse(e.data);
-        console.log('[RTDB] SSE raw event:', wrapper.event, '| message:', String(wrapper.message).substring(0,80));
-        if (wrapper.event === 'message' && wrapper.message) {
-          handler(wrapper.message);
-        }
-      } catch(err) {
-        console.warn('[RTDB] SSE parse error:', err.message, '| data:', String(e.data).substring(0,100));
-      }
-    };
-    es.onerror = (e) => {
-      console.error('[RTDB] ❌ SSE error su', topicName, '| readyState:', es.readyState);
-    };
-    return es;
-  }
-
   // ── Fake connection object (compatibilità window.peer) ───────────────────────
   function makeFakeConn() {
     return { open: true, send: rtdbBroadcast, close() {} };
@@ -205,9 +170,9 @@ console.log('[RTDB] Loading ntfy.sh transport...');
       return isStarted ? [makeFakeConn()] : undefined;
     },
     has()    { return isStarted; },
-    ownKeys(){ return isStarted ? ['__ntfy__'] : []; },
+    ownKeys(){ return isStarted ? ['__mqtt__'] : []; },
     getOwnPropertyDescriptor(t, k) {
-      if (isStarted && k === '__ntfy__')
+      if (isStarted && k === '__mqtt__')
         return { configurable: true, enumerable: true, value: [makeFakeConn()] };
     },
   });
@@ -222,9 +187,9 @@ console.log('[RTDB] Loading ntfy.sh transport...');
     reconnect() {},
   };
 
-  // ── Pulizia presenze ghost (>120s senza heartbeat) ────────────────────────────
+  // ── Pulizia presenze ghost (>90s senza heartbeat) ─────────────────────────────
   function prunePresence() {
-    const cutoff = Date.now() - 120000;
+    const cutoff = Date.now() - 90000;
     let changed  = false;
     Object.keys(presence).forEach(n => {
       if (presence[n] < cutoff) { delete presence[n]; changed = true; }
@@ -251,32 +216,65 @@ console.log('[RTDB] Loading ntfy.sh transport...');
       window.peer.id           = `giap27_${room}_${name}`;
       window.peer.disconnected = false;
 
-      console.log('[RTDB] ✅ Connesso alla stanza:', room, '| utente:', name);
       statusCb('waiting', 0);
+      console.log('[RTDB] Connessione MQTT a stanza:', room, '| utente:', name);
 
-      // ── SSE: un'unica connessione per tutti i tipi di messaggio ─────────────
-      evtSrc = openSSE(topic(room), handleIncoming);
+      // ── Connetti al broker MQTT ───────────────────────────────────────────────
+      const clientId = 'giap27_' + Math.random().toString(16).substring(2, 10);
+      mqttClient = mqtt.connect(MQTT_BROKER, {
+        clientId,
+        clean    : true,
+        reconnectPeriod: 3000,
+        connectTimeout : 10000,
+      });
 
-      // ── Heartbeat presenza ogni 15s ──────────────────────────────────────────
+      mqttClient.on('connect', () => {
+        console.log('[RTDB] ✅ MQTT connesso al broker | stanza:', room);
+        mqttClient.subscribe(roomTopic(room), { qos: 0 }, (err) => {
+          if (err) { console.error('[RTDB] subscribe error:', err.message); return; }
+          console.log('[RTDB] ✅ Iscritto a topic:', roomTopic(room));
+          // Annuncia subito la presenza
+          pub(roomTopic(room), { type: 'presence', from: name, ts: Date.now() });
+        });
+      });
+
+      mqttClient.on('message', (topic, msgBuf) => {
+        const raw = msgBuf.toString();
+        handleIncoming(raw);
+      });
+
+      mqttClient.on('error', (err) => {
+        console.error('[RTDB] ❌ MQTT error:', err.message);
+      });
+
+      mqttClient.on('reconnect', () => {
+        console.log('[RTDB] MQTT reconnecting...');
+      });
+
+      mqttClient.on('offline', () => {
+        console.warn('[RTDB] MQTT offline');
+        statusCb('waiting', onlineCount);
+      });
+
+      // ── Heartbeat presenza ogni 20s ──────────────────────────────────────────
       hbTimer = setInterval(() => {
-        pub(topic(room), { type: 'presence', from: name, ts: Date.now() });
+        if (mqttClient?.connected) {
+          pub(roomTopic(room), { type: 'presence', from: name, ts: Date.now() });
+        }
       }, HB_INTERVAL);
 
       // ── Pulizia ghost ogni 60s ────────────────────────────────────────────────
       presTimer = setInterval(prunePresence, 60000);
-
-      // Annuncia subito la presenza
-      pub(topic(room), { type: 'presence', from: name, ts: Date.now() });
-
-      // (nessuna seconda SSE da salvare)
     },
 
     stop() {
       if (!isStarted) return;
-      evtSrc?.close();
       clearInterval(hbTimer);
       clearInterval(presTimer);
-      clearInterval(gpsTimer);
+      if (mqttClient) {
+        mqttClient.end(true);
+        mqttClient = null;
+      }
       isStarted = false;
       myRoomId  = null;
       myName    = null;
@@ -286,7 +284,7 @@ console.log('[RTDB] Loading ntfy.sh transport...');
     },
 
     send(data)         { rtdbBroadcast(data); },
-    getStatus()        { return isStarted ? 'connected' : 'disconnected'; },
+    getStatus()        { return isStarted ? (mqttClient?.connected ? 'connected' : 'connecting') : 'disconnected'; },
     getMyPeerId()      { return window.peer.id; },
     getPeerCount()     { return onlineCount; },
     getPeerConnections(){ return {}; },
@@ -300,12 +298,17 @@ console.log('[RTDB] Loading ntfy.sh transport...');
     broadcastGroupSync() {
       const g = window.state?.group;
       if (!g) return;
+      // Assicura che myName sia sempre nella lista
+      const members = [...(g.members || [])];
+      if (!members.some(m => m.name === myName)) {
+        members.unshift({ name: myName, role: g.createdByName === myName ? 'hub' : 'member' });
+      }
       rtdbBroadcast({
         type          : 'group_sync',
         name          : g.name,
         roomId        : g.roomId,
         createdByName : g.createdByName || g.createdBy || myName,
-        members       : (g.members || []).map(m => ({ name: m.name, role: m.role || '' })),
+        members       : members.map(m => ({ name: m.name, role: m.role || '' })),
       });
     },
 
@@ -324,8 +327,8 @@ console.log('[RTDB] Loading ntfy.sh transport...');
     reconnectIfNeeded(room, name, onStatus) {
       if (!isStarted) {
         this.start(room, name, onStatus, []);
-      } else {
-        pub(topic(myRoomId), { type: 'presence', from: myName, ts: Date.now() });
+      } else if (mqttClient?.connected) {
+        pub(roomTopic(myRoomId), { type: 'presence', from: myName, ts: Date.now() });
         onStatus?.('connected', onlineCount);
       }
     },
@@ -337,6 +340,6 @@ console.log('[RTDB] Loading ntfy.sh transport...');
   };
 
   window.peerGPS = peerGPS;
-  console.log('[RTDB] ✓ peerGPS pronto (ntfy.sh transport — zero config)');
+  console.log('[RTDB] ✓ peerGPS pronto (MQTT transport — zero config)');
 
 })();
