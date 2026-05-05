@@ -27,6 +27,7 @@ window.groupPanel = (() => {
       members.unshift({ name: group.myName, avatar: group.myAvatar || window.createAvatarDataUrl?.(group.myName), peerId: window.peerGPS?.getMyPeerId?.() });
     }
     
+    const now = Date.now();
     const membersList = members.map(m => {
       const avatarHtml = m.avatar ? `
         <img src="${m.avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--primary);" />
@@ -35,12 +36,15 @@ window.groupPanel = (() => {
           ${escapeHtml((m.name || '?').charAt(0).toUpperCase())}
         </div>
       `;
+      // Online se: è se stessi, oppure ha un heartbeat recente (< 90s)
+      const isSelf   = m.name === group.myName;
+      const isOnline = isSelf || m.peerId || (m.lastHeartbeat && (now - m.lastHeartbeat) < 90000);
       return `
       <div style="display:flex;gap:10px;align-items:center;padding:10px;background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;margin-bottom:8px">
         ${avatarHtml}
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:14px;color:#FF1493">${escapeHtml(m.name || 'Unnamed')}</div>
-          <div style="font-size:11px;color:#666">${m.peerId ? '🟢 Online' : '🔴 Offline'}</div>
+          <div style="font-weight:700;font-size:14px;color:#FF1493">${escapeHtml(m.name || 'Unnamed')}${isSelf ? ' <span style="font-size:10px;color:#888">(tu)</span>' : ''}</div>
+          <div style="font-size:11px;color:#666">${isOnline ? '🟢 Online' : '🔴 Offline'}</div>
         </div>
       </div>
     `;
@@ -129,10 +133,8 @@ window.groupPanel = (() => {
         </div>
       </div>
     `;
-    
-    // Event listeners (verranno attaccati dopo render)
-    setTimeout(() => attachGroupPanelEvents(), 0);
-    
+
+    // Event listeners verranno attaccati da index.html tramite groupPanel.attachEvents()
     return html;
   }
   
@@ -258,12 +260,15 @@ window.groupPanel = (() => {
 
       return `
         <div style="background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+            <div style="flex:1;min-width:0;cursor:pointer" data-edit-itinerary="${itinId}">
               <div style="color:#FF1493;font-weight:600">${escapeHtml(itin.name?.value || itin.name || 'Itinerario')}</div>
               <div style="color:#666;font-size:11px">📍 ${poiCount} tappe • v${itin.version || 1}</div>
             </div>
-            <button data-delete-itinerary="${itinId}" style="background:#FF6B6B;border:none;color:white;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;font-weight:600">
+            <button data-edit-itinerary="${itinId}" style="background:#FFD700;border:none;color:#2D3B7D;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;font-weight:600;flex-shrink:0">
+              ✏️
+            </button>
+            <button data-delete-itinerary="${itinId}" style="background:#FF6B6B;border:none;color:white;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;font-weight:600;flex-shrink:0">
               🗑️
             </button>
           </div>
@@ -272,6 +277,16 @@ window.groupPanel = (() => {
     }).join('');
 
     listDiv.innerHTML = itinerariesList;
+
+    // Attach edit handlers
+    listDiv.querySelectorAll('[data-edit-itinerary]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const itinId = btn.getAttribute('data-edit-itinerary');
+        if (window.editGroupItinerary) {
+          window.editGroupItinerary(itinId);
+        }
+      });
+    });
 
     // Attach delete handlers
     listDiv.querySelectorAll('[data-delete-itinerary]').forEach(btn => {

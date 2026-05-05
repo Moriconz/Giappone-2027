@@ -7879,11 +7879,33 @@ window.addEventListener('appinstalled', () => {
 
 console.log('[Install] ✓ All handlers ready');
 
-// ── firebase-rtdb.js non può accedere a renderGroupView per scope Safari ─────
-// Usa custom event per triggerare il re-render senza dipendenze dirette.
-window.addEventListener('rtdb:group_updated', () => {
-  renderGroupView();
-});
+// ── Refresh pannello gruppo — usato da firebase-rtdb.js ──────────────────────
+// NON chiama renderGroupView() per evitare ReferenceError su Safari
+// (function declaration in arrow-function body non catturata correttamente da JSCore).
+// Usa direttamente window.groupPanel che è già su window senza problemi di scope.
+window._refreshGroupView = function() {
+  try {
+    if (!window.state?.group?.roomId || !window.groupPanel) return;
+    const html = window.groupPanel.render();
+    if (!html) return;
+    const sheet     = document.getElementById('sheet');
+    const sheetBody = document.getElementById('sheet-body');
+    const titleEl   = document.getElementById('sheet-title');
+    if (sheet && sheet.classList.contains('open') && sheetBody) {
+      // Aggiorna in-place solo se lo sheet del gruppo è già aperto
+      if (!titleEl || titleEl.textContent.includes('Gruppo')) {
+        sheetBody.innerHTML = html;
+        if (titleEl) titleEl.textContent = '👥 Gruppo';
+        window.groupPanel.attachEvents();
+        console.log('[Group] _refreshGroupView: panel updated in-place');
+      }
+    }
+    // Se lo sheet non è aperto, lo stato è già aggiornato —
+    // verrà riflesso quando l'utente aprirà il pannello.
+  } catch(e) {
+    console.warn('[Group] _refreshGroupView err:', e.message);
+  }
+};
 
 }); // close window.addEventListener load
 </script>

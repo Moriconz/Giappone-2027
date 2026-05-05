@@ -201,6 +201,129 @@ window.GooglePlacesDebug = {
       console.warn('[DEBUG] GPS not available, using Tokyo as test');
       await window.GooglePlacesLoader.loadNearbyPOIs(35.6762, 139.6503);
     }
+  },
+
+  // 10. Check loader statistics
+  async getLoaderStats() {
+    console.log('%c[DEBUG] Loader Statistics', 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold');
+    try {
+      if (!window.GooglePlacesLoader) {
+        console.warn('[DEBUG] GooglePlacesLoader not available yet');
+        return null;
+      }
+      if (typeof window.GooglePlacesLoader.getLoaderStats !== 'function') {
+        console.warn('[DEBUG] getLoaderStats not a function:', typeof window.GooglePlacesLoader.getLoaderStats);
+        return null;
+      }
+      const stats = await window.GooglePlacesLoader.getLoaderStats();
+      if (stats) {
+        console.table(stats);
+        return stats;
+      } else {
+        console.warn('[DEBUG] getLoaderStats returned null');
+      }
+    } catch (err) {
+      console.error('[DEBUG] Error getting stats:', err);
+    }
+  },
+
+  // 11. Check map center position
+  getMapCenter() {
+    console.log('%c[DEBUG] Current Map Center', 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold');
+    if (window.map) {
+      const view = window.map.getView();
+      const center = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326');
+      const coords = { lat: center[1], lng: center[0], zoom: view.getZoom() };
+      console.table(coords);
+      return coords;
+    } else {
+      console.warn('[DEBUG] window.map not found');
+    }
+  },
+
+  // 12. Check vector layer features (markers on map)
+  checkVectorLayerFeatures() {
+    console.log('%c[DEBUG] Vector Layer Features', 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold');
+
+    // Check if we have access to vectorSource (it's in the local scope, so we check through allPOIs)
+    if (window.allPOIs && typeof window.allPOIs === 'function') {
+      const allPois = window.allPOIs();
+      console.log(`Total POIs from allPOIs(): ${allPois.length}`);
+
+      if (allPois.length > 0) {
+        console.log('%c📍 Sample POIs (first 5):', 'color: #FF6B6B; font-weight: bold');
+        console.table(allPois.slice(0, 5).map(p => ({
+          name: p.name,
+          lat: p.lat?.toFixed(4) || 'undefined',
+          lng: p.lng?.toFixed(4) || 'undefined',
+          cat: p.cat,
+          fromGoogle: p.fromGooglePlaces ? '✅' : '❌'
+        })));
+      } else {
+        console.warn('[DEBUG] allPOIs() returned empty array');
+      }
+    } else {
+      console.warn('[DEBUG] allPOIs function not available');
+    }
+
+    // Check GOOGLE_PLACES_POIS directly
+    const googlePOIs = window.GOOGLE_PLACES_POIS || [];
+    console.log(`Google Places POIs in window.GOOGLE_PLACES_POIS: ${googlePOIs.length}`);
+    if (googlePOIs.length > 0) {
+      console.log('%c🌍 Sample Google Places POIs (first 3):', 'color: #FF6B6B; font-weight: bold');
+      console.table(googlePOIs.slice(0, 3).map(p => ({
+        name: p.name,
+        lat: p.lat?.toFixed(4) || 'undefined',
+        lng: p.lng?.toFixed(4) || 'undefined',
+        googlePlaceId: p.googlePlaceId
+      })));
+    }
+  },
+
+  // 13. Create test marker at map center
+  createTestMarker() {
+    console.log('%c[DEBUG] Creating Test Marker', 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold');
+
+    if (!window.map) {
+      console.error('[DEBUG] window.map not available');
+      return;
+    }
+
+    try {
+      const view = window.map.getView();
+      const center = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326');
+      const lat = center[1];
+      const lng = center[0];
+
+      console.log(`📍 Creating test marker at (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+
+      // Create a simple feature to test rendering
+      const testPoi = {
+        id: 'test_marker_' + Date.now(),
+        name: '🧪 Test Marker',
+        lat: lat,
+        lng: lng,
+        cat: 'poi',
+        fromGooglePlaces: false
+      };
+
+      // Add to GOOGLE_PLACES_POIS
+      if (!window.GOOGLE_PLACES_POIS) window.GOOGLE_PLACES_POIS = [];
+      window.GOOGLE_PLACES_POIS.push(testPoi);
+
+      console.log('[DEBUG] Test POI added to GOOGLE_PLACES_POIS');
+      console.log('[DEBUG] Calling renderMarkers() to display test marker...');
+
+      // Trigger render (renderMarkers is in global scope)
+      if (window.renderMarkers) {
+        window.renderMarkers();
+        console.log('%c✅ Test marker should now appear on the map!', 'color: #4A7C59; font-weight: bold');
+      } else {
+        console.error('[DEBUG] renderMarkers function not found');
+      }
+    } catch (err) {
+      console.error('[DEBUG] Error creating test marker:', err);
+    }
   }
 };
 
@@ -214,3 +337,7 @@ console.log('window.GooglePlacesDebug.checkGooglePlacesPOIs()  — Check GOOGLE_
 console.log('window.GooglePlacesDebug.checkAllPOIs()           — Check allPOIs() function');
 console.log('window.GooglePlacesDebug.listenForEvents()        — Listen for events');
 console.log('window.GooglePlacesDebug.manualLoad()             — Manually trigger load');
+console.log('window.GooglePlacesDebug.getLoaderStats()         — Check loader statistics');
+console.log('window.GooglePlacesDebug.getMapCenter()           — Get current map center');
+console.log('window.GooglePlacesDebug.checkVectorLayerFeatures() — Check POIs on map');
+console.log('window.GooglePlacesDebug.createTestMarker()       — Create test marker at map center');
