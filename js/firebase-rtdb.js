@@ -118,6 +118,11 @@ console.log('[RTDB] Loading ntfy.sh transport...');
           window.state.knownMembers = (data.members || [])
             .filter(m => m.name && m.name !== myName)
             .map(m => m.name);
+          // Aggiorna createdByName se arriva nel sync (chi si unisce lo riceve dal creatore)
+          if (data.createdByName && !window.state.group.createdByName) {
+            window.state.group.createdByName = data.createdByName;
+            window.state.group.createdBy     = data.createdByName;
+          }
           if (window.saveState) window.saveState();
           if (window.renderGroupView) window.renderGroupView();
         }
@@ -281,10 +286,11 @@ console.log('[RTDB] Loading ntfy.sh transport...');
       const g = window.state?.group;
       if (!g) return;
       rtdbBroadcast({
-        type   : 'group_sync',
-        name   : g.name,
-        roomId : g.roomId,
-        members: (g.members || []).map(m => ({ name: m.name, role: m.role || '' })),
+        type          : 'group_sync',
+        name          : g.name,
+        roomId        : g.roomId,
+        createdByName : g.createdByName || g.createdBy || myName,
+        members       : (g.members || []).map(m => ({ name: m.name, role: m.role || '' })),
       });
     },
 

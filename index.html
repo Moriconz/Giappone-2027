@@ -7880,6 +7880,9 @@ window.addEventListener('appinstalled', () => {
 
 console.log('[Install] ✓ All handlers ready');
 
+// ── Esporta su window le funzioni usate da firebase-rtdb.js ─────────────────
+window.renderGroupView = renderGroupView;
+
 }); // close window.addEventListener load
 </script>
 <script src="./js/y2k-windows.js"></script>
