@@ -475,6 +475,14 @@ window.addEventListener("load", () => {
       toast('⚠️ Impossibile salvare: storage pieno.');
     }
   }
+
+  // ── Genera un codice stanza univoco (6 char, nessun carattere ambiguo) ────
+  function generateRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
   // ---- Merge custom events with Google Places POIs ----
   function allPOIs(){
     // Source: Google Places (loaded via API)
@@ -6879,16 +6887,20 @@ window.addEventListener("load", () => {
 
         <!-- CREATE MODE -->
         <div id="create-mode" style="display:block">
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#FF1493">Crea una nuova stanza</label>
-          <input id="group-room" placeholder="Nome stanza (es. giappone2027)" style="width:100%;padding:10px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:13px;" value="${state.group?.roomId||''}">
-          <div style="font-size:11px;color:#999;margin-top:4px;">Scegli un nome unico per la tua stanza (diventerai il creatore)</div>
+          <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:600;color:#FF1493">Il codice della tua stanza</label>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div id="room-code-display" style="flex:1;padding:12px;background:#FFF0F8;border:2px solid #FF1493;border-radius:8px;font-size:24px;font-weight:700;letter-spacing:6px;color:#FF1493;text-align:center;font-family:monospace;cursor:default;user-select:all;">------</div>
+            <button id="copy-code-btn" style="padding:10px 12px;background:#fff;border:2px solid #FF1493;border-radius:8px;cursor:pointer;font-size:18px;line-height:1;" title="Copia codice">📋</button>
+            <button id="regen-code-btn" style="padding:10px 12px;background:#fff;border:2px solid #FF1493;border-radius:8px;cursor:pointer;font-size:18px;line-height:1;" title="Genera nuovo codice">🔄</button>
+          </div>
+          <div style="font-size:11px;color:#888;margin-top:6px;">Condividi questo codice con chi vuoi far entrare. Solo chi lo ha può entrare.</div>
         </div>
 
         <!-- JOIN MODE -->
         <div id="join-mode" style="display:none">
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#FFD700">Entra in una stanza esistente</label>
-          <input id="group-room-join" placeholder="Inserisci Room ID della stanza (es. giappone2027)" style="width:100%;padding:10px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:13px;">
-          <div style="font-size:11px;color:#999;margin-top:4px;">Chiedi al creatore il Room ID della stanza</div>
+          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#2D3B7D">Codice stanza</label>
+          <input id="group-room-join" placeholder="Es. ABC123" maxlength="6" style="width:100%;padding:12px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:22px;font-weight:700;letter-spacing:6px;text-transform:uppercase;font-family:monospace;text-align:center;">
+          <div style="font-size:11px;color:#888;margin-top:4px;">Inserisci il codice a 6 lettere ricevuto dal creatore della stanza.</div>
         </div>
 
         <!-- COMMON FIELDS -->
@@ -6928,6 +6940,30 @@ window.addEventListener("load", () => {
     }, 0);
 
     const statusBox = document.getElementById('peer-status-box');
+
+    // ── Codice stanza: inizializza e gestisci copy/regen ────────────────────
+    const codeDisplay  = document.getElementById('room-code-display');
+    const copyCodeBtn  = document.getElementById('copy-code-btn');
+    const regenCodeBtn = document.getElementById('regen-code-btn');
+
+    if (codeDisplay) {
+      // Genera codice subito (o riusa quello salvato se siamo già in una stanza)
+      codeDisplay.textContent = (state.group?.roomId && state.group.roomId.length <= 8)
+        ? state.group.roomId
+        : generateRoomCode();
+    }
+    if (copyCodeBtn && codeDisplay) {
+      copyCodeBtn.onclick = () => {
+        const code = codeDisplay.textContent.trim();
+        navigator.clipboard?.writeText(code).then(() => toast('📋 Codice copiato: ' + code))
+          .catch(() => toast('Codice: ' + code));
+      };
+    }
+    if (regenCodeBtn && codeDisplay) {
+      regenCodeBtn.onclick = () => {
+        codeDisplay.textContent = generateRoomCode();
+      };
+    }
 
     // Mode toggle buttons
     const modeCreateBtn = document.getElementById('mode-create');
@@ -6992,16 +7028,16 @@ window.addEventListener("load", () => {
       // Determine mode (create or join)
       const isCreating = createModeDiv?.style.display !== 'none';
       const room = isCreating
-        ? document.getElementById('group-room')?.value.trim()
-        : document.getElementById('group-room-join')?.value.trim();
+        ? (document.getElementById('room-code-display')?.textContent.trim() || '').replace(/[^A-Z0-9]/g, '')
+        : (document.getElementById('group-room-join')?.value.trim() || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       const name = document.getElementById('group-name')?.value.trim() || 'Guest';
 
       // Get avatar - use full data URL if available
       let avatarUrl = document.getElementById('group-avatar')?.dataset?.fullUrl ||
                       document.getElementById('group-avatar')?.value.trim() || '';
 
-      if (!room) {
-        toast('⚠️ Inserisci un Room ID');
+      if (!room || room.length < 4) {
+        toast('⚠️ Codice stanza non valido');
         return;
       }
 
