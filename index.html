@@ -3891,7 +3891,7 @@ window.addEventListener("load", () => {
   function fmtDist(km){ return km<1 ? Math.round(km*1000)+'m' : km.toFixed(1)+'km'; }
   function startGPS(){
     // === FAKE GPS A TOKYO (per testing) ===
-    const USE_FAKE_GPS = true;
+    const USE_FAKE_GPS = false;
     let geolocationToUse = navigator.geolocation;
     
     if (USE_FAKE_GPS) {

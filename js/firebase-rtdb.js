@@ -11,8 +11,7 @@ console.log('[RTDB] Loading ntfy.sh transport...');
 
   const NTFY_BASE   = 'https://ntfy.sh';
   const TOPIC_PFX   = 'giap2027v2_';   // prefisso topic ntfy
-  const GPS_INTERVAL = 5000;           // ms tra broadcast GPS
-  const HB_INTERVAL  = 15000;          // ms tra heartbeat
+  const HB_INTERVAL  = 45000;          // ms tra heartbeat (ridotto per rispettare rate limit ntfy.sh)
 
   let myRoomId    = null;
   let myName      = null;
@@ -28,8 +27,11 @@ console.log('[RTDB] Loading ntfy.sh transport...');
   const presence = {};
 
   // ── topic names ──────────────────────────────────────────────────────────────
+  // Un solo topic per stanza — GPS e messaggi sullo stesso canale.
+  // Due topic separati richiedono 2 SSE per device = 4 connessioni dallo stesso
+  // IP WiFi → ntfy.sh risponde 429 quasi subito.
   function topic(room)    { return TOPIC_PFX + room; }
-  function gpsTopic(room) { return TOPIC_PFX + room + '_gps'; }
+  function gpsTopic(room) { return TOPIC_PFX + room; } // alias → stesso topic
 
   // ── Pubblica un messaggio su ntfy.sh ─────────────────────────────────────────
   async function pub(topicName, payload) {
@@ -202,9 +204,9 @@ console.log('[RTDB] Loading ntfy.sh transport...');
     reconnect() {},
   };
 
-  // ── Pulizia presenze ghost (>60s senza heartbeat) ─────────────────────────────
+  // ── Pulizia presenze ghost (>120s senza heartbeat) ────────────────────────────
   function prunePresence() {
-    const cutoff = Date.now() - 60000;
+    const cutoff = Date.now() - 120000;
     let changed  = false;
     Object.keys(presence).forEach(n => {
       if (presence[n] < cutoff) { delete presence[n]; changed = true; }
@@ -234,31 +236,26 @@ console.log('[RTDB] Loading ntfy.sh transport...');
       console.log('[RTDB] ✅ Connesso alla stanza:', room, '| utente:', name);
       statusCb('waiting', 0);
 
-      // ── SSE: ascolta messaggi generici (chat, sync, itinerari) ───────────────
+      // ── SSE: un'unica connessione per tutti i tipi di messaggio ─────────────
       evtSrc = openSSE(topic(room), handleIncoming);
-
-      // ── SSE: ascolta GPS (topic separato per non rallentare i messaggi) ──────
-      const gpsEvt = openSSE(gpsTopic(room), handleIncoming);
 
       // ── Heartbeat presenza ogni 15s ──────────────────────────────────────────
       hbTimer = setInterval(() => {
         pub(topic(room), { type: 'presence', from: name, ts: Date.now() });
       }, HB_INTERVAL);
 
-      // ── Pulizia ghost ogni 30s ────────────────────────────────────────────────
-      presTimer = setInterval(prunePresence, 30000);
+      // ── Pulizia ghost ogni 60s ────────────────────────────────────────────────
+      presTimer = setInterval(prunePresence, 60000);
 
       // Annuncia subito la presenza
       pub(topic(room), { type: 'presence', from: name, ts: Date.now() });
 
-      // Salva riferimenti per stop()
-      this._gpsEvt = gpsEvt;
+      // (nessuna seconda SSE da salvare)
     },
 
     stop() {
       if (!isStarted) return;
       evtSrc?.close();
-      this._gpsEvt?.close();
       clearInterval(hbTimer);
       clearInterval(presTimer);
       clearInterval(gpsTimer);
