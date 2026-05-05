@@ -7073,8 +7073,14 @@ window.addEventListener("load", () => {
         console.log('[Group] peerGPS available, starting in 100ms...');
         setTimeout(() => {
           console.log('[Group] NOW calling peerGPS.start()');
-          peerGPS.start(room, name, (status) => {
-            console.log('[Group] Status:', status);
+          peerGPS.start(room, name, (status, count) => {
+            console.log('[Group] Status:', status, count);
+            const box = document.getElementById('peer-status-box');
+            if (box) {
+              if (status === 'waiting')     box.innerHTML = '🟡 In attesa di altri...';
+              else if (status === 'connected') box.innerHTML = `🟢 Connesso (${count} online)`;
+              else if (status === 'disconnected') box.innerHTML = '⚫ Non connesso';
+            }
           }, (state.group.members||[]).map(m => m.name).filter(n => n && n !== name));
           setTimeout(() => {
             if (peerGPS?.getMyPeerId) {

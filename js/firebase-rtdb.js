@@ -36,7 +36,7 @@ console.log('[RTDB] Loading ntfy.sh transport...');
     try {
       await fetch(`${NTFY_BASE}/${topicName}`, {
         method : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body   : JSON.stringify(payload),
       });
     } catch (e) {
@@ -64,11 +64,32 @@ console.log('[RTDB] Loading ntfy.sh transport...');
 
     // Aggiorna presenza
     if (data.from) {
+      const isNew = !presence[data.from];
       presence[data.from] = Date.now();
       const cnt = Object.keys(presence).filter(n => n !== myName).length;
       if (cnt !== onlineCount) {
         onlineCount = cnt;
         statusCb(onlineCount > 0 ? 'connected' : 'waiting', onlineCount);
+      }
+
+      // ── Aggiunge il peer a state.group.members se non c'è già ──────────────
+      if (window.state?.group) {
+        window.state.group.members = window.state.group.members || [];
+        const alreadyIn = window.state.group.members.some(m => m.name === data.from);
+        if (!alreadyIn) {
+          window.state.group.members.push({
+            name: data.from,
+            role: '',
+            lastHeartbeat: Date.now(),
+          });
+          if (window.saveState) window.saveState();
+          // Chi è il creatore aggiorna tutti con la lista aggiornata
+          if (window.state.group.createdByName === myName) {
+            setTimeout(() => window.peerGPS?.broadcastGroupSync?.(), 300);
+          }
+          // Ri-renderizza la group view se è aperta
+          if (window.renderGroupView) window.renderGroupView();
+        }
       }
     }
 
@@ -98,6 +119,7 @@ console.log('[RTDB] Loading ntfy.sh transport...');
             .filter(m => m.name && m.name !== myName)
             .map(m => m.name);
           if (window.saveState) window.saveState();
+          if (window.renderGroupView) window.renderGroupView();
         }
         break;
 
