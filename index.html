@@ -4652,17 +4652,6 @@ window.addEventListener("load", () => {
         <div style="font-size:12px;opacity:0.95">📍 ${p.city || 'Posizione'}</div>
       </div>
 
-      <!-- GOOGLE PLACES info -->
-      ${p.fromGooglePlaces ? `
-      <div style="background:linear-gradient(135deg,rgba(42,63,95,.9),rgba(30,50,80,.9));padding:14px;border-radius:12px;margin-bottom:12px;border-left:5px solid #FFD700;box-shadow:0 4px 8px rgba(0,0,0,0.2)">
-        <div style="font-size:11px;color:#FFD700;margin-bottom:8px;font-weight:700">📍 GOOGLE PLACES</div>
-        ${p.rating ? `<div style="font-weight:700;color:#FFD700;font-size:15px;margin-bottom:4px">⭐ ${p.rating.toFixed(1)} <span style="color:#B0C4DE;font-size:12px;font-weight:normal">(${p.ratingCount} voti)</span></div>` : ''}
-        ${p.address ? `<div style="font-size:12px;color:#E8E8E8;margin-top:6px">📍 ${p.address}</div>` : ''}
-        ${p.businessStatus === 'OPERATIONAL' ? `<div style="font-size:12px;color:#90EE90;margin-top:4px;font-weight:600">✅ Aperto</div>` : p.businessStatus ? `<div style="font-size:12px;color:#FF6B6B;margin-top:4px">❌ ${p.businessStatus}</div>` : ''}
-        ${p.openNow !== null ? `<div style="font-size:12px;color:${p.openNow ? '#90EE90' : '#FF6B6B'};margin-top:4px;font-weight:600">⏰ ${p.openNow ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
-      </div>
-      ` : ''}
-
       <!-- CATEGORIA SELECTOR (nascosto per default) -->
       <div id="cat-selector" style="display:none;margin:12px 0;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.1),rgba(255,20,147,.1));border:2px solid #00FF88;border-radius:12px">
         <div style="font-size:12px;color:#666;margin-bottom:8px;font-weight:600">📂 CAMBIA CATEGORIA:</div>
