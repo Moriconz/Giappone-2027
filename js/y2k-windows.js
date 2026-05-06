@@ -326,6 +326,25 @@
     `;
 
     console.log('[Y2K] Appending to body');
+
+    // DEBUG: Check for grid container after insertion
+    setTimeout(() => {
+      const gridContainers = win.querySelectorAll('[style*="display:grid"]');
+      console.log(`[Y2K DEBUG] Found ${gridContainers.length} grid containers`);
+      if (gridContainers.length > 0) {
+        gridContainers.forEach((grid, idx) => {
+          const computedDisplay = window.getComputedStyle(grid).display;
+          const computedWidth = window.getComputedStyle(grid).width;
+          console.log(`[Y2K DEBUG] Grid ${idx}: display=${computedDisplay}, width=${computedWidth}`);
+          console.log(`[Y2K DEBUG] Grid ${idx} children:`, grid.children.length);
+          Array.from(grid.children).forEach((child, cidx) => {
+            const childDisplay = window.getComputedStyle(child).display;
+            const childWidth = window.getComputedStyle(child).width;
+            console.log(`  [Child ${cidx}] display=${childDisplay}, width=${childWidth}, minWidth=${window.getComputedStyle(child).minWidth}`);
+          });
+        });
+      }
+    }, 100);
     document.body.appendChild(win);
     wins[id] = win;
     console.log('[Y2K] ✅ Window added to DOM, id:', id, 'win:', win);
