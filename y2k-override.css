@@ -1005,28 +1005,33 @@ main {
 
 /* ══════════════════════════════════════════════════════════════════
    FIX: due colonne affiancate dentro le finestre Y2K
-   (POI sheet — Luoghi/Selezionato + Google Places)
+   Forza qualunque container con font-size:0 (trick inline-block) a flex,
+   e converte i figli inline-block in flex-items affiancati.
 ══════════════════════════════════════════════════════════════════ */
-.y2k-win-body > div:has(> div[style*="inline-block"][style*="50%"]) {
+.y2k-win-body div[style*="font-size:0"] {
   display: flex !important;
   flex-direction: row !important;
+  flex-wrap: nowrap !important;
   gap: 12px !important;
   width: 100% !important;
   font-size: 13px !important;
   align-items: stretch !important;
 }
 
-.y2k-win-body > div:has(> div[style*="inline-block"][style*="50%"]) > div {
+.y2k-win-body div[style*="font-size:0"] > div[style*="inline-block"] {
   display: block !important;
   flex: 1 1 0 !important;
   width: auto !important;
   min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
   vertical-align: top !important;
+  font-size: 13px !important;
 }
 
-/* Riduci padding interno dei box per stare nelle colonne strette */
-.y2k-win-body > div:has(> div[style*="inline-block"][style*="50%"]) > div > div {
+/* Padding interno più stretto per stare comodo */
+.y2k-win-body div[style*="font-size:0"] > div[style*="inline-block"] > div {
   padding: 10px !important;
   word-wrap: break-word !important;
-  overflow-wrap: break-word !important;
+  overflow-wrap: anywhere !important;
 }
