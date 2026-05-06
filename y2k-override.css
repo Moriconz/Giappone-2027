@@ -328,9 +328,15 @@ nav.bottom button.active {
   border: 2px solid var(--y2k-green) !important;
   border-radius: 10px !important;
   padding: 12px 14px !important;
-  margin-bottom: 8px !important;
+  margin-bottom: 16px !important;
   box-shadow: 0 3px 10px rgba(0,255,136,0.15) !important;
   transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+/* Spazio ancora maggiore per shopping negozi */
+#regular-shops .poi-row,
+#vintage-shops .poi-row {
+  margin-bottom: 20px !important;
 }
 .sheet-inner .poi-row:hover,
 .sheet-body .poi-row:hover {
@@ -504,25 +510,32 @@ nav.bottom button.active {
 }
 
 /* ── Shop detail (quando clicchi su un negozio) ────────────────── */
+.shop-card[style*="border:none"] {
+  padding: 18px 20px !important;
+}
 .shop-card .sc-header {
   margin-bottom: 12px !important;
 }
 .shop-card .sc-name {
-  color: var(--y2k-ink) !important;
+  color: #1A2560 !important;
   font-weight: 700 !important;
   font-size: 18px !important;
   margin-bottom: 6px !important;
+  font-family: 'Courier New', monospace !important;
 }
 .shop-card .sc-meta {
-  color: var(--y2k-muted) !important;
+  color: #6B5EA8 !important;
   font-size: 14px !important;
+  font-weight: 600 !important;
 }
 .shop-card .sc-hours {
-  color: var(--y2k-ink) !important;
+  color: #1A2560 !important;
   font-size: 13px !important;
   line-height: 1.6 !important;
+  font-weight: 500 !important;
 }
-.shop-card h4 {
+.sheet-body .shop-card h4,
+.sheet-inner .shop-card h4 {
   color: #A8005A !important;
   font-family: 'Comic Sans MS', cursive !important;
   font-size: 14px !important;
