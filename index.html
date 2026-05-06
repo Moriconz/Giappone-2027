@@ -203,8 +203,8 @@
   <header>
     <h1>Giappone <span class="badge">2027</span> <span class="badge badge-version">v3</span></h1>
     <!-- Compact Weather Widget in Header -->
-    <div id="header-weather-widget" style="display:none;font-size:12px;padding:4px 8px;background:rgba(255,255,255,0.15);border-radius:6px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.3);color:#fff;font-family:'Courier New',monospace;white-space:nowrap;margin-left:auto;margin-right:8px;">
-      <span id="hw-icon">📍</span> <span id="hw-temp">--°</span> <span id="hw-cond" style="font-size:10px;">--</span>
+    <div id="header-weather-widget" style="font-size:12px;padding:4px 8px;background:rgba(255,255,255,0.15);border-radius:6px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.3);color:#fff;font-family:'Courier New',monospace;white-space:nowrap;margin-left:auto;margin-right:8px;cursor:pointer;user-select:none;">
+      <span id="hw-icon">⏳</span> <span id="hw-temp">--°</span> <span id="hw-cond" style="font-size:10px;">caricamento</span>
     </div>
     <button class="icon-btn" id="search-btn" aria-label="Cerca">🔍</button>
     <button class="icon-btn" id="refresh-pois-btn" aria-label="Ricarica POI" title="Ricarica i negozi per questa posizione">🔄</button>
@@ -6582,23 +6582,30 @@ window.addEventListener("load", () => {
 
   window.openWeatherModal = function() {
     console.log('[Weather] Opening detailed weather modal');
+    window.toast('🌤️ Caricamento meteo...');
 
     // Load weather data and show modal
     if (!navigator.geolocation) {
-      toast('⚠️ Geolocation non disponibile');
       console.warn('[Weather] Geolocation not supported');
+      window.toast('📍 GPS non disponibile');
       return;
     }
 
+    console.log('[Weather] Requesting GPS position...');
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        console.log('[Weather] GPS position obtained');
         const { latitude, longitude } = position.coords;
-        const weatherData = await fetchWeatherHourly(latitude, longitude, 'Posizione attuale');
+        console.log('[Weather] Fetching weather data for', { latitude, longitude });
 
-        if (!weatherData) {
-          toast('⚠️ Impossibile caricare i dati meteo');
-          return;
-        }
+        try {
+          const weatherData = await fetchWeatherHourly(latitude, longitude, 'Posizione attuale');
+          console.log('[Weather] Weather data received:', !!weatherData);
+
+          if (!weatherData) {
+            window.toast('⚠️ Impossibile caricare meteo');
+            return;
+          }
 
         const hourlyData = weatherData.hourly;
         const dailyData = weatherData.daily;
@@ -6709,11 +6716,15 @@ window.addEventListener("load", () => {
           </div>
         `;
 
-        window.openSheet('🌤️ Meteo Dettagliato', modalHtml);
+          window.openSheet('🌤️ Meteo Dettagliato', modalHtml);
+        } catch (err) {
+          console.error('[Weather] Error building modal:', err);
+          window.toast('⚠️ Errore nel caricamento meteo');
+        }
       },
       (error) => {
         console.warn('[Weather] GPS error:', error);
-        toast('📍 GPS non disponibile');
+        window.toast('📍 GPS non disponibile');
       }
     );
   }
