@@ -4659,7 +4659,7 @@ window.addEventListener("load", () => {
       </div>
 
       <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - ALWAYS SIDE-BY-SIDE -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;width:100%">
+      <div style="display:grid !important;grid-template-columns:1fr 1fr !important;gap:12px !important;margin:12px 0 !important;width:100% !important;box-sizing:border-box !important;min-width:0 !important">
         <!-- COLONNA SINISTRA: Informazioni Generali -->
         <div>
           ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic">🗣️ ${p.jp}</div>` : ''}
