@@ -4925,6 +4925,16 @@ window.addEventListener("load", () => {
       const html = poiDetailHTML(p);
       window.openSheet(displayName, html);
       console.log('[openPOI] ✅ openSheet called');
+
+      // Aumenta la larghezza della finestra del POI per mostrare due colonne side-by-side
+      setTimeout(() => {
+        const winId = 'y2kwin-' + displayName.replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
+        const win = document.getElementById(winId);
+        if (win) {
+          win.style.width = '680px';
+          console.log('[openPOI] ✅ Window width set to 680px for two-column layout');
+        }
+      }, 50);
     })();
 
     // Enrichisci il POI in background (non blocca UI)
