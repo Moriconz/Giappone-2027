@@ -94,7 +94,7 @@
     .y2k-win-body {
       flex: 1;
       overflow-y: auto;
-      overflow-x: hidden;
+      overflow-x: auto;
       padding: 12px;
       color: #2D3B7D;
       -webkit-overflow-scrolling: touch;
