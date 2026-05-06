@@ -6678,6 +6678,22 @@ window.addEventListener("load", () => {
           </div>
         </div>
 
+        <!-- Budget Setup (Prominent) -->
+        <div class="budget-setup-banner" ${db.totalBudget > 0 ? 'style="opacity:0.7"' : ''}>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="font-size:24px">💰</div>
+            <div style="flex:1">
+              <div style="color:var(--y2k-ink);font-weight:700;font-size:14px;margin-bottom:2px">Imposta il tuo Budget di Viaggio</div>
+              <div style="color:var(--y2k-muted);font-size:12px">Definisci quanto vuoi spendere in Giappone</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="config-total-budget-inline" type="number" value="${db.totalBudget}" placeholder="300000" style="flex:1;padding:8px;background:#fff;border:2px solid #FF1493;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:13px;box-sizing:border-box" />
+            <span style="color:var(--y2k-muted);font-weight:700">¥</span>
+            <button id="config-save-inline" class="btn primary" style="padding:8px 16px;font-size:13px">OK</button>
+          </div>
+        </div>
+
         <!-- Stat Cards -->
         <div class="budget-stats">
           <div class="stat-card">
@@ -6771,15 +6787,6 @@ window.addEventListener("load", () => {
           `}
         </div>
 
-        <!-- Budget Config -->
-        <div class="budget-config-section">
-          <h3 style="margin:0 0 14px 0;color:#A8005A;font-family:'Comic Sans MS',cursive;font-size:14px;font-weight:700">⚙️ Configurazione</h3>
-          <div class="form-row">
-            <label>Budget Totale Viaggio (¥)</label>
-            <input id="config-total-budget" type="number" value="${db.totalBudget}" style="width:100%;padding:8px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:13px;box-sizing:border-box" />
-          </div>
-          <button id="config-save-btn" class="btn success" style="width:100%;padding:12px;font-size:14px">Salva Configurazione</button>
-        </div>
       </div>
     `;
 
@@ -6792,51 +6799,102 @@ window.addEventListener("load", () => {
       renderBudgetView();
     };
 
-    document.getElementById('expense-add-btn').onclick = () => {
-      const category = document.getElementById('expense-category').value;
-      const amount = parseFloat(document.getElementById('expense-amount').value);
-      const description = document.getElementById('expense-description').value;
+    setTimeout(() => {
+      const addBtn = document.getElementById('expense-add-btn');
+      const categorySelect = document.getElementById('expense-category');
+      const amountInput = document.getElementById('expense-amount');
+      const descriptionInput = document.getElementById('expense-description');
 
-      if (!amount || amount <= 0) {
-        window.showToast('Inserisci un importo valido!');
-        return;
+      console.log('[Budget] Expense handlers setup - btn:', !!addBtn, 'cat:', !!categorySelect, 'amt:', !!amountInput);
+
+      if (addBtn) {
+        addBtn.onclick = () => {
+          console.log('[Budget] Salva Spesa clicked');
+          const category = categorySelect.value;
+          const amount = parseFloat(amountInput.value);
+          const description = descriptionInput.value;
+
+          console.log('[Budget] Expense data:', { category, amount, description });
+
+          if (!amount || amount <= 0) {
+            window.toast('Inserisci un importo valido!');
+            return;
+          }
+
+          const jpyAmount = convertCurrency(amount, db.currency, 'JPY');
+          console.log('[Budget] Amount JPY:', jpyAmount);
+
+          db.expenses.push({
+            id: Date.now(),
+            category: category,
+            amount: jpyAmount,
+            description: description,
+            date: new Date().toISOString(),
+          });
+
+          saveBudgetDB(db);
+          console.log('[Budget] Expense saved, total count:', db.expenses.length);
+
+          const curr = CURRENCIES[db.currency];
+          const symbol = curr.symbol;
+          window.toast(`Spesa ${symbol}${amount.toFixed(0)} registrata!`);
+
+          // Clear inputs
+          amountInput.value = '';
+          descriptionInput.value = '';
+          categorySelect.value = EXPENSE_CATEGORIES[0].id;
+
+          console.log('[Budget] Calling renderBudgetView from expense save');
+          renderBudgetView();
+        };
       }
 
-      const jpyAmount = convertCurrency(amount, db.currency, 'JPY');
-
-      db.expenses.push({
-        id: Date.now(),
-        category: category,
-        amount: jpyAmount,
-        description: description,
-        date: new Date().toISOString(),
+      // Delete buttons
+      document.querySelectorAll('.expense-delete-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          const idx = parseInt(e.target.dataset.expenseIndex);
+          console.log('[Budget] Delete expense at index:', idx);
+          db.expenses.splice(idx, 1);
+          saveBudgetDB(db);
+          renderBudgetView();
+        };
       });
+    }, 200);
 
-      saveBudgetDB(db);
-      window.showToast(`Spesa di ${db.currency === 'JPY' ? '¥' : CURRENCIES[db.currency].symbol}${amount.toFixed(0)} registrata!`);
-      renderBudgetView();
-    };
+    setTimeout(() => {
+      const btn = document.getElementById('config-save-inline');
+      const input = document.getElementById('config-total-budget-inline');
+      console.log('[Budget] Setup inline handler - btn:', !!btn, 'input:', !!input);
 
-    document.querySelectorAll('.expense-delete-btn').forEach(btn => {
-      btn.onclick = (e) => {
-        const idx = parseInt(e.target.dataset.expenseIndex);
-        db.expenses.splice(idx, 1);
-        saveBudgetDB(db);
-        renderBudgetView();
-      };
-    });
+      if (btn && input) {
+        btn.onclick = () => {
+          console.log('[Budget] Inline OK clicked');
+          const newBudget = parseFloat(input.value);
+          console.log('[Budget] New budget value (JPY):', newBudget);
 
-    document.getElementById('config-save-btn').onclick = () => {
-      const newBudget = parseFloat(document.getElementById('config-total-budget').value);
-      if (!newBudget || newBudget <= 0) {
-        window.showToast('Inserisci un budget valido!');
-        return;
+          if (!newBudget || newBudget <= 0) {
+            window.toast('Inserisci un budget valido!');
+            return;
+          }
+
+          // Input è sempre in JPY, salva diretto
+          db.totalBudget = newBudget;
+          saveBudgetDB(db);
+          console.log('[Budget] DB saved, total JPY:', db.totalBudget);
+
+          // Display in current currency
+          const curr = CURRENCIES[db.currency];
+          const displayAmount = convertCurrency(newBudget, 'JPY', db.currency);
+          const displayVal = curr.symbol + displayAmount.toFixed(0);
+          window.toast('Budget: ' + displayVal);
+
+          console.log('[Budget] Calling renderBudgetView');
+          renderBudgetView();
+        };
+      } else {
+        console.warn('[Budget] Could not find inline elements');
       }
-      db.totalBudget = newBudget;
-      saveBudgetDB(db);
-      window.showToast('Budget aggiornato!');
-      renderBudgetView();
-    };
+    }, 200);
   }
 
   /* ═══════════════════════════════════════════════════════════════
@@ -6942,28 +7000,6 @@ window.addEventListener("load", () => {
 
     window.openSheet('📸 Galleria', html);
 
-    // File input
-    const fileInput = document.getElementById('gallery-file-input');
-    const dropZone = document.getElementById('gallery-drop-zone');
-
-    dropZone.onclick = () => fileInput.click();
-
-    // Drag & drop
-    dropZone.ondragover = (e) => {
-      e.preventDefault();
-      dropZone.style.background = 'rgba(255,20,147,0.1)';
-    };
-    dropZone.ondragleave = () => {
-      dropZone.style.background = '';
-    };
-    dropZone.ondrop = (e) => {
-      e.preventDefault();
-      dropZone.style.background = '';
-      handleFiles(e.dataTransfer.files);
-    };
-
-    fileInput.onchange = (e) => handleFiles(e.target.files);
-
     async function handleFiles(files) {
       for (const file of files) {
         if (!file.type.startsWith('image/')) continue;
@@ -6978,12 +7014,50 @@ window.addEventListener("load", () => {
             caption: '',
           });
           saveGalleryDB(db);
-          window.showToast('Foto aggiunta!');
+          window.toast('Foto aggiunta!');
           renderGalleryView();
         };
         reader.readAsDataURL(file);
       }
     }
+
+    // File input — setup with delay to ensure DOM ready
+    setTimeout(() => {
+      const fileInput = document.getElementById('gallery-file-input');
+      const dropZone = document.getElementById('gallery-drop-zone');
+
+      if (!fileInput || !dropZone) {
+        console.warn('[Gallery] File input or drop zone not found');
+        return;
+      }
+
+      dropZone.onclick = () => {
+        console.log('[Gallery] Clicking file input');
+        fileInput.click();
+      };
+
+      // Drag & drop
+      dropZone.ondragover = (e) => {
+        e.preventDefault();
+        dropZone.style.background = 'rgba(255,20,147,0.1)';
+      };
+      dropZone.ondragleave = () => {
+        dropZone.style.background = '';
+      };
+      dropZone.ondrop = (e) => {
+        e.preventDefault();
+        dropZone.style.background = '';
+        console.log('[Gallery] Files dropped:', e.dataTransfer.files.length);
+        handleFiles(e.dataTransfer.files);
+      };
+
+      fileInput.onchange = (e) => {
+        console.log('[Gallery] Files selected:', e.target.files.length);
+        handleFiles(e.target.files);
+      };
+
+      console.log('[Gallery] File handlers attached');
+    }, 100);
 
     // Edit/Delete handlers
     setTimeout(() => {
@@ -7006,7 +7080,7 @@ window.addEventListener("load", () => {
           if (confirm('Eliminare questa foto?')) {
             db.photos.splice(idx, 1);
             saveGalleryDB(db);
-            window.showToast('Foto eliminata');
+            window.toast('Foto eliminata');
             renderGalleryView();
           }
         };

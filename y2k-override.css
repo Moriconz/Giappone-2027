@@ -1446,6 +1446,16 @@ main {
   box-shadow: 0 3px 12px rgba(255,215,0,0.15) !important;
 }
 
+.budget-setup-banner {
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  border: 2px solid var(--y2k-green) !important;
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  color: #fff !important;
+  box-shadow: 0 4px 16px rgba(255,20,147,0.25) !important;
+  transition: all 0.2s ease !important;
+}
+
 .budget-title-row {
   display: flex !important;
   justify-content: space-between !important;
