@@ -91,8 +91,10 @@ console.log('[RTDB] Loading MQTT transport...');
           if (window.state.group.createdByName === myName) {
             setTimeout(() => window.peerGPS?.broadcastGroupSync?.(), 300);
           }
-          // Aggiorna pannello UI
-          window._refreshGroupView?.();
+          // Emit event for UI update
+          document.dispatchEvent(new CustomEvent('group_members_updated', {
+            detail: { members: window.state.group.members }
+          }));
         } else {
           // Membro già presente: aggiorna solo lastHeartbeat (senza re-render per ogni presence)
           window.state.group.members[existingIdx].lastHeartbeat = Date.now();
@@ -111,7 +113,10 @@ console.log('[RTDB] Loading MQTT transport...');
           avatar: data.avatar || null,
           lastUpdate: data.ts || Date.now(),
         };
-        if (window.updateMapMarkers) window.updateMapMarkers();
+        // Emit event for map update
+        document.dispatchEvent(new CustomEvent('map_markers_updated', {
+          detail: { markers: window.state.gpsRemoteMarkers }
+        }));
         break;
 
       case 'presence':
@@ -142,7 +147,10 @@ console.log('[RTDB] Loading MQTT transport...');
             window.state.group.createdBy     = data.createdByName;
           }
           if (window.saveState) window.saveState();
-          window._refreshGroupView?.();
+          // Emit event for UI update
+          document.dispatchEvent(new CustomEvent('group_members_updated', {
+            detail: { members: window.state.group.members }
+          }));
         }
         break;
 

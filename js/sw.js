@@ -4,7 +4,7 @@
  * Supporta caching offline e installazione app
  */
 
-const CACHE_NAME = 'giappone-2027-v3';
+const CACHE_NAME = 'giappone-2027-v4';
 const OFFLINE_URL = '../index.html';
 
 // Installa il service worker e crea la cache

@@ -3574,6 +3574,39 @@ window.addEventListener("load", () => {
       img.src = avatar;
     }
   }
+
+  // ============================================================
+  // UPDATE REMOTE GPS MARKERS — Mostra marker degli altri utenti
+  // ============================================================
+  function updateMapMarkers() {
+    remotePeersSource.clear();
+
+    const remoteMarkers = window.state?.gpsRemoteMarkers || {};
+    console.log('[updateMapMarkers] Updating', Object.keys(remoteMarkers).length, 'remote markers');
+
+    for (const [name, marker] of Object.entries(remoteMarkers)) {
+      if (!marker.lat || !marker.lng) continue;
+
+      const feature = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([marker.lng, marker.lat]))
+      });
+
+      // Use same style as local marker for consistency (with peer's initials)
+      const initials = name ? name.substring(0, 2).toUpperCase() : '?';
+      feature.setStyle(buildGPSStyle(null, initials));
+      remotePeersSource.addFeature(feature);
+
+      console.log(`[updateMapMarkers] Added marker for ${name} at (${marker.lat}, ${marker.lng})`);
+    }
+  }
+  window.updateMapMarkers = updateMapMarkers;
+
+  // Listen for map marker updates
+  document.addEventListener('map_markers_updated', () => {
+    console.log('[App] map_markers_updated event received');
+    window.updateMapMarkers?.();
+  });
+
   setTimeout(() => { map.updateSize(); }, 100);
   // Debounce utility
   function debounce(fn, ms) {
@@ -4215,7 +4248,29 @@ window.addEventListener("load", () => {
       bottomNav.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
       const view = btn.dataset.view;
       activeTabView = view; // Traccia quale tab è attivo
-      if (view === 'map') { closeSheet(); return; }
+      if (view === 'map') {
+        closeSheet();
+        // Center map on user's GPS location if active, otherwise on last known position
+        setTimeout(() => {
+          if (state.gpsCurrentLat && state.gpsCurrentLng) {
+            map.getView().animate({
+              center: ol.proj.fromLonLat([state.gpsCurrentLng, state.gpsCurrentLat]),
+              zoom: 14,
+              duration: 500
+            });
+            console.log('[Map] Centered on current GPS:', state.gpsCurrentLat, state.gpsCurrentLng);
+          } else if (state.group?.lastKnownLat && state.group?.lastKnownLng) {
+            map.getView().animate({
+              center: ol.proj.fromLonLat([state.group.lastKnownLng, state.group.lastKnownLat]),
+              zoom: 12,
+              duration: 500
+            });
+            console.log('[Map] Centered on last known position:', state.group.lastKnownLat, state.group.lastKnownLng);
+          }
+          map.updateSize();
+        }, 100);
+        return;
+      }
       if (view === 'list') { renderListView(); return; }
       if (view === 'itinerary') { renderItineraryView(); return; }
       if (view === 'bookings') { renderBookingsView(); return; }
@@ -6847,17 +6902,18 @@ window.addEventListener("load", () => {
   function renderGroupView() {
     console.log('[Group] renderGroupView', { roomId: state.group?.roomId, myName: state.group?.myName, isCreator: state.group?.isCreator });
 
-    const sheet = document.getElementById('sheet');
-    const sheetBody = document.getElementById('sheet-body');
-
     // Se gruppo già creato, usa group-panel.js
     if (state.group?.roomId && state.group?.myName && window.groupPanel) {
       const html = window.groupPanel.render();
-      // Se sheet è già aperto, aggiorna il contenuto in-place
-      if (sheet && sheetBody && sheet.classList.contains('open')) {
-        sheetBody.innerHTML = html;
-        document.getElementById('sheet-title').textContent = '👥 Gruppo';
+      // y2k-windows.js usa finestre floating con id "y2kwin-{titleSlug}"
+      // "👥 Gruppo" → slug "gruppo" → id "y2kwin-gruppo"
+      const groupWin = document.getElementById('y2kwin-gruppo');
+      if (groupWin) {
+        // Finestra già aperta: aggiorna il contenuto in-place
+        const body = groupWin.querySelector('.y2k-win-body');
+        if (body) body.innerHTML = html;
       } else {
+        // Apri la finestra gruppo
         window.openSheet('👥 Gruppo', html);
       }
       // Assicura che il tab "gruppo" sia attivo
@@ -7880,32 +7936,73 @@ window.addEventListener('appinstalled', () => {
 console.log('[Install] ✓ All handlers ready');
 
 // ── Refresh pannello gruppo — usato da firebase-rtdb.js ──────────────────────
-// NON chiama renderGroupView() per evitare ReferenceError su Safari
-// (function declaration in arrow-function body non catturata correttamente da JSCore).
-// Usa direttamente window.groupPanel che è già su window senza problemi di scope.
+// NON chiama renderGroupView() per evitare ReferenceError su Safari.
+// y2k-windows.js sostituisce openSheet() con finestre floating (.y2k-win).
+// La finestra gruppo ha id "y2kwin-gruppo" (generato da "👥 Gruppo" → solo a-z0-9).
 window._refreshGroupView = function() {
   try {
     if (!window.state?.group?.roomId || !window.groupPanel) return;
+    // Il pannello gruppo è una finestra y2k con id "y2kwin-gruppo"
+    const groupWin = document.getElementById('y2kwin-gruppo');
+    if (!groupWin) {
+      // Pannello chiuso: lo stato è già aggiornato, verrà mostrato alla riapertura
+      console.log('[Group] _refreshGroupView: panel not open, skipping render');
+      return;
+    }
     const html = window.groupPanel.render();
     if (!html) return;
-    const sheet     = document.getElementById('sheet');
-    const sheetBody = document.getElementById('sheet-body');
-    const titleEl   = document.getElementById('sheet-title');
-    if (sheet && sheet.classList.contains('open') && sheetBody) {
-      // Aggiorna in-place solo se lo sheet del gruppo è già aperto
-      if (!titleEl || titleEl.textContent.includes('Gruppo')) {
-        sheetBody.innerHTML = html;
-        if (titleEl) titleEl.textContent = '👥 Gruppo';
-        window.groupPanel.attachEvents();
-        console.log('[Group] _refreshGroupView: panel updated in-place');
-      }
+    const body = groupWin.querySelector('.y2k-win-body');
+    if (body) {
+      body.innerHTML = html;
+      window.groupPanel.attachEvents();
+      console.log('[Group] _refreshGroupView: ✅ y2k panel updated');
     }
-    // Se lo sheet non è aperto, lo stato è già aggiornato —
-    // verrà riflesso quando l'utente aprirà il pannello.
   } catch(e) {
     console.warn('[Group] _refreshGroupView err:', e.message);
   }
 };
+
+// ── Polling fallback: se il pannello è aperto, mantienilo sincronizzato ───────
+// Scatta ogni 5s — rete di sicurezza per il pannello gruppo in caso event-bus fallisca
+let _lastMemberCount = 0;
+setInterval(function() {
+  try {
+    if (!window.state?.group?.roomId || !window.groupPanel) return;
+    const groupWin = document.getElementById('y2kwin-gruppo');
+    if (!groupWin) return;
+    const currentCount = (window.state.group.members || []).length;
+    if (currentCount !== _lastMemberCount) {
+      _lastMemberCount = currentCount;
+      const html = window.groupPanel.render();
+      if (!html) return;
+      const body = groupWin.querySelector('.y2k-win-body');
+      if (body) {
+        body.innerHTML = html;
+        window.groupPanel.attachEvents();
+        console.log('[Group] polling: panel updated, members:', currentCount);
+      }
+    }
+  } catch(e) {}
+}, 5000);
+
+// ── Polling fallback per chat: se il pannello è aperto, mantienilo sincronizzato ───────
+// Scatta ogni 5s — rete di sicurezza per la chat in caso event-bus fallisca
+let _lastChatMessageCount = 0;
+setInterval(function() {
+  try {
+    if (!window.groupChat || !window.state?.group?.roomId) return;
+    const chatHist = window.groupChat.getHistory?.();
+    if (!chatHist) return;
+    const chatWin = document.getElementById('y2kwin-groupchat');
+    if (!chatWin) return; // Panel not open
+    const currentCount = (chatHist.messages || []).length;
+    if (currentCount !== _lastChatMessageCount) {
+      _lastChatMessageCount = currentCount;
+      window.groupChat.renderChatPanel?.();
+      console.log('[GroupChat] polling: chat updated, messages:', currentCount);
+    }
+  } catch(e) {}
+}, 5000);
 
 }); // close window.addEventListener load
 </script>

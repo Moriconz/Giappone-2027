@@ -7,6 +7,7 @@
 window.groupChat = (() => {
   let chatHistory = {};
   let chatPanelOpen = false;
+  let chatNeedsRender = false;
 
   function isValidAvatarString(value) {
     return typeof value === 'string' && (
@@ -165,13 +166,20 @@ window.groupChat = (() => {
     if (!chatPanelOpen) {
       console.log('[GroupChat] Panel closed - sending push notification');
       notifyNewMessage(normalizedMessage);
+      chatNeedsRender = true; // Mark that panel needs refresh when opened
     }
 
     // Rirenderizza se pannello aperto
     if (chatPanelOpen) {
       console.log('[GroupChat] Panel open - re-rendering');
       renderChatPanel();
+      chatNeedsRender = false;
     }
+
+    // Emit event for subscribers
+    document.dispatchEvent(new CustomEvent('chat_message_received', {
+      detail: { message: normalizedMessage }
+    }));
   }
   
   /**
@@ -411,6 +419,13 @@ window.groupChat = (() => {
       }
 
       console.log('[GroupChat] Container found! Rendering with', chatHistory.messages.length, 'messages');
+
+      // Force render if dirty flag is set (messages arrived while closed)
+      if (chatNeedsRender) {
+        console.log('[GroupChat] Dirty flag set - forcing full render');
+        chatNeedsRender = false;
+      }
+
       renderChatPanel();
 
       // Verifica che il rendering sia effettivamente avvenuto
@@ -489,6 +504,14 @@ window.groupChat = (() => {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
   }
+
+  // Listen for window close event
+  document.addEventListener('y2kwin_closed', (e) => {
+    if (e.detail.id === 'groupchat') {
+      chatPanelOpen = false;
+      console.log('[GroupChat] Chat panel closed, chatPanelOpen = false');
+    }
+  });
   
   return {
     init: initChat,

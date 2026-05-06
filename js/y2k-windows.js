@@ -343,6 +343,11 @@
     delete wins[id];
     updateMapBlur();
 
+    // Emit event so other modules know the window closed
+    document.dispatchEvent(new CustomEvent('y2kwin_closed', {
+      detail: { id }
+    }));
+
     // Reset tab button to map (always return to map when closing a window)
     const bottomNav = document.querySelector('nav.bottom');
     if (bottomNav) {

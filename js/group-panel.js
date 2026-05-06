@@ -230,6 +230,21 @@ window.groupPanel = (() => {
       updateGroupItinerariesList();
       updateUndoRedoButtons();
     });
+
+    // Listen for group member updates and re-render panel if open
+    window.addEventListener('group_members_updated', () => {
+      const groupWin = document.getElementById('y2kwin-gruppo');
+      if (!groupWin) return; // Panel not open, state already updated
+
+      // Re-render panel with updated members
+      const html = window.groupPanel.render();
+      const body = groupWin.querySelector('.y2k-win-body');
+      if (body) {
+        body.innerHTML = html;
+        window.groupPanel.attachEvents();
+        console.log('[GroupPanel] ✅ Panel updated via event');
+      }
+    });
   }
 
   /**
