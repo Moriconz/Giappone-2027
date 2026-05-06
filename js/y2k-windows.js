@@ -98,6 +98,8 @@
       padding: 12px;
       color: #2D3B7D;
       -webkit-overflow-scrolling: touch;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .y2k-win-body::-webkit-scrollbar { width: 10px; }
