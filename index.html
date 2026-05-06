@@ -209,6 +209,16 @@
   <main>
     <div id="filters"></div>
     <div id="map"></div>
+    <!-- Weather Widget - Floating (top-right) -->
+    <div id="weather-widget" style="position:fixed;top:58px;right:12px;z-index:40;background:linear-gradient(135deg,#FF1493,#FF69B4);border:2px solid #00FF88;border-radius:12px;padding:12px 16px;color:#fff;box-shadow:0 4px 16px rgba(255,20,147,0.3);min-width:200px;max-width:280px;font-family:'Courier New',monospace;display:none">
+      <div style="text-align:center;font-size:28px;margin-bottom:6px" id="weather-icon">☀️</div>
+      <div style="font-size:11px;text-align:center;color:rgba(255,255,255,0.8);margin-bottom:4px" id="weather-city">Caricamento...</div>
+      <div style="font-size:18px;font-weight:700;text-align:center;margin-bottom:2px"><span id="weather-temp">--</span>°C</div>
+      <div style="font-size:10px;text-align:center;color:rgba(255,255,255,0.8)"><span id="weather-condition">--</span></div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.3);font-size:9px;color:rgba(255,255,255,0.9)">
+        💧 <span id="weather-humidity">--</span>% | 💨 <span id="weather-wind">--</span>km
+      </div>
+    </div>
     <!-- DEBUG PANEL: Mostra errori e log PeerGPS sul telefono -->
     <div id="debug-panel" style="position:fixed;bottom:80px;right:10px;width:280px;max-height:200px;background:rgba(0,0,0,0.9);color:#00FF88;font-size:10px;padding:8px;border-radius:6px;overflow-y:auto;font-family:monospace;z-index:9999;border:1px solid #FF1493;display:none">
       <div style="margin-bottom:4px;font-weight:bold;color:#FF1493">🔍 Debug Log:</div>
@@ -5849,7 +5859,14 @@ window.addEventListener("load", () => {
                   data-poi-name="${getPoiDisplayName(p).replace(/"/g, '&quot;')}"
                   data-photo-url="${photoUrl}"
                 >` : ''}
-                <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer" data-add-to-itinerary="${p.googlePlaceId}">${isInItin?'✓':'+ Aggiungi'}</button>
+                <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer"
+                  data-add-to-itinerary="${p.googlePlaceId}"
+                  data-poi-place-id="${p.googlePlaceId}"
+                  data-poi-name="${getPoiDisplayName(p).replace(/"/g, '&quot;')}"
+                  data-poi-city="${(p.searchCity || p.city || '').replace(/"/g, '&quot;')}"
+                  data-poi-lat="${p.lat}"
+                  data-poi-lng="${p.lng}"
+                >${isInItin?'✓':'+ Aggiungi'}</button>
               </div>
             `;
           }).join('');
@@ -5918,20 +5935,33 @@ window.addEventListener("load", () => {
           });
 
           // ✅ Cerca per googlePlaceId (l'ID univoco da Google Places)
-          const poi = allPOIs().find(p => p.googlePlaceId === poiId);
+          let poi = allPOIs().find(p => p.googlePlaceId === poiId);
           console.log('[AGGIUNGI CLICK] poi trovato:', poi);
 
-          if (poi) {
-            console.log('[AGGIUNGI] POI trovato:', poi.name || poi.bestname);
+          // Se POI non trovato, crea un oggetto dai button data attributes
+          if (!poi) {
+            console.log('[AGGIUNGI] POI non nel database, uso button attributes');
+            poi = {
+              googlePlaceId: addBtn.getAttribute('data-poi-place-id'),
+              name: addBtn.getAttribute('data-poi-name'),
+              city: addBtn.getAttribute('data-poi-city'),
+              lat: parseFloat(addBtn.getAttribute('data-poi-lat')),
+              lng: parseFloat(addBtn.getAttribute('data-poi-lng'))
+            };
+            console.log('[AGGIUNGI] Creato POI da button:', poi);
+          } else {
+            console.log('[AGGIUNGI] POI trovato nel database:', poi.name || poi.bestname);
+          }
 
+          if (poi && poi.googlePlaceId) {
             // ALWAYS add to personal itinerary first
             console.log('[AGGIUNGI] Showing personal itinerary dialog');
             showAddItineraryDialog(poi, ({ day, time, cost }) => {
               console.log('[DIALOG CALLBACK] TRIGGERED with:', { day, time, cost });
               const entry = {
                 id: poi.googlePlaceId,
-                name: getPoiDisplayName(poi),
-                city: poi.searchCity || poi.city,
+                name: poi.name || getPoiDisplayName(poi),
+                city: poi.city || poi.searchCity,
                 lat: poi.lat,
                 lng: poi.lng,
                 day: day ? parseInt(day) : null,
@@ -5946,7 +5976,8 @@ window.addEventListener("load", () => {
               console.log('[DIALOG CALLBACK] renderListView completed');
             });
           } else {
-            console.error('[AGGIUNGI] POI non trovato con ID:', poiId);
+            console.error('[AGGIUNGI] Dati POI incompleti:', poiId);
+            toast('Errore: impossibile aggiungere questa tappa');
           }
         });
 
@@ -6469,141 +6500,290 @@ window.addEventListener("load", () => {
     return '#C8BDFF'; // Default
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // GPS Weather Widget + Hourly Forecast
+  // ═══════════════════════════════════════════════════════════════
+
+  function getWeatherConditionName(code) {
+    // WMO Weather interpretation codes to Italian names
+    if (code === 0 || code === 1) return 'Sereno';
+    if (code === 2) return 'Parzialmente nuvoloso';
+    if (code === 3) return 'Nuvoloso';
+    if (code >= 45 && code <= 48) return 'Nebbia';
+    if (code >= 51 && code <= 67) return 'Pioggia leggera';
+    if (code >= 71 && code <= 77) return 'Neve';
+    if (code >= 80 && code <= 82) return 'Pioggia';
+    if (code >= 85 && code <= 86) return 'Neve';
+    if (code >= 80 && code <= 99) return 'Temporale';
+    return 'Sconosciuto';
+  }
+
+  function fetchWeatherHourly(lat, lon, city = 'Posizione') {
+    return fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,weathercode,windspeed_10m,relativehumidity_2m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm&timezone=Asia/Tokyo`
+    )
+      .then(response => {
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        return response.json();
+      })
+      .catch(err => {
+        console.error(`[Weather] Hourly fetch failed for ${city}:`, err);
+        return null;
+      });
+  }
+
+  function updateGpsWeatherWidget() {
+    console.log('[Weather] Updating GPS weather widget...');
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log('[Weather] GPS position:', { latitude, longitude });
+
+          const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
+          if (!weatherData) {
+            console.warn('[Weather] Failed to fetch GPS weather');
+            return;
+          }
+
+          // Get current hour weather
+          const now = new Date();
+          const hourIndex = now.getHours();
+          const hourlyData = weatherData.hourly;
+          const currentTemp = Math.round(hourlyData.temperature_2m[hourIndex]);
+          const currentCode = hourlyData.weathercode[hourIndex];
+          const currentHumidity = hourlyData.relativehumidity_2m[hourIndex];
+          const currentWind = Math.round(hourlyData.windspeed_10m[hourIndex]);
+          const currentCondition = getWeatherConditionName(currentCode);
+          const icon = getWeatherIcon(currentCode);
+
+          // Update widget
+          const widget = document.getElementById('weather-widget');
+          if (widget) {
+            document.getElementById('weather-icon').textContent = icon;
+            document.getElementById('weather-city').textContent = '📍 La tua posizione';
+            document.getElementById('weather-temp').textContent = currentTemp;
+            document.getElementById('weather-condition').textContent = currentCondition;
+            document.getElementById('weather-humidity').textContent = currentHumidity;
+            document.getElementById('weather-wind').textContent = currentWind;
+            widget.style.display = 'block';
+            console.log('[Weather] Widget updated:', { currentTemp, currentCondition });
+          }
+        },
+        (error) => {
+          console.warn('[Weather] GPS error:', error.message);
+          // Try to still show widget with last known position if available
+          const widget = document.getElementById('weather-widget');
+          if (widget) widget.style.display = 'none';
+        }
+      );
+    }
+  }
+
+  // Initialize GPS weather widget and update every 10 minutes
+  window.initGpsWeatherWidget = function() {
+    updateGpsWeatherWidget();
+    setInterval(updateGpsWeatherWidget, 10 * 60 * 1000); // Every 10 minutes
+  };
+
   function renderWeatherView() {
     const itinerary = state.itinerary || [];
-    if (itinerary.length === 0) {
-      window.openSheet('🌤️ Meteo', `
-        <div class="weather-container">
-          <div style="text-align:center;padding:40px 20px;display:flex;flex-direction:column;align-items:center;gap:16px;">
-            <div style="font-size:48px;">🗺️</div>
-            <p style="color:var(--y2k-ink);font-family:'Comic Sans MS',cursive;font-weight:700;font-size:16px;margin:0;">Nessuna tappa nel tuo itinerario</p>
-            <p style="color:var(--y2k-muted);font-size:13px;margin:0;line-height:1.5;">Aggiungi delle tappe alla tua avventura in Giappone per visualizzare le previsioni meteo!</p>
-          </div>
-        </div>
-      `);
-      return;
-    }
 
-    // Raccogli città unique dalle tappe
-    const cities = {};
-    itinerary.forEach(entry => {
-      let city = null;
-      let lat = null;
-      let lng = null;
-
-      // Try entry.city first (user-provided or direct)
-      if (entry.city) {
-        city = entry.city;
-      }
-
-      // Try to find in allPOIs
-      const poi = allPOIs().find(p => p.id === entry.id);
-      if (poi) {
-        city = poi.city || city;
-        lat = poi.lat;
-        lng = poi.lng;
-      }
-
-      // Try to find in SHOPPING_DB
-      const shop = SHOPPING_DB.find(s => s.id === entry.id);
-      if (shop) {
-        city = shop.city || city;
-        lat = shop.coords[0];
-        lng = shop.coords[1];
-      }
-
-      // Use entry.name as fallback city name if no lat/lng found
-      if (city && !cities[city]) {
-        if (lat && lng) {
-          cities[city] = { lat, lng };
-        } else {
-          // Try to use CITY_COORDS as fallback
-          const coords = CITY_COORDS[city];
-          if (coords) {
-            cities[city] = { lat: coords[0], lng: coords[1] };
-          }
-        }
-      }
-
-      console.log('[Weather] Entry:', { id: entry.id, city, hasCoords: !!(cities[city]) });
-    });
-
-    if (Object.keys(cities).length === 0) {
-      window.openSheet('🌤️ Meteo', `
-        <div class="weather-container">
-          <div style="text-align:center;padding:40px 20px;display:flex;flex-direction:column;align-items:center;gap:16px;">
-            <div style="font-size:48px;">⚠️</div>
-            <p style="color:var(--y2k-ink);font-family:'Comic Sans MS',cursive;font-weight:700;font-size:16px;margin:0;">Nessuna città trovata</p>
-            <p style="color:var(--y2k-muted);font-size:13px;margin:0;line-height:1.5;">Non riusciamo a riconoscere le città dalle tue tappe. Assicurati che le tappe siano POI validi.</p>
-          </div>
-        </div>
-      `);
-      return;
-    }
-
-    // Fetch meteo per ogni città
+    // Try to get hourly forecast for current GPS position first
     (async () => {
-      console.log('[Weather] Starting forecast load for', Object.keys(cities).length, 'cities');
+      console.log('[Weather] Starting weather tab render');
       let weatherHtml = '';
 
-      for (const [city, coords] of Object.entries(cities)) {
-        const weatherData = await fetchWeatherData(coords.lat, coords.lng, city);
-        if (!weatherData) {
-          weatherHtml += `
-            <div class="weather-city">
-              <h3>${city}</h3>
-              <div style="background:rgba(255,107,107,0.1);border:2px solid #FF6B6B;border-radius:10px;padding:16px;text-align:center;">
-                <div style="color:#FF6B6B;font-family:'Comic Sans MS',cursive;font-weight:700;font-size:14px;margin-bottom:4px;">⚠️ Errore caricamento</div>
-                <p style="color:#FF6B6B;font-size:12px;margin:0;opacity:0.8;">Non riusciamo a caricare i dati meteo per questa città. Riprova più tardi!</p>
-              </div>
+      // GPS Current Weather Section
+      if (navigator.geolocation) {
+        weatherHtml += `
+          <div class="weather-section-divider">
+            <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
+          </div>
+          <div class="weather-city" id="gps-weather-section">
+            <div style="text-align:center;padding:20px;">
+              <div style="font-size:32px;margin-bottom:8px;">⏳</div>
+              <p style="color:var(--y2k-ink);font-size:13px;margin:0;">Rilevamento posizione...</p>
             </div>
-          `;
-          continue;
-        }
+          </div>
+        `;
 
-        const { daily } = weatherData;
-        weatherHtml += `<div class="weather-city"><h3>${city}</h3><div class="weather-days">`;
+        // Fetch GPS weather async
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            const weatherData = await fetchWeatherHourly(latitude, longitude, 'Posizione attuale');
 
-        daily.time.slice(0, 7).forEach((date, idx) => {
-          const code = daily.weather_code[idx];
-          const tempMax = daily.temperature_2m_max[idx];
-          const tempMin = daily.temperature_2m_min[idx];
-          const precip = daily.precipitation_sum[idx];
-          const wind = daily.windspeed_10m_max[idx];
-          const humidity = daily.relative_humidity_2m_max[idx];
-          const icon = getWeatherIcon(code);
-          const bgColor = getWeatherColor(code);
+            if (!weatherData) {
+              document.getElementById('gps-weather-section').innerHTML = `
+                <div style="text-align:center;padding:20px;background:rgba(255,107,107,0.1);border-radius:10px;">
+                  <div style="color:#FF6B6B;font-size:13px;">⚠️ Impossibile caricare meteo per la tua posizione</div>
+                </div>
+              `;
+              return;
+            }
 
-          const dateObj = new Date(date);
-          const dayName = dateObj.toLocaleDateString('it-IT', { weekday: 'short', month: 'short', day: 'numeric' });
+            // Build hourly forecast for GPS location
+            const hourlyData = weatherData.hourly;
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-          weatherHtml += `
-            <div class="weather-day" data-weather="${code}">
-              <div class="weather-date">${dayName}</div>
-              <div class="weather-icon">${icon}</div>
-              <div class="weather-temps">
-                <div class="weather-temp-max">${tempMax}°</div>
-                <div class="weather-temp-min">${tempMin}°</div>
+            let gpsHtml = `<div class="weather-hourly-grid">`;
+
+            // Show next 48 hours
+            for (let i = 0; i < 48; i++) {
+              const hourTime = new Date(todayStart.getTime() + i * 60 * 60 * 1000);
+              const temp = Math.round(hourlyData.temperature_2m[i]);
+              const code = hourlyData.weathercode[i];
+              const icon = getWeatherIcon(code);
+              const condition = getWeatherConditionName(code);
+              const precip = hourlyData.precipitation[i];
+              const humidity = hourlyData.relativehumidity_2m[i];
+              const wind = Math.round(hourlyData.windspeed_10m[i]);
+
+              const timeStr = hourTime.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+              const dayStr = i === 0 ? 'Oggi' : i === 24 ? 'Domani' : hourTime.toLocaleDateString('it-IT', { weekday: 'short' });
+
+              gpsHtml += `
+                <div class="weather-hourly-card" data-weather="${code}">
+                  <div class="hourly-time">${dayStr} ${timeStr}</div>
+                  <div class="hourly-icon">${icon}</div>
+                  <div class="hourly-temp">${temp}°C</div>
+                  <div class="hourly-condition" style="font-size:10px;">${condition}</div>
+                  <div class="hourly-details" style="font-size:9px;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,0,0,0.1);">
+                    💧 ${precip}mm | 💨 ${wind}km | 💦 ${humidity}%
+                  </div>
+                </div>
+              `;
+            }
+
+            gpsHtml += '</div>';
+            document.getElementById('gps-weather-section').innerHTML = gpsHtml;
+          },
+          (error) => {
+            console.warn('[Weather] GPS error:', error);
+            document.getElementById('gps-weather-section').innerHTML = `
+              <div style="text-align:center;padding:20px;background:rgba(255,107,107,0.1);border-radius:10px;">
+                <div style="color:#FF6B6B;font-size:13px;">📍 GPS non disponibile - consenti accesso alla posizione</div>
               </div>
-              <div class="weather-details">
-                <div class="weather-detail-item">
-                  <span class="weather-detail-label">💧</span>
-                  <span class="weather-detail-value">${precip.toFixed(1)}mm</span>
-                </div>
-                <div class="weather-detail-item">
-                  <span class="weather-detail-label">💨</span>
-                  <span class="weather-detail-value">${wind.toFixed(0)}km</span>
-                </div>
-                <div class="weather-detail-item">
-                  <span class="weather-detail-label">💦</span>
-                  <span class="weather-detail-value">${humidity}%</span>
-                </div>
-              </div>
-            </div>
-          `;
+            `;
+          }
+        );
+      }
+
+      // Itinerary cities section
+      if (itinerary.length > 0) {
+        const cities = {};
+        itinerary.forEach(entry => {
+          let city = null;
+          let lat = null;
+          let lng = null;
+
+          if (entry.city) {
+            city = entry.city;
+          }
+
+          const poi = allPOIs().find(p => p.id === entry.id);
+          if (poi) {
+            city = poi.city || city;
+            lat = poi.lat;
+            lng = poi.lng;
+          }
+
+          const shop = SHOPPING_DB.find(s => s.id === entry.id);
+          if (shop) {
+            city = shop.city || city;
+            lat = shop.coords[0];
+            lng = shop.coords[1];
+          }
+
+          if (city && !cities[city]) {
+            if (lat && lng) {
+              cities[city] = { lat, lng };
+            } else {
+              const coords = CITY_COORDS[city];
+              if (coords) {
+                cities[city] = { lat: coords[0], lng: coords[1] };
+              }
+            }
+          }
         });
 
-        weatherHtml += '</div></div>';
+        if (Object.keys(cities).length > 0) {
+          weatherHtml += `
+            <div class="weather-section-divider">
+              <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:20px 0 16px 0;font-size:18px;">🗓️ Le Tue Tappe</h2>
+            </div>
+          `;
+
+          for (const [city, coords] of Object.entries(cities)) {
+            const weatherData = await fetchWeatherData(coords.lat, coords.lng, city);
+            if (!weatherData) {
+              weatherHtml += `
+                <div class="weather-city">
+                  <h3>${city}</h3>
+                  <div style="background:rgba(255,107,107,0.1);border:2px solid #FF6B6B;border-radius:10px;padding:16px;text-align:center;">
+                    <div style="color:#FF6B6B;font-family:'Comic Sans MS',cursive;font-weight:700;font-size:14px;margin-bottom:4px;">⚠️ Errore</div>
+                    <p style="color:#FF6B6B;font-size:12px;margin:0;opacity:0.8;">Non riusciamo a caricare i dati meteo.</p>
+                  </div>
+                </div>
+              `;
+              continue;
+            }
+
+            // Build daily summary for itinerary cities
+            const { daily } = weatherData;
+            weatherHtml += `<div class="weather-city"><h3>${city}</h3><div class="weather-days">`;
+
+            daily.time.slice(0, 7).forEach((date, idx) => {
+              const code = daily.weather_code[idx];
+              const tempMax = daily.temperature_2m_max[idx];
+              const tempMin = daily.temperature_2m_min[idx];
+              const precip = daily.precipitation_sum[idx];
+              const wind = daily.windspeed_10m_max[idx];
+              const humidity = daily.relative_humidity_2m_max[idx];
+              const icon = getWeatherIcon(code);
+
+              const dateObj = new Date(date);
+              const dayName = dateObj.toLocaleDateString('it-IT', { weekday: 'short', month: 'short', day: 'numeric' });
+
+              weatherHtml += `
+                <div class="weather-day" data-weather="${code}">
+                  <div class="weather-date">${dayName}</div>
+                  <div class="weather-icon">${icon}</div>
+                  <div class="weather-temps">
+                    <div class="weather-temp-max">${tempMax}°</div>
+                    <div class="weather-temp-min">${tempMin}°</div>
+                  </div>
+                  <div class="weather-details">
+                    <div class="weather-detail-item">
+                      <span class="weather-detail-label">💧</span>
+                      <span class="weather-detail-value">${precip.toFixed(1)}mm</span>
+                    </div>
+                    <div class="weather-detail-item">
+                      <span class="weather-detail-label">💨</span>
+                      <span class="weather-detail-value">${wind.toFixed(0)}km</span>
+                    </div>
+                    <div class="weather-detail-item">
+                      <span class="weather-detail-label">💦</span>
+                      <span class="weather-detail-value">${humidity}%</span>
+                    </div>
+                  </div>
+                </div>
+              `;
+            });
+
+            weatherHtml += '</div></div>';
+          }
+        }
+      } else {
+        weatherHtml += `
+          <div style="text-align:center;padding:40px 20px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+            <div style="font-size:48px;">🗺️</div>
+            <p style="color:var(--y2k-ink);font-family:'Comic Sans MS',cursive;font-weight:700;font-size:16px;margin:0;margin-top:12px;">Nessuna tappa</p>
+            <p style="color:var(--y2k-muted);font-size:13px;margin:0;line-height:1.5;">Aggiungi tappe per visualizzare previsioni per le tue destinazioni!</p>
+          </div>
+        `;
       }
 
       const finalHtml = `<div class="weather-container">${weatherHtml}</div>`;
@@ -9188,6 +9368,12 @@ setInterval(function() {
     console.warn('[Push] Notification permission request failed:', err);
   }
 })();
+
+// Initialize GPS Weather Widget — updates every 10 minutes
+console.log('[Weather] Initializing GPS weather widget...');
+if (typeof window.initGpsWeatherWidget === 'function') {
+  window.initGpsWeatherWidget();
+}
 
 // Track message count for notifications
 let lastMessageCount = 0;
