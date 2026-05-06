@@ -4658,8 +4658,8 @@ window.addEventListener("load", () => {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="cat-options"></div>
       </div>
 
-      <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - RESPONSIVE -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:12px;margin:12px 0">
+      <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - ALWAYS SIDE-BY-SIDE -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0">
         <!-- COLONNA SINISTRA: Informazioni Generali -->
         <div>
           ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic">🗣️ ${p.jp}</div>` : ''}
@@ -7181,6 +7181,80 @@ window.addEventListener("load", () => {
     toast('🗑️ Stanza eliminata: ' + room);
     // renderGroupView() chiuderà gli sheet aperti e aprirà il form di setup
     renderGroupView();
+  };
+
+  // NUOVO: Mostra opzioni per membro (Mostra su mappa / Raggiungi)
+  window.showMemberOptions = function(memberName) {
+    const gpsData = state.gpsRemoteMarkers?.[memberName];
+    if (!gpsData) {
+      toast('⚠️ Posizione non disponibile');
+      return;
+    }
+
+    const optionsHtml = `
+      <div style="padding:20px;text-align:center">
+        <div style="font-size:20px;margin-bottom:20px;font-weight:700;color:#FF1493">📍 ${escapeHtml(memberName)}</div>
+        <div style="font-size:13px;color:#666;margin-bottom:20px">Posizione: ${gpsData.lat.toFixed(4)}, ${gpsData.lng.toFixed(4)}</div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn" id="show-member-map" data-member="${memberName}" style="background:linear-gradient(135deg,#4A7C59,#3A6C49);color:white;border:none;border-radius:8px;padding:14px;font-weight:600;font-size:14px;cursor:pointer">
+            🗺️ Mostra su mappa
+          </button>
+          <button class="btn" id="reach-member" data-member="${memberName}" style="background:linear-gradient(135deg,#7A8BA5,#5A6A95);color:white;border:none;border-radius:8px;padding:14px;font-weight:600;font-size:14px;cursor:pointer">
+            🧭 Raggiungi con mappe
+          </button>
+        </div>
+      </div>
+    `;
+
+    window.openSheet(`👤 ${memberName}`, optionsHtml);
+
+    // Event listeners per i pulsanti
+    const showMapBtn = document.getElementById('show-member-map');
+    if (showMapBtn) {
+      showMapBtn.addEventListener('click', () => {
+        const name = showMapBtn.dataset.member;
+        const coords = state.gpsRemoteMarkers?.[name];
+        if (coords) {
+          // Chiudi tutte le finestre aperte
+          document.querySelectorAll('.y2k-win').forEach(w => {
+            const closeBtn = w.querySelector('.y2k-close');
+            if (closeBtn) closeBtn.click();
+          });
+
+          // Centra la mappa sulla posizione
+          map.getView().animate({
+            center: ol.proj.fromLonLat([coords.lng, coords.lat]),
+            zoom: 16,
+            duration: 800
+          });
+
+          toast(`📍 Mostrando ${name} sulla mappa`);
+        }
+      });
+    }
+
+    const reachBtn = document.getElementById('reach-member');
+    if (reachBtn) {
+      reachBtn.addEventListener('click', () => {
+        const name = reachBtn.dataset.member;
+        const coords = state.gpsRemoteMarkers?.[name];
+        if (coords) {
+          // Determina quale app di mappe usare
+          const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}&travelmode=walking`;
+          const appleMapsUrl = `https://maps.apple.com/?daddr=${coords.lat},${coords.lng}&dirflg=w`;
+
+          // Prova ad aprire Apple Maps su iOS, Google Maps altrimenti
+          const userAgent = navigator.userAgent.toLowerCase();
+          const isIOS = /iphone|ipad|ipod/.test(userAgent);
+
+          const mapsUrl = isIOS ? appleMapsUrl : googleMapsUrl;
+          window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+
+          toast(`🧭 Aprendo ${isIOS ? 'Apple Maps' : 'Google Maps'}...`);
+        }
+      });
+    }
   };
 
   function renderGroupView() {

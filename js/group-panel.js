@@ -39,12 +39,17 @@ window.groupPanel = (() => {
       // Online se: è se stessi, oppure ha un heartbeat recente (< 90s)
       const isSelf   = m.name === group.myName;
       const isOnline = isSelf || m.peerId || (m.lastHeartbeat && (now - m.lastHeartbeat) < 90000);
+
+      // NUOVO: Rendi i membri cliccabili (solo se online e non è se stesso)
+      const hasGPS = window.state?.gpsRemoteMarkers?.[m.name];
+      const isClickable = isOnline && !isSelf && hasGPS;
+
       return `
-      <div style="display:flex;gap:10px;align-items:center;padding:10px;background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;margin-bottom:8px">
+      <div class="group-member-card" data-member-name="${escapeHtml(m.name)}" style="display:flex;gap:10px;align-items:center;padding:10px;background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;margin-bottom:8px;${isClickable ? 'cursor:pointer;transition:all 0.2s;' : ''}transition:background 0.2s" onmouseover="if(${isClickable})this.style.background='#D0E8FF'" onmouseout="this.style.background='#E8F4FF'">
         ${avatarHtml}
         <div style="flex:1;min-width:0">
           <div style="font-weight:700;font-size:14px;color:#FF1493">${escapeHtml(m.name || 'Unnamed')}${isSelf ? ' <span style="font-size:10px;color:#888">(tu)</span>' : ''}</div>
-          <div style="font-size:11px;color:#666">${isOnline ? '🟢 Online' : '🔴 Offline'}</div>
+          <div style="font-size:11px;color:#666">${isOnline ? '🟢 Online' : '🔴 Offline'}${hasGPS && !isSelf ? ' 📍 GPS' : ''}</div>
         </div>
       </div>
     `;
@@ -153,6 +158,19 @@ window.groupPanel = (() => {
         }
       });
     }
+
+    // NUOVO: Click su membro per mostrare opzioni "Mostra su mappa" e "Raggiungi"
+    const memberCards = document.querySelectorAll('.group-member-card');
+    memberCards.forEach(card => {
+      const memberName = card.dataset.memberName;
+      const hasGPS = window.state?.gpsRemoteMarkers?.[memberName];
+
+      if (hasGPS && memberName !== window.state?.group?.myName) {
+        card.addEventListener('click', () => {
+          window.showMemberOptions?.(memberName);
+        });
+      }
+    });
 
     // Phase 3: Update itineraries list and undo/redo buttons
     updateGroupItinerariesList();
