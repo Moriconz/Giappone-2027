@@ -4637,7 +4637,7 @@ window.addEventListener("load", () => {
       photoHtml = googleFallbackHtml('Foto non disponibili offline');
     }
 
-    return `
+    const html = `
       ${photoHtml}
       <!-- HEADER con categoria colorata -->
       <div style="background:linear-gradient(135deg,${catColor},${catColor}dd);padding:16px;border-radius:12px;margin-bottom:12px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.15)">
@@ -4659,9 +4659,9 @@ window.addEventListener("load", () => {
       </div>
 
       <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - ALWAYS SIDE-BY-SIDE -->
-      <div style="display:grid !important;grid-template-columns:1fr 1fr !important;gap:12px !important;margin:12px 0 !important;width:100% !important;box-sizing:border-box !important;min-width:0 !important;overflow:hidden !important">
+      <div style="display:block !important;margin:12px 0 !important;width:100% !important;box-sizing:border-box !important;font-size:0 !important">
         <!-- COLONNA SINISTRA: Informazioni Generali -->
-        <div style="min-width:0 !important;overflow:hidden !important;word-break:break-word !important">
+        <div style="display:inline-block !important;width:calc(50% - 6px) !important;margin-right:12px !important;vertical-align:top !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
           ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic;word-break:break-word !important">🗣️ ${p.jp}</div>` : ''}
           <p style="color:#333;line-height:1.6;margin:0 0 12px 0;word-break:break-word !important">${p.desc || ''}</p>
           ${infoChips.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${infoChips.join('')}</div>` : ''}
@@ -4681,7 +4681,7 @@ window.addEventListener("load", () => {
         </div>
 
         <!-- COLONNA DESTRA: Google Places Info -->
-        <div style="min-width:0 !important;overflow:hidden !important;word-break:break-word !important">
+        <div style="display:inline-block !important;width:calc(50% - 6px) !important;vertical-align:top !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
           ${p.fromGooglePlaces ? `
           <div style="background:linear-gradient(135deg,rgba(42,63,95,.9),rgba(30,50,80,.9));padding:14px;border-radius:12px;border-left:5px solid #FFD700;box-shadow:0 4px 8px rgba(0,0,0,0.2);margin-bottom:12px;word-break:break-word !important">
             <div style="font-size:11px;color:#FFD700;margin-bottom:8px;font-weight:700">📍 GOOGLE PLACES</div>
@@ -4736,6 +4736,14 @@ window.addEventListener("load", () => {
         </div>
       ` : ''}
     `;
+    // DEBUG: Log the HTML to verify grid structure
+    const hasGrid = html.includes('display:grid');
+    console.log(`[DEBUG POI] ${p.name} - Grid found: ${hasGrid}`);
+    if (hasGrid) {
+      const gridMatch = html.match(/display:grid[^>]*>/);
+      console.log('[DEBUG POI] Grid container:', gridMatch ? gridMatch[0] : 'not found');
+    }
+    return html;
   }
   // Rendi poiDetailHTML globale per poi-handlers.js
   window.poiDetailHTML = poiDetailHTML;
