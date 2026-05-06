@@ -248,11 +248,11 @@
     </button>
     <button data-view="groq-menu">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8m3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5m-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11m3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
-      🤖 Groq
+      Groq
     </button>
     <button data-view="gf-places">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      🏪 Posti
+      Posti GF
     </button>
 
   </nav>
@@ -4659,9 +4659,9 @@ window.addEventListener("load", () => {
       </div>
 
       <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - ALWAYS SIDE-BY-SIDE -->
-      <div style="display:block !important;margin:12px 0 !important;width:100% !important;box-sizing:border-box !important;font-size:0 !important">
+      <div style="display:flex !important;gap:12px !important;margin:12px 0 !important;width:100% !important;box-sizing:border-box !important;flex-wrap:wrap !important;">
         <!-- COLONNA SINISTRA: Informazioni Generali -->
-        <div style="display:inline-block !important;width:calc(50% - 6px) !important;margin-right:12px !important;vertical-align:top !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
+        <div style="flex:1 !important;min-width:0 !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
           ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic;word-break:break-word !important">🗣️ ${p.jp}</div>` : ''}
           <p style="color:#333;line-height:1.6;margin:0 0 12px 0;word-break:break-word !important">${p.desc || ''}</p>
           ${infoChips.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${infoChips.join('')}</div>` : ''}
@@ -4681,7 +4681,7 @@ window.addEventListener("load", () => {
         </div>
 
         <!-- COLONNA DESTRA: Google Places Info -->
-        <div style="display:inline-block !important;width:calc(50% - 6px) !important;vertical-align:top !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
+        <div style="flex:1 !important;min-width:0 !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
           ${p.fromGooglePlaces ? `
           <div style="background:linear-gradient(135deg,rgba(42,63,95,.9),rgba(30,50,80,.9));padding:14px;border-radius:12px;border-left:5px solid #FFD700;box-shadow:0 4px 8px rgba(0,0,0,0.2);margin-bottom:12px;word-break:break-word !important">
             <div style="font-size:11px;color:#FFD700;margin-bottom:8px;font-weight:700">📍 GOOGLE PLACES</div>
@@ -8179,24 +8179,75 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   };
 
   window.saveGFPlace = function() {
-    const name = document.getElementById('gf-place-name')?.value.trim();
-    const city = document.getElementById('gf-place-city')?.value.trim();
-    const area = document.getElementById('gf-place-area')?.value.trim() || null;
-    const note = document.getElementById('gf-place-note')?.value.trim() || null;
-    const rating = parseInt(document.getElementById('gf-place-rating')?.value || '5');
-    const tags = (document.getElementById('gf-place-tags')?.value || '')
+    console.log('[saveGFPlace] Starting...');
+
+    // Ottieni valori dai campi
+    const nameField = document.getElementById('gf-place-name');
+    const cityField = document.getElementById('gf-place-city');
+    const areaField = document.getElementById('gf-place-area');
+    const noteField = document.getElementById('gf-place-note');
+    const ratingField = document.getElementById('gf-place-rating');
+    const tagsField = document.getElementById('gf-place-tags');
+
+    console.log('[saveGFPlace] Fields found:', {
+      name: !!nameField,
+      city: !!cityField,
+      area: !!areaField,
+      note: !!noteField,
+      rating: !!ratingField,
+      tags: !!tagsField
+    });
+
+    const name = nameField?.value.trim();
+    const city = cityField?.value.trim();
+    const area = areaField?.value.trim() || null;
+    const note = noteField?.value.trim() || null;
+    const rating = parseInt(ratingField?.value || '5');
+    const tags = (tagsField?.value || '')
       .split(',').map(t => t.trim()).filter(Boolean);
-    
+
+    console.log('[saveGFPlace] Values:', { name, city, area, note, rating, tags });
+
+    // Validazione
     if (!name || !city) {
-      toast('❌ Nome e città obbligatori');
+      console.warn('[saveGFPlace] Validation failed - name or city missing');
+      toast('❌ Nome e città sono obbligatori');
       return;
     }
-    
+
+    // Crea l'oggetto place
     const place = { name, city, area, note, rating, tags };
-    GFPlacesDB.add(place);
-    toast('✅ Posto aggiunto! Sincronizzazione P2P in corso...');
-    
-    setTimeout(() => window.openGFPlacesPanel(), 500);
+    console.log('[saveGFPlace] Place object:', place);
+
+    // Salva nel database
+    const saved = GFPlacesDB.add(place);
+    console.log('[saveGFPlace] Saved to DB:', saved);
+
+    if (!saved) {
+      console.error('[saveGFPlace] Failed to save place');
+      toast('❌ Errore nel salvataggio del posto');
+      return;
+    }
+
+    // Pulisci il form
+    if (nameField) nameField.value = '';
+    if (cityField) cityField.value = '';
+    if (areaField) areaField.value = '';
+    if (noteField) noteField.value = '';
+    if (ratingField) ratingField.value = '5';
+    if (tagsField) tagsField.value = '';
+
+    console.log('[saveGFPlace] Form cleared');
+
+    // Mostra successo
+    toast('✅ Posto aggiunto! Sincronizzazione in corso...');
+    console.log('[saveGFPlace] Success - reopening panel');
+
+    // Riapri il panel dopo un po'
+    setTimeout(() => {
+      console.log('[saveGFPlace] Reopening GFPlacesPanel');
+      window.openGFPlacesPanel();
+    }, 500);
   };
 
   window.deleteGFPlace = function(id) {
