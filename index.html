@@ -6487,10 +6487,45 @@ window.addEventListener("load", () => {
     // Raccogli città unique dalle tappe
     const cities = {};
     itinerary.forEach(entry => {
-      const poi = allPOIs().find(p => p.id === entry.id);
-      if (poi && !cities[poi.city]) {
-        cities[poi.city] = { lat: poi.lat, lng: poi.lng };
+      let city = null;
+      let lat = null;
+      let lng = null;
+
+      // Try entry.city first (user-provided or direct)
+      if (entry.city) {
+        city = entry.city;
       }
+
+      // Try to find in allPOIs
+      const poi = allPOIs().find(p => p.id === entry.id);
+      if (poi) {
+        city = poi.city || city;
+        lat = poi.lat;
+        lng = poi.lng;
+      }
+
+      // Try to find in SHOPPING_DB
+      const shop = SHOPPING_DB.find(s => s.id === entry.id);
+      if (shop) {
+        city = shop.city || city;
+        lat = shop.coords[0];
+        lng = shop.coords[1];
+      }
+
+      // Use entry.name as fallback city name if no lat/lng found
+      if (city && !cities[city]) {
+        if (lat && lng) {
+          cities[city] = { lat, lng };
+        } else {
+          // Try to use CITY_COORDS as fallback
+          const coords = CITY_COORDS[city];
+          if (coords) {
+            cities[city] = { lat: coords[0], lng: coords[1] };
+          }
+        }
+      }
+
+      console.log('[Weather] Entry:', { id: entry.id, city, hasCoords: !!(cities[city]) });
     });
 
     if (Object.keys(cities).length === 0) {
@@ -6499,7 +6534,7 @@ window.addEventListener("load", () => {
           <div style="text-align:center;padding:40px 20px;display:flex;flex-direction:column;align-items:center;gap:16px;">
             <div style="font-size:48px;">⚠️</div>
             <p style="color:var(--y2k-ink);font-family:'Comic Sans MS',cursive;font-weight:700;font-size:16px;margin:0;">Nessuna città trovata</p>
-            <p style="color:var(--y2k-muted);font-size:13px;margin:0;line-height:1.5;">Non riusciamo a riconoscere le città dalle tue tappe.</p>
+            <p style="color:var(--y2k-muted);font-size:13px;margin:0;line-height:1.5;">Non riusciamo a riconoscere le città dalle tue tappe. Assicurati che le tappe siano POI validi.</p>
           </div>
         </div>
       `);
