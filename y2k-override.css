@@ -494,8 +494,40 @@ nav.bottom button.active {
   border: 2px solid #FFD700 !important;
   border-radius: 12px !important;
   padding: 14px 16px !important;
-  margin-bottom: 12px !important;
+  margin-bottom: 16px !important;
   box-shadow: 0 3px 12px rgba(255,215,0,0.12) !important;
+  transition: all 0.2s ease !important;
+}
+.shop-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 5px 16px rgba(255,215,0,0.2) !important;
+}
+
+/* ── Shopping tab buttons ─────────────────────────────────────── */
+#tab-general,
+#tab-vintage {
+  background: rgba(200,190,240,0.15) !important;
+  border: 2px solid #C8BDFF !important;
+  color: var(--y2k-ink) !important;
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+#tab-general:hover,
+#tab-vintage:hover {
+  background: rgba(200,190,240,0.3) !important;
+  border-color: #FF1493 !important;
+}
+
+#tab-general.active,
+#tab-vintage.active {
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  border-color: #FF1493 !important;
+  color: #fff !important;
 }
 .shop-card .sc-name   { color: var(--y2k-ink) !important; font-weight: 700 !important; }
 .shop-card .sc-meta   { color: var(--y2k-muted) !important; font-size: 12px !important; }
