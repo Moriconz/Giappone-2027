@@ -6567,21 +6567,29 @@ window.addEventListener("load", () => {
 
   // Initialize GPS weather widget and update every 10 minutes
   window.initGpsWeatherWidget = function() {
+    console.log('[Weather] initGpsWeatherWidget called');
     updateGpsWeatherWidget();
     setInterval(updateGpsWeatherWidget, 10 * 60 * 1000); // Every 10 minutes
 
-    // Add click handler to open detailed weather modal
-    const headerWidget = document.getElementById('header-weather-widget');
-    if (headerWidget) {
-      headerWidget.style.cursor = 'pointer';
-      headerWidget.addEventListener('click', openWeatherModal);
-    }
+    // Add click handler to open detailed weather modal via event delegation
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#header-weather-widget')) {
+        console.log('[Weather] Widget clicked');
+        window.openWeatherModal();
+      }
+    });
   };
 
-  function openWeatherModal() {
+  window.openWeatherModal = function() {
     console.log('[Weather] Opening detailed weather modal');
 
     // Load weather data and show modal
+    if (!navigator.geolocation) {
+      toast('⚠️ Geolocation non disponibile');
+      console.warn('[Weather] Geolocation not supported');
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
