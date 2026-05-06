@@ -34,7 +34,7 @@
       min-width: 260px;
       min-height: 180px;
       max-height: 80vh;
-      width: 340px;
+      width: 700px;
       font-family: 'Courier New', monospace;
     }
 
