@@ -6510,7 +6510,7 @@ window.addEventListener("load", () => {
 
   function fetchWeatherHourly(lat, lon, city = 'Posizione') {
     return fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,weathercode,windspeed_10m,relativehumidity_2m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm&timezone=Asia/Tokyo`
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,weathercode,windspeed_10m,relativehumidity_2m&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm&timezone=Asia/Tokyo`
     )
       .then(response => {
         if (!response.ok) throw new Error(`API error: ${response.status}`);
@@ -6580,18 +6580,172 @@ window.addEventListener("load", () => {
     });
   };
 
+  function buildAndShowWeatherModal(weatherData, locationName) {
+    console.log('[Weather] Building and showing modal for', locationName);
+    const hourlyData = weatherData.hourly;
+    const dailyData = weatherData.daily;
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    const currentTemp = Math.round(hourlyData.temperature_2m[currentHour]);
+    const currentCode = hourlyData.weathercode[currentHour];
+    const currentCondition = getWeatherConditionName(currentCode);
+    const icon = getWeatherIcon(currentCode);
+    const humidity = hourlyData.relativehumidity_2m[currentHour];
+    const wind = Math.round(hourlyData.windspeed_10m[currentHour]);
+    const precip = hourlyData.precipitation[currentHour];
+
+    // Build daily forecast cards
+    let dailyHtml = '';
+    for (let i = 0; i < 8; i++) {
+      const dateStr = dailyData.time[i];
+      const date = new Date(dateStr);
+      const dayName = date.toLocaleDateString('it-IT', { weekday: 'short' });
+      const code = dailyData.weather_code[i];
+      const tempMax = Math.round(dailyData.temperature_2m_max[i]);
+      const tempMin = Math.round(dailyData.temperature_2m_min[i]);
+      const dayIcon = getWeatherIcon(code);
+      const bgColor = getWeatherColor(code);
+
+      dailyHtml += `
+        <div class="weather-day" data-weather="${code}" style="background-color:${bgColor} !important;">
+          <div class="weather-date">${dayName}</div>
+          <div class="weather-icon">${dayIcon}</div>
+          <div class="weather-temps">
+            <div class="weather-temp-max">${tempMax}°</div>
+            <div class="weather-temp-min">${tempMin}°</div>
+          </div>
+        </div>
+      `;
+    }
+
+    const dateStr = now.toLocaleDateString('it-IT', { weekday: 'long', month: 'long', day: 'numeric' });
+
+    const modalHtml = `
+      <div style="padding:0;">
+        <!-- Header -->
+        <div style="background:#FFF9E6;padding:14px 16px;border-bottom:3px solid #FF1493;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:0 0 2px 0;font-size:18px;font-weight:700;">${locationName}</h2>
+              <p style="color:var(--y2k-muted);margin:0;font-size:12px;font-family:'Courier New',monospace;">${dateStr}</p>
+            </div>
+            <div style="text-align:right;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="font-size:48px;line-height:1;">${icon}</div>
+                <div>
+                  <div style="font-size:36px;font-weight:700;font-family:'Courier New',monospace;margin:0;line-height:1;color:var(--y2k-ink);">${currentTemp}°</div>
+                  <p style="color:var(--y2k-muted);margin:2px 0 0 0;font-size:11px;text-transform:capitalize;font-family:'Courier New';">${currentCondition}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;padding:0 16px;">
+          <div style="background:rgba(255,20,147,0.1);border:2px solid #FF1493;border-radius:10px;padding:14px;text-align:center;">
+            <div style="font-size:11px;color:var(--y2k-ink);font-weight:700;margin-bottom:6px;text-transform:uppercase;">💧 Precipitazioni</div>
+            <div style="font-size:24px;font-weight:700;color:var(--y2k-ink);font-family:'Courier New';">${precip}mm</div>
+          </div>
+          <div style="background:rgba(0,255,136,0.1);border:2px solid #00FF88;border-radius:10px;padding:14px;text-align:center;">
+            <div style="font-size:11px;color:var(--y2k-ink);font-weight:700;margin-bottom:6px;text-transform:uppercase;">💦 Umidità</div>
+            <div style="font-size:24px;font-weight:700;color:var(--y2k-ink);font-family:'Courier New';">${humidity}%</div>
+          </div>
+          <div style="background:rgba(255,215,0,0.1);border:2px solid #FFD700;border-radius:10px;padding:14px;text-align:center;">
+            <div style="font-size:11px;color:var(--y2k-ink);font-weight:700;margin-bottom:6px;text-transform:uppercase;">💨 Vento</div>
+            <div style="font-size:24px;font-weight:700;color:var(--y2k-ink);font-family:'Courier New';">${wind}km</div>
+          </div>
+        </div>
+
+        <!-- Daily Forecast -->
+        <div style="padding:0 16px;">
+          <h3 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:16px 0 12px 0;font-size:16px;font-weight:700;">🗓️ Prossimi 8 giorni</h3>
+          <div class="weather-days" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;">
+            ${dailyHtml}
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding:16px;text-align:center;border-top:2px solid var(--y2k-pink);margin-top:20px;">
+          <p style="color:var(--y2k-muted);font-size:11px;margin:0;font-family:'Courier New',monospace;">📡 Dati da OpenMeteo | Aggiornamento ogni 10 min</p>
+        </div>
+      </div>
+    `;
+    window.openSheet('🌤️ Meteo', modalHtml);
+  }
+
   window.openWeatherModal = function() {
     console.log('[Weather] Opening detailed weather modal');
-    window.toast('🌤️ Caricamento meteo...');
+
+    // Open loading state immediately
+    window.openSheet('🌤️ Meteo', `
+      <div style="padding:20px;text-align:center;">
+        <div style="font-size:48px;margin-bottom:16px;">⏳</div>
+        <p style="color:var(--y2k-ink);font-size:14px;margin:0;">📍 In attesa di segnale GPS...</p>
+      </div>
+    `);
 
     // Load weather data and show modal
     if (!navigator.geolocation) {
-      console.warn('[Weather] Geolocation not supported');
-      window.toast('📍 GPS non disponibile');
+      console.warn('[Weather] Geolocation not supported - using fallback');
+      fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
+        .then(data => {
+          if (data) {
+            buildAndShowWeatherModal(data, 'Aprilia');
+          }
+        });
       return;
     }
 
     console.log('[Weather] Requesting GPS position...');
+    let geoCompleted = false;
+
+    // Fallback timeout if GPS doesn't respond in 8 seconds
+    const gpsTimeout = setTimeout(() => {
+      if (!geoCompleted) {
+        console.warn('[Weather] GPS timeout - using Aprilia fallback');
+        geoCompleted = true;
+        fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
+          .then(data => {
+            if (data) {
+              buildAndShowWeatherModal(data, 'Aprilia');
+            }
+          });
+      }
+    }, 8000);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        if (!geoCompleted) {
+          clearTimeout(gpsTimeout);
+          geoCompleted = true;
+          console.log('[Weather] GPS position obtained');
+          const { latitude, longitude } = position.coords;
+          const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
+          if (weatherData) {
+            buildAndShowWeatherModal(weatherData, 'La tua posizione');
+          }
+        }
+      },
+      (error) => {
+        if (!geoCompleted) {
+          clearTimeout(gpsTimeout);
+          geoCompleted = true;
+          console.warn('[Weather] GPS error:', error);
+          fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
+            .then(data => {
+              if (data) {
+                buildAndShowWeatherModal(data, 'Aprilia');
+              }
+            });
+        }
+      }
+    );
+  }
+
+  // OLD CODE BELOW - TO REMOVE
+  /*
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         console.log('[Weather] GPS position obtained');
@@ -6723,8 +6877,19 @@ window.addEventListener("load", () => {
         }
       },
       (error) => {
-        console.warn('[Weather] GPS error:', error);
-        window.toast('📍 GPS non disponibile');
+        if (!geoCompleted) {
+          geoCompleted = true;
+          clearTimeout(geoTimeout);
+          console.warn('[Weather] GPS error:', error);
+          window.toast('⚠️ GPS fallito - usando Venezia');
+          // Fallback to Venice
+          fetchWeatherHourly(45.4408, 12.3155, 'Venezia')
+            .then(data => {
+              if (data) {
+                buildAndShowWeatherModal(data, 'Venezia');
+              }
+            });
+        }
       }
     );
   }
