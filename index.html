@@ -202,6 +202,10 @@
   <div id="offline-banner">📶 Offline — dati in cache</div>
   <header>
     <h1>Giappone <span class="badge">2027</span> <span class="badge badge-version">v3</span></h1>
+    <!-- Compact Weather Widget in Header -->
+    <div id="header-weather-widget" style="display:none;font-size:12px;padding:4px 8px;background:rgba(255,255,255,0.15);border-radius:6px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.3);color:#fff;font-family:'Courier New',monospace;white-space:nowrap;margin-left:auto;margin-right:8px;">
+      <span id="hw-icon">📍</span> <span id="hw-temp">--°</span> <span id="hw-cond" style="font-size:10px;">--</span>
+    </div>
     <button class="icon-btn" id="search-btn" aria-label="Cerca">🔍</button>
     <button class="icon-btn" id="refresh-pois-btn" aria-label="Ricarica POI" title="Ricarica i negozi per questa posizione">🔄</button>
     <button class="icon-btn" id="info-btn" aria-label="Info">ℹ️</button>
@@ -209,16 +213,6 @@
   <main>
     <div id="filters"></div>
     <div id="map"></div>
-    <!-- Weather Widget - Floating (top-right) -->
-    <div id="weather-widget" style="position:fixed;top:58px;right:12px;z-index:40;background:linear-gradient(135deg,#FF1493,#FF69B4);border:2px solid #00FF88;border-radius:12px;padding:12px 16px;color:#fff;box-shadow:0 4px 16px rgba(255,20,147,0.3);min-width:200px;max-width:280px;font-family:'Courier New',monospace;display:none">
-      <div style="text-align:center;font-size:28px;margin-bottom:6px" id="weather-icon">☀️</div>
-      <div style="font-size:11px;text-align:center;color:rgba(255,255,255,0.8);margin-bottom:4px" id="weather-city">Caricamento...</div>
-      <div style="font-size:18px;font-weight:700;text-align:center;margin-bottom:2px"><span id="weather-temp">--</span>°C</div>
-      <div style="font-size:10px;text-align:center;color:rgba(255,255,255,0.8)"><span id="weather-condition">--</span></div>
-      <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.3);font-size:9px;color:rgba(255,255,255,0.9)">
-        💧 <span id="weather-humidity">--</span>% | 💨 <span id="weather-wind">--</span>km
-      </div>
-    </div>
     <!-- DEBUG PANEL: Mostra errori e log PeerGPS sul telefono -->
     <div id="debug-panel" style="position:fixed;bottom:80px;right:10px;width:280px;max-height:200px;background:rgba(0,0,0,0.9);color:#00FF88;font-size:10px;padding:8px;border-radius:6px;overflow-y:auto;font-family:monospace;z-index:9999;border:1px solid #FF1493;display:none">
       <div style="margin-bottom:4px;font-weight:bold;color:#FF1493">🔍 Debug Log:</div>
@@ -236,10 +230,6 @@
     <button data-view="list">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
       Tappe
-    </button>
-    <button data-view="weather">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l.06.31a8 8 0 1 1 -11.88 8.55 8 8 0 0 1 11.82 -8.86z"/></svg>
-      Meteo
     </button>
     <button data-view="bookings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"/><path d="m16 19 2 2 4-4"/><path d="M3 10h18"/></svg>
@@ -6534,101 +6524,232 @@ window.addEventListener("load", () => {
 
   function updateGpsWeatherWidget() {
     console.log('[Weather] Updating GPS weather widget...');
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          console.log('[Weather] GPS position:', { latitude, longitude });
-
-          const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
-          if (!weatherData) {
-            console.warn('[Weather] Failed to fetch GPS weather');
-            return;
-          }
-
-          // Get current hour weather
-          const now = new Date();
-          const hourIndex = now.getHours();
-          const hourlyData = weatherData.hourly;
-          const currentTemp = Math.round(hourlyData.temperature_2m[hourIndex]);
-          const currentCode = hourlyData.weathercode[hourIndex];
-          const currentHumidity = hourlyData.relativehumidity_2m[hourIndex];
-          const currentWind = Math.round(hourlyData.windspeed_10m[hourIndex]);
-          const currentCondition = getWeatherConditionName(currentCode);
-          const icon = getWeatherIcon(currentCode);
-
-          // Update widget
-          const widget = document.getElementById('weather-widget');
-          if (widget) {
-            document.getElementById('weather-icon').textContent = icon;
-            document.getElementById('weather-city').textContent = '📍 La tua posizione';
-            document.getElementById('weather-temp').textContent = currentTemp;
-            document.getElementById('weather-condition').textContent = currentCondition;
-            document.getElementById('weather-humidity').textContent = currentHumidity;
-            document.getElementById('weather-wind').textContent = currentWind;
-            widget.style.display = 'block';
-            console.log('[Weather] Widget updated:', { currentTemp, currentCondition });
-          }
-        },
-        (error) => {
-          console.warn('[Weather] GPS error:', error.message);
-          // Try to still show widget with last known position if available
-          const widget = document.getElementById('weather-widget');
-          if (widget) widget.style.display = 'none';
-        }
-      );
+    if (!navigator.geolocation) {
+      console.warn('[Weather] Geolocation not available');
+      return;
     }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        console.log('[Weather] GPS position:', { latitude, longitude });
+
+        const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
+        if (!weatherData) {
+          console.warn('[Weather] Failed to fetch GPS weather');
+          return;
+        }
+
+        // Get current hour weather
+        const now = new Date();
+        const hourIndex = now.getHours();
+        const hourlyData = weatherData.hourly;
+        const currentTemp = Math.round(hourlyData.temperature_2m[hourIndex]);
+        const currentCode = hourlyData.weathercode[hourIndex];
+        const currentCondition = getWeatherConditionName(currentCode);
+        const icon = getWeatherIcon(currentCode);
+
+        // Update header widget (compact)
+        const hwWidget = document.getElementById('header-weather-widget');
+        if (hwWidget) {
+          document.getElementById('hw-icon').textContent = icon;
+          document.getElementById('hw-temp').textContent = currentTemp + '°';
+          document.getElementById('hw-cond').textContent = currentCondition.substring(0, 8);
+          hwWidget.style.display = 'inline-block';
+          console.log('[Weather] Header widget updated:', { currentTemp, currentCondition });
+        }
+      },
+      (error) => {
+        console.warn('[Weather] GPS error:', error.message);
+      }
+    );
   }
 
   // Initialize GPS weather widget and update every 10 minutes
   window.initGpsWeatherWidget = function() {
     updateGpsWeatherWidget();
     setInterval(updateGpsWeatherWidget, 10 * 60 * 1000); // Every 10 minutes
+
+    // Add click handler to open detailed weather modal
+    const headerWidget = document.getElementById('header-weather-widget');
+    if (headerWidget) {
+      headerWidget.style.cursor = 'pointer';
+      headerWidget.addEventListener('click', openWeatherModal);
+    }
   };
 
-  function renderWeatherView() {
-    const itinerary = state.itinerary || [];
+  function openWeatherModal() {
+    console.log('[Weather] Opening detailed weather modal');
 
-    // Try to get hourly forecast for current GPS position first
-    (async () => {
-      console.log('[Weather] Starting weather tab render');
-      let weatherHtml = '';
+    // Load weather data and show modal
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const weatherData = await fetchWeatherHourly(latitude, longitude, 'Posizione attuale');
 
-      // GPS Current Weather Section
-      if (navigator.geolocation) {
-        weatherHtml += `
-          <div class="weather-section-divider">
-            <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
-          </div>
-          <div class="weather-city" id="gps-weather-section">
-            <div style="text-align:center;padding:20px;">
-              <div style="font-size:32px;margin-bottom:8px;">⏳</div>
-              <p style="color:var(--y2k-ink);font-size:13px;margin:0;">Rilevamento posizione...</p>
+        if (!weatherData) {
+          toast('⚠️ Impossibile caricare i dati meteo');
+          return;
+        }
+
+        const hourlyData = weatherData.hourly;
+        const dailyData = weatherData.daily;
+        const now = new Date();
+        const currentHour = now.getHours();
+
+        const currentTemp = Math.round(hourlyData.temperature_2m[currentHour]);
+        const currentCode = hourlyData.weathercode[currentHour];
+        const currentCondition = getWeatherConditionName(currentCode);
+        const icon = getWeatherIcon(currentCode);
+        const humidity = hourlyData.relativehumidity_2m[currentHour];
+        const wind = Math.round(hourlyData.windspeed_10m[currentHour]);
+        const precip = hourlyData.precipitation[currentHour];
+
+        // Build hourly chart data
+        let hourlyChartHtml = '<div style="display:flex;gap:2px;align-items:flex-end;height:80px;margin:16px 0;">';
+        for (let i = 0; i < 24; i++) {
+          const temp = hourlyData.temperature_2m[i];
+          const minTemp = Math.min(...hourlyData.temperature_2m.slice(0, 24));
+          const maxTemp = Math.max(...hourlyData.temperature_2m.slice(0, 24));
+          const range = maxTemp - minTemp || 1;
+          const height = ((temp - minTemp) / range) * 60 + 10;
+          hourlyChartHtml += `<div style="flex:1;background:linear-gradient(to top,#FFD700,#00FF88);height:${height}px;border-radius:2px;opacity:${i === currentHour ? 1 : 0.6};" title="${temp}°"></div>`;
+        }
+        hourlyChartHtml += '</div>';
+
+        // Build daily forecast
+        let dailyForecastHtml = '<div style="display:flex;gap:8px;overflow-x:auto;padding:12px 0;">';
+        for (let i = 0; i < 8; i++) {
+          const date = new Date(dailyData.time[i]);
+          const dayName = date.toLocaleDateString('it-IT', { weekday: 'short' });
+          const dayNum = date.getDate();
+          const code = dailyData.weather_code[i];
+          const tempMax = Math.round(dailyData.temperature_2m_max[i]);
+          const tempMin = Math.round(dailyData.temperature_2m_min[i]);
+          const dayIcon = getWeatherIcon(code);
+
+          dailyForecastHtml += `
+            <div style="flex-shrink:0;text-align:center;padding:8px;background:rgba(255,255,255,0.05);border-radius:8px;min-width:60px;">
+              <div style="font-size:11px;color:var(--y2k-muted);font-weight:700;margin-bottom:4px;">${dayName}</div>
+              <div style="font-size:20px;margin-bottom:4px;">${dayIcon}</div>
+              <div style="font-size:12px;font-weight:700;color:var(--y2k-ink);">${tempMax}°</div>
+              <div style="font-size:10px;color:var(--y2k-muted);">${tempMin}°</div>
+            </div>
+          `;
+        }
+        dailyForecastHtml += '</div>';
+
+        const modalHtml = `
+          <div style="background:linear-gradient(135deg,#1A2560,#2D3B7D);color:#fff;padding:16px;border-radius:12px;margin-bottom:16px;">
+            <!-- Header -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <div>
+                <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:4px;">📍 La tua posizione</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.5);">${now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:4px;text-transform:capitalize;">${currentCondition}</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.5);">${now.toLocaleDateString('it-IT', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+              </div>
+            </div>
+
+            <!-- Temperature Big -->
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+              <div style="font-size:64px;line-height:1;">${icon}</div>
+              <div>
+                <div style="font-size:48px;font-weight:700;font-family:'Courier New',monospace;">${currentTemp}°</div>
+                <div style="font-size:14px;color:rgba(255,255,255,0.7);">Sconosciuto</div>
+              </div>
+            </div>
+
+            <!-- Details Grid -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.1);">
+              <div style="background:rgba(255,255,255,0.05);padding:12px;border-radius:8px;text-align:center;">
+                <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">💧 Precipitazioni</div>
+                <div style="font-size:16px;font-weight:700;">${precip}mm</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.05);padding:12px;border-radius:8px;text-align:center;">
+                <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">💦 Umidità</div>
+                <div style="font-size:16px;font-weight:700;">${humidity}%</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.05);padding:12px;border-radius:8px;text-align:center;">
+                <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">💨 Vento</div>
+                <div style="font-size:16px;font-weight:700;">${wind} km/h</div>
+              </div>
+            </div>
+
+            <!-- Hourly Chart -->
+            <div style="margin-bottom:20px;">
+              <div style="font-size:13px;color:rgba(255,255,255,0.7);font-weight:700;margin-bottom:8px;">Temperatura - Prossime 24 ore</div>
+              ${hourlyChartHtml}
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px;">
+                <span>Ora</span>
+                <span>Domani</span>
+              </div>
+            </div>
+
+            <!-- Daily Forecast -->
+            <div style="margin-bottom:20px;">
+              <div style="font-size:13px;color:rgba(255,255,255,0.7);font-weight:700;margin-bottom:8px;">Prossimi 8 giorni</div>
+              ${dailyForecastHtml}
+            </div>
+
+            <!-- Footer -->
+            <div style="padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;text-align:center;font-size:10px;color:rgba(255,255,255,0.5);">
+              📡 Dati da OpenMeteo | Aggiornamento: ogni 10 minuti
             </div>
           </div>
         `;
 
-        // Fetch GPS weather async
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-            const weatherData = await fetchWeatherHourly(latitude, longitude, 'Posizione attuale');
+        window.openSheet('🌤️ Meteo Dettagliato', modalHtml);
+      },
+      (error) => {
+        console.warn('[Weather] GPS error:', error);
+        toast('📍 GPS non disponibile');
+      }
+    );
+  }
 
-            if (!weatherData) {
-              document.getElementById('gps-weather-section').innerHTML = `
-                <div style="text-align:center;padding:20px;background:rgba(255,107,107,0.1);border-radius:10px;">
-                  <div style="color:#FF6B6B;font-size:13px;">⚠️ Impossibile caricare meteo per la tua posizione</div>
-                </div>
-              `;
-              return;
-            }
+  function renderWeatherView() {
+    const itinerary = state.itinerary || [];
 
-            // Build hourly forecast for GPS location
+    // Open loading state immediately
+    window.openSheet('🌤️ Meteo', `
+      <div class="weather-container" style="text-align:center;padding:40px 20px;">
+        <div style="font-size:48px;margin-bottom:16px;">⏳</div>
+        <p style="color:var(--y2k-ink);font-size:14px;margin:0;">Caricamento previsioni meteo...</p>
+      </div>
+    `);
+
+    // Load weather data asynchronously
+    (async () => {
+      console.log('[Weather] Starting weather tab render');
+      let weatherHtml = '';
+
+      // ═ GPS Current Weather Section ═
+      let gpsSection = '';
+      if (navigator.geolocation) {
+        try {
+          const gpsPos = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+          });
+
+          const { latitude, longitude } = gpsPos.coords;
+          console.log('[Weather] GPS position:', { latitude, longitude });
+
+          const weatherData = await fetchWeatherHourly(latitude, longitude, 'Posizione attuale');
+
+          if (weatherData) {
             const hourlyData = weatherData.hourly;
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-            let gpsHtml = `<div class="weather-hourly-grid">`;
+            let gpsHtml = `
+              <div class="weather-section-divider">
+                <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
+              </div>
+              <div class="weather-hourly-grid">
+            `;
 
             // Show next 48 hours
             for (let i = 0; i < 48; i++) {
@@ -6658,20 +6779,33 @@ window.addEventListener("load", () => {
             }
 
             gpsHtml += '</div>';
-            document.getElementById('gps-weather-section').innerHTML = gpsHtml;
-          },
-          (error) => {
-            console.warn('[Weather] GPS error:', error);
-            document.getElementById('gps-weather-section').innerHTML = `
+            gpsSection = gpsHtml;
+          } else {
+            gpsSection = `
+              <div class="weather-section-divider">
+                <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
+              </div>
               <div style="text-align:center;padding:20px;background:rgba(255,107,107,0.1);border-radius:10px;">
-                <div style="color:#FF6B6B;font-size:13px;">📍 GPS non disponibile - consenti accesso alla posizione</div>
+                <div style="color:#FF6B6B;font-size:13px;">⚠️ Impossibile caricare meteo per la tua posizione</div>
               </div>
             `;
           }
-        );
+        } catch (err) {
+          console.warn('[Weather] GPS error:', err);
+          gpsSection = `
+            <div class="weather-section-divider">
+              <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
+            </div>
+            <div style="text-align:center;padding:20px;background:rgba(255,107,107,0.1);border-radius:10px;">
+              <div style="color:#FF6B6B;font-size:13px;">📍 GPS non disponibile - consenti accesso alla posizione</div>
+            </div>
+          `;
+        }
       }
 
-      // Itinerary cities section
+      weatherHtml += gpsSection;
+
+      // ═ Itinerary Cities Section ═
       if (itinerary.length > 0) {
         const cities = {};
         itinerary.forEach(entry => {
@@ -6731,7 +6865,6 @@ window.addEventListener("load", () => {
               continue;
             }
 
-            // Build daily summary for itinerary cities
             const { daily } = weatherData;
             weatherHtml += `<div class="weather-city"><h3>${city}</h3><div class="weather-days">`;
 
@@ -6776,12 +6909,13 @@ window.addEventListener("load", () => {
             weatherHtml += '</div></div>';
           }
         }
-      } else {
+      }
+
+      // ═ No itinerary fallback ═
+      if (itinerary.length === 0 && gpsSection) {
         weatherHtml += `
-          <div style="text-align:center;padding:40px 20px;display:flex;flex-direction:column;align-items:center;gap:16px;">
-            <div style="font-size:48px;">🗺️</div>
-            <p style="color:var(--y2k-ink);font-family:'Comic Sans MS',cursive;font-weight:700;font-size:16px;margin:0;margin-top:12px;">Nessuna tappa</p>
-            <p style="color:var(--y2k-muted);font-size:13px;margin:0;line-height:1.5;">Aggiungi tappe per visualizzare previsioni per le tue destinazioni!</p>
+          <div style="text-align:center;padding:20px;margin-top:20px;">
+            <p style="color:var(--y2k-muted);font-size:13px;margin:0;line-height:1.5;">💡 Aggiungi tappe per vedere il meteo per le tue destinazioni!</p>
           </div>
         `;
       }
