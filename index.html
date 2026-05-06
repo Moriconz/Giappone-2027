@@ -4659,7 +4659,7 @@ window.addEventListener("load", () => {
       </div>
 
       <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - ALWAYS SIDE-BY-SIDE -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;min-width:600px">
         <!-- COLONNA SINISTRA: Informazioni Generali -->
         <div>
           ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic">🗣️ ${p.jp}</div>` : ''}
@@ -7216,20 +7216,39 @@ window.addEventListener("load", () => {
         const name = showMapBtn.dataset.member;
         const coords = state.gpsRemoteMarkers?.[name];
         if (coords) {
-          // Chiudi tutte le finestre aperte
-          document.querySelectorAll('.y2k-win').forEach(w => {
+          // Chiudi tutte le finestre aperte (tutti gli y2k-win)
+          const windows = document.querySelectorAll('.y2k-win');
+          windows.forEach(w => {
             const closeBtn = w.querySelector('.y2k-close');
             if (closeBtn) closeBtn.click();
           });
 
-          // Centra la mappa sulla posizione
-          map.getView().animate({
-            center: ol.proj.fromLonLat([coords.lng, coords.lat]),
-            zoom: 16,
-            duration: 800
-          });
+          // Attendi che le finestre si chiudano
+          setTimeout(() => {
+            // Centra la mappa sulla posizione
+            map.getView().animate({
+              center: ol.proj.fromLonLat([coords.lng, coords.lat]),
+              zoom: 16,
+              duration: 800
+            });
 
-          toast(`📍 Mostrando ${name} sulla mappa`);
+            // Cambia il tab attivo: disattiva "Gruppo" (blu), attiva "Mappa" (viola)
+            const bottomNav = document.querySelector('nav.bottom');
+            if (bottomNav) {
+              // Disattiva tutti i tab
+              bottomNav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+              // Attiva il tab "map"
+              const mapBtn = bottomNav.querySelector('button[data-view="map"]');
+              if (mapBtn) mapBtn.classList.add('active');
+            }
+
+            // Mostra solo la mappa
+            document.querySelectorAll('[data-view]').forEach(section => {
+              section.style.display = section.dataset.view === 'map' ? 'block' : 'none';
+            });
+
+            toast(`📍 Mostrando ${name} sulla mappa`);
+          }, 100);
         }
       });
     }
