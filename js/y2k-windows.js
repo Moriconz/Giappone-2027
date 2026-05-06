@@ -94,7 +94,7 @@
     .y2k-win-body {
       flex: 1;
       overflow-y: auto;
-      overflow-x: auto;
+      overflow-x: hidden;
       padding: 12px;
       color: #2D3B7D;
       -webkit-overflow-scrolling: touch;
@@ -269,6 +269,17 @@
     .y2k-win-body .poi-row .btn { flex-shrink: 0; }
     .y2k-win-body .btn { background: linear-gradient(180deg,#E0D5FF,#F0E5FF) !important; border: 2px solid #E0D5FF !important; color: #2D3B7D !important; font-family: 'Courier New',monospace !important; }
     .y2k-win-body .btn.primary { background: linear-gradient(180deg,#FF1493,#FF69B4) !important; border-color: #00FF88 !important; color: white !important; }
+
+    /* ══ GRID LAYOUT FIX ════════════════════════════════ */
+    .y2k-win-body [style*="display:grid"] {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+    }
+    .y2k-win-body [style*="display:grid"] > div {
+      min-width: 0 !important;
+      width: auto !important;
+    }
   `;
   document.head.appendChild(style);
 
