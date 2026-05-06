@@ -1002,3 +1002,31 @@ main {
   header, nav.bottom, #filters { display: none !important; }
   .sheet-inner { box-shadow: none !important; border: 1px solid #ccc !important; }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   FIX: due colonne affiancate dentro le finestre Y2K
+   (POI sheet — Luoghi/Selezionato + Google Places)
+══════════════════════════════════════════════════════════════════ */
+.y2k-win-body > div:has(> div[style*="inline-block"][style*="50%"]) {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 12px !important;
+  width: 100% !important;
+  font-size: 13px !important;
+  align-items: stretch !important;
+}
+
+.y2k-win-body > div:has(> div[style*="inline-block"][style*="50%"]) > div {
+  display: block !important;
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  vertical-align: top !important;
+}
+
+/* Riduci padding interno dei box per stare nelle colonne strette */
+.y2k-win-body > div:has(> div[style*="inline-block"][style*="50%"]) > div > div {
+  padding: 10px !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
