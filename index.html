@@ -3597,8 +3597,8 @@ window.addEventListener("load", () => {
   }
   function makePoiStyle(cat, isGF) {
     try {
-      const color = CAT_COLORS[cat] || '#C85C3B';
-      const emoji = CAT_EMOJI[cat] || '📍'; // Fallback a emoji universale
+      const color = getCategoryColor(cat);
+      const emoji = getCategoryEmoji(cat);
       const canvas = document.createElement('canvas');
       canvas.width = 40; canvas.height = 48;
       const ctx = canvas.getContext('2d');
@@ -3788,10 +3788,12 @@ window.addEventListener("load", () => {
   // UPDATE REMOTE GPS MARKERS — Mostra marker degli altri utenti
   // ============================================================
   function updateMapMarkers() {
+    const t0 = performance.now();
     remotePeersSource.clear();
 
     const remoteMarkers = window.state?.gpsRemoteMarkers || {};
-    console.log('[updateMapMarkers] Updating', Object.keys(remoteMarkers).length, 'remote markers');
+    const count = Object.keys(remoteMarkers).length;
+    console.log(`%c[updateMapMarkers] 📍 Updating ${count} remote markers`, 'background:#FF69B4;color:white;padding:4px 8px;border-radius:3px');
 
     for (const [name, marker] of Object.entries(remoteMarkers)) {
       if (!marker.lat || !marker.lng) continue;
@@ -3805,8 +3807,11 @@ window.addEventListener("load", () => {
       feature.setStyle(buildGPSStyle(null, initials));
       remotePeersSource.addFeature(feature);
 
-      console.log(`[updateMapMarkers] Added marker for ${name} at (${marker.lat}, ${marker.lng})`);
+      console.log(`  ✓ ${name}: (${marker.lat.toFixed(4)}, ${marker.lng.toFixed(4)})`);
     }
+
+    const t1 = performance.now();
+    console.log(`%c[updateMapMarkers] ✅ DONE in ${(t1-t0).toFixed(1)}ms`, 'background:#FF69B4;color:white;padding:4px 8px;border-radius:3px');
   }
   window.updateMapMarkers = updateMapMarkers;
 
@@ -3857,7 +3862,8 @@ window.addEventListener("load", () => {
   });
 
   function renderMarkers(){
-    console.log('[renderMarkers] START - Rendering markers on map');
+    const t0 = performance.now();
+    console.log(`%c[renderMarkers] START - Rendering markers on map`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
     vectorSource.clear();
     const zoom = map.getView().getZoom() || 5;
 
@@ -3935,7 +3941,8 @@ window.addEventListener("load", () => {
         console.error('[renderMarkers] Error adding feature:', p.id, e);
       }
     });
-    console.log('[renderMarkers] ✅ DONE: added ' + added + ' markers | total on map: ' + vectorSource.getFeatures().length);
+    const t1 = performance.now();
+    console.log(`%c[renderMarkers] ✅ DONE: added ${added} markers in ${(t1-t0).toFixed(1)}ms | total on map: ${vectorSource.getFeatures().length}`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
   }
 
   function getPoiDisplayName(p){
@@ -4179,6 +4186,7 @@ window.addEventListener("load", () => {
         try {
           const payload = { type:'gps', lat:pt.lat, lng:pt.lng,
             name: state.group?.myName||'?', avatar: state.group?.myAvatar||null };
+          console.log(`%c[GPS] 📍 Trasmettendo posizione: (${pt.lat.toFixed(4)}, ${pt.lng.toFixed(4)}) - ${state.group?.myName}`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px;font-size:11px');
           window.rtdbBroadcast(payload);
         } catch(e) {}
       }
@@ -4240,6 +4248,24 @@ window.addEventListener("load", () => {
   if(state.gpsEnabled&&!gpsWatchId) startGPS();
   // Restore last known GPS position on map immediately
   if(state.gpsCurrentLat && state.gpsCurrentLng) updateGPSMarker(state.gpsCurrentLat, state.gpsCurrentLng);
+
+  // Listener: Quando nuovi membri entrano nel gruppo, manda subito la posizione GPS attuale
+  window.addEventListener('force-gps-broadcast', (e) => {
+    const delayMs = e.detail?.delayMs || 100;
+    setTimeout(() => {
+      if (state.gpsCurrentLat && state.gpsCurrentLng && peerGPS.getStatus() !== 'disconnected') {
+        const payload = {
+          type: 'gps',
+          lat: state.gpsCurrentLat,
+          lng: state.gpsCurrentLng,
+          name: state.group?.myName || '?',
+          avatar: state.group?.myAvatar || null
+        };
+        console.log(`%c[GPS] 📍 BROADCAST FORZATO (nuovi membri): (${state.gpsCurrentLat.toFixed(4)}, ${state.gpsCurrentLng.toFixed(4)})`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+        window.rtdbBroadcast(payload);
+      }
+    }, delayMs);
+  });
   // Click handler
   // Aggiorna marker su pan/zoom (debounced)
   map.on('moveend', () => {
@@ -4625,19 +4651,50 @@ window.addEventListener("load", () => {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="cat-options"></div>
       </div>
 
-      ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic">🗣️ ${p.jp}</div>` : ''}
+      <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - RESPONSIVE -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:12px;margin:12px 0">
+        <!-- COLONNA SINISTRA: Informazioni Generali -->
+        <div>
+          ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic">🗣️ ${p.jp}</div>` : ''}
+          <p style="color:#333;line-height:1.6;margin:0 0 12px 0">${p.desc || ''}</p>
+          ${infoChips.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${infoChips.join('')}</div>` : ''}
 
-      <p style="color:#333;line-height:1.6;margin:12px 0">${p.desc || ''}</p>
+          <!-- GF Section (sinistra) -->
+          ${(p.gf && p.gf.notes) || (['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) ?
+            `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))">
+              <h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">🌾 Gluten-Free</h3>
+              <p style="font-size:12px;${p.gf && p.gf.notes ? 'color:#333;margin-top:8px' : 'color:#999;margin-top:8px'}margin-bottom:0">${p.gf && p.gf.notes ? p.gf.notes : '⏳ Analisi in corso...'}</p>
+            </div>`
+            : ''}
 
-      ${infoChips.length ? `<div style="margin:12px 0;display:flex;flex-wrap:wrap;gap:6px">${infoChips.join('')}</div>` : ''}
+          ${p.best ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">⏰ Orario migliore</h3><p style="margin-top:8px;margin-bottom:0">${p.best}</p></div>` : ''}
+          ${doList ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">✅ Fare</h3><ul class="do-list" style="margin-top:8px;margin-bottom:0">${doList}</ul></div>` : ''}
+          ${dontList ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">⛔ Evitare</h3><ul class="dont-list" style="margin-top:8px;margin-bottom:0">${dontList}</ul></div>` : ''}
+          ${p.review ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">📝 Recensione</h3><p style="font-style:italic;margin-top:8px;margin-bottom:0">"${p.review}"</p></div>` : ''}
+        </div>
 
-      <!-- GF Section -->
-      <div class="section" data-gf-section>${p.gf && p.gf.notes ? `<h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">🌾 Gluten-Free</h3><p style="margin-top:8px">${p.gf.notes}</p>` : ((['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) ? `<h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">🌾 Gluten-Free</h3><p style="font-size:12px;color:#999;margin-top:8px">⏳ Analisi in corso...</p>` : '')}</div>
+        <!-- COLONNA DESTRA: Google Places Info -->
+        <div>
+          ${p.fromGooglePlaces ? `
+          <div style="background:linear-gradient(135deg,rgba(42,63,95,.9),rgba(30,50,80,.9));padding:14px;border-radius:12px;border-left:5px solid #FFD700;box-shadow:0 4px 8px rgba(0,0,0,0.2);margin-bottom:12px">
+            <div style="font-size:11px;color:#FFD700;margin-bottom:8px;font-weight:700">📍 GOOGLE PLACES</div>
+            ${p.rating ? `<div style="font-weight:700;color:#FFD700;font-size:15px;margin-bottom:4px">⭐ ${p.rating.toFixed(1)} <span style="color:#B0C4DE;font-size:12px;font-weight:normal">(${p.ratingCount} voti)</span></div>` : ''}
+            ${p.address ? `<div style="font-size:12px;color:#E8E8E8;margin-top:6px">📍 ${p.address}</div>` : ''}
+            ${p.businessStatus === 'OPERATIONAL' ? `<div style="font-size:12px;color:#90EE90;margin-top:4px;font-weight:600">✅ Aperto</div>` : p.businessStatus ? `<div style="font-size:12px;color:#FF6B6B;margin-top:4px">❌ ${p.businessStatus}</div>` : ''}
+            ${p.openNow !== null ? `<div style="font-size:12px;color:${p.openNow ? '#90EE90' : '#FF6B6B'};margin-top:4px;font-weight:600">⏰ ${p.openNow ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
+          </div>
+          ` : ''}
 
-      ${p.best ? `<div class="section"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">⏰ Orario migliore</h3><p style="margin-top:8px">${p.best}</p></div>` : ''}
-      ${doList ? `<div class="section"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">✅ Fare</h3><ul class="do-list" style="margin-top:8px">${doList}</ul></div>` : ''}
-      ${dontList ? `<div class="section"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">⛔ Evitare</h3><ul class="dont-list" style="margin-top:8px">${dontList}</ul></div>` : ''}
-      ${p.review ? `<div class="section"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">📝 Recensione</h3><p style="font-style:italic;margin-top:8px">"${p.review}"</p></div>` : ''}
+          ${bookingBtns.length ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))"><h3 style="color:${catColor};margin-bottom:10px;font-weight:700;margin-top:0">🍴 PRENOTAZIONI</h3><div class="action-row">${bookingBtns.join('')}</div></div>` : ''}
+
+          ${['restaurant','cafe','bar','izakaya','shop','market','bakery'].includes(p.cat) ? `
+            <div style="border:2px solid #FFD700;border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(255,215,0,.05),rgba(255,215,0,.05));margin-top:12px">
+              <h3 style="color:#FFD700;margin-bottom:10px;font-weight:700;margin-top:0">🌾 GLUTEN-FREE</h3>
+              <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener" style="background:#FFD700;color:#000;font-weight:600;width:100%;display:block;text-align:center;padding:10px;border-radius:8px;text-decoration:none">🔍 Verifica</a>
+            </div>
+          ` : ''}
+        </div>
+      </div>
 
       <!-- RATING STARS -->
       <div class="section" style="background:linear-gradient(135deg,rgba(74,124,89,.05),rgba(201,76,76,.05));padding:12px;border-radius:12px;border:2px solid #00FF88">
@@ -4645,10 +4702,10 @@ window.addEventListener("load", () => {
         <div class="star-row" id="stars-${p.id}" style="display:flex;gap:8px;justify-content:center">${stars}</div>
       </div>
 
-      <!-- NOTE PERSONALI -->
-      <div class="section">
-        <h3 style="color:#2D3B7D;border-bottom:2px solid #FF1493;padding-bottom:6px;margin-bottom:10px;font-weight:700">📝 NOTE PERSONALI</h3>
-        <textarea id="poi-note" placeholder="Aggiungi note, orari di arrivo, partecipanti..." style="width:100%;padding:10px;border:2px solid #00FF88;border-radius:8px;font-size:12px;resize:vertical;min-height:80px;font-family:inherit">${note}</textarea>
+      <!-- NOTE PERSONALI (FULL WIDTH) -->
+      <div style="border:2px solid #FF1493;border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(255,20,147,.05),rgba(255,105,180,.05));margin-top:12px">
+        <h3 style="color:#FF1493;border-bottom:2px solid #FF1493;padding-bottom:6px;margin-top:0;margin-bottom:10px;font-weight:700">📝 NOTE PERSONALI</h3>
+        <textarea id="poi-note" placeholder="Aggiungi note, orari di arrivo, partecipanti..." style="width:100%;padding:10px;border:2px solid #00FF88;border-radius:8px;font-size:12px;resize:vertical;min-height:80px;font-family:inherit;box-sizing:border-box">${note}</textarea>
       </div>
 
       <!-- ACTION BUTTONS -->

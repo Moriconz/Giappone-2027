@@ -113,6 +113,7 @@ console.log('[RTDB] Loading MQTT transport...');
           avatar: data.avatar || null,
           lastUpdate: data.ts || Date.now(),
         };
+        console.log(`%c[RTDB] 📍 GPS ricevuto da ${data.from}: (${data.lat.toFixed(4)}, ${data.lng.toFixed(4)})`, 'background:#FF69B4;color:white;padding:4px 8px;border-radius:3px;font-size:11px');
         // Emit event for map update
         document.dispatchEvent(new CustomEvent('map_markers_updated', {
           detail: { markers: window.state.gpsRemoteMarkers }
@@ -128,6 +129,9 @@ console.log('[RTDB] Loading MQTT transport...');
         if (window.state?.group && data.members) {
           // Preserva lastHeartbeat dai membri già noti prima di sovrascrivere
           const prevMembers = window.state.group.members || [];
+          const prevMemberNames = new Set(prevMembers.map(m => m.name));
+          const newMemberNames = new Set(data.members.map(m => m.name));
+
           window.state.group.members = data.members.map(m => {
             const prev = prevMembers.find(p => p.name === m.name);
             return {
@@ -147,6 +151,21 @@ console.log('[RTDB] Loading MQTT transport...');
             window.state.group.createdBy     = data.createdByName;
           }
           if (window.saveState) window.saveState();
+
+          // NUOVO MEMBRO RILEVATO? Forza broadcast GPS istantaneo
+          let hasNewMembers = false;
+          for (const newName of newMemberNames) {
+            if (!prevMemberNames.has(newName) && newName !== myName) {
+              hasNewMembers = true;
+              break;
+            }
+          }
+          if (hasNewMembers) {
+            console.log(`%c[RTDB] 👥 Nuovi membri rilevati - Broadcasting GPS istantaneo`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+            // Forza broadcast della posizione GPS attuale entro 100ms
+            window.dispatchEvent(new CustomEvent('force-gps-broadcast', { detail: { delayMs: 100 } }));
+          }
+
           // Emit event for UI update
           document.dispatchEvent(new CustomEvent('group_members_updated', {
             detail: { members: window.state.group.members }
