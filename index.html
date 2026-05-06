@@ -4659,11 +4659,11 @@ window.addEventListener("load", () => {
       </div>
 
       <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - ALWAYS SIDE-BY-SIDE -->
-      <div style="display:grid !important;grid-template-columns:1fr 1fr !important;gap:12px !important;margin:12px 0 !important;width:100% !important;box-sizing:border-box !important;min-width:0 !important">
+      <div style="display:grid !important;grid-template-columns:1fr 1fr !important;gap:12px !important;margin:12px 0 !important;width:100% !important;box-sizing:border-box !important;min-width:0 !important;overflow:hidden !important">
         <!-- COLONNA SINISTRA: Informazioni Generali -->
-        <div>
-          ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic">🗣️ ${p.jp}</div>` : ''}
-          <p style="color:#333;line-height:1.6;margin:0 0 12px 0">${p.desc || ''}</p>
+        <div style="min-width:0 !important;overflow:hidden !important;word-break:break-word !important">
+          ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic;word-break:break-word !important">🗣️ ${p.jp}</div>` : ''}
+          <p style="color:#333;line-height:1.6;margin:0 0 12px 0;word-break:break-word !important">${p.desc || ''}</p>
           ${infoChips.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${infoChips.join('')}</div>` : ''}
 
           <!-- GF Section (sinistra) -->
@@ -4681,9 +4681,9 @@ window.addEventListener("load", () => {
         </div>
 
         <!-- COLONNA DESTRA: Google Places Info -->
-        <div>
+        <div style="min-width:0 !important;overflow:hidden !important;word-break:break-word !important">
           ${p.fromGooglePlaces ? `
-          <div style="background:linear-gradient(135deg,rgba(42,63,95,.9),rgba(30,50,80,.9));padding:14px;border-radius:12px;border-left:5px solid #FFD700;box-shadow:0 4px 8px rgba(0,0,0,0.2);margin-bottom:12px">
+          <div style="background:linear-gradient(135deg,rgba(42,63,95,.9),rgba(30,50,80,.9));padding:14px;border-radius:12px;border-left:5px solid #FFD700;box-shadow:0 4px 8px rgba(0,0,0,0.2);margin-bottom:12px;word-break:break-word !important">
             <div style="font-size:11px;color:#FFD700;margin-bottom:8px;font-weight:700">📍 GOOGLE PLACES</div>
             ${p.rating ? `<div style="font-weight:700;color:#FFD700;font-size:15px;margin-bottom:4px">⭐ ${p.rating.toFixed(1)} <span style="color:#B0C4DE;font-size:12px;font-weight:normal">(${p.ratingCount} voti)</span></div>` : ''}
             ${p.address ? `<div style="font-size:12px;color:#E8E8E8;margin-top:6px">📍 ${p.address}</div>` : ''}
