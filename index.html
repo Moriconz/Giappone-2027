@@ -345,42 +345,120 @@ window.addEventListener("load", () => {
     return 'high';
   })();
   console.log('[giappone2027] Device tier:', tier);
-  // ---- Categories + filters ----
+  // ---- Categories + filters ---- COMPREHENSIVE from Google Places
   const CATS = {
     all:{label:'Tutti',icon:'📍'},
-    restaurant:{label:'Ristoranti',icon:'🍜'},
+    poi:{label:'Luoghi',icon:'📍'},
+    unclassified:{label:'Da categorizzare',icon:'❓'},
     shrine:{label:'Santuari',icon:'⛩️'},
     temple:{label:'Templi',icon:'🏯'},
-    nature:{label:'Natura',icon:'🌿'},
-    cafe:{label:'Caffè',icon:'☕'},
-    shop:{label:'Negozi',icon:'🛍️'},
-    shopping:{label:'Shopping',icon:'🛍️'},
-    museum:{label:'Musei',icon:'🖼️'},
-    park:{label:'Parchi',icon:'🌳'},
-    castle:{label:'Castelli',icon:'🏰'},
-    bath:{label:'Onsen',icon:'♨️'},
-    station:{label:'Stazioni',icon:'🚉'},
     church:{label:'Chiese',icon:'⛪'},
-    unclassified:{label:'Da categorizzare',icon:'❓'},
-    food:{label:'Cibo',icon:'🍽️'},
-    vintage:{label:'Vintage',icon:'🧥'},
-    market:{label:'Mercati',icon:'🥢'},
-    onsen:{label:'Onsen',icon:'♨️'},
-    neighborhood:{label:'Quartieri',icon:'🏙️'},
-    viewpoint:{label:'Viste',icon:'🔭'},
-    experience:{label:'Esperienze',icon:'✨'},
-    water:{label:'Acqua gratis',icon:'💧'},
-    hotel:{label:'Hotel',icon:'🏨'},
-    accommodation:{label:'Alloggi',icon:'🏨'},
-    school:{label:'Scuole',icon:'🎓'},
-    hospital:{label:'Ospedali',icon:'🏥'},
-    gallery:{label:'Gallerie',icon:'🎨'},
+    mosque:{label:'Moschee',icon:'🕌'},
+    synagogue:{label:'Sinagoghe',icon:'🕍'},
+    culture:{label:'Cultura',icon:'🎨'},
+    museum:{label:'Musei',icon:'🏛️'},
+    gallery:{label:'Gallerie',icon:'🖼️'},
     library:{label:'Librerie',icon:'📚'},
-    culture:{label:'Cultura',icon:'🖼️'},
+    landmark:{label:'Landmark',icon:'📍'},
+    monument:{label:'Monumenti',icon:'🗿'},
+    historical_landmark:{label:'Siti storici',icon:'🏛️'},
+    castle:{label:'Castelli',icon:'🏰'},
+    food:{label:'Cibo',icon:'🍽️'},
+    restaurant:{label:'Ristoranti',icon:'🍜'},
+    cafe:{label:'Caffè',icon:'☕'},
+    bar:{label:'Bar',icon:'🍷'},
+    bakery:{label:'Panetterie',icon:'🥐'},
+    meal_delivery:{label:'Consegna cibo',icon:'🛵'},
+    meal_takeaway:{label:'Asporto',icon:'📦'},
+    drinking_bar:{label:'Locali',icon:'🍺'},
+    market:{label:'Mercati',icon:'🥢'},
+    hotel:{label:'Hotel',icon:'🏨'},
+    accommodation:{label:'Alloggi',icon:'🏩'},
+    hostel:{label:'Ostelli',icon:'🏠'},
+    guest_house:{label:'Guest house',icon:'🏡'},
+    campground:{label:'Campeggi',icon:'⛺'},
+    apartment_building:{label:'Appartamenti',icon:'🏢'},
+    shopping:{label:'Shopping',icon:'🛍️'},
+    shop:{label:'Negozi',icon:'🛒'},
+    supermarket:{label:'Supermercati',icon:'🏪'},
+    shopping_mall:{label:'Center',icon:'🏬'},
+    department_store:{label:'Grandi magazzini',icon:'🏬'},
+    clothing_store:{label:'Abbigliamento',icon:'👕'},
+    shoe_store:{label:'Scarpe',icon:'👞'},
+    book_store:{label:'Librerie',icon:'📖'},
+    electronics_store:{label:'Elettronica',icon:'⚡'},
+    jewelry_store:{label:'Gioiellerie',icon:'💎'},
+    furniture_store:{label:'Arredamento',icon:'🛋️'},
+    home_goods_store:{label:'Casa',icon:'🏠'},
+    pharmacy:{label:'Farmacie',icon:'💊'},
+    convenience_store:{label:'Convenience',icon:'🏪'},
+    florist:{label:'Fioristi',icon:'🌸'},
+    toy_store:{label:'Giocattoli',icon:'🧸'},
+    vintage:{label:'Vintage',icon:'🧥'},
+    nature:{label:'Natura',icon:'🌿'},
+    park:{label:'Parchi',icon:'🌳'},
+    natural_feature:{label:'Natura selvaggia',icon:'🌲'},
+    garden:{label:'Giardini',icon:'🌸'},
+    zoo:{label:'Zoo',icon:'🦁'},
+    aquarium:{label:'Acquari',icon:'🐠'},
+    botanical_garden:{label:'Orti botanici',icon:'🌺'},
+    amusement_park:{label:'Parchi divertimento',icon:'🎡'},
+    hiking_area:{label:'Sentieri',icon:'⛰️'},
+    scenic_spot:{label:'Belvedere',icon:'🔭'},
+    water:{label:'Acqua gratis',icon:'💧'},
     wellness:{label:'Benessere',icon:'🧘'},
+    spa:{label:'Spa',icon:'💆'},
+    gym:{label:'Palestre',icon:'💪'},
+    yoga_studio:{label:'Yoga',icon:'🧘'},
+    health:{label:'Salute',icon:'⚕️'},
+    hospital:{label:'Ospedali',icon:'🏥'},
+    clinic:{label:'Cliniche',icon:'🏥'},
+    doctor:{label:'Medici',icon:'⚕️'},
+    dentist:{label:'Dentisti',icon:'🦷'},
+    massage:{label:'Massaggio',icon:'💆'},
+    physiotherapist:{label:'Fisioterapia',icon:'🤕'},
+    beauty_salon:{label:'Saloni bellezza',icon:'💄'},
+    hair_care:{label:'Parrucchieri',icon:'💇'},
     services:{label:'Servizi',icon:'🔧'},
+    bank:{label:'Banche',icon:'🏦'},
+    atm:{label:'Bancomat',icon:'💰'},
+    post_office:{label:'Poste',icon:'📮'},
+    real_estate_agency:{label:'Immobiliare',icon:'🏠'},
+    travel_agency:{label:'Agenzie viaggio',icon:'✈️'},
+    insurance_agency:{label:'Assicurazioni',icon:'🛡️'},
+    accounting:{label:'Contabilità',icon:'📊'},
+    attorney:{label:'Avvocati',icon:'⚖️'},
+    car_rental:{label:'Noleggio auto',icon:'🚗'},
+    car_repair:{label:'Meccanica',icon:'🔧'},
+    car_wash:{label:'Lavaggio auto',icon:'🚗'},
+    locksmith:{label:'Serrature',icon:'🔐'},
+    plumber:{label:'Idraulica',icon:'🔨'},
+    electrician:{label:'Elettricità',icon:'⚡'},
+    business_center:{label:'Business center',icon:'💼'},
+    internet_cafe:{label:'Internet cafe',icon:'☕'},
+    laundry:{label:'Lavanderie',icon:'👔'},
+    dry_cleaner:{label:'Tintorie',icon:'👔'},
+    experience:{label:'Esperienze',icon:'✨'},
+    onsen:{label:'Onsen',icon:'♨️'},
+    bath:{label:'Bagni',icon:'🛁'},
+    entertainment:{label:'Intrattenimento',icon:'🎭'},
+    theatre:{label:'Teatri',icon:'🎭'},
+    movie_theater:{label:'Cinema',icon:'🎬'},
+    sports:{label:'Sport',icon:'⚽'},
+    school:{label:'Scuole',icon:'🎓'},
     transport:{label:'Trasporti',icon:'🚆'},
-    poi:{label:'Luoghi',icon:'📍'}
+    station:{label:'Stazioni',icon:'🚉'},
+    train_station:{label:'Stazioni treni',icon:'🚂'},
+    bus_station:{label:'Stazioni bus',icon:'🚌'},
+    airport:{label:'Aeroporti',icon:'✈️'},
+    parking:{label:'Parcheggi',icon:'🅿️'},
+    taxi_stand:{label:'Taxi',icon:'🚕'},
+    bike_rental:{label:'Bike sharing',icon:'🚲'},
+    gas_station:{label:'Stazioni benzina',icon:'⛽'},
+    neighborhood:{label:'Quartieri',icon:'🏘️'},
+    viewpoint:{label:'Viste',icon:'🔭'},
+    establishment:{label:'Strutture',icon:'🏢'},
+    place_of_worship:{label:'Luoghi di culto',icon:'⛩️'}
   };
   const CITIES = ['Sapporo','Nikko','Tokyo','Kamakura','Shirakawa-go','Kyoto','Osaka','Tottori','Beppu','Okinawa','Hiroshima','Nara','Hakone','Kanazawa','Nagasaki','Fukuoka','Matsuyama','Naoshima','Yakushima','Takayama','Kumamoto','Kagoshima','Sendai','Aomori','Toyama','Tokushima','Yamaguchi','Shimane','Ise','Gifu','Nagano','Fuji','Izu','Nagoya','Takamatsu','Kobe','Yokohama'];
   const CITY_COORDS = {
@@ -1625,11 +1703,12 @@ window.addEventListener("load", () => {
         </div>
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <select class="poi-cat-edit" data-poi-idx="${idx}" style="flex:1;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:11px">
-            <option value="poi" ${poi.category?.value === 'poi' ? 'selected' : ''}>📍 POI</option>
-            <option value="albergo" ${poi.category?.value === 'albergo' ? 'selected' : ''}>🏨 Albergo</option>
-            <option value="ristorante" ${poi.category?.value === 'ristorante' ? 'selected' : ''}>🍜 Ristorante</option>
-            <option value="museo" ${poi.category?.value === 'museo' ? 'selected' : ''}>🎨 Museo</option>
-            <option value="parco" ${poi.category?.value === 'parco' ? 'selected' : ''}>🌳 Parco</option>
+            ${Object.keys(CATS).map(catKey => {
+              const catData = CATS[catKey];
+              const emoji = CAT_EMOJI[catKey] || '📍';
+              const isSelected = (poi.category?.value || poi.category) === catKey ? 'selected' : '';
+              return `<option value="${catKey}" ${isSelected}>${emoji} ${catData.label}</option>`;
+            }).join('')}
           </select>
         </div>
         <textarea class="poi-notes-edit" data-poi-idx="${idx}" placeholder="Note..."
@@ -3367,25 +3446,155 @@ window.addEventListener("load", () => {
   });
   const vectorSource = new ol.source.Vector();
   const CAT_COLORS = {
-    shrine:'#E07B39', temple:'#B5541E', nature:'#4A7C59', food:'#D4A017',
-    vintage:'#7B5EA7', shopping:'#C85C3B', market:'#E0923A', museum:'#4A7AB5',
-    onsen:'#D4698A', neighborhood:'#5A8AA5', viewpoint:'#3AA5A0',
-    castle:'#8A5A3A', experience:'#7A9E3A', water:'#1E90FF', all:'#C85C3B',
-    accommodation:'#8B6F47', culture:'#4A7AB5', wellness:'#D4698A',
-    services:'#5A7A9E', transport:'#3A7EA0', poi:'#C85C3B'
+    // Culture & Heritage (blue-purple tones)
+    shrine:'#E07B39', temple:'#B5541E', church:'#6B4C8A', mosque:'#8B5A9E',
+    synagogue:'#7B6A9E', culture:'#4A7AB5', museum:'#5A8BC5', gallery:'#5A7BC5',
+    library:'#3A5A95', landmark:'#7A8BA5', monument:'#6A7AB5', historical_landmark:'#5A7AB5',
+    castle:'#8A5A3A', place_of_worship:'#5A6AB5',
+
+    // Food & Dining (warm tones - browns, oranges, reds, yellows)
+    food:'#D4A017', restaurant:'#D4702A', cafe:'#C5703A', bar:'#B5502A',
+    bakery:'#D4903A', meal_delivery:'#D4702A', meal_takeaway:'#C5703A',
+    drinking_bar:'#A5402A', market:'#E0923A',
+
+    // Shopping & Commerce (reds, oranges, pinks)
+    shopping:'#C85C3B', shop:'#D4703A', supermarket:'#D4703A', shopping_mall:'#C85C3B',
+    department_store:'#B85C3B', clothing_store:'#D4703A', shoe_store:'#C85C3B',
+    book_store:'#8B7A5A', electronics_store:'#6A5A8B', jewelry_store:'#D47A5C',
+    furniture_store:'#7A6A5A', home_goods_store:'#8B7A5A', pharmacy:'#E4698A',
+    convenience_store:'#C85C3B', florist:'#E4698A', toy_store:'#E4698A', vintage:'#A54A6B',
+
+    // Accommodation & Lodging (browns, beiges)
+    accommodation:'#8B6F47', hotel:'#7A5A3A', hostel:'#9A7A5A', guest_house:'#8B7A5A',
+    campground:'#6A7A5A', apartment_building:'#7A6A5A',
+
+    // Wellness & Health (purples, pinks, light reds)
+    wellness:'#D4698A', spa:'#C5598A', gym:'#D4798A', yoga_studio:'#C5698A',
+    health:'#D4698A', hospital:'#D54A7A', clinic:'#D54A7A', doctor:'#C5698A',
+    dentist:'#D4598A', massage:'#D4698A', physiotherapist:'#C5598A',
+    beauty_salon:'#D4698A', hair_care:'#E4698A',
+
+    // Services & Business (grays, teals, blues)
+    services:'#5A7A9E', bank:'#4A6A9E', atm:'#4A7AAE', post_office:'#3A5A8E',
+    real_estate_agency:'#5A6A9E', travel_agency:'#4A7AAE', insurance_agency:'#3A6A9E',
+    accounting:'#5A7A9E', attorney:'#4A6A9E', car_rental:'#4A7AAE',
+    car_repair:'#5A6A5A', car_wash:'#4A8A9E', locksmith:'#4A6A8E',
+    plumber:'#5A6A5A', electrician:'#7A8A9E', business_center:'#4A6A9E',
+    internet_cafe:'#5A7A9E', laundry:'#5A6A5A', dry_cleaner:'#5A6A5A',
+
+    // Nature & Outdoor (greens, teals, blues)
+    nature:'#4A7C59', park:'#5A8C69', natural_feature:'#4A8C59', garden:'#6A9C79',
+    zoo:'#5A8C69', aquarium:'#3A7A9E', botanical_garden:'#4A8C59',
+    amusement_park:'#7A9C79', hiking_area:'#4A7C59', scenic_spot:'#3A9AB0',
+    water:'#1E90FF',
+
+    // Entertainment & Experience (varied, vivid)
+    experience:'#7A9E3A', onsen:'#D4698A', bath:'#5A9E9E', entertainment:'#8A7A5A',
+    theatre:'#6A5A8B', movie_theater:'#5A5A8B', sports:'#8A5A3A',
+
+    // Education (blue-ish)
+    school:'#4A7AB5',
+
+    // Transport & Infrastructure (teals, dark blues)
+    transport:'#3A7EA0', station:'#3A7EA0', train_station:'#3A7EA0',
+    bus_station:'#3A7EA0', airport:'#2A6E90', parking:'#4A8EB0',
+    taxi_stand:'#3A8EB0', bike_rental:'#4A9EB0', gas_station:'#4A7AAE',
+
+    // Neighborhoods (warm-ish)
+    neighborhood:'#5A8AA5',
+
+    // Viewpoint
+    viewpoint:'#3AA5A0',
+
+    // Generic & Fallback
+    poi:'#C85C3B', all:'#C85C3B', unclassified:'#8A8A8A', establishment:'#7A7A7A'
   };
+
+  // Generatore dinamico di colori per categorie non mappate
+  function getCategoryColor(cat) {
+    if (CAT_COLORS[cat]) return CAT_COLORS[cat];
+    // Generazione deterministica di colore basato sul nome
+    let hash = 0;
+    for (let i = 0; i < cat.length; i++) {
+      hash = ((hash << 5) - hash) + cat.charCodeAt(i);
+      hash = hash & hash;
+    }
+    const hue = Math.abs(hash) % 360;
+    const colors = [
+      '#E07B39', '#B5541E', '#4A7C59', '#D4A017', '#C85C3B',
+      '#D4698A', '#5A7A9E', '#3A7EA0', '#7A9E3A', '#8B6F47'
+    ];
+    return colors[Math.abs(hash) % colors.length];
+  }
   const CAT_EMOJI = {
-    shrine:'⛩️', temple:'🏯', nature:'🌿', food:'🍜',
-    vintage:'👔', shopping:'🛍️', market:'🥢', museum:'🏛️',
-    onsen:'♨️', neighborhood:'🏘️', viewpoint:'🔭',
-    castle:'🏰', experience:'✨', water:'💧',
-    landmark:'📍', restaurant:'🍽️', cafe:'☕', shop:'🛒',
-    hotel:'🏨', station:'🚉', park:'🌳', garden:'🌸',
-    entertainment:'🎭', sports:'⚽', hospital:'🏥', bank:'🏦',
-    school:'🏫', church:'⛪', library:'📚', theatre:'🎬',
-    accommodation:'🏩', culture:'🎨', wellness:'💆', services:'⚙️',
-    transport:'🚆', poi:'📍', all:'📍'
+    // Culture & Heritage
+    all:'📍', poi:'📍', unclassified:'❓',
+    shrine:'⛩️', temple:'🏯', church:'⛪', mosque:'🕌', synagogue:'🕍',
+    culture:'🎨', museum:'🏛️', gallery:'🖼️', library:'📚', landmark:'📍',
+    monument:'🗿', historical_landmark:'🏛️', castle:'🏰', place_of_worship:'⛩️',
+
+    // Food & Dining
+    food:'🍽️', restaurant:'🍜', cafe:'☕', bar:'🍷', bakery:'🥐',
+    meal_delivery:'🛵', meal_takeaway:'📦', drinking_bar:'🍺', market:'🥢',
+
+    // Shopping & Commerce
+    shopping:'🛍️', shop:'🛒', supermarket:'🏪', shopping_mall:'🏬',
+    department_store:'🏬', clothing_store:'👕', shoe_store:'👞',
+    book_store:'📖', electronics_store:'⚡', jewelry_store:'💎',
+    furniture_store:'🛋️', home_goods_store:'🏠', pharmacy:'💊',
+    convenience_store:'🏪', florist:'🌸', toy_store:'🧸', vintage:'🧥',
+
+    // Accommodation & Lodging
+    accommodation:'🏩', hotel:'🏨', hostel:'🏠', guest_house:'🏡',
+    campground:'⛺', apartment_building:'🏢',
+
+    // Wellness & Health
+    wellness:'🧘', spa:'💆', gym:'💪', yoga_studio:'🧘', health:'⚕️',
+    hospital:'🏥', clinic:'🏥', doctor:'⚕️', dentist:'🦷',
+    massage:'💆', physiotherapist:'🤕', beauty_salon:'💄', hair_care:'💇',
+
+    // Services & Business
+    services:'⚙️', bank:'🏦', atm:'💰', post_office:'📮',
+    real_estate_agency:'🏠', travel_agency:'✈️', insurance_agency:'🛡️',
+    accounting:'📊', attorney:'⚖️', car_rental:'🚗', car_repair:'🔧',
+    car_wash:'🚗', locksmith:'🔐', plumber:'🔨', electrician:'⚡',
+    business_center:'💼', internet_cafe:'☕', laundry:'👔', dry_cleaner:'👔',
+
+    // Nature & Outdoor
+    nature:'🌿', park:'🌳', natural_feature:'🌲', garden:'🌸',
+    zoo:'🦁', aquarium:'🐠', botanical_garden:'🌺', amusement_park:'🎡',
+    hiking_area:'⛰️', scenic_spot:'🔭', water:'💧',
+
+    // Entertainment & Experience
+    experience:'✨', onsen:'♨️', bath:'🛁', entertainment:'🎭',
+    theatre:'🎭', movie_theater:'🎬', sports:'⚽',
+
+    // Education
+    school:'🎓',
+
+    // Transport & Infrastructure
+    transport:'🚆', station:'🚉', train_station:'🚂', bus_station:'🚌',
+    airport:'✈️', parking:'🅿️', taxi_stand:'🚕', bike_rental:'🚲',
+    gas_station:'⛽',
+
+    // Neighborhoods & Viewpoint
+    neighborhood:'🏘️', viewpoint:'🔭',
+
+    // Generic fallback
+    establishment:'🏢'
   };
+
+  // Generatore dinamico di emoji per categorie non mappate
+  function getCategoryEmoji(cat) {
+    if (CAT_EMOJI[cat]) return CAT_EMOJI[cat];
+    const emojiPool = ['📍', '🏢', '🌟', '✨', '⭐', '🎯', '📌', '🏷️', '🎪', '🎭'];
+    let hash = 0;
+    for (let i = 0; i < cat.length; i++) {
+      hash = ((hash << 5) - hash) + cat.charCodeAt(i);
+      hash = hash & hash;
+    }
+    return emojiPool[Math.abs(hash) % emojiPool.length];
+  }
   function makePoiStyle(cat, isGF) {
     try {
       const color = CAT_COLORS[cat] || '#C85C3B';
@@ -3970,7 +4179,7 @@ window.addEventListener("load", () => {
         try {
           const payload = { type:'gps', lat:pt.lat, lng:pt.lng,
             name: state.group?.myName||'?', avatar: state.group?.myAvatar||null };
-          // peerGPS.broadcast() viene chiamato anche dal timer interno ogni 5s
+          window.rtdbBroadcast(payload);
         } catch(e) {}
       }
       saveState(); updateAgendaDistances(); updateGPSStatusPanel();
@@ -4324,6 +4533,10 @@ window.addEventListener("load", () => {
     const displayName = getPoiDisplayName(p);
     const saved = state.savedPOIs.includes(p.id);
     const note = state.notes[p.id] || '';
+    const catData = CATS[p.cat] || {label:p.cat, icon:getCategoryEmoji(p.cat)};
+    const catColor = getCategoryColor(p.cat);
+    const catEmoji = getCategoryEmoji(p.cat);
+
     const doList = (p.do||[]).map(x=>`<li>${x}</li>`).join('');
     const dontList = (p.dont||[]).map(x=>`<li>${x}</li>`).join('');
     const b = p.booking || {};
@@ -4334,123 +4547,130 @@ window.addEventListener("load", () => {
     if (b.phone) bookingBtns.push(`<a class="btn" href="tel:${b.phone.replace(/\s+/g,'')}">📞 Chiama</a>`);
     const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=walking`;
     const amaps = `https://maps.apple.com/?daddr=${p.lat},${p.lng}&dirflg=w`;
-    const geo   = `geo:${p.lat},${p.lng}?q=${encodeURIComponent(displayName)}`;
-    // Orari / prezzo / durata / ingresso
+
+    // Info chips
     const infoChips = [];
-    if (p.hours)    infoChips.push(`<span class="info-chip">🕐 ${p.hours}</span>`);
-    if (p.ticket)   infoChips.push(`<span class="info-chip">🎟️ ${p.ticket}</span>`);
-    if (p.duration) infoChips.push(`<span class="info-chip">⏱️ ${p.duration} min</span>`);
-    // Ingresso gratuito o a pagamento
+    if (p.hours) infoChips.push(`<span class="info-chip" style="border:2px solid ${catColor};color:${catColor}">🕐 ${p.hours}</span>`);
+    if (p.ticket) infoChips.push(`<span class="info-chip" style="border:2px solid ${catColor};color:${catColor}">🎟️ ${p.ticket}</span>`);
+    if (p.duration) infoChips.push(`<span class="info-chip" style="border:2px solid ${catColor};color:${catColor}">⏱️ ${p.duration} min</span>`);
     if (p.paid === false) {
-      infoChips.push(`<span class="info-chip" style="background:var(--success);color:#fff;border-color:var(--success)">✅ Ingresso gratuito</span>`);
+      infoChips.push(`<span class="info-chip" style="background:#4A7C59;color:#fff;border-color:#4A7C59">✅ Ingresso gratuito</span>`);
     } else if (p.paid === true && p.cost) {
-      infoChips.push(`<span class="info-chip" style="background:var(--warning);color:#1a1a1a;border-color:var(--warning)">🎟️ ${p.cost}</span>`);
+      infoChips.push(`<span class="info-chip" style="background:${catColor};color:#fff;border-color:${catColor}">🎟️ ${p.cost}</span>`);
     }
-    const ticketBtn = (p.paid === true && p.ticketUrl)
-      ? `<a class="btn primary" href="${p.ticketUrl}" target="_blank" rel="noopener" style="margin-top:8px;display:inline-block">🎟️ Acquista biglietto</a>`
-      : '';
-    // Rating stelle (da state)
+
     const rating = state.ratings?.[p.id] || 0;
-    const stars = [1,2,3,4,5].map(n =>
-      `<span class="star ${n<=rating?'on':''}" data-star="${n}" data-id="${p.id}">★</span>`
-    ).join('');
-    // Foto custom (singola, carousel, o fetch Unsplash + reverse geocoding)
-    // Helper: link "Cerca su Google Images" come fallback finale
-    const googleImagesUrl = (q, city) => {
-      const query = [q, city, 'Japan'].filter(Boolean).join(' ');
-      return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
-    };
+    const stars = [1,2,3,4,5].map(n => `<span class="star ${n<=rating?'on':''}" data-star="${n}" data-id="${p.id}">★</span>`).join('');
+
+    // Foto
+    const googleImagesUrl = (q, city) => `https://www.google.com/search?tbm=isch&q=${encodeURIComponent([q, city, 'Japan'].filter(Boolean).join(' '))}`;
     const googleFallbackHtml = (label) => `
-      <div style="margin-bottom:12px;padding:14px;background:var(--surface-2);border-radius:8px;text-align:center">
-        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📷 ${label}</div>
-        <a href="${googleImagesUrl(displayName, p.city)}" target="_blank" rel="noopener"
-           class="btn" style="font-size:12px">🔎 Cerca foto su Google Images</a>
+      <div style="margin-bottom:12px;padding:14px;background:linear-gradient(135deg,rgba(74,124,89,.1),rgba(201,76,76,.1));border:2px dashed #00FF88;border-radius:8px;text-align:center">
+        <div style="font-size:13px;color:#666;margin-bottom:8px">📷 ${label}</div>
+        <a href="${googleImagesUrl(displayName, p.city)}" target="_blank" rel="noopener" class="btn" style="font-size:12px;background:linear-gradient(135deg,#FF1493,#FF69B4);color:white;border:none">🔎 Cerca foto</a>
       </div>
     `;
 
-    // Log diagnostico: quale branch viene preso?
-
-
     let photoHtml = '';
     if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
-      // Carousel orizzontale da p.photos
       const slides = p.photos.map((photo, idx) => `
-        <div class="photo-slide" style="flex-shrink:0;width:100%;height:300px;overflow:hidden;border-radius:8px;flex:none">
+        <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:12px;flex:none;border:3px solid ${catColor};box-shadow:0 4px 12px rgba(0,0,0,0.2)">
           <img src="${photo.url}" alt="${displayName} ${idx+1}" style="width:100%;height:100%;object-fit:cover;display:block">
         </div>
       `).join('');
-      // Mostra "Scorri" solo se ci sono più foto
-      const scrollHint = p.photos.length > 1 ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-align:center">👈 Scorri per altre foto →</div>` : '';
+      const scrollHint = p.photos.length > 1 ? `<div style="font-size:11px;color:#666;margin-bottom:8px;text-align:center;font-weight:600">👈 Scorri per altre foto →</div>` : '';
       photoHtml = `
-        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;margin-bottom:8px;scroll-behavior:smooth;width:100%;max-width:100%;position:relative">
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;margin-bottom:12px;scroll-behavior:smooth;width:100%;max-width:100%;position:relative">
           ${slides}
         </div>
         ${scrollHint}
       `;
     } else if (p.photo) {
-      // Singola foto fallback
-      photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${displayName}" style="width:100%;height:300px;object-fit:cover;border-radius:8px;margin-bottom:12px;display:block">`;
+      photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${displayName}" style="width:100%;height:280px;object-fit:cover;border-radius:12px;margin-bottom:12px;display:block;border:3px solid ${catColor}">`;
     } else if (typeof window.getPhotosForLocation === 'function') {
-      photoHtml = `<div id="poi-photos-container" style="margin-bottom:12px;min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">📷 Caricamento foto...</div>`;
+      photoHtml = `<div id="poi-photos-container" style="margin-bottom:12px;min-height:80px;display:flex;align-items:center;justify-content:center;color:#999;font-size:13px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));border-radius:12px;border:2px dashed #00FF88">📷 Caricamento foto...</div>`;
     } else {
       photoHtml = googleFallbackHtml('Foto non disponibili offline');
     }
+
     return `
       ${photoHtml}
-      <div class="poi-meta">
-        <span class="tag cat">${CATS[p.cat]?.icon||''} ${CATS[p.cat]?.label||p.cat}</span>
-        <button class="btn" id="edit-cat-btn" style="font-size:11px;padding:3px 8px;height:auto">✏️ Modifica</button>
-        <span class="tag">Posizione rilevata ${p.city}</span>
-        ${gfTag(p.gf)}
+      <!-- HEADER con categoria colorata -->
+      <div style="background:linear-gradient(135deg,${catColor},${catColor}dd);padding:16px;border-radius:12px;margin-bottom:12px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.15)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:28px">${catEmoji}</span>
+          <div style="flex:1">
+            <div style="font-size:13px;opacity:0.9;font-weight:600">${catData.label.toUpperCase()}</div>
+            <div style="font-size:11px;opacity:0.8">Selezionato</div>
+          </div>
+          <button class="btn" id="edit-cat-btn" style="font-size:12px;padding:6px 12px;height:auto;background:rgba(255,255,255,0.2);color:white;border:1px solid white;border-radius:6px;cursor:pointer;font-weight:600">✏️</button>
+        </div>
+        <div style="font-size:12px;opacity:0.95">📍 ${p.city || 'Posizione'}</div>
       </div>
+
+      <!-- GOOGLE PLACES info -->
       ${p.fromGooglePlaces ? `
-      <div style="background:#2A3F5F;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #FFD700">
-        <div style="font-size:12px;color:#B0C4DE;margin-bottom:8px">📍 <strong>Google Places</strong></div>
-        ${p.rating ? `<div style="font-weight:700;color:#FFD700;font-size:14px">⭐ ${p.rating.toFixed(1)} <span style="color:#B0C4DE;font-size:12px">(${p.ratingCount} recensioni)</span></div>` : ''}
-        ${p.address ? `<div style="font-size:12px;margin-top:6px;color:#E8E8E8">📍 ${p.address}</div>` : ''}
-        ${p.businessStatus ? `<div style="font-size:12px;margin-top:4px;color:${p.businessStatus === 'OPERATIONAL' ? '#90EE90' : '#FF6B6B'}">🏢 ${p.businessStatus === 'OPERATIONAL' ? 'Aperto' : 'Chiuso'}</div>` : ''}
-        ${p.openNow !== null ? `<div style="font-size:12px;margin-top:4px;color:${p.openNow ? '#90EE90' : '#FF6B6B'}">⏰ ${p.openNow ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
+      <div style="background:linear-gradient(135deg,rgba(42,63,95,.9),rgba(30,50,80,.9));padding:14px;border-radius:12px;margin-bottom:12px;border-left:5px solid #FFD700;box-shadow:0 4px 8px rgba(0,0,0,0.2)">
+        <div style="font-size:11px;color:#FFD700;margin-bottom:8px;font-weight:700">📍 GOOGLE PLACES</div>
+        ${p.rating ? `<div style="font-weight:700;color:#FFD700;font-size:15px;margin-bottom:4px">⭐ ${p.rating.toFixed(1)} <span style="color:#B0C4DE;font-size:12px;font-weight:normal">(${p.ratingCount} voti)</span></div>` : ''}
+        ${p.address ? `<div style="font-size:12px;color:#E8E8E8;margin-top:6px">📍 ${p.address}</div>` : ''}
+        ${p.businessStatus === 'OPERATIONAL' ? `<div style="font-size:12px;color:#90EE90;margin-top:4px;font-weight:600">✅ Aperto</div>` : p.businessStatus ? `<div style="font-size:12px;color:#FF6B6B;margin-top:4px">❌ ${p.businessStatus}</div>` : ''}
+        ${p.openNow !== null ? `<div style="font-size:12px;color:${p.openNow ? '#90EE90' : '#FF6B6B'};margin-top:4px;font-weight:600">⏰ ${p.openNow ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
       </div>
       ` : ''}
-      <div id="cat-selector" style="display:none;margin:8px 0;padding:8px;background:var(--surface-2);border-radius:8px">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Seleziona categoria:</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px" id="cat-options"></div>
+
+      <!-- CATEGORIA SELECTOR (nascosto per default) -->
+      <div id="cat-selector" style="display:none;margin:12px 0;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.1),rgba(255,20,147,.1));border:2px solid #00FF88;border-radius:12px">
+        <div style="font-size:12px;color:#666;margin-bottom:8px;font-weight:600">📂 CAMBIA CATEGORIA:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="cat-options"></div>
       </div>
-      ${p.jp ? `<div style="color:var(--muted);font-size:13px;margin-bottom:6px">${p.jp}</div>`:''}
-      <p>${p.desc||''}</p>
-      ${infoChips.length ? `<div style="margin:6px 0">${infoChips.join('')}</div>`:''}
-      ${ticketBtn}
-      <div class="section" data-gf-section>${p.gf && p.gf.notes ? `<h3>🌾 Gluten-Free</h3><p>${p.gf.notes}</p>` : ((['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) ? `<h3>🌾 Gluten-Free</h3><p style="font-size:12px;color:var(--muted);">⏳ Analisi in corso...</p>` : '')}</div>
-      ${p.best ? `<div class="section"><h3>⏰ Orario migliore</h3><p>${p.best}</p></div>`:''}
-      ${doList ? `<div class="section"><h3>✅ Fare</h3><ul class="do-list">${doList}</ul></div>`:''}
-      ${dontList ? `<div class="section"><h3>⛔ Evitare</h3><ul class="dont-list">${dontList}</ul></div>`:''}
-      ${p.review ? `<div class="section"><h3>📝 Recensione</h3><p style="font-style:italic">"${p.review}"</p></div>`:''}
+
+      ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic">🗣️ ${p.jp}</div>` : ''}
+
+      <p style="color:#333;line-height:1.6;margin:12px 0">${p.desc || ''}</p>
+
+      ${infoChips.length ? `<div style="margin:12px 0;display:flex;flex-wrap:wrap;gap:6px">${infoChips.join('')}</div>` : ''}
+
+      <!-- GF Section -->
+      <div class="section" data-gf-section>${p.gf && p.gf.notes ? `<h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">🌾 Gluten-Free</h3><p style="margin-top:8px">${p.gf.notes}</p>` : ((['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) ? `<h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">🌾 Gluten-Free</h3><p style="font-size:12px;color:#999;margin-top:8px">⏳ Analisi in corso...</p>` : '')}</div>
+
+      ${p.best ? `<div class="section"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">⏰ Orario migliore</h3><p style="margin-top:8px">${p.best}</p></div>` : ''}
+      ${doList ? `<div class="section"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">✅ Fare</h3><ul class="do-list" style="margin-top:8px">${doList}</ul></div>` : ''}
+      ${dontList ? `<div class="section"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">⛔ Evitare</h3><ul class="dont-list" style="margin-top:8px">${dontList}</ul></div>` : ''}
+      ${p.review ? `<div class="section"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px">📝 Recensione</h3><p style="font-style:italic;margin-top:8px">"${p.review}"</p></div>` : ''}
+
+      <!-- RATING STARS -->
+      <div class="section" style="background:linear-gradient(135deg,rgba(74,124,89,.05),rgba(201,76,76,.05));padding:12px;border-radius:12px;border:2px solid #00FF88">
+        <h3 style="color:#2D3B7D;margin-bottom:10px;font-weight:700">⭐ IL TUO VOTO</h3>
+        <div class="star-row" id="stars-${p.id}" style="display:flex;gap:8px;justify-content:center">${stars}</div>
+      </div>
+
+      <!-- NOTE PERSONALI -->
       <div class="section">
-        <h3>⭐ Il tuo voto</h3>
-        <div class="star-row" id="stars-${p.id}">${stars}</div>
+        <h3 style="color:#2D3B7D;border-bottom:2px solid #FF1493;padding-bottom:6px;margin-bottom:10px;font-weight:700">📝 NOTE PERSONALI</h3>
+        <textarea id="poi-note" placeholder="Aggiungi note, orari di arrivo, partecipanti..." style="width:100%;padding:10px;border:2px solid #00FF88;border-radius:8px;font-size:12px;resize:vertical;min-height:80px;font-family:inherit">${note}</textarea>
       </div>
-      <div class="section">
-        <h3>📝 Note personali</h3>
-        <textarea id="poi-note" placeholder="Aggiungi note, orari di arrivo, partecipanti...">${note}</textarea>
+
+      <!-- ACTION BUTTONS -->
+      <div class="action-row" style="display:flex;gap:6px;margin:12px 0">
+        <button class="btn navigate" id="navigate-poi" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${encodeURIComponent(displayName)}" style="flex:1;background:linear-gradient(135deg,#4A7C59,#3A6C49);color:white;border:none;border-radius:8px;padding:12px;font-weight:600">🧭 Portami lì</button>
+        <button class="btn primary" id="save-poi" style="flex:1;background:linear-gradient(135deg,#FF1493,#FF69B4);color:white;border:none;border-radius:8px;padding:12px;font-weight:600">${saved?'★ Salvato':'☆ Salva'}</button>
+        <button class="btn" id="add-cal" style="flex:1;background:linear-gradient(135deg,#7A8BA5,#5A6A95);color:white;border:none;border-radius:8px;padding:12px;font-weight:600">📅 Cal</button>
       </div>
-      <div class="action-row">
-        <button class="btn navigate" id="navigate-poi" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${encodeURIComponent(displayName)}">🧭 Portami lì</button>
-        <button class="btn primary" id="save-poi">${saved?'★ Salvato':'☆ Salva'}</button>
-        <button class="btn" id="add-cal">📅 Calendario</button>
+
+      <div class="action-row" style="display:flex;gap:6px;margin:12px 0">
+        <a class="btn" href="${gmaps}" target="_blank" rel="noopener" style="flex:1;background:#2A6E90;color:white;text-decoration:none;border:none;border-radius:8px;padding:12px;text-align:center;font-weight:600">🗺️ Google Maps</a>
+        <a class="btn" href="${amaps}" target="_blank" rel="noopener" style="flex:1;background:#555;color:white;text-decoration:none;border:none;border-radius:8px;padding:12px;text-align:center;font-weight:600">🍎 Apple Maps</a>
       </div>
-      <div class="action-row" style="margin-top:0">
-        <a class="btn" href="${gmaps}" target="_blank" rel="noopener">🗺️ Google Maps</a>
-        <a class="btn" href="${amaps}" target="_blank" rel="noopener">🍎 Apple Maps</a>
-      </div>
-      ${bookingBtns.length ? `<div class="section"><h3>🍴 Prenotazioni</h3><div class="action-row">${bookingBtns.join('')}</div></div>`:''}
+
+      ${bookingBtns.length ? `<div class="section" style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))"><h3 style="color:${catColor};margin-bottom:10px;font-weight:700">🍴 PRENOTAZIONI</h3><div class="action-row">${bookingBtns.join('')}</div></div>` : ''}
+
       ${['restaurant','cafe','bar','izakaya','shop','market','bakery'].includes(p.cat) ? `
-        <div class="section">
-          <h3>🌾 Gluten-Free Info</h3>
-          <div class="action-row">
-            <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener">🔍 Verifica su Find Me Gluten Free</a>
-          </div>
+        <div class="section" style="border:2px solid #FFD700;border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(255,215,0,.05),rgba(255,215,0,.05))">
+          <h3 style="color:#FFD700;margin-bottom:10px;font-weight:700">🌾 GLUTEN-FREE INFO</h3>
+          <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener" style="background:#FFD700;color:#000;font-weight:600;width:100%">🔍 Verifica su Find Me Gluten Free</a>
         </div>
-      `:''}
+      ` : ''}
     `;
   }
   // Rendi poiDetailHTML globale per poi-handlers.js

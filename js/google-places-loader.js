@@ -217,39 +217,62 @@ function mapGoogleTypesToCategory(types) {
   if (!types || !Array.isArray(types)) return 'poi';
 
   const typeMap = {
-    // FOOD & DINING
+    // FOOD & DINING (🍜)
     'restaurant': 'food', 'cafe': 'food', 'bakery': 'food', 'bar': 'food',
     'night_club': 'food', 'meal_delivery': 'food', 'meal_takeaway': 'food',
     'food': 'food', 'drinking_bar': 'food', 'liquor_store': 'food',
-    // ACCOMMODATION
+    'ramen_restaurant': 'food', 'sushi_restaurant': 'food', 'tempura_restaurant': 'food',
+
+    // ACCOMMODATION (🏨)
     'hotel': 'accommodation', 'lodging': 'accommodation', 'hostel': 'accommodation',
     'apartment_building': 'accommodation', 'guest_house': 'accommodation',
-    'campground': 'accommodation', 'rv_park': 'accommodation',
-    // CULTURE & LANDMARKS
+    'campground': 'accommodation', 'rv_park': 'accommodation', 'inn': 'accommodation',
+
+    // CULTURE & LANDMARKS - TEMPLES/SHRINES (⛩️🏯)
+    'temple': 'culture', 'buddhist_temple': 'culture', 'hindu_temple': 'culture',
+    'mosque': 'culture', 'church': 'culture', 'synagogue': 'culture',
+    'shrine': 'culture', 'place_of_worship': 'culture',
+
+    // CULTURE & LANDMARKS - ART/HISTORY/MUSEUMS (🖼️📚)
     'museum': 'culture', 'library': 'culture', 'art_gallery': 'culture',
-    'temple': 'culture', 'church': 'culture', 'mosque': 'culture',
-    'tourist_attraction': 'culture', 'landmark': 'culture', 'synagogue': 'culture',
-    'buddhist_temple': 'culture', 'hindu_temple': 'culture', 'point_of_interest': 'culture',
-    // SHOPPING
+    'historical_landmark': 'culture', 'tourist_attraction': 'culture', 'landmark': 'culture',
+    'cultural_institution': 'culture', 'monument': 'culture',
+
+    // SHOPPING (🛍️)
     'shopping_mall': 'shopping', 'store': 'shopping', 'supermarket': 'shopping',
     'clothing_store': 'shopping', 'shoe_store': 'shopping', 'pharmacy': 'shopping',
     'department_store': 'shopping', 'home_goods_store': 'shopping', 'jewelry_store': 'shopping',
     'book_store': 'shopping', 'electronics_store': 'shopping', 'furniture_store': 'shopping',
-    // NATURE & PARKS
+    'convenience_store': 'shopping', 'florist': 'shopping', 'toy_store': 'shopping',
+
+    // NATURE & PARKS (🌿🌳)
     'park': 'nature', 'natural_feature': 'nature', 'amusement_park': 'nature',
     'zoo': 'nature', 'botanical_garden': 'nature', 'aquarium': 'nature',
-    // WELLNESS & HEALTH
+    'hiking_area': 'nature', 'scenic_spot': 'nature',
+
+    // WELLNESS & HEALTH (🧘)
     'spa': 'wellness', 'gym': 'wellness', 'health': 'wellness', 'dentist': 'wellness',
     'hospital': 'wellness', 'doctor': 'wellness', 'physiotherapist': 'wellness',
-    'beauty_salon': 'wellness', 'hair_care': 'wellness',
-    // SERVICES
-    'fire_station': 'services', 'police': 'services', 'post_office': 'services',
-    'bank': 'services', 'atm': 'services', 'movie_rental': 'services',
-    // TRANSPORT
+    'beauty_salon': 'wellness', 'hair_care': 'wellness', 'clinic': 'wellness',
+    'massage': 'wellness', 'yoga_studio': 'wellness',
+
+    // SERVICES - BUSINESS/COMMERCIAL (🏢🔧)
+    'accounting': 'services', 'attorney': 'services', 'electrician': 'services',
+    'plumber': 'services', 'car_repair': 'services', 'car_wash': 'services',
+    'laundry': 'services', 'dry_cleaner': 'services', 'locksmith': 'services',
+    'real_estate_agency': 'services', 'insurance_agency': 'services', 'travel_agency': 'services',
+    'post_office': 'services', 'bank': 'services', 'atm': 'services',
+    'fire_station': 'services', 'police': 'services', 'movie_rental': 'services',
+    'internet_cafe': 'services', 'business_center': 'services',
+
+    // TRANSPORT (🚆🚕)
     'train_station': 'transport', 'bus_station': 'transport', 'airport': 'transport',
     'parking': 'transport', 'car_rental': 'transport', 'taxi_stand': 'transport',
-    // FALLBACK
-    'establishment': 'poi', 'place_of_worship': 'culture'
+    'bike_rental': 'transport', 'gas_station': 'transport',
+
+    // GENERIC FALLBACK (📍)
+    'establishment': 'poi',
+    'point_of_interest': 'poi'  // Changed from 'culture' to 'poi'
   };
 
   for (const type of types) {

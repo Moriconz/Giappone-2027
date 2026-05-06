@@ -111,21 +111,31 @@ window.groupChat = (() => {
     console.log('[GroupChat] ✓ Message added to history. Total messages:', chatHistory.messages.length);
     saveChat(group.roomId);
 
-    // Invia P2P a tutti i peer connessi
+    // Invia via MQTT (affidabile, funziona attraverso firewall)
+    if (window.rtdbBroadcast) {
+      window.rtdbBroadcast({
+        type: 'groupchat',
+        payload: message
+      });
+      console.log('[GroupChat] ✓ Sent via MQTT to room:', group.roomId);
+    }
+
+    // Also try P2P for backward compatibility (if peers are connected)
     const peerConnections = window.peerGPS?.getPeerConnections?.() || {};
     const peerIds = Object.keys(peerConnections);
-    console.log('[GroupChat] Sending to peers:', peerIds.length > 0 ? peerIds : 'none');
-
-    for (const [peerId, conn] of Object.entries(peerConnections)) {
-      if (conn && conn.open) {
-        try {
-          conn.send({
-            type: 'groupchat',
-            payload: message
-          });
-          console.log('[GroupChat] ✓ Sent to peer:', peerId);
-        } catch (e) {
-          console.warn(`[GroupChat] ❌ Send to ${peerId} failed:`, e);
+    if (peerIds.length > 0) {
+      console.log('[GroupChat] Also sending P2P to', peerIds.length, 'peers');
+      for (const [peerId, conn] of Object.entries(peerConnections)) {
+        if (conn && conn.open) {
+          try {
+            conn.send({
+              type: 'groupchat',
+              payload: message
+            });
+            console.log('[GroupChat] ✓ Sent P2P to peer:', peerId);
+          } catch (e) {
+            console.warn(`[GroupChat] ❌ Send P2P to ${peerId} failed:`, e);
+          }
         }
       }
     }
@@ -506,10 +516,13 @@ window.groupChat = (() => {
   }
 
   // Listen for window close event
+  // Y2K window ID is generated from title: "💬 Chat Gruppo: ROOMID" → "chatgruppo..." (emoji stripped, lowercase, first 20 chars)
   document.addEventListener('y2kwin_closed', (e) => {
-    if (e.detail.id === 'groupchat') {
+    const closedId = e.detail.id || '';
+    // Check if this is the chat window (starts with "chat" and contains "gruppo")
+    if (closedId.includes('chatgruppo') || closedId.startsWith('chat')) {
       chatPanelOpen = false;
-      console.log('[GroupChat] Chat panel closed, chatPanelOpen = false');
+      console.log('[GroupChat] Chat panel closed:', closedId, '| chatPanelOpen = false');
     }
   });
   
