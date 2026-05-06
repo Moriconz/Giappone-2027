@@ -6580,8 +6580,8 @@ window.addEventListener("load", () => {
     });
   };
 
-  function buildAndShowWeatherModal(weatherData, locationName) {
-    console.log('[Weather] Building and showing modal for', locationName);
+  function buildAndShowWeatherModal(weatherData, locationName, isGPS = false) {
+    console.log('[Weather] Building and showing modal for', locationName, 'GPS:', isGPS);
     const hourlyData = weatherData.hourly;
     const dailyData = weatherData.daily;
     const now = new Date();
@@ -6594,6 +6594,11 @@ window.addEventListener("load", () => {
     const humidity = hourlyData.relativehumidity_2m[currentHour];
     const wind = Math.round(hourlyData.windspeed_10m[currentHour]);
     const precip = hourlyData.precipitation[currentHour];
+
+    // Badge for GPS status
+    const badge = isGPS
+      ? '<span style="background:#00FF88;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;margin-left:8px;">📍 GPS</span>'
+      : '<span style="background:#FFD700;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;margin-left:8px;">⚠️ FALLBACK</span>';
 
     // Build daily forecast cards
     let dailyHtml = '';
@@ -6627,7 +6632,10 @@ window.addEventListener("load", () => {
         <div style="background:#FFF9E6;padding:14px 16px;border-bottom:3px solid #FF1493;margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:0 0 2px 0;font-size:18px;font-weight:700;">${locationName}</h2>
+              <div style="display:flex;align-items:center;">
+                <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:0;font-size:18px;font-weight:700;">${locationName}</h2>
+                ${badge}
+              </div>
               <p style="color:var(--y2k-muted);margin:0;font-size:12px;font-family:'Courier New',monospace;">${dateStr}</p>
             </div>
             <div style="text-align:right;">
@@ -6692,7 +6700,7 @@ window.addEventListener("load", () => {
       fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
         .then(data => {
           if (data) {
-            buildAndShowWeatherModal(data, 'Aprilia');
+            buildAndShowWeatherModal(data, 'Aprilia', false);
           }
         });
       return;
@@ -6709,7 +6717,7 @@ window.addEventListener("load", () => {
         fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
           .then(data => {
             if (data) {
-              buildAndShowWeatherModal(data, 'Aprilia');
+              buildAndShowWeatherModal(data, 'Aprilia', false);
             }
           });
       }
@@ -6724,7 +6732,7 @@ window.addEventListener("load", () => {
           const { latitude, longitude } = position.coords;
           const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
           if (weatherData) {
-            buildAndShowWeatherModal(weatherData, 'La tua posizione');
+            buildAndShowWeatherModal(weatherData, 'La tua posizione', true);
           }
         }
       },
@@ -6736,7 +6744,7 @@ window.addEventListener("load", () => {
           fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
             .then(data => {
               if (data) {
-                buildAndShowWeatherModal(data, 'Aprilia');
+                buildAndShowWeatherModal(data, 'Aprilia', false);
               }
             });
         }
