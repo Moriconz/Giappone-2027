@@ -4143,7 +4143,20 @@ window.addEventListener("load", () => {
     // === FAKE GPS A TOKYO (per testing) ===
     const USE_FAKE_GPS = false;
     let geolocationToUse = navigator.geolocation;
-    
+
+    // Se in un gruppo, manda il GPS subito (non aspetta il primo update)
+    if (state.group?.myName && state.gpsCurrentLat && state.gpsCurrentLng && peerGPS.getStatus() !== 'disconnected') {
+      console.log(`%c[GPS] 📍 START: Broadcasting GPS istantaneo all'accensione`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
+      const payload = {
+        type: 'gps',
+        lat: state.gpsCurrentLat,
+        lng: state.gpsCurrentLng,
+        name: state.group.myName,
+        avatar: state.group?.myAvatar || null
+      };
+      window.rtdbBroadcast(payload);
+    }
+
     if (USE_FAKE_GPS) {
       // Mock geolocation (non assegnare a navigator.geolocation che è readonly)
       geolocationToUse = {
@@ -4251,8 +4264,10 @@ window.addEventListener("load", () => {
 
   // Listener: Quando nuovi membri entrano nel gruppo, manda subito la posizione GPS attuale
   window.addEventListener('force-gps-broadcast', (e) => {
+    console.log(`%c[GPS] 📍 force-gps-broadcast event RECEIVED`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px;font-weight:bold');
     const delayMs = e.detail?.delayMs || 100;
     setTimeout(() => {
+      console.log(`%c[GPS] 📍 force-gps-broadcast firing after ${delayMs}ms - checking conditions: gpsLat=${!!state.gpsCurrentLat}, gpsLng=${!!state.gpsCurrentLng}, peerStatus=${peerGPS.getStatus()}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px;font-size:11px');
       if (state.gpsCurrentLat && state.gpsCurrentLng && peerGPS.getStatus() !== 'disconnected') {
         const payload = {
           type: 'gps',
@@ -4263,9 +4278,12 @@ window.addEventListener("load", () => {
         };
         console.log(`%c[GPS] 📍 BROADCAST FORZATO (nuovi membri): (${state.gpsCurrentLat.toFixed(4)}, ${state.gpsCurrentLng.toFixed(4)})`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
         window.rtdbBroadcast(payload);
+      } else {
+        console.log(`%c[GPS] ⚠️ force-gps-broadcast SKIPPED - conditions not met`, 'background:#FF6B6B;color:white;padding:4px 8px;border-radius:3px;font-size:11px');
       }
     }, delayMs);
   });
+  console.log('[App] force-gps-broadcast listener registered');
   // Click handler
   // Aggiorna marker su pan/zoom (debounced)
   map.on('moveend', () => {
@@ -7399,6 +7417,12 @@ window.addEventListener("load", () => {
       closeSheet();
       renderGroupView();
 
+      // Redraw GPS marker with correct name now that group is set
+      if (state.gpsCurrentLat && state.gpsCurrentLng) {
+        console.log(`%c[Group] 🔄 Redrawing GPS marker with myName='${name}'`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
+        updateGPSMarker(state.gpsCurrentLat, state.gpsCurrentLng);
+      }
+
       // Avvia peerGPS IN BACKGROUND
       console.log('[Group] Checking peerGPS...', { peerGPS: !!peerGPS, hasStart: typeof peerGPS?.start, room, name });
       if (peerGPS && typeof peerGPS.start === 'function') {
@@ -7412,6 +7436,18 @@ window.addEventListener("load", () => {
               if (status === 'waiting')     box.innerHTML = '🟡 In attesa di altri...';
               else if (status === 'connected') box.innerHTML = `🟢 Connesso (${count} online)`;
               else if (status === 'disconnected') box.innerHTML = '⚫ Non connesso';
+            }
+            // NUOVO: Quando la connessione MQTT si stabilisce, trasmetti subito la posizione attuale (se disponibile)
+            if (status === 'connected' && state.gpsCurrentLat && state.gpsCurrentLng && state.group?.myName) {
+              console.log(`%c[Group] 📍 MQTT connected: Broadcasting initial position to peers`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+              const payload = {
+                type: 'gps',
+                lat: state.gpsCurrentLat,
+                lng: state.gpsCurrentLng,
+                name: state.group.myName,
+                avatar: state.group?.myAvatar || null
+              };
+              window.rtdbBroadcast?.(payload);
             }
           }, (state.group.members||[]).map(m => m.name).filter(n => n && n !== name));
           setTimeout(() => {
