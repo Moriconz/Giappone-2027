@@ -22,14 +22,6 @@
 <link rel="preconnect" href="https://api.open-meteo.com" />
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
 <link rel="prefetch" href="./manifest.webmanifest" />
-<!-- Font loading strategy: swap for better LCP -->
-<link rel="preload" as="font" href="./fonts/courier.woff2" type="font/woff2" crossorigin />
-<style>
-  @font-face {
-    font-family: 'Courier New';
-    font-display: swap;
-  }
-</style>
 <title>Giappone 2027 · Travel Companion v3</title>
 <!-- ============================================================================ -->
 <!-- EARLY INITIALIZATION — PWA Install (supports all browsers) -->
@@ -9650,8 +9642,16 @@ class GestureDetector {
   }
 }
 
-// Initialize gesture detection
-new GestureDetector();
+// Initialize gesture detection — wait for DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    new GestureDetector();
+    console.log('[Gestures] ✓ Initialized after DOM loaded');
+  });
+} else {
+  new GestureDetector();
+  console.log('[Gestures] ✓ Initialized (DOM already loaded)');
+}
 
 // Example: Close sheet on swipe down
 document.addEventListener('gesture-swipe', (e) => {
