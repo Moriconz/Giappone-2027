@@ -6696,11 +6696,10 @@ window.addEventListener("load", () => {
     window.openSheet('🌤️ Meteo', `
       <div style="padding:20px;text-align:center;">
         <div style="font-size:48px;margin-bottom:16px;">⏳</div>
-        <p style="color:var(--y2k-ink);font-size:14px;margin:0;">📍 In attesa di segnale GPS...</p>
+        <p style="color:var(--y2k-ink);font-size:14px;margin:0;">📍 Acquisendo posizione...</p>
       </div>
     `);
 
-    // Load weather data and show modal
     if (!navigator.geolocation) {
       console.warn('[Weather] Geolocation not supported - using fallback');
       fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
@@ -6712,43 +6711,80 @@ window.addEventListener("load", () => {
       return;
     }
 
-    console.log('[Weather] Requesting GPS position...');
-    let geoCompleted = false;
+    let fastGeoCompleted = false;
+    let currentModalLocation = null; // Track current location shown
 
+    // ═══════════════════════════════════════════════════════════════
+    // FIRST: Fast attempt (WiFi/cell based) - responds quickly
+    // ═══════════════════════════════════════════════════════════════
+    console.log('[Weather] 🚀 Attempting FAST position (WiFi/cell)...');
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        if (!geoCompleted) {
-          geoCompleted = true;
-          const { latitude, longitude } = position.coords;
-          console.log('[Weather] ✅ GPS SUCCESS:', { latitude, longitude });
+        if (fastGeoCompleted) return;
+        fastGeoCompleted = true;
 
-          console.log('[Weather] Fetching weather for GPS coordinates...');
-          const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
-          console.log('[Weather] Weather data result:', !!weatherData);
+        const { latitude, longitude } = position.coords;
+        console.log('[Weather] ✅ FAST position acquired:', { latitude, longitude });
 
-          if (weatherData) {
-            console.log('[Weather] ✅ Using GPS data');
-            buildAndShowWeatherModal(weatherData, 'La tua posizione', true);
-          } else {
-            console.log('[Weather] ⚠️ GPS fetch returned null, fallback to Aprilia');
-            const data = await fetchWeatherHourly(41.4667, 12.5833, 'Aprilia');
-            if (data) buildAndShowWeatherModal(data, 'Aprilia', false);
+        const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
+        if (weatherData) {
+          console.log('[Weather] ✅ Showing FAST GPS data immediately');
+          currentModalLocation = 'gps-fast';
+          buildAndShowWeatherModal(weatherData, 'La tua posizione', true);
+
+          // Now search for high-accuracy GPS in background
+          searchHighAccuracyGPSInBackground();
+        } else {
+          console.log('[Weather] ⚠️ Fast GPS fetch failed, using Aprilia');
+          const data = await fetchWeatherHourly(41.4667, 12.5833, 'Aprilia');
+          if (data) {
+            currentModalLocation = 'fallback';
+            buildAndShowWeatherModal(data, 'Aprilia', false);
           }
         }
       },
       (error) => {
-        if (!geoCompleted) {
-          geoCompleted = true;
-          console.warn('[Weather] ❌ GPS ERROR:', error.code, error.message);
-          console.log('[Weather] Using fallback Aprilia');
-          fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
-            .then(data => {
-              if (data) buildAndShowWeatherModal(data, 'Aprilia', false);
-            });
-        }
+        // Fast attempt failed, try high-accuracy GPS
+        console.warn('[Weather] Fast GPS attempt failed:', error.code, error.message);
+        searchHighAccuracyGPSInBackground();
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 0 }
     );
+
+    // ═══════════════════════════════════════════════════════════════
+    // BACKGROUND: Search for high-accuracy GPS and update if better
+    // ═══════════════════════════════════════════════════════════════
+    function searchHighAccuracyGPSInBackground() {
+      console.log('[Weather] 🔍 Searching for HIGH ACCURACY GPS in background...');
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log('[Weather] ✅ HIGH ACCURACY GPS acquired:', { latitude, longitude });
+
+          const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
+          if (weatherData && currentModalLocation === 'gps-fast') {
+            console.log('[Weather] ✅ Updating modal with HIGH ACCURACY data');
+            buildAndShowWeatherModal(weatherData, 'La tua posizione', true);
+          }
+        },
+        (error) => {
+          console.warn('[Weather] ❌ HIGH ACCURACY GPS failed:', error.code, error.message);
+          // If no fast GPS was acquired, fall back to Aprilia
+          if (currentModalLocation === null) {
+            console.log('[Weather] No fast GPS, using Aprilia fallback');
+            fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
+              .then(data => {
+                if (data) {
+                  currentModalLocation = 'fallback';
+                  buildAndShowWeatherModal(data, 'Aprilia', false);
+                }
+              });
+          }
+        },
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+      );
+    }
   }
 
   function renderWeatherView() {
