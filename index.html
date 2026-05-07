@@ -2,7 +2,11 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5, user-scalable=yes" />
+<meta name="viewport-fit" content="cover" />
+<!-- 2026 Core Web Vitals Optimization -->
+<meta name="supported-color-schemes" content="light dark" />
+<meta name="color-scheme" content="light" />
 <meta name="theme-color" content="#1A3C5E" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
@@ -14,6 +18,18 @@
 <link rel="icon" type="image/png" href="./icon-192.png" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css" />
 <link rel="stylesheet" href="./y2k-override.css" />
+<!-- 2026 Performance Optimization -->
+<link rel="preconnect" href="https://api.open-meteo.com" />
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+<link rel="prefetch" href="./manifest.webmanifest" />
+<!-- Font loading strategy: swap for better LCP -->
+<link rel="preload" as="font" href="./fonts/courier.woff2" type="font/woff2" crossorigin />
+<style>
+  @font-face {
+    font-family: 'Courier New';
+    font-display: swap;
+  }
+</style>
 <title>Giappone 2027 · Travel Companion v3</title>
 <!-- ============================================================================ -->
 <!-- EARLY INITIALIZATION — PWA Install (supports all browsers) -->
@@ -9432,20 +9448,49 @@ const installBanner = document.getElementById('install-banner');
 
 // Install button (for automatic prompt)
 if (installBtn) {
-  installBtn.addEventListener('click', function(e) {
+  installBtn.addEventListener('click', async function(e) {
     e.preventDefault();
     e.stopPropagation();
 
     const deferredPrompt = window.__deferredPrompt;
-    if (deferredPrompt) {
-      console.log('[Install] Showing native install prompt');
-      deferredPrompt.prompt();
+    console.log('[Install] Install button clicked. deferredPrompt:', !!deferredPrompt);
 
-      deferredPrompt.userChoice.then((choice) => {
-        console.log('[Install] User response:', choice.outcome);
-        hideBanner();
+    if (deferredPrompt) {
+      try {
+        console.log('[Install] 📲 Showing native install prompt...');
+        installBtn.textContent = '⏳ Installazione in corso...';
+        installBtn.disabled = true;
+
+        // Show the install prompt
+        deferredPrompt.prompt();
+
+        // Wait for user choice
+        const choice = await deferredPrompt.userChoice;
+        console.log('[Install] ✅ User response:', choice.outcome);
+
+        if (choice.outcome === 'accepted') {
+          console.log('[Install] 🎉 USER ACCEPTED INSTALLATION');
+          installBtn.textContent = '✅ Installata!';
+          // Don't hide immediately - let user see the success message
+          setTimeout(() => {
+            hideBanner();
+            window.__deferredPrompt = null;
+          }, 2000);
+        } else {
+          console.log('[Install] ❌ User dismissed the install prompt');
+          installBtn.textContent = '📲 Aggiungi a Schermata Iniziale';
+          installBtn.disabled = false;
+        }
         window.__deferredPrompt = null;
-      }).catch(err => console.error('[Install] Error:', err));
+      } catch (err) {
+        console.error('[Install] Error during installation:', err);
+        installBtn.textContent = '❌ Errore. Riprova';
+        installBtn.disabled = false;
+      }
+    } else {
+      console.log('[Install] ⚠️ No deferredPrompt available. Browser may not support PWA install.');
+      // Switch to manual instructions
+      showInstructions();
     }
   });
 }
@@ -9483,6 +9528,140 @@ window.addEventListener('appinstalled', () => {
 });
 
 console.log('[Install] ✓ All handlers ready');
+
+/* ════════════════════════════════════════════════════════════════════
+   GESTURE SUPPORT 2026 — Swipe, Pinch, Long-Press Detection
+════════════════════════════════════════════════════════════════════ */
+
+class GestureDetector {
+  constructor() {
+    this.touchStartX = 0;
+    this.touchStartY = 0;
+    this.touchEndX = 0;
+    this.touchEndY = 0;
+    this.touchStartTime = 0;
+    this.initialDistance = 0;
+
+    // Bind methods
+    this.handleTouchStart = this.handleTouchStart.bind(this);
+    this.handleTouchMove = this.handleTouchMove.bind(this);
+    this.handleTouchEnd = this.handleTouchEnd.bind(this);
+    this.handleLongPress = this.handleLongPress.bind(this);
+
+    this.init();
+  }
+
+  init() {
+    document.addEventListener('touchstart', this.handleTouchStart, false);
+    document.addEventListener('touchmove', this.handleTouchMove, false);
+    document.addEventListener('touchend', this.handleTouchEnd, false);
+    console.log('[Gestures] ✓ Gesture detection initialized');
+  }
+
+  handleTouchStart(e) {
+    this.touchStartX = e.changedTouches[0].screenX;
+    this.touchStartY = e.changedTouches[0].screenY;
+    this.touchStartTime = Date.now();
+
+    // Pinch detection
+    if (e.touches.length === 2) {
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      this.initialDistance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+    }
+
+    // Long-press detection
+    this.longPressTimer = setTimeout(() => {
+      this.triggerLongPress(e);
+    }, 500);
+  }
+
+  handleTouchMove(e) {
+    // Cancel long-press if user moves
+    clearTimeout(this.longPressTimer);
+
+    // Pinch zoom
+    if (e.touches.length === 2 && this.initialDistance) {
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const currentDistance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      const scale = currentDistance / this.initialDistance;
+
+      if (Math.abs(scale - 1) > 0.1) {
+        this.triggerPinch(scale, e);
+      }
+    }
+  }
+
+  handleTouchEnd(e) {
+    clearTimeout(this.longPressTimer);
+
+    this.touchEndX = e.changedTouches[0].screenX;
+    this.touchEndY = e.changedTouches[0].screenY;
+    const touchDuration = Date.now() - this.touchStartTime;
+
+    // Detect swipe
+    const diffX = this.touchStartX - this.touchEndX;
+    const diffY = this.touchStartY - this.touchEndY;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipeDistance) {
+      if (diffX > 0) {
+        this.triggerSwipe('left', e);
+      } else {
+        this.triggerSwipe('right', e);
+      }
+    } else if (Math.abs(diffY) > minSwipeDistance) {
+      if (diffY > 0) {
+        this.triggerSwipe('up', e);
+      } else {
+        this.triggerSwipe('down', e);
+      }
+    }
+  }
+
+  triggerSwipe(direction, event) {
+    const customEvent = new CustomEvent('gesture-swipe', {
+      detail: { direction, target: event.target }
+    });
+    document.dispatchEvent(customEvent);
+    console.log('[Gestures] 👆 Swipe detected:', direction);
+  }
+
+  triggerPinch(scale, event) {
+    const customEvent = new CustomEvent('gesture-pinch', {
+      detail: { scale, target: event.target }
+    });
+    document.dispatchEvent(customEvent);
+  }
+
+  triggerLongPress(event) {
+    const customEvent = new CustomEvent('gesture-longpress', {
+      detail: { target: event.target }
+    });
+    document.dispatchEvent(customEvent);
+    console.log('[Gestures] 👁️ Long-press detected');
+  }
+}
+
+// Initialize gesture detection
+new GestureDetector();
+
+// Example: Close sheet on swipe down
+document.addEventListener('gesture-swipe', (e) => {
+  if (e.detail.direction === 'down' && document.querySelector('.sheet.show')) {
+    console.log('[Gestures] Closing sheet via swipe-down');
+    // Close active sheet
+    const sheet = document.querySelector('.sheet.show');
+    if (sheet) sheet.classList.remove('show');
+  }
+});
 
 // ── Refresh pannello gruppo — usato da firebase-rtdb.js ──────────────────────
 // NON chiama renderGroupView() per evitare ReferenceError su Safari.

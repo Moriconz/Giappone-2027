@@ -1913,6 +1913,52 @@ main {
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   CONTAINER QUERIES — 2026 Standard (Responsive by Container Size)
+══════════════════════════════════════════════════════════════════ */
+
+/* Enable container queries on all major elements */
+.sheet-inner,
+.sheet-body,
+[class*="card"],
+.section,
+.item-card,
+[class*="modal"],
+.weather-day {
+  container-type: inline-size;
+  container-name: component;
+}
+
+/* Responsiveness based on container width, not viewport */
+@container (max-width: 300px) {
+  .sheet-inner p,
+  .card-text,
+  [class*="label"] {
+    font-size: 13px !important;
+  }
+  button, .btn {
+    padding: 10px 12px !important;
+  }
+}
+
+@container (min-width: 301px) and (max-width: 600px) {
+  .card-layout {
+    grid-template-columns: 1fr !important;
+  }
+  button, .btn {
+    min-height: 44px !important;
+  }
+}
+
+@container (min-width: 601px) {
+  .card-layout {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  button, .btn {
+    min-height: 48px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
    MOBILE FRIENDLY — Font, Bottoni, Spacing
    Breakpoint: max-width 768px (tablet + mobile)
 ══════════════════════════════════════════════════════════════════ */
@@ -1967,7 +2013,12 @@ main {
 
   .sheet-body {
     padding: 20px 18px !important;
-    max-height: calc(100vh - 180px) !important;
+    max-height: min(80vh, calc(100vh - 180px)) !important;
+    overflow-y: auto !important;
+  }
+
+  .sheet-inner {
+    max-height: 85vh !important;
   }
 
   .sheet-inner .section {
@@ -2059,6 +2110,67 @@ main {
 
 @media (max-width: 480px) {
 
+  /* ── THUMB-FRIENDLY ZONES 2026 – 50px+ tap targets ─────────────── */
+  /* All interactive elements must be at least 50x50px with safe zones */
+  button,
+  .btn,
+  a[role="button"],
+  input[type="button"],
+  input[type="submit"],
+  .icon-btn,
+  [class*="tap-target"],
+  .chip {
+    min-width: 50px !important;
+    min-height: 50px !important;
+    padding: 12px 16px !important;
+    position: relative !important;
+  }
+
+  /* Safe zone around touch targets — no clickables within 8px */
+  button::after,
+  .btn::after,
+  .icon-btn::after {
+    content: '' !important;
+    position: absolute !important;
+    inset: -8px !important;
+    pointer-events: none !important;
+  }
+
+  /* Increase spacing between buttons */
+  nav.bottom button {
+    gap: 4px !important;
+  }
+
+  /* Form inputs thumb-friendly */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="search"],
+  textarea,
+  select,
+  .form-input {
+    min-height: 50px !important;
+    padding: 14px 16px !important;
+    font-size: 16px !important;
+    min-width: 50px !important;
+  }
+
+  /* Checkbox/Radio bigger */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 24px !important;
+    height: 24px !important;
+    cursor: pointer !important;
+  }
+
+  /* Links and clickable text */
+  a, [role="button"], [role="link"] {
+    padding: 8px 12px !important;
+    display: inline-block !important;
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+
   body {
     font-size: 16px !important;
   }
@@ -2095,14 +2207,23 @@ main {
     height: 24px !important;
   }
 
-  /* ── SHEET / MODALI FULL HEIGHT ──────────────────────────────── */
+  /* ── SHEET / MODALI – OTTIMIZZATI PER MOBILE ──────────────── */
   .sheet-body {
     padding: 18px 14px !important;
-    max-height: calc(100vh - 160px) !important;
+    max-height: min(75vh, calc(100vh - 120px)) !important;
+    overflow-y: auto !important;
+  }
+
+  .sheet-inner {
+    max-height: 85vh !important;
+    overflow-y: auto !important;
   }
 
   .sheet-header {
     padding: 14px 14px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
   }
 
   /* ── MODAL HEADER ────────────────────────────────────────────── */
@@ -2190,4 +2311,63 @@ main {
     font-size: 16px !important;
   }
 
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   FOLDABLE DEVICE SUPPORT 2026
+   Samsung Galaxy Z Fold/Flip, Microsoft Surface Duo compatibility
+══════════════════════════════════════════════════════════════════ */
+
+/* Detect foldable devices */
+@media (fold-left: 0px) {
+  /* Device has a vertical fold (Galaxy Z Fold) */
+  body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: env(viewport-segment-width 0 0);
+  }
+
+  #map {
+    grid-column: 1;
+  }
+
+  nav.bottom {
+    grid-column: 1 / -1;
+  }
+
+  .sheet-inner {
+    grid-column: 2;
+    max-height: calc(100vh - 60px);
+  }
+}
+
+@media (fold-top: 0px) {
+  /* Device has a horizontal fold (Galaxy Z Flip) */
+  body {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: env(viewport-segment-height 0 0);
+  }
+
+  #map {
+    grid-row: 1;
+  }
+
+  nav.bottom {
+    grid-row: 2;
+  }
+}
+
+/* Safe areas for foldable devices */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  nav.bottom {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
 }
