@@ -43,114 +43,133 @@
   const isSafari = /safari/.test(ua) && !/chrome/.test(ua) && !/edg/.test(ua);
 
   // Listen for beforeinstallprompt (Chrome/Edge)
+  // NON mostrare il modal - il UniversalInstaller gestirà tutto
   window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('[Install] beforeinstallprompt FIRED');
+    console.log('[Install] 🎯 beforeinstallprompt FIRED');
     e.preventDefault();
     window.__deferredPrompt = e;
-    showPrompt();
+    // RIMOSSO: showPrompt() — il modal non serve più
+    console.log('[Install] deferredPrompt saved, waiting for button click');
   });
 
-  function showPrompt() {
-    const prompt = document.getElementById('install-prompt');
-    const instructions = document.getElementById('install-instructions');
-    if (prompt) prompt.style.display = 'flex';
-    if (instructions) instructions.style.display = 'none';
-    const banner = document.getElementById('install-banner');
-    if (banner) banner.classList.add('show');
-  }
-
-  function showInstructions() {
-    const prompt = document.getElementById('install-prompt');
-    const instructions = document.getElementById('install-instructions');
-    if (prompt) prompt.style.display = 'none';
-    if (instructions) instructions.style.display = 'block';
-    const banner = document.getElementById('install-banner');
-    if (banner) banner.classList.add('show');
-    generateInstructions();
-  }
-
-  function generateInstructions() {
-    const actionBtn = document.getElementById('install-action-btn');
-    const stepsDiv = document.getElementById('install-steps');
-    if (!actionBtn) return;
-
-    // Tutti i browser non supportati → stesse istruzioni di aggiunta a schermata
-    let btnText = '📲 Aggiungi a Schermata Iniziale';
-    let steps = '';
-
-    if (isIOS) {
-      // Safari iOS
-      steps = `
-        <strong>Su iPhone/iPad:</strong><br>
-        1. Tocca il pulsante <strong>Condividi</strong> (freccia in basso)<br>
-        2. Scorri e seleziona <strong>"Aggiungi a Schermata Iniziale"</strong><br>
-        3. Tocca <strong>"Aggiungi"</strong>
-      `;
-    } else if (isAndroid && isChrome) {
-      // Chrome Android
-      steps = `
-        <strong>Su Android (Chrome):</strong><br>
-        1. Tocca i <strong>3 puntini</strong> in alto a destra<br>
-        2. Seleziona <strong>"Installa app"</strong><br>
-        3. Tocca <strong>"Installa"</strong>
-      `;
-    } else if (isAndroid && isFirefox) {
-      // Firefox Android
-      steps = `
-        <strong>Su Android (Firefox):</strong><br>
-        1. Tocca il <strong>menu</strong> (3 linee)<br>
-        2. Seleziona <strong>"Installa"</strong><br>
-        3. Conferma l'installazione
-      `;
-    } else if (isFirefox && !isAndroid) {
-      // Firefox Desktop
-      steps = `
-        <strong>Su Firefox Desktop:</strong><br>
-        1. Clicca il <strong>menu</strong> (3 linee) in alto a destra<br>
-        2. Seleziona <strong>"Installa l'app"</strong><br>
-        3. Conferma
-      `;
-    } else if (isSafari && !isIOS) {
-      // Safari Desktop
-      steps = `
-        <strong>Su Safari Desktop:</strong><br>
-        1. Clicca il <strong>menu</strong> in alto<br>
-        2. Seleziona <strong>"Add to Dock"</strong><br>
-        3. Conferma
-      `;
-    } else {
-      // Fallback per altri browser
-      steps = `
-        <strong>Su questo browser:</strong><br>
-        Accedi al menu del browser e seleziona l'opzione "Aggiungi a schermata iniziale" o "Installa"
-      `;
-    }
-
-    actionBtn.textContent = btnText;
-    actionBtn.addEventListener('click', () => {
-      // Cliccare il pulsante mostra/nasconde le istruzioni
-      if (stepsDiv) {
-        stepsDiv.style.display = stepsDiv.style.display === 'none' ? 'block' : 'none';
-      }
-    });
-
-    if (stepsDiv) {
-      stepsDiv.innerHTML = steps;
-      stepsDiv.style.display = 'block'; // Mostra subito le istruzioni
-    }
-  }
-
-  // Se beforeinstallprompt non è supportato, mostra istruzioni dopo un delay
+  // Log if beforeinstallprompt never fires
   setTimeout(() => {
-    if (!window.__deferredPrompt && 'serviceWorker' in navigator) {
-      console.log('[Install] beforeinstallprompt not supported, showing instructions');
-      showInstructions();
+    if (!window.__deferredPrompt) {
+      console.warn('[Install] ⚠️ beforeinstallprompt NEVER FIRED');
+      console.warn('[Install] Browser non supporta PWA install prompt');
+      console.warn('[Install] UA:', ua);
+      console.warn('[Install] Fallback a istruzioni manuali');
     }
-  }, 1000);
+  }, 3000);
 
-  window.__showInstallInstructions = showInstructions;
-  window.__showInstallPrompt = showPrompt;
+  // ✅ OLD MODAL SYSTEM COMPLETELY REMOVED
+  // The UniversalInstaller class (below) handles all browser/device scenarios
+  // No modal, just a clean button in the header
 
+  // ════════════════════════════════════════════════════════════════════
+  // UNIVERSAL INSTALLER 2026 — Works on ALL browsers & devices
+  // ════════════════════════════════════════════════════════════════════
+
+  class UniversalInstaller {
+    constructor() {
+      this.ua = navigator.userAgent.toLowerCase();
+      this.isIOS = /iphone|ipad|ipod/.test(this.ua);
+      this.isAndroid = /android/.test(this.ua);
+      this.isChrome = /chrome/.test(this.ua) && !/edg/.test(this.ua);
+      this.isEdge = /edg/.test(this.ua);
+      this.isFirefox = /firefox/.test(this.ua);
+      this.isSafari = /safari/.test(this.ua) && !/chrome/.test(this.ua) && !/edg/.test(this.ua);
+      this.isBrave = /brave/.test(this.ua);
+      this.isDesktop = !this.isAndroid && !this.isIOS;
+      this.deferredPrompt = null;
+      this.init();
+    }
+
+    init() {
+      console.log('[UniversalInstaller] ✅ Initializing on all browsers');
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        this.deferredPrompt = e;
+        console.log('[UniversalInstaller] 🎯 PWA installable (beforeinstallprompt)');
+        this.addButtonToHeader();
+      });
+
+      setTimeout(() => {
+        if (!this.deferredPrompt) {
+          console.log('[UniversalInstaller] No beforeinstallprompt, showing button anyway');
+          this.addButtonToHeader();
+        }
+      }, 1000);
+    }
+
+    addButtonToHeader() {
+      const header = document.querySelector('header');
+      if (!header) {
+        setTimeout(() => this.addButtonToHeader(), 100);
+        return;
+      }
+
+      if (document.getElementById('universal-install-btn')) return;
+
+      const btn = document.createElement('button');
+      btn.id = 'universal-install-btn';
+      btn.textContent = '📱 Aggiungi';
+      btn.style.cssText = `
+        background: linear-gradient(135deg, #00FF88, #00CC66) !important;
+        color: #1A2560 !important;
+        border: none !important;
+        padding: 10px 16px !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        cursor: pointer !important;
+        margin-left: 8px !important;
+        box-shadow: 0 2px 8px rgba(0,255,136,0.3) !important;
+        transition: all 0.2s ease !important;
+        font-family: 'Comic Sans MS', cursive !important;
+      `;
+
+      btn.onmouseenter = () => {
+        btn.style.transform = 'scale(1.05)';
+        btn.style.boxShadow = '0 4px 12px rgba(0,255,136,0.5)';
+      };
+      btn.onmouseleave = () => {
+        btn.style.transform = 'scale(1)';
+        btn.style.boxShadow = '0 2px 8px rgba(0,255,136,0.3)';
+      };
+
+      btn.onclick = () => this.handleInstall();
+      header.appendChild(btn);
+      console.log('[UniversalInstaller] ✅ Button added to header');
+    }
+
+    async handleInstall() {
+      console.log('[UniversalInstaller] 👉 Install clicked');
+
+      // Native beforeinstallprompt (Chrome/Edge/Brave Android/Desktop)
+      if (this.deferredPrompt) {
+        console.log('[UniversalInstaller] ✅ Using native beforeinstallprompt');
+        this.deferredPrompt.prompt();
+        const choice = await this.deferredPrompt.userChoice;
+        console.log('[UniversalInstaller] User choice:', choice.outcome);
+        this.deferredPrompt = null;
+        return;
+      }
+
+      // Fallback for browsers without beforeinstallprompt
+      if (this.isIOS) {
+        window.toast('📱 Tocca Condividi → "Aggiungi a Schermata Iniziale"');
+      } else if (this.isAndroid && this.isFirefox) {
+        window.toast('🦊 Apri il menu → "Installa"');
+      } else if (this.isDesktop) {
+        window.toast('🖥️ Guarda in alto a destra della barra indirizzi e clicca il bottone Installa');
+      } else {
+        window.toast('📲 Apri il menu del browser e seleziona "Installa"');
+      }
+    }
+  }
+
+  new UniversalInstaller();
   console.log('[Install] ✓ System initialized');
 })();
 </script>
@@ -192,21 +211,7 @@
 </head>
 <body>
 <div id="app">
-  <div id="install-banner">
-    <div id="install-prompt" style="display: none;">
-      <span>📲 Installa l'app sul tuo telefono per uso offline</span>
-      <button id="install-btn">Installa</button>
-      <button id="install-close">✕</button>
-    </div>
-    <div id="install-instructions" style="display: none;">
-      <div style="text-align: center; padding: 16px;">
-        <h3 style="margin: 0 0 12px 0; font-size: 16px;">📲 Aggiungi l'app</h3>
-        <button id="install-action-btn" style="margin: 12px 0; padding: 12px 24px; background: linear-gradient(135deg, #FF1493, #FF69B4); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; width: 90%; max-width: 280px;"></button>
-        <div id="install-steps" style="margin-top: 12px; text-align: left; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.8); display: none;"></div>
-        <button id="install-close-instructions" style="margin-top: 12px; padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Chiudi</button>
-      </div>
-    </div>
-  </div>
+  <!-- ✅ INSTALL MODAL REMOVED - UniversalInstaller handles all browsers -->
   <div id="offline-banner">📶 Offline — dati in cache</div>
   <header>
     <h1>Giappone <span class="badge">2027</span> <span class="badge badge-version">v3</span></h1>
@@ -9433,93 +9438,9 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
    ============================================================ */
 console.log('[Install] Setting up button handlers...');
 
-const installBtn = document.getElementById('install-btn');
-const installClosePrompt = document.getElementById('install-close');
-const installCloseInstructions = document.getElementById('install-close-instructions');
-const installBanner = document.getElementById('install-banner');
-
-// Install button (for automatic prompt)
-if (installBtn) {
-  installBtn.addEventListener('click', async function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const deferredPrompt = window.__deferredPrompt;
-    console.log('[Install] Install button clicked. deferredPrompt:', !!deferredPrompt);
-
-    if (deferredPrompt) {
-      try {
-        console.log('[Install] 📲 Showing native install prompt...');
-        installBtn.textContent = '⏳ Installazione in corso...';
-        installBtn.disabled = true;
-
-        // Show the install prompt
-        deferredPrompt.prompt();
-
-        // Wait for user choice
-        const choice = await deferredPrompt.userChoice;
-        console.log('[Install] ✅ User response:', choice.outcome);
-
-        if (choice.outcome === 'accepted') {
-          console.log('[Install] 🎉 USER ACCEPTED INSTALLATION');
-          installBtn.textContent = '✅ Installata!';
-          // Don't hide immediately - let user see the success message
-          setTimeout(() => {
-            hideBanner();
-            window.__deferredPrompt = null;
-          }, 2000);
-        } else {
-          console.log('[Install] ❌ User dismissed the install prompt');
-          installBtn.textContent = '📲 Aggiungi a Schermata Iniziale';
-          installBtn.disabled = false;
-        }
-        window.__deferredPrompt = null;
-      } catch (err) {
-        console.error('[Install] Error during installation:', err);
-        installBtn.textContent = '❌ Errore. Riprova';
-        installBtn.disabled = false;
-      }
-    } else {
-      console.log('[Install] ⚠️ No deferredPrompt available. Browser may not support PWA install.');
-      // Switch to manual instructions
-      showInstructions();
-    }
-  });
-}
-
-// Close prompt button
-if (installClosePrompt) {
-  installClosePrompt.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    hideBanner();
-  });
-}
-
-// Close instructions button
-if (installCloseInstructions) {
-  installCloseInstructions.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    hideBanner();
-  });
-}
-
-function hideBanner() {
-  if (installBanner) {
-    installBanner.classList.remove('show');
-    installBanner.style.setProperty('display', 'none', 'important');
-  }
-}
-
-// Listen for successful app installation
-window.addEventListener('appinstalled', () => {
-  console.log('[Install] *** APP INSTALLED! ***');
-  hideBanner();
-  window.__deferredPrompt = null;
-});
-
-console.log('[Install] ✓ All handlers ready');
+// ✅ OLD INSTALL BUTTON HANDLERS REMOVED
+// UniversalInstaller class handles all install logic and creates the button in header
+console.log('[Install] ✓ UniversalInstaller is the only install system');
 
 /* ════════════════════════════════════════════════════════════════════
    GESTURE SUPPORT 2026 — Swipe, Pinch, Long-Press Detection
