@@ -123,10 +123,11 @@
         font-weight: 700 !important;
         font-size: 13px !important;
         cursor: pointer !important;
-        margin-left: 8px !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
         box-shadow: 0 2px 8px rgba(0,255,136,0.3) !important;
         transition: all 0.2s ease !important;
-        font-family: 'Comic Sans MS', cursive !important;
+        font-family: 'Segoe UI', sans-serif !important;
       `;
 
       btn.onmouseenter = () => {
@@ -214,18 +215,20 @@
   <!-- ✅ INSTALL MODAL REMOVED - UniversalInstaller handles all browsers -->
   <div id="offline-banner">📶 Offline — dati in cache</div>
   <header>
-    <h1>Giappone <span class="badge">2027</span> <span class="badge badge-version">v3</span></h1>
-    <!-- Compact Weather Widget in Header -->
-    <div id="header-weather-widget" style="font-size:12px;padding:4px 8px;background:rgba(255,255,255,0.15);border-radius:6px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.3);color:#fff;font-family:'Courier New',monospace;white-space:nowrap;margin-left:auto;margin-right:8px;cursor:pointer;user-select:none;">
-      <span id="hw-icon">⏳</span> <span id="hw-temp">--°</span> <span id="hw-cond" style="font-size:10px;">caricamento</span>
-    </div>
-    <button class="icon-btn" id="search-btn" aria-label="Cerca">🔍</button>
-    <button class="icon-btn" id="refresh-pois-btn" aria-label="Ricarica POI" title="Ricarica i negozi per questa posizione">🔄</button>
-    <button class="icon-btn" id="info-btn" aria-label="Info">ℹ️</button>
+    <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px;">🌸 SafeEats</h1>
+    <!-- Install button added by UniversalInstaller class -->
   </header>
+  <!-- Filters Tab Bar — FIXED below header -->
+  <div id="filters" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 100; display: flex; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; gap: 8px; padding: 8px 14px; background: linear-gradient(180deg, rgba(45, 59, 125, 0.98) 0%, rgba(45, 59, 125, 0.95) 100%); border-bottom: 2px solid rgba(255, 20, 147, 0.3); height: 56px; align-items: center; scrollbar-width: none;"></div>
+
   <main>
-    <div id="filters"></div>
+    <!-- Weather Widget — FLOATING bottom-left above nav bar -->
+    <div id="weather-floating" style="display: none; position: fixed; bottom: 68px; left: 14px; z-index: 99; background: rgba(45, 59, 125, 0.92); backdrop-filter: blur(10px); border-radius: 8px; border: 2px solid rgba(255, 20, 147, 0.3); box-shadow: 0 4px 12px rgba(255,20,147,0.2); padding: 10px 14px; cursor: pointer; user-select: none;">
+      <div id="weather-text" style="font-size: 14px; color: #fff; white-space: nowrap; font-family: 'Segoe UI', sans-serif; font-weight: 700;">⏳ Caricamento...</div>
+    </div>
+
     <div id="map"></div>
+  </main>
     <!-- DEBUG PANEL: Mostra errori e log PeerGPS sul telefono -->
     <div id="debug-panel" style="position:fixed;bottom:80px;right:10px;width:280px;max-height:200px;background:rgba(0,0,0,0.9);color:#00FF88;font-size:10px;padding:8px;border-radius:6px;overflow-y:auto;font-family:monospace;z-index:9999;border:1px solid #FF1493;display:none">
       <div style="margin-bottom:4px;font-weight:bold;color:#FF1493">🔍 Debug Log:</div>
@@ -6568,18 +6571,29 @@ window.addEventListener("load", () => {
         const currentCondition = getWeatherConditionName(currentCode);
         const icon = getWeatherIcon(currentCode);
 
-        // Update header widget (compact)
-        const hwWidget = document.getElementById('header-weather-widget');
-        if (hwWidget) {
-          document.getElementById('hw-icon').textContent = icon;
-          document.getElementById('hw-temp').textContent = currentTemp + '°';
-          document.getElementById('hw-cond').textContent = currentCondition.substring(0, 8);
-          hwWidget.style.display = 'inline-block';
-          console.log('[Weather] Header widget updated:', { currentTemp, currentCondition });
+        // Update floating weather widget
+        const weatherText = document.getElementById('weather-text');
+        const weatherFloating = document.getElementById('weather-floating');
+        if (weatherText && weatherFloating) {
+          weatherText.textContent = `${icon} ${currentTemp}° ${currentCondition.substring(0, 10)}`;
+          weatherFloating.style.display = 'block';
+          console.log('[Weather] Floating widget updated:', { currentTemp, currentCondition });
         }
       },
       (error) => {
         console.warn('[Weather] GPS error:', error.message);
+        // Show fallback message
+        const weatherText = document.getElementById('weather-text');
+        const weatherFloating = document.getElementById('weather-floating');
+        if (weatherText && weatherFloating) {
+          if (error.code === error.PERMISSION_DENIED) {
+            weatherText.textContent = '📍 Consenti localizzazione';
+            weatherFloating.style.display = 'block';
+          } else {
+            weatherText.textContent = '🌍 GPS non disponibile';
+            weatherFloating.style.display = 'block';
+          }
+        }
       }
     );
   }
@@ -6587,14 +6601,21 @@ window.addEventListener("load", () => {
   // Initialize GPS weather widget and update every 10 minutes
   window.initGpsWeatherWidget = function() {
     console.log('[Weather] initGpsWeatherWidget called');
+    // Show initial loading state
+    const weatherFloating = document.getElementById('weather-floating');
+    if (weatherFloating) {
+      weatherFloating.style.display = 'block';
+      console.log('[Weather] Weather widget visibility set to block');
+    }
+
     updateGpsWeatherWidget();
     setInterval(updateGpsWeatherWidget, 10 * 60 * 1000); // Every 10 minutes
 
     // Add click handler to open detailed weather modal via event delegation
     document.addEventListener('click', (e) => {
-      if (e.target.closest('#header-weather-widget')) {
-        console.log('[Weather] Widget clicked');
-        window.openWeatherModal();
+      if (e.target.closest('#weather-floating') || e.target.closest('#weather-text')) {
+        console.log('[Weather] Weather widget clicked');
+        window.openWeatherModal?.();
       }
     });
   };
@@ -8852,6 +8873,50 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
 
   renderFilters();
   renderMarkers();
+
+  // ═══════════════════════════════════════════════════════════════════
+  // FLEXIBLE LAYOUT — Calculate header + filters height dynamically
+  // ═══════════════════════════════════════════════════════════════════
+  function updateMapPosition() {
+    const header = document.querySelector('header');
+    const filters = document.getElementById('filters');
+    const map = document.getElementById('map');
+    const navBottom = document.querySelector('nav.bottom');
+    const weatherWidget = document.getElementById('weather-floating');
+
+    if (header && filters && map && navBottom) {
+      const headerHeight = header.offsetHeight;
+      const filtersHeight = filters.offsetHeight;
+      const navHeight = navBottom.offsetHeight;
+
+      // Position filters right after header
+      filters.style.setProperty('top', headerHeight + 'px', 'important');
+
+      // Position weather widget near header (right-side floating)
+      if (weatherWidget) {
+        const weatherTop = Math.max(headerHeight + 4, 66); // offset from top of header
+        weatherWidget.style.setProperty('top', weatherTop + 'px', 'important');
+      }
+
+      const mapTop = headerHeight + filtersHeight;
+      const mapHeight = window.innerHeight - mapTop - navHeight;
+
+      document.documentElement.style.setProperty('--map-top', mapTop + 'px');
+      document.documentElement.style.setProperty('--map-height', mapHeight + 'px');
+    }
+  }
+
+  // Call on load and on window resize
+  updateMapPosition();
+  window.addEventListener('resize', updateMapPosition);
+  window.addEventListener('orientationchange', updateMapPosition);
+
+  // Also update when filters change
+  const originalRenderFilters = renderFilters;
+  window.renderFilters = function() {
+    originalRenderFilters.call(this);
+    setTimeout(updateMapPosition, 100);
+  };
 
   // Export globali per group-panel e group-chat
   window.startGPS = startGPS;

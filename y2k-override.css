@@ -30,22 +30,40 @@
   --y2k-glow-g:  0 0 12px rgba(0,255,136,0.35);
 }
 
-/* ── RESET FONT ─────────────────────────────────────────────────── */
+/* ── RESET FONT + SPACING ─────────────────────────────────────────── */
+html, body, * {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 html, body {
   font-family: 'Courier New', monospace !important;
+  background: #f0f0f0 !important;
+}
+
+#app {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #f0f0f0 !important;
+}
+
+main {
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   HEADER
+   HEADER — Minimalista & Mobile-First
 ══════════════════════════════════════════════════════════════════ */
 header {
+  box-sizing: border-box !important;
   position: relative !important;
-  z-index: 200 !important;
+  z-index: 101 !important;
   display: flex !important;
   align-items: center !important;
+  justify-content: space-between !important;
   gap: 12px !important;
-  padding: 8px 12px !important;
-  height: 48px !important;
+  padding: 24px 16px 16px 16px !important;
   background: linear-gradient(180deg, #4A5BA8 0%, #2D3B7D 100%) !important;
   border-bottom: 3px solid var(--y2k-pink) !important;
   box-shadow: 0 4px 20px rgba(255,20,147,0.25) !important;
@@ -53,11 +71,14 @@ header {
 
 header h1 {
   margin: 0 !important;
-  font-size: 24px !important;
-  color: var(--y2k-gold) !important;
-  font-family: 'Comic Sans MS', cursive !important;
-  font-weight: 700 !important;
-  text-shadow: 0 0 12px rgba(255,215,0,0.4) !important;
+  font-size: 22px !important;
+  color: #fff !important;
+  font-family: 'Segoe UI', sans-serif !important;
+  font-weight: 900 !important;
+  letter-spacing: 1px !important;
+  flex-grow: 1 !important;
+  white-space: nowrap !important;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
 }
 
 header h1 .badge {
@@ -87,12 +108,6 @@ header h1 .badge {
 /* ══════════════════════════════════════════════════════════════════
    MAPPA + OFFLINE
 ══════════════════════════════════════════════════════════════════ */
-#map {
-  width: 100% !important;
-  height: calc(100vh - 50px - 60px) !important;
-  position: relative !important;
-  transition: filter 0.3s ease !important;
-}
 #map.blur { filter: blur(8px) brightness(0.7) !important; }
 
 /* Offline banner — nascosto */
@@ -100,11 +115,25 @@ header h1 .badge {
   display: none !important;
 }
 
+/* Debug panel — ALWAYS hidden */
+#debug-panel,
+#debug-content {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
 /* ══════════════════════════════════════════════════════════════════
    FILTER BAR — floating sopra la mappa, container trasparente
 ══════════════════════════════════════════════════════════════════ */
 
-.chip {
+/* ✅ CHIP STYLE — ONLY for chips OUTSIDE filters (sheets, panels, etc) */
+.sheet-body .chip,
+.sheet-inner .chip {
   flex-shrink: 0 !important;
   padding: 7px 14px !important;
   border-radius: 999px !important;
@@ -118,11 +147,13 @@ header h1 .badge {
   box-shadow: 0 3px 10px rgba(255,20,147,0.2), 0 1px 3px rgba(0,0,0,0.15) !important;
   transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1) !important;
 }
-.chip:hover {
+.sheet-body .chip:hover,
+.sheet-inner .chip:hover {
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 16px rgba(255,20,147,0.3) !important;
 }
-.chip.active {
+.sheet-body .chip.active,
+.sheet-inner .chip.active {
   background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
   border-color: var(--y2k-green) !important;
   color: #fff !important;
@@ -1347,39 +1378,142 @@ main {
   flex-direction: column !important;
 }
 
-/* Map container — occupa tutto lo spazio disponibile */
+/* Map container — flexible positioning after header + filters */
 #map {
-  position: absolute !important;
-  top: 0 !important;
+  position: fixed !important;
   left: 0 !important;
   right: 0 !important;
-  bottom: 0 !important;
+  bottom: 60px !important;
   width: 100% !important;
-  height: 100% !important;
   z-index: 1 !important;
+  box-sizing: border-box !important;
+  /* Top will be calculated dynamically by JavaScript */
+  top: var(--map-top, 120px) !important;
+  height: var(--map-height, calc(100vh - 120px - 60px)) !important;
 }
 
-/* Filters — floating sopra la mappa */
+/* Filters Tab Bar — FIXED below header */
 #filters {
+  /* VISIBILITY — CRITICAL */
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+
+  /* POSITIONING */
   position: fixed !important;
-  top: 92px !important;
+  top: 72px !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 50 !important;
+  z-index: 100 !important;
+
+  /* SIZE */
+  box-sizing: border-box !important;
   width: 100% !important;
-  pointer-events: auto !important;
-  display: flex !important;
+
+  /* LAYOUT */
   flex-direction: row !important;
   flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 12px 14px !important;
+
+  /* SCROLL */
   overflow-x: auto !important;
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+
+  /* APPEARANCE — THIS IS CRITICAL */
+  background-color: rgba(45, 59, 125, 0.98) !important;
+  background: linear-gradient(180deg, rgba(45, 59, 125, 0.98) 0%, rgba(45, 59, 125, 0.95) 100%) !important;
+  border-bottom: 2px solid rgba(255, 20, 147, 0.3) !important;
+}
+
+#filters::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* ╔═══════════════════════════════════════════════════════════════════╗
+   ║  FILTER BUTTONS — ABSOLUTE OVERRIDE                                ║
+   ║  These rules are EXTREMELY SPECIFIC to prevent ANY inheritance      ║
+   ║  from global .chip, button, or other generic selectors             ║
+   ║  Fixes: Pink borders, cream background, pill shapes                ║
+   ╚═══════════════════════════════════════════════════════════════════╝ */
+
+
+/* ── AGGRESSIVE OVERRIDE: Filter chip styling ── */
+#filters button,
+#filters .chip {
+  /* KILL all problematic inherited styles */
+  background-image: none !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: none !important;
+  border-color: transparent !important;
+  border-width: 0 !important;
+  border-radius: 6px !important;
+  border-style: none !important;
+
+  /* KILL Y2K styles */
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+
+  /* Layout */
+  display: inline-flex !important;
+  flex-shrink: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
   gap: 4px !important;
-  padding: 4px 6px !important;
-  height: 50px !important;
-  max-height: 50px !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
+  padding: 6px 12px !important;
+  min-height: 40px !important;
+  min-width: auto !important;
+  height: auto !important;
+
+  /* Typography */
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  color: #fff !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  line-height: 1.3 !important;
+  font-style: normal !important;
+
+  /* Interaction */
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  transition: all 0.2s ease !important;
+  outline: none !important;
+  opacity: 1 !important;
+}
+
+/* ── HOVER STATE ── */
+#filters button:hover,
+#filters .chip:hover {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ── ACTIVE STATE — Only when explicitly marked as .active ── */
+#filters button.active,
+#filters .chip.active {
+  background-color: #FF1493 !important;
+  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(255,20,147,0.3) !important;
+  border-radius: 8px !important;
+  border: none !important;
+}
+
+/* ── FOCUS STATE for accessibility ── */
+#filters button:focus,
+#filters .chip:focus {
+  outline: 2px solid rgba(255,255,255,0.5) !important;
+  outline-offset: 2px !important;
 }
 
 /* Gluten-free view */
@@ -2002,6 +2136,24 @@ main {
     align-items: center !important;
   }
 
+  /* ── EXPLICIT OVERRIDE FOR FILTER CHIPS in mobile ─────────────────── */
+  #filters .chip,
+  #filters button.chip {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    min-height: 40px !important;
+    border-radius: 6px !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+    color: #fff !important;
+    display: inline-flex !important;
+  }
+
+  #filters .chip:hover,
+  #filters button.chip:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+  }
+
   /* ── SHEET / MODALI ──────────────────────────────────────────── */
   .sheet-header {
     padding: 16px 18px !important;
@@ -2136,6 +2288,22 @@ main {
     pointer-events: none !important;
   }
 
+  /* ── EXPLICIT OVERRIDE FOR FILTER CHIPS – do NOT apply thumb-friendly sizing ─ */
+  #filters .chip,
+  #filters button.chip {
+    min-width: auto !important;
+    min-height: 40px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    position: static !important;
+    display: inline-flex !important;
+  }
+
+  #filters .chip::after,
+  #filters button.chip::after {
+    display: none !important;
+  }
+
   /* Increase spacing between buttons */
   nav.bottom button {
     gap: 4px !important;
@@ -2154,6 +2322,51 @@ main {
     font-size: 16px !important;
     min-width: 50px !important;
   }
+
+/* ══════════════════════════════════════════════════════════════════
+   MOBILE OPTIMIZATION — Tab Bar Filters ≤ 480px
+══════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  header {
+    padding: 16px 12px !important;
+    min-height: 72px !important;
+  }
+
+  header h1 {
+    font-size: 20px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  #universal-install-btn {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+    margin-left: 6px !important;
+  }
+
+  #weather-text {
+    font-size: 12px !important;
+  }
+
+  #filters {
+    top: 72px !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    height: 56px !important;
+  }
+
+  #filters button,
+  #filters .chip {
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+    min-height: 40px !important;
+  }
+
+  #map {
+    top: 128px !important;
+    bottom: 60px !important;
+  }
+}
 
   /* Checkbox/Radio bigger */
   input[type="checkbox"],
@@ -2177,8 +2390,8 @@ main {
 
   /* ── HEADER ──────────────────────────────────────────────────── */
   header {
-    height: 54px !important;
-    padding: 10px 10px !important;
+    padding: 16px 12px !important;
+    min-height: 72px !important;
     gap: 8px !important;
   }
 
@@ -2266,6 +2479,19 @@ main {
     padding: 10px 14px !important;
     font-size: 13px !important;
     min-height: 42px !important;
+  }
+
+  /* ── FILTER CHIPS FINAL OVERRIDE ────────────────────────────────── */
+  #filters .chip,
+  #filters button.chip {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    min-height: 40px !important;
+    border-radius: 6px !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+    color: #fff !important;
+    display: inline-flex !important;
   }
 
   /* ── CARD PADDING ────────────────────────────────────────────– */
