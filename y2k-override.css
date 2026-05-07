@@ -1911,3 +1911,283 @@ main {
     gap: 14px !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   MOBILE FRIENDLY — Font, Bottoni, Spacing
+   Breakpoint: max-width 768px (tablet + mobile)
+══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* ── HEADER ──────────────────────────────────────────────────── */
+  header {
+    height: 52px !important;
+    gap: 10px !important;
+    padding: 10px 12px !important;
+  }
+
+  header h1 {
+    font-size: 18px !important;
+  }
+
+  /* ── BOTTOM NAV - Bottoni più grandi ──────────────────────────── */
+  nav.bottom {
+    padding: 8px 4px calc(8px + var(--safe-bottom)) !important;
+    gap: 3px !important;
+  }
+
+  nav.bottom button {
+    padding: 8px 3px 6px !important;
+    font-size: 10px !important;
+    min-height: 48px !important;
+  }
+
+  nav.bottom button svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  /* ── CHIPS - Filter bar ───────────────────────────────────────── */
+  .chip {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+    min-height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* ── SHEET / MODALI ──────────────────────────────────────────── */
+  .sheet-header {
+    padding: 16px 18px !important;
+  }
+
+  .sheet-header h2 {
+    font-size: 19px !important;
+  }
+
+  .sheet-body {
+    padding: 20px 18px !important;
+    max-height: calc(100vh - 180px) !important;
+  }
+
+  .sheet-inner .section {
+    margin: 20px 0 !important;
+  }
+
+  .sheet-inner .section h3 {
+    font-size: 13px !important;
+    margin: 0 0 12px !important;
+  }
+
+  .sheet-inner .section p {
+    font-size: 15px !important;
+    line-height: 1.7 !important;
+  }
+
+  /* ── BOTTONI GENERALI ────────────────────────────────────────── */
+  button, .btn, input[type="button"], input[type="submit"] {
+    min-height: 44px !important;
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+  }
+
+  button svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  /* ── INPUT FIELDS ────────────────────────────────────────────── */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="search"],
+  textarea,
+  select {
+    min-height: 44px !important;
+    padding: 12px 14px !important;
+    font-size: 16px !important;
+  }
+
+  /* ── CARD PADDING ────────────────────────────────────────────── */
+  .card, [class*="card"], .item-card {
+    padding: 14px 16px !important;
+  }
+
+  /* ── TESTO GENERALE ──────────────────────────────────────────── */
+  body {
+    font-size: 15px !important;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.4 !important;
+  }
+
+  /* ── MODAL/SHEET CONTENT ─────────────────────────────────────── */
+  .sheet-inner {
+    max-width: 100% !important;
+  }
+
+  /* ── WEATHER MODAL ──────────────────────────────────────────── */
+  .weather-day {
+    min-height: 90px !important;
+  }
+
+  .weather-date,
+  .weather-icon,
+  .weather-temps {
+    font-size: 13px !important;
+  }
+
+  /* ── SPACING GENERALE ────────────────────────────────────────── */
+  .section {
+    padding: 14px !important;
+  }
+
+  /* ── TASTO CHIUSURA SHEET ────────────────────────────────────── */
+  .sheet-header .icon-btn {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+  }
+
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   EXTRA SMALL DEVICES — max-width 480px
+══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+
+  body {
+    font-size: 16px !important;
+  }
+
+  /* ── HEADER ──────────────────────────────────────────────────── */
+  header {
+    height: 54px !important;
+    padding: 10px 10px !important;
+    gap: 8px !important;
+  }
+
+  header h1 {
+    font-size: 16px !important;
+  }
+
+  header h1 .badge {
+    font-size: 9px !important;
+    padding: 2px 6px !important;
+  }
+
+  /* ── BOTTOM NAV - Extra padding ──────────────────────────────── */
+  nav.bottom {
+    padding: 10px 3px calc(10px + var(--safe-bottom)) !important;
+  }
+
+  nav.bottom button {
+    padding: 10px 4px 8px !important;
+    font-size: 10px !important;
+    min-height: 50px !important;
+  }
+
+  nav.bottom button svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  /* ── SHEET / MODALI FULL HEIGHT ──────────────────────────────── */
+  .sheet-body {
+    padding: 18px 14px !important;
+    max-height: calc(100vh - 160px) !important;
+  }
+
+  .sheet-header {
+    padding: 14px 14px !important;
+  }
+
+  /* ── MODAL HEADER ────────────────────────────────────────────── */
+  .sheet-header h2 {
+    font-size: 18px !important;
+    word-break: break-word !important;
+  }
+
+  /* ── BOTTONI PIÙ GRANDI ──────────────────────────────────────── */
+  button, .btn {
+    min-height: 48px !important;
+    padding: 14px 16px !important;
+    font-size: 15px !important;
+  }
+
+  /* ── INPUT FIELDS PIÙ GRANDI ─────────────────────────────────── */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="search"],
+  textarea,
+  select {
+    min-height: 48px !important;
+    padding: 14px 14px !important;
+    font-size: 16px !important;
+  }
+
+  /* ── TESTO ───────────────────────────────────────────────────── */
+  p, label, span {
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+  }
+
+  h2, h3 {
+    font-size: 17px !important;
+  }
+
+  /* ── CHIPS / FILTER ──────────────────────────────────────────── */
+  .chip {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    min-height: 42px !important;
+  }
+
+  /* ── CARD PADDING ────────────────────────────────────────────– */
+  .card, [class*="card"] {
+    padding: 14px 12px !important;
+  }
+
+  /* ── SECTION PADDING ─────────────────────────────────────────– */
+  .section {
+    padding: 12px !important;
+    margin: 12px 0 !important;
+  }
+
+  /* ── ICON BUTTONS ────────────────────────────────────────────– */
+  .icon-btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    font-size: 18px !important;
+  }
+
+  /* ── WEATHER CARDS ───────────────────────────────────────────– */
+  .weather-day {
+    min-height: 100px !important;
+    padding: 12px !important;
+  }
+
+  .weather-date {
+    font-size: 12px !important;
+  }
+
+  .weather-icon {
+    font-size: 32px !important;
+  }
+
+  .weather-temps {
+    font-size: 14px !important;
+  }
+
+  /* ── PREVENT ZOOM ON INPUT FOCUS ─────────────────────────────── */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+}
