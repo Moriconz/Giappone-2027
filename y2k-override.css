@@ -115,6 +115,18 @@ header h1 .badge {
   display: none !important;
 }
 
+/* Weather Widget — Ensure visibility when shown */
+#weather-floating[style*="display: block"] {
+  display: block !important;
+  position: fixed !important;
+  bottom: 68px !important;
+  left: 14px !important;
+  z-index: 99 !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+}
+
 /* Debug panel — ALWAYS hidden */
 #debug-panel,
 #debug-content {

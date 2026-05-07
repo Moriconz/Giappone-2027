@@ -35,12 +35,12 @@
 
   // Detect browser and OS
   const ua = navigator.userAgent.toLowerCase();
-  const isIOS = /iphone|ipad|ipod/.test(ua);
-  const isAndroid = /android/.test(ua);
-  const isChrome = /chrome/.test(ua) && !/edg/.test(ua);
+  const isIOS = /iphone|ipad|ipod|macintosh|mac os/.test(ua);
+  const isAndroid = /android|aarch64|arm64/.test(ua);
+  const isChrome = /chrome|crios/.test(ua) && !/edg/.test(ua);
   const isEdge = /edg/.test(ua);
-  const isFirefox = /firefox/.test(ua);
-  const isSafari = /safari/.test(ua) && !/chrome/.test(ua) && !/edg/.test(ua);
+  const isFirefox = /firefox|fxios/.test(ua);
+  const isSafari = /safari|version.*mobile/.test(ua) && !/chrome/.test(ua) && !/edg/.test(ua);
 
   // Listen for beforeinstallprompt (Chrome/Edge)
   // NON mostrare il modal - il UniversalInstaller gestirà tutto
@@ -145,7 +145,7 @@
     }
 
     async handleInstall() {
-      console.log('[UniversalInstaller] 👉 Install clicked');
+      console.log('[UniversalInstaller] 👉 Install clicked', { hasPrompt: !!this.deferredPrompt, isAndroid: this.isAndroid, isIOS: this.isIOS });
 
       // Native beforeinstallprompt (Chrome/Edge/Brave Android/Desktop)
       if (this.deferredPrompt) {
@@ -158,14 +158,20 @@
       }
 
       // Fallback for browsers without beforeinstallprompt
+      let msg = '📲 Apri il menu del browser e seleziona "Installa"';
       if (this.isIOS) {
-        window.toast('📱 Tocca Condividi → "Aggiungi a Schermata Iniziale"');
-      } else if (this.isAndroid && this.isFirefox) {
-        window.toast('🦊 Apri il menu → "Installa"');
+        msg = '📱 Tocca Condividi → "Aggiungi a Schermata Iniziale"';
+      } else if (this.isAndroid) {
+        msg = '📲 Apri il menu del browser (⋮) e seleziona "Installa" o "Aggiungi a schermata iniziale"';
       } else if (this.isDesktop) {
-        window.toast('🖥️ Guarda in alto a destra della barra indirizzi e clicca il bottone Installa');
+        msg = '🖥️ Guarda in alto a destra della barra indirizzi';
+      }
+
+      // Try toast first, then alert as fallback
+      if (window.toast && typeof window.toast === 'function') {
+        window.toast(msg);
       } else {
-        window.toast('📲 Apri il menu del browser e seleziona "Installa"');
+        alert(msg);
       }
     }
   }
@@ -6601,13 +6607,6 @@ window.addEventListener("load", () => {
   // Initialize GPS weather widget and update every 10 minutes
   window.initGpsWeatherWidget = function() {
     console.log('[Weather] initGpsWeatherWidget called');
-    // Show initial loading state
-    const weatherFloating = document.getElementById('weather-floating');
-    if (weatherFloating) {
-      weatherFloating.style.display = 'block';
-      console.log('[Weather] Weather widget visibility set to block');
-    }
-
     updateGpsWeatherWidget();
     setInterval(updateGpsWeatherWidget, 10 * 60 * 1000); // Every 10 minutes
 
