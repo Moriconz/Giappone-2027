@@ -6509,15 +6509,21 @@ window.addEventListener("load", () => {
   }
 
   function fetchWeatherHourly(lat, lon, city = 'Posizione') {
-    return fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,weathercode,windspeed_10m,relativehumidity_2m&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm&timezone=Asia/Tokyo`
-    )
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,weathercode,windspeed_10m,relativehumidity_2m&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm&timezone=Asia/Tokyo`;
+    console.log(`[Weather] Fetching: ${city} (${lat}, ${lon})`);
+
+    return fetch(url)
       .then(response => {
+        console.log(`[Weather] API response for ${city}:`, response.status, response.ok);
         if (!response.ok) throw new Error(`API error: ${response.status}`);
         return response.json();
       })
+      .then(data => {
+        console.log(`[Weather] ✅ Data received for ${city}`, data ? 'has data' : 'null');
+        return data;
+      })
       .catch(err => {
-        console.error(`[Weather] Hourly fetch failed for ${city}:`, err);
+        console.error(`[Weather] ❌ Fetch FAILED for ${city}:`, err.message);
         return null;
       });
   }
@@ -6713,13 +6719,18 @@ window.addEventListener("load", () => {
       async (position) => {
         if (!geoCompleted) {
           geoCompleted = true;
-          console.log('[Weather] GPS obtained:', position.coords.latitude, position.coords.longitude);
           const { latitude, longitude } = position.coords;
+          console.log('[Weather] ✅ GPS SUCCESS:', { latitude, longitude });
+
+          console.log('[Weather] Fetching weather for GPS coordinates...');
           const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
+          console.log('[Weather] Weather data result:', !!weatherData);
+
           if (weatherData) {
+            console.log('[Weather] ✅ Using GPS data');
             buildAndShowWeatherModal(weatherData, 'La tua posizione', true);
           } else {
-            // If GPS fetch fails, use Aprilia
+            console.log('[Weather] ⚠️ GPS fetch returned null, fallback to Aprilia');
             const data = await fetchWeatherHourly(41.4667, 12.5833, 'Aprilia');
             if (data) buildAndShowWeatherModal(data, 'Aprilia', false);
           }
@@ -6728,8 +6739,8 @@ window.addEventListener("load", () => {
       (error) => {
         if (!geoCompleted) {
           geoCompleted = true;
-          console.warn('[Weather] GPS error:', error.message);
-          // GPS failed, use Aprilia
+          console.warn('[Weather] ❌ GPS ERROR:', error.code, error.message);
+          console.log('[Weather] Using fallback Aprilia');
           fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
             .then(data => {
               if (data) buildAndShowWeatherModal(data, 'Aprilia', false);
