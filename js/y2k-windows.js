@@ -95,11 +95,43 @@
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 12px;
+      padding: 14px !important;
       color: #2D3B7D;
       -webkit-overflow-scrolling: touch;
       width: 100%;
-      box-sizing: border-box;
+      box-sizing: border-box !important;
+    }
+
+    /* Garantisce padding interno per elementi */
+    .y2k-win-body > * {
+      margin-bottom: 12px !important;
+    }
+
+    .y2k-win-body > *:last-child {
+      margin-bottom: 0 !important;
+    }
+
+    /* Padding per elementi cliccabili */
+    .y2k-win-body button,
+    .y2k-win-body a,
+    .y2k-win-body [role="button"] {
+      padding: 10px 12px !important;
+      margin: 6px 0 !important;
+      display: block !important;
+      width: 100% !important;
+      text-align: left !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Padding per list items */
+    .y2k-win-body li,
+    .y2k-win-body .poi-row,
+    .y2k-win-body .item,
+    .y2k-win-body [class*="row"] {
+      padding: 10px 12px !important;
+      margin: 6px 0 !important;
+      border-radius: 6px !important;
+      box-sizing: border-box !important;
     }
 
     .y2k-win-body::-webkit-scrollbar { width: 10px; }
@@ -126,6 +158,47 @@
     }
 
     .y2k-win { animation: y2kWinIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+
+    /* Mobile: limita larghezza windows */
+    @media (max-width: 480px) {
+      .y2k-win {
+        width: 90vw !important;
+        max-width: 320px !important;
+        max-height: 50vh !important;
+        min-width: 280px !important;
+      }
+
+      .y2k-win-title span {
+        font-size: 13px !important;
+        font-weight: 700 !important;
+      }
+
+      .y2k-win-body {
+        padding: 12px !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+      }
+
+      .y2k-win-body h1 {
+        font-size: 16px !important;
+        line-height: 1.3 !important;
+        margin-bottom: 10px !important;
+      }
+      .y2k-win-body h2 {
+        font-size: 15px !important;
+        line-height: 1.3 !important;
+        margin-bottom: 8px !important;
+      }
+      .y2k-win-body h3 {
+        font-size: 14px !important;
+        line-height: 1.3 !important;
+        margin-bottom: 6px !important;
+      }
+      .y2k-win-body p {
+        line-height: 1.5 !important;
+        margin-bottom: 10px !important;
+      }
+    }
 
     /* Sticky header per liste */
     .y2k-win-body [style*="position:sticky"] {
@@ -430,8 +503,11 @@
     };
     const move = (cx, cy) => {
       if (!resizing) return;
-      win.style.width  = Math.max(260, sw + cx - sx) + 'px';
-      win.style.height = Math.max(180, sh + cy - sy) + 'px';
+      const newWidth = Math.max(260, sw + cx - sx) + 'px';
+      const newHeight = Math.max(180, sh + cy - sy) + 'px';
+      win.style.setProperty('width', newWidth, 'important');
+      win.style.setProperty('height', newHeight, 'important');
+      win.style.setProperty('max-width', 'none', 'important');
     };
     const end = () => { resizing = false; };
 

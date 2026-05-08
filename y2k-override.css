@@ -115,16 +115,181 @@ header h1 .badge {
   display: none !important;
 }
 
-/* Weather Widget — Ensure visibility when shown */
-#weather-floating[style*="display: block"] {
-  display: block !important;
+/* Weather Widget Card (v2.0) — Bottom-Left Position */
+/* ALL POSITIONING IN CSS TO ELIMINATE SPECIFICITY CONFLICTS */
+#weather-floating {
   position: fixed !important;
-  bottom: 68px !important;
+  bottom: 145px !important;
   left: 14px !important;
-  z-index: 99 !important;
-  width: auto !important;
-  height: auto !important;
-  max-width: none !important;
+  top: auto !important;
+  right: auto !important;
+  z-index: 9999 !important;
+  display: none !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+/* Show when weather data loaded */
+#weather-floating.show {
+  display: block !important;
+}
+
+#weather-card {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+#weather-floating:hover #weather-card {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.35) !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  #weather-floating {
+    bottom: 130px !important;
+    left: 10px !important;
+  }
+
+  #weather-card {
+    width: 100px !important;
+    height: 160px !important;
+    padding: 10px !important;
+  }
+
+  #weather-icon {
+    font-size: 36px !important;
+  }
+
+  #weather-temp {
+    font-size: 26px !important;
+  }
+}
+
+/* WEATHER MODAL — Full forecast cards */
+#weather-modal {
+  backdrop-filter: blur(4px) !important;
+  animation: fadeIn 0.3s ease-in-out !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.weather-forecast-card {
+  background: linear-gradient(135deg, #4A5BA8 0%, #2D3B7D 100%);
+  border: 2px solid rgba(255, 20, 147, 0.3);
+  border-radius: 20px;
+  padding: 20px;
+  aspect-ratio: 3/4;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.weather-forecast-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 20, 147, 0.1);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.weather-forecast-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+}
+
+.weather-forecast-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.weather-card-date {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.weather-card-condition {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.weather-card-icon {
+  font-size: 80px;
+  text-align: center;
+  margin: 20px 0;
+  line-height: 1;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weather-card-temp {
+  font-size: 56px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.weather-card-temp-unit {
+  font-size: 24px;
+  opacity: 0.8;
+}
+
+.weather-card-more {
+  background: rgba(255, 20, 147, 0.2);
+  border: 1px solid rgba(255, 20, 147, 0.5);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.weather-card-more:hover {
+  background: rgba(255, 20, 147, 0.4);
+  border-color: rgba(255, 20, 147, 0.8);
+}
+
+.weather-card-footer {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.weather-card-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transition: all 0.2s ease;
+}
+
+.weather-card-dot.active {
+  background: rgba(255, 255, 255, 0.9);
+  width: 8px;
 }
 
 /* Debug panel — ALWAYS hidden */
@@ -247,6 +412,9 @@ nav.bottom button.active {
   z-index: 50 !important;
   background: rgba(20,30,80,0.65) !important;
   backdrop-filter: blur(6px) !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
 }
 .sheet-inner {
   z-index: 51 !important;
@@ -255,6 +423,38 @@ nav.bottom button.active {
   border-radius: 18px 18px 0 0 !important;
   box-shadow: 0 -8px 40px rgba(255,20,147,0.3) !important;
   padding-bottom: calc(20px + var(--safe-bottom)) !important;
+  width: 100% !important;
+}
+
+/* Mobile: limita larghezza panel */
+@media (max-width: 480px) {
+  .sheet {
+    padding: 0 12px !important;
+  }
+
+  .sheet-inner {
+    max-width: 320px !important;
+    max-height: 50vh !important;
+    padding-top: 10px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    width: 100% !important;
+  }
+
+  .sheet-header {
+    padding: 8px 12px !important;
+  }
+
+  .sheet-header h2 {
+    font-size: 14px !important;
+  }
+
+  .sheet-body {
+    padding: 10px 12px !important;
+    max-height: calc(50vh - 60px) !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+  }
 }
 /* ── Sticky search header dentro sheet (z-index sopra tutto) ── */
 .sheet-inner [style*="sticky"] {
@@ -1649,6 +1849,56 @@ main {
 @media print {
   header, nav.bottom, #filters { display: none !important; }
   .sheet-inner { box-shadow: none !important; border: 1px solid #ccc !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   Y2K WINDOW BODY — Spacing in group panel
+══════════════════════════════════════════════════════════════════ */
+.y2k-win-body {
+  padding: 16px !important;
+}
+
+.y2k-win-body > div {
+  margin-bottom: 14px !important;
+}
+
+.y2k-win-body div[style*="border"] {
+  padding: 8px 10px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   GF CITY FILTER — Force compact width
+══════════════════════════════════════════════════════════════════ */
+#gf-city-filter {
+  width: 110px !important;
+  flex: 0 0 110px !important;
+  min-width: 110px !important;
+  max-width: 110px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   GRUPPO ROOM CODE — Ensure buttons stay visible and compact
+══════════════════════════════════════════════════════════════════ */
+#copy-code-btn,
+#regen-code-btn {
+  display: inline-block !important;
+  visibility: visible !important;
+  overflow: visible !important;
+  flex-shrink: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+  filter: drop-shadow(0 2px 4px rgba(255,20,147,0.4)) !important;
+  transition: all 0.2s ease !important;
+  font-size: 18px !important;
+  padding: 3px 4px !important;
+}
+
+#copy-code-btn:hover,
+#regen-code-btn:hover {
+  filter: drop-shadow(0 4px 8px rgba(255,20,147,0.6)) !important;
+  transform: scale(1.1) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════

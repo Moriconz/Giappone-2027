@@ -37,6 +37,8 @@
   const ua = navigator.userAgent.toLowerCase();
   const isIOS = /iphone|ipad|ipod|macintosh|mac os/.test(ua);
   const isAndroid = /android|aarch64|arm64/.test(ua);
+  // Fallback: if we have touch points and not iOS/Mac, it's likely Android or mobile
+  const isMobile = (navigator.maxTouchPoints > 1 || /mobile|android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua)) && !isIOS;
   const isChrome = /chrome|crios/.test(ua) && !/edg/.test(ua);
   const isEdge = /edg/.test(ua);
   const isFirefox = /firefox|fxios/.test(ua);
@@ -75,12 +77,13 @@
       this.ua = navigator.userAgent.toLowerCase();
       this.isIOS = /iphone|ipad|ipod/.test(this.ua);
       this.isAndroid = /android/.test(this.ua);
+      this.isMobile = (navigator.maxTouchPoints > 1 || /mobile|android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(this.ua)) && !this.isIOS;
       this.isChrome = /chrome/.test(this.ua) && !/edg/.test(this.ua);
       this.isEdge = /edg/.test(this.ua);
       this.isFirefox = /firefox/.test(this.ua);
       this.isSafari = /safari/.test(this.ua) && !/chrome/.test(this.ua) && !/edg/.test(this.ua);
       this.isBrave = /brave/.test(this.ua);
-      this.isDesktop = !this.isAndroid && !this.isIOS;
+      this.isDesktop = !this.isAndroid && !this.isIOS && !this.isMobile;
       this.deferredPrompt = null;
       this.init();
     }
@@ -161,16 +164,24 @@
       let msg = '📲 Apri il menu del browser e seleziona "Installa"';
       if (this.isIOS) {
         msg = '📱 Tocca Condividi → "Aggiungi a Schermata Iniziale"';
-      } else if (this.isAndroid) {
+      } else if (this.isAndroid || this.isMobile) {
         msg = '📲 Apri il menu del browser (⋮) e seleziona "Installa" o "Aggiungi a schermata iniziale"';
       } else if (this.isDesktop) {
         msg = '🖥️ Guarda in alto a destra della barra indirizzi';
       }
 
       // Try toast first, then alert as fallback
+      console.log('[UniversalInstaller] Showing message:', msg, { hasToast: !!window.toast });
       if (window.toast && typeof window.toast === 'function') {
-        window.toast(msg);
+        try {
+          window.toast(msg);
+          console.log('[UniversalInstaller] Toast called successfully');
+        } catch(e) {
+          console.error('[UniversalInstaller] Toast error:', e);
+          alert(msg);
+        }
       } else {
+        console.log('[UniversalInstaller] No toast function, using alert');
         alert(msg);
       }
     }
@@ -227,14 +238,26 @@
   <!-- Filters Tab Bar — FIXED below header -->
   <div id="filters" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 100; display: flex; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; gap: 8px; padding: 8px 14px; background: linear-gradient(180deg, rgba(45, 59, 125, 0.98) 0%, rgba(45, 59, 125, 0.95) 100%); border-bottom: 2px solid rgba(255, 20, 147, 0.3); height: 56px; align-items: center; scrollbar-width: none;"></div>
 
-  <main>
-    <!-- Weather Widget — FLOATING bottom-left above nav bar -->
-    <div id="weather-floating" style="display: none; position: fixed; bottom: 68px; left: 14px; z-index: 99; background: rgba(45, 59, 125, 0.92); backdrop-filter: blur(10px); border-radius: 8px; border: 2px solid rgba(255, 20, 147, 0.3); box-shadow: 0 4px 12px rgba(255,20,147,0.2); padding: 10px 14px; cursor: pointer; user-select: none;">
-      <div id="weather-text" style="font-size: 14px; color: #fff; white-space: nowrap; font-family: 'Segoe UI', sans-serif; font-weight: 700;">⏳ Caricamento...</div>
+    <!-- WEATHER MODAL — Full forecast detail (opens on "Dettagli" click) -->
+    <div id="weather-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; padding: 20px; font-family: 'Segoe UI', sans-serif;">
+      <div style="max-width: 100%; margin: 0 auto;">
+        <!-- Close button -->
+        <button id="weather-modal-close" onclick="closeWeatherModal()" style="position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; font-size: 20px; cursor: pointer; z-index: 1001;">✕</button>
+
+        <!-- Title -->
+        <h2 style="color: #fff; margin-bottom: 20px; text-align: center; font-size: 24px;">Previsioni Meteo</h2>
+
+        <!-- Cards container -->
+        <div id="weather-cards-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+          <!-- Cards will be populated by JS -->
+        </div>
+      </div>
     </div>
 
     <div id="map"></div>
   </main>
+
+
     <!-- DEBUG PANEL: Mostra errori e log PeerGPS sul telefono -->
     <div id="debug-panel" style="position:fixed;bottom:80px;right:10px;width:280px;max-height:200px;background:rgba(0,0,0,0.9);color:#00FF88;font-size:10px;padding:8px;border-radius:6px;overflow-y:auto;font-family:monospace;z-index:9999;border:1px solid #FF1493;display:none">
       <div style="margin-bottom:4px;font-weight:bold;color:#FF1493">🔍 Debug Log:</div>
@@ -313,11 +336,24 @@
   </div>
   <button onclick="location.reload()" class="ol-error-btn">🔄 Ricarica</button>
 </div>
+
+<!-- WEATHER WIDGET — FLOATING bottom-left (TRULY OUTSIDE app) -->
+<div id="weather-floating" style="cursor: pointer; user-select: none;">
+  <div id="weather-card" style="background: rgba(74, 91, 168, 0.15); border-radius: 24px; border: 1.5px solid rgba(255, 255, 255, 0.25); box-shadow: 0 8px 32px rgba(31, 38, 135, 0.25); padding: 16px 14px; width: 120px; height: 180px; backdrop-filter: blur(15px); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;">
+    <div id="weather-date" style="font-size: 8px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.2px; font-weight: 600; line-height: 1;">Sun, 15</div>
+    <div id="weather-icon" style="font-size: 36px; line-height: 1; text-align: center; margin: 4px 0;">☀️</div>
+    <div id="weather-condition" style="font-size: 9px; color: rgba(255,255,255,0.9); text-align: center; font-weight: 500;">Sereno</div>
+    <div id="weather-temp" style="font-size: 26px; font-weight: 900; color: #fff; line-height: 1; text-align: center;">15°</div>
+    <button id="weather-more-btn" onclick="openWeatherModal()" style="width: 100%; padding: 4px; background: rgba(255,20,147,0.2); border: 1px solid rgba(255,20,147,0.5); color: #fff; border-radius: 5px; font-size: 8px; cursor: pointer; font-weight: 600; margin-top: 4px;">more</button>
+  </div>
+</div>
+
 <script>
 console.log('[Giappone2027] App loading...');
 
-window.addEventListener("load", () => {
-  console.log('[Giappone2027] Window load fired');
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('[Giappone2027] DOM ready');
   if (typeof ol === 'undefined') {
     console.error('[Giappone2027] OpenLayers not loaded!');
     document.getElementById('ol-error').style.display = 'flex';
@@ -6554,17 +6590,26 @@ window.addEventListener("load", () => {
     console.log('[Weather] Updating GPS weather widget...');
     if (!navigator.geolocation) {
       console.warn('[Weather] Geolocation not available');
+      showWeatherError('📍 Geolocation non disponibile');
       return;
     }
 
+    console.log('[Weather] Requesting GPS position...');
+    const timeout = setTimeout(() => {
+      console.warn('[Weather] GPS timeout - no response after 10s');
+      showWeatherError('⏱️ GPS timeout');
+    }, 10000);
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        clearTimeout(timeout);
         const { latitude, longitude } = position.coords;
         console.log('[Weather] GPS position:', { latitude, longitude });
 
         const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
         if (!weatherData) {
           console.warn('[Weather] Failed to fetch GPS weather');
+          showWeatherError('Errore API');
           return;
         }
 
@@ -6572,37 +6617,197 @@ window.addEventListener("load", () => {
         const now = new Date();
         const hourIndex = now.getHours();
         const hourlyData = weatherData.hourly;
+        const dailyData = weatherData.daily;
         const currentTemp = Math.round(hourlyData.temperature_2m[hourIndex]);
         const currentCode = hourlyData.weathercode[hourIndex];
         const currentCondition = getWeatherConditionName(currentCode);
         const icon = getWeatherIcon(currentCode);
 
-        // Update floating weather widget
-        const weatherText = document.getElementById('weather-text');
+        // Format date (e.g., "Sun, 15 Apr") and time (e.g., "13:25")
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const dayName = days[now.getDay()];
+        const date = now.getDate();
+        const monthName = months[now.getMonth()];
+        const dateStr = `${dayName}, ${date} ${monthName}`;
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        // Update card fields
+        const weatherIcon = document.getElementById('weather-icon');
+        const weatherDate = document.getElementById('weather-date');
+        const weatherTime = document.getElementById('weather-time');
+        const weatherTemp = document.getElementById('weather-temp');
+        const weatherCondition = document.getElementById('weather-condition');
         const weatherFloating = document.getElementById('weather-floating');
-        if (weatherText && weatherFloating) {
-          weatherText.textContent = `${icon} ${currentTemp}° ${currentCondition.substring(0, 10)}`;
-          weatherFloating.style.display = 'block';
-          console.log('[Weather] Floating widget updated:', { currentTemp, currentCondition });
+
+        if (weatherIcon && weatherDate && weatherTemp && weatherCondition && weatherFloating) {
+          weatherIcon.textContent = icon;
+          weatherDate.textContent = dateStr;
+          if (weatherTime) weatherTime.textContent = timeStr;
+          weatherTemp.innerHTML = `${currentTemp}<span style="font-size: 32px;">°C</span>`;
+          weatherCondition.textContent = currentCondition;
+          weatherFloating.classList.add('show');
+          console.log('[Weather] Card updated:', { currentTemp, currentCondition, dateStr, timeStr });
         }
       },
       (error) => {
-        console.warn('[Weather] GPS error:', error.message);
-        // Show fallback message
-        const weatherText = document.getElementById('weather-text');
-        const weatherFloating = document.getElementById('weather-floating');
-        if (weatherText && weatherFloating) {
-          if (error.code === error.PERMISSION_DENIED) {
-            weatherText.textContent = '📍 Consenti localizzazione';
-            weatherFloating.style.display = 'block';
-          } else {
-            weatherText.textContent = '🌍 GPS non disponibile';
-            weatherFloating.style.display = 'block';
-          }
+        clearTimeout(timeout);
+        console.warn('[Weather] GPS error:', error.code, error.message);
+        if (error.code === error.PERMISSION_DENIED) {
+          showWeatherError('📍 Consenti localizzazione', 'Permission denied');
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          showWeatherError('🌍 GPS non disponibile', 'Position unavailable');
+        } else {
+          showWeatherError('⚠️ Errore GPS', error.message);
         }
-      }
+      },
+      { timeout: 15000, enableHighAccuracy: false }
     );
   }
+
+  function showWeatherError(errorMsg, consoleMsg = '') {
+    const weatherDate = document.getElementById('weather-date');
+    const weatherIcon = document.getElementById('weather-icon');
+    const weatherTemp = document.getElementById('weather-temp');
+    const weatherCondition = document.getElementById('weather-condition');
+    const weatherFloating = document.getElementById('weather-floating');
+
+    if (weatherDate && weatherIcon && weatherTemp && weatherCondition && weatherFloating) {
+      weatherIcon.textContent = '⚠️';
+      weatherDate.textContent = 'Errore';
+      weatherTemp.textContent = '—';
+      weatherCondition.textContent = errorMsg;
+      weatherFloating.classList.add('show');
+      console.warn('[Weather] Error displayed:', consoleMsg || errorMsg);
+    }
+  }
+
+  // Expose updateGpsWeatherWidget globally so it can be called
+  window.updateGpsWeatherWidget = updateGpsWeatherWidget;
+
+  // ═══════════════════════════════════════════════════════════════
+  // WEATHER MODAL — Full forecast detail
+  // ═══════════════════════════════════════════════════════════════
+
+  window._weatherModalData = null;
+
+  window.openWeatherModal = function() {
+    console.log('[Weather Modal] Opening...');
+    const modal = document.getElementById('weather-modal');
+    if (!modal) {
+      console.error('[Weather Modal] Modal element not found');
+      return;
+    }
+
+    // Show modal first
+    modal.style.display = 'block';
+
+    // If cached, render immediately
+    if (window._weatherModalData) {
+      console.log('[Weather Modal] Using cached data');
+      window.renderWeatherModal(window._weatherModalData);
+      return;
+    }
+
+    // Otherwise fetch fresh data
+    console.log('[Weather Modal] Fetching fresh data...');
+    if (!navigator.geolocation) {
+      console.error('[Weather Modal] Geolocation not available');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          console.log('[Weather Modal] Got position:', { latitude, longitude });
+          const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
+          if (weatherData) {
+            window._weatherModalData = weatherData;
+            window.renderWeatherModal(weatherData);
+            console.log('[Weather Modal] Data fetched and rendered');
+          } else {
+            console.error('[Weather Modal] No data returned');
+          }
+        } catch (err) {
+          console.error('[Weather Modal] Fetch error:', err);
+        }
+      },
+      (error) => {
+        console.error('[Weather Modal] Geolocation error:', error.message);
+      }
+    );
+  };
+
+  window.renderWeatherModal = function(weatherData) {
+    const container = document.getElementById('weather-cards-container');
+    if (!container || !weatherData.daily) return;
+
+    const dailyData = weatherData.daily;
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    container.innerHTML = '';
+
+    // Render 4 days
+    for (let i = 0; i < Math.min(4, dailyData.time.length); i++) {
+      const dateStr = dailyData.time[i];
+      const date = new Date(dateStr);
+      const dayName = days[date.getDay()];
+      const day = date.getDate();
+      const month = months[date.getMonth()];
+      const time = '13:25'; // Fixed time for now
+
+      const tempMax = Math.round(dailyData.temperature_2m_max[i]);
+      const code = dailyData.weather_code[i];
+      const condition = getWeatherConditionName(code);
+      const icon = getWeatherIcon(code);
+
+      const card = document.createElement('div');
+      card.className = 'weather-forecast-card';
+      card.innerHTML = `
+        <div>
+          <div class="weather-card-date">${dayName}, ${day} ${month}</div>
+          <div class="weather-card-condition">${time}</div>
+        </div>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div class="weather-card-icon">${icon}</div>
+          <div style="font-size: 14px; color: rgba(255,255,255,0.8); text-align: center;">${condition}</div>
+        </div>
+        <div>
+          <div class="weather-card-temp">${tempMax}<span class="weather-card-temp-unit">°C</span></div>
+          <button class="weather-card-more">more</button>
+          <div class="weather-card-footer">
+            <div class="weather-card-dot ${i === 0 ? 'active' : ''}"></div>
+            <div class="weather-card-dot ${i === 1 ? 'active' : ''}"></div>
+            <div class="weather-card-dot ${i === 2 ? 'active' : ''}"></div>
+            <div class="weather-card-dot ${i === 3 ? 'active' : ''}"></div>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    }
+
+    console.log('[Weather Modal] Rendered 4 cards');
+  }
+
+  window.closeWeatherModal = function() {
+    const modal = document.getElementById('weather-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      console.log('[Weather Modal] Closed');
+    }
+  };
+
+  // Modal overlay click to close
+  window.addEventListener('load', () => {
+    const modal = document.getElementById('weather-modal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeWeatherModal();
+      });
+    }
+  });
 
   // Initialize GPS weather widget and update every 10 minutes
   window.initGpsWeatherWidget = function() {
@@ -7568,7 +7773,7 @@ window.addEventListener("load", () => {
       console.log('[renderGFView] Città attuale da GPS:', currentCity, '- distanza:', minDist.toFixed(2));
     }
 
-    const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"flex:0 0 auto;max-width:180px;padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;overflow:hidden;text-overflow:ellipsis;\"><option value=\"all\">Tutte le città</option>" + allCities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\" style=\"position:relative;min-height:200px;\"><p style=\"color:var(--muted);text-align:center;padding:20px;\">⏳ Caricamento città attuale...</p></div>";
+    const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"flex:0 0 120px;width:120px;padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;overflow:hidden;text-overflow:ellipsis;text-align:left;\"><option value=\"all\">Tutte</option>" + allCities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\" style=\"position:relative;min-height:200px;\"><p style=\"color:var(--muted);text-align:center;padding:20px;\">⏳ Caricamento città attuale...</p></div>";
     window.openSheet("🌾 Gluten Free", html);
 
     // Mostra subito i dati hardcoded
@@ -8458,10 +8663,10 @@ window.addEventListener("load", () => {
         <!-- CREATE MODE -->
         <div id="create-mode" style="display:block">
           <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:600;color:#FF1493">Il codice della tua stanza</label>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <div id="room-code-display" style="flex:1;padding:12px;background:#FFF0F8;border:2px solid #FF1493;border-radius:8px;font-size:24px;font-weight:700;letter-spacing:6px;color:#FF1493;text-align:center;font-family:monospace;cursor:default;user-select:all;">------</div>
-            <button id="copy-code-btn" style="padding:10px 12px;background:#fff;border:2px solid #FF1493;border-radius:8px;cursor:pointer;font-size:18px;line-height:1;" title="Copia codice">📋</button>
-            <button id="regen-code-btn" style="padding:10px 12px;background:#fff;border:2px solid #FF1493;border-radius:8px;cursor:pointer;font-size:18px;line-height:1;" title="Genera nuovo codice">🔄</button>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap;">
+            <div id="room-code-display" style="padding:16px 12px;background:#FFF0F8;border:2px solid #FF1493;border-radius:8px;font-size:24px;font-weight:700;letter-spacing:6px;color:#FF1493;text-align:center;font-family:monospace;cursor:default;user-select:all;min-width:160px;flex-shrink:0;">------</div>
+            <button id="copy-code-btn" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Copia codice">📋</button>
+            <button id="regen-code-btn" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Genera nuovo codice">🔄</button>
           </div>
           <div style="font-size:11px;color:#888;margin-top:6px;">Condividi questo codice con chi vuoi far entrare. Solo chi lo ha può entrare.</div>
         </div>
@@ -8891,11 +9096,8 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
       // Position filters right after header
       filters.style.setProperty('top', headerHeight + 'px', 'important');
 
-      // Position weather widget near header (right-side floating)
-      if (weatherWidget) {
-        const weatherTop = Math.max(headerHeight + 4, 66); // offset from top of header
-        weatherWidget.style.setProperty('top', weatherTop + 'px', 'important');
-      }
+      // Weather widget positioning is now handled by CSS (bottom-left fixed)
+      // No JavaScript positioning needed
 
       const mapTop = headerHeight + filtersHeight;
       const mapHeight = window.innerHeight - mapTop - navHeight;
@@ -9746,8 +9948,15 @@ setInterval(function() {
 
 // Initialize GPS Weather Widget — updates every 10 minutes
 console.log('[Weather] Initializing GPS weather widget...');
-if (typeof window.initGpsWeatherWidget === 'function') {
-  window.initGpsWeatherWidget();
+try {
+  if (typeof window.initGpsWeatherWidget === 'function') {
+    console.log('[Weather] initGpsWeatherWidget found, calling...');
+    window.initGpsWeatherWidget();
+  } else {
+    console.warn('[Weather] initGpsWeatherWidget not found!');
+  }
+} catch (err) {
+  console.error('[Weather] Error initializing:', err);
 }
 
 // Track message count for notifications
@@ -9810,7 +10019,7 @@ navigator.serviceWorker?.addEventListener('message', (event) => {
   }
 });
 
-}); // close window.addEventListener load
+}); // close DOMContentLoaded
 </script>
 <script src="./js/y2k-windows.js"></script>
 
