@@ -124,14 +124,11 @@ header h1 .badge {
   top: auto !important;
   right: auto !important;
   z-index: 9999 !important;
-  display: none !important;
+  display: block !important;
   cursor: pointer !important;
   user-select: none !important;
-}
-
-/* Show when weather data loaded */
-#weather-floating.show {
-  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 #weather-card {
@@ -146,8 +143,14 @@ header h1 .badge {
 /* Mobile adjustments */
 @media (max-width: 480px) {
   #weather-floating {
-    bottom: 130px !important;
+    bottom: 160px !important;
     left: 10px !important;
+    visibility: visible !important;
+  }
+
+  #weather-floating.show {
+    display: block !important;
+    visibility: visible !important;
   }
 
   #weather-card {
@@ -415,6 +418,18 @@ nav.bottom button.active {
   display: flex !important;
   align-items: flex-end !important;
   justify-content: center !important;
+}
+
+/* Hide sheet if body is empty */
+.sheet:has(#sheet-body:empty) {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  .sheet {
+    backdrop-filter: none !important;
+    background: rgba(20,30,80,0.8) !important;
+  }
 }
 .sheet-inner {
   z-index: 51 !important;
@@ -2604,6 +2619,8 @@ main {
     font-size: 12px !important;
     border-radius: 6px !important;
     margin-left: 6px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
   }
 
   #weather-text {
