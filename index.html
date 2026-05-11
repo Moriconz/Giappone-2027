@@ -735,38 +735,16 @@
         font-family: 'Segoe UI', sans-serif !important;
       `;
 
-      // Bind this per mantenere il contesto della classe
-      const handleClick = this.handleInstall.bind(this);
-
-      // Event listener per click (funziona su desktop e mobile)
-      btn.addEventListener('click', handleClick);
-
-      // DEBUG: Test if click works at all
-      btn.addEventListener('click', () => {
-        alert('✅ Bottone cliccabile! Se vedi questo, il click funziona.');
-      });
-
-      // Touch events per mobile (feedback visuale)
-      btn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        btn.style.transform = 'scale(0.95)';
-        btn.style.boxShadow = '0 2px 8px rgba(0,255,136,0.2)';
-      });
-      btn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        btn.style.transform = 'scale(1)';
-        btn.style.boxShadow = '0 2px 8px rgba(0,255,136,0.3)';
-      });
-
-      // Mouse events per desktop
-      btn.addEventListener('mouseenter', () => {
+      btn.onmouseenter = () => {
         btn.style.transform = 'scale(1.05)';
         btn.style.boxShadow = '0 4px 12px rgba(0,255,136,0.5)';
-      });
-      btn.addEventListener('mouseleave', () => {
+      };
+      btn.onmouseleave = () => {
         btn.style.transform = 'scale(1)';
         btn.style.boxShadow = '0 2px 8px rgba(0,255,136,0.3)';
-      });
+      };
+
+      btn.onclick = () => this.handleInstall();
       header.appendChild(btn);
       console.log('[UniversalInstaller] ✅ Button added to header');
     }
