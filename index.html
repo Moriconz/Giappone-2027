@@ -767,10 +767,10 @@
     }
 
     async handleInstall() {
-      console.log('[UniversalInstaller] 👉 Install clicked', { hasPrompt: !!this.deferredPrompt, isAndroid: this.isAndroid, isIOS: this.isIOS });
+      console.log('[UniversalInstaller] 👉 Install clicked', { hasPrompt: !!this.deferredPrompt, isAndroid: this.isAndroid, isIOS: this.isIOS, browser: this.isBrave ? 'BRAVE' : 'OTHER' });
 
-      // Native beforeinstallprompt (Chrome/Edge/Brave Android/Desktop)
-      if (this.deferredPrompt) {
+      // Native beforeinstallprompt (Chrome/Edge - NOT Brave)
+      if (this.deferredPrompt && !this.isBrave) {
         console.log('[UniversalInstaller] ✅ Using native beforeinstallprompt');
         this.deferredPrompt.prompt();
         const choice = await this.deferredPrompt.userChoice;
@@ -779,30 +779,103 @@
         return;
       }
 
-      // Fallback for browsers without beforeinstallprompt
-      let msg = '📲 Apri il menu del browser e seleziona "Installa"';
+      // Fallback for browsers without beforeinstallprompt (or Brave)
+      console.log('[UniversalInstaller] 📲 Mostrando modal di installazione manuale');
+      this.showInstallModal();
+    }
+
+    showInstallModal() {
+      // Crea overlay modal
+      const overlay = document.createElement('div');
+      overlay.id = 'install-modal-overlay';
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 20px;
+      `;
+
+      // Crea modal
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        background: linear-gradient(135deg, #1a2560 0%, #2d3b7d 100%);
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 400px;
+        width: 100%;
+        color: white;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      `;
+
+      let instructions = '';
       if (this.isIOS) {
-        msg = '📱 Tocca Condividi → "Aggiungi a Schermata Iniziale"';
+        instructions = `
+          <h2 style="margin: 0 0 20px 0; font-size: 20px;">📱 Installa su iPhone</h2>
+          <ol style="text-align: left; font-size: 16px; line-height: 1.8;">
+            <li>Tocca <strong>Condividi</strong> (icona freccia in basso)</li>
+            <li>Scorri e tocca <strong>"Aggiungi a Schermata Iniziale"</strong></li>
+            <li>Tocca <strong>Aggiungi</strong></li>
+          </ol>
+        `;
       } else if (this.isAndroid || this.isMobile) {
-        msg = '📲 Apri il menu del browser (⋮) e seleziona "Installa" o "Aggiungi a schermata iniziale"';
-      } else if (this.isDesktop) {
-        msg = '🖥️ Guarda in alto a destra della barra indirizzi';
+        instructions = `
+          <h2 style="margin: 0 0 20px 0; font-size: 20px;">📲 Installa su Android</h2>
+          <ol style="text-align: left; font-size: 16px; line-height: 1.8;">
+            <li>Tocca il menu <strong>⋮</strong> (tre puntini in alto a destra)</li>
+            <li>Tocca <strong>"Installa app"</strong> oppure <strong>"Aggiungi a schermata iniziale"</strong></li>
+            <li>Conferma</li>
+          </ol>
+        `;
+      } else {
+        instructions = `
+          <h2 style="margin: 0 0 20px 0; font-size: 18px;">🖥️ Installa su Desktop</h2>
+          <p style="text-align: left; font-size: 14px; line-height: 1.8;">
+            Guarda in <strong>alto a destra della barra indirizzi</strong> — dovresti vedere l'icona di installazione ⊕
+          </p>
+        `;
       }
 
-      // Try toast first, then alert as fallback
-      console.log('[UniversalInstaller] Showing message:', msg, { hasToast: !!window.toast });
-      if (window.toast && typeof window.toast === 'function') {
-        try {
-          window.toast(msg);
-          console.log('[UniversalInstaller] Toast called successfully');
-        } catch(e) {
-          console.error('[UniversalInstaller] Toast error:', e);
-          alert(msg);
+      modal.innerHTML = `
+        ${instructions}
+        <button id="close-install-modal" style="
+          margin-top: 25px;
+          padding: 12px 30px;
+          background: rgba(0,255,136,0.2);
+          border: 2px solid #00FF88;
+          color: #00FF88;
+          border-radius: 8px;
+          font-size: 16px;
+          font-weight: 700;
+          cursor: pointer;
+          width: 100%;
+        ">Capito! Chiudi</button>
+      `;
+
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+
+      // Close button
+      document.getElementById('close-install-modal').onclick = () => {
+        overlay.remove();
+        console.log('[UniversalInstaller] Modal closed');
+      };
+
+      // Close on overlay click
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          overlay.remove();
         }
-      } else {
-        console.log('[UniversalInstaller] No toast function, using alert');
-        alert(msg);
-      }
+      };
+
+      console.log('[UniversalInstaller] ✅ Install modal shown');
     }
   }
 
@@ -11337,19 +11410,31 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
 
   // ===================== PHASE 7: Service Worker Registration =====================
   // Service Worker è RICHIESTO per beforeinstallprompt su molti browser
+  console.log('[SW] 🔍 Registering Service Worker...');
+  console.log('[SW] Protocol:', window.location.protocol);
+  console.log('[SW] Host:', window.location.host);
+  console.log('[SW] Manifest link:', document.querySelector('link[rel=manifest]')?.href);
+
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./js/sw.js')
+    navigator.serviceWorker.register('./js/sw.js', { scope: './' })
       .then(reg => {
-        console.log('[SW] ✓ Service Worker Registered, scope:', reg.scope);
+        console.log('[SW] ✅ Service Worker Registered successfully');
+        console.log('[SW] Scope:', reg.scope);
+        console.log('[SW] State:', reg.installing ? 'installing' : reg.waiting ? 'waiting' : reg.active ? 'active' : 'unknown');
         console.log('[SW] beforeinstallprompt dovrebbe ora funzionare');
       })
       .catch(err => {
-        console.warn('[SW] ✗ Service Worker Registration failed:', err.message);
-        console.warn('[SW] Installation prompt potrebbe non funzionare');
+        console.error('[SW] ❌ Service Worker Registration FAILED');
+        console.error('[SW] Error:', err.message);
+        console.error('[SW] Stack:', err.stack);
+        console.warn('[SW] Installation prompt NON funzionerà senza SW');
       });
   } else {
-    console.warn('[SW] Service Worker API non supportata');
+    console.warn('[SW] ⚠️ Service Worker API non supportata');
   }
+
+  // Debug: Log quando beforeinstallprompt potrebbe attivarsi
+  console.log('[Install] 🔍 Ascoltando beforeinstallprompt...');
 
   // ===================== EXPOSE HELPERS TO GLOBAL SCOPE =====================
   window.addToItinerary = addToItinerary;
