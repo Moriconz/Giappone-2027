@@ -658,6 +658,10 @@
 
     init() {
       console.log('[UniversalInstaller] ✅ Initializing on all browsers');
+
+      // Controlla se app è già installata
+      this.checkIfInstalled();
+
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         this.deferredPrompt = e;
@@ -665,12 +669,42 @@
         this.addButtonToHeader();
       });
 
+      // Ascolta evento installazione completata
+      window.addEventListener('appinstalled', () => {
+        console.log('[UniversalInstaller] ✅ App installata, nascondo bottone');
+        this.hideInstallButton();
+      });
+
       setTimeout(() => {
         if (!this.deferredPrompt) {
           console.log('[UniversalInstaller] No beforeinstallprompt, showing button anyway');
-          this.addButtonToHeader();
+          // Non aggiungere bottone se app è già installata
+          if (!this.isAppInstalled()) {
+            this.addButtonToHeader();
+          }
         }
       }, 1000);
+    }
+
+    checkIfInstalled() {
+      // Controlla se l'app è in display-mode standalone
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('[UniversalInstaller] App è già in standalone mode (installata)');
+        this.deferredPrompt = null;
+      }
+    }
+
+    isAppInstalled() {
+      return window.matchMedia('(display-mode: standalone)').matches ||
+             window.navigator.standalone === true;
+    }
+
+    hideInstallButton() {
+      const btn = document.getElementById('universal-install-btn');
+      if (btn) {
+        btn.style.display = 'none';
+        console.log('[UniversalInstaller] Bottone nascosto');
+      }
     }
 
     addButtonToHeader() {
@@ -701,16 +735,33 @@
         font-family: 'Segoe UI', sans-serif !important;
       `;
 
-      btn.onmouseenter = () => {
-        btn.style.transform = 'scale(1.05)';
-        btn.style.boxShadow = '0 4px 12px rgba(0,255,136,0.5)';
-      };
-      btn.onmouseleave = () => {
+      // Bind this per mantenere il contesto della classe
+      const handleClick = this.handleInstall.bind(this);
+
+      // Event listener per click (funziona su desktop e mobile)
+      btn.addEventListener('click', handleClick);
+
+      // Touch events per mobile (feedback visuale)
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        btn.style.transform = 'scale(0.95)';
+        btn.style.boxShadow = '0 2px 8px rgba(0,255,136,0.2)';
+      });
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
         btn.style.transform = 'scale(1)';
         btn.style.boxShadow = '0 2px 8px rgba(0,255,136,0.3)';
-      };
+      });
 
-      btn.onclick = () => this.handleInstall();
+      // Mouse events per desktop
+      btn.addEventListener('mouseenter', () => {
+        btn.style.transform = 'scale(1.05)';
+        btn.style.boxShadow = '0 4px 12px rgba(0,255,136,0.5)';
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'scale(1)';
+        btn.style.boxShadow = '0 2px 8px rgba(0,255,136,0.3)';
+      });
       header.appendChild(btn);
       console.log('[UniversalInstaller] ✅ Button added to header');
     }
