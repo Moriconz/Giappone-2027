@@ -11338,7 +11338,7 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   // ===================== PHASE 7: Service Worker Registration =====================
   // Service Worker è RICHIESTO per beforeinstallprompt su molti browser
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
+    navigator.serviceWorker.register('./js/sw.js')
       .then(reg => {
         console.log('[SW] ✓ Service Worker Registered, scope:', reg.scope);
         console.log('[SW] beforeinstallprompt dovrebbe ora funzionare');
