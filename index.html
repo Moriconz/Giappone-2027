@@ -638,6 +638,14 @@
     init() {
       console.log('[UniversalInstaller] ✅ Initializing on all browsers');
 
+      // DEBUG: Controlla se Service Worker è registrato (RICHIESTO per beforeinstallprompt)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          console.log('[UniversalInstaller] SW registrations:', regs.length);
+          regs.forEach(reg => console.log('[UniversalInstaller] SW scope:', reg.scope, 'active:', !!reg.active));
+        });
+      }
+
       // Controlla se app è già installata
       this.checkIfInstalled();
 
