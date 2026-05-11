@@ -741,6 +741,11 @@
       // Event listener per click (funziona su desktop e mobile)
       btn.addEventListener('click', handleClick);
 
+      // DEBUG: Test if click works at all
+      btn.addEventListener('click', () => {
+        alert('✅ Bottone cliccabile! Se vedi questo, il click funziona.');
+      });
+
       // Touch events per mobile (feedback visuale)
       btn.addEventListener('touchstart', (e) => {
         e.preventDefault();
