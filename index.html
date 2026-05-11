@@ -18,6 +18,574 @@
 <link rel="icon" type="image/png" href="./icon-192.png" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css" />
 <link rel="stylesheet" href="./y2k-override.css" />
+
+<!-- ═══════════════════════════════════════════════════════════════
+     GLASSMORPHISM MASTER STYLES — Applied to ALL app surfaces
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+  /* EXCLUDE MAP AND CRITICAL ELEMENTS FROM GLASSMORPHISM */
+  #map,
+  canvas,
+  .ol-viewport,
+  .ol-overlaycontainer,
+  main {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* CORE GLASSMORPHISM RECIPE — Only for UI surfaces, NOT map */
+  .glass,
+  .sheet-inner,
+  .sheet-body,
+  nav.bottom,
+  nav.bottom button,
+  header,
+  .weather-forecast-card,
+  #weather-floating,
+  #weather-card {
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  }
+
+  /* ENSURE PROPER TRANSPARENCY FOR GLASS EFFECT */
+  .sheet-inner {
+    background: rgba(26, 31, 46, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  nav.bottom {
+    background: rgba(26, 31, 46, 0.12) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  nav.bottom button {
+    background: rgba(255, 107, 53, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: inset 0 0 12px rgba(255, 107, 53, 0.1) !important;
+  }
+
+  nav.bottom button:hover {
+    background: rgba(255, 107, 53, 0.18) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+  }
+
+  nav.bottom button.active {
+    background: rgba(255, 107, 53, 0.25) !important;
+    border-color: rgba(255, 107, 53, 0.4) !important;
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.3) !important;
+  }
+
+  header {
+    background: rgba(26, 31, 46, 0.12) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  .sheet {
+    background: rgba(20, 30, 80, 0.4) !important;
+  }
+
+  /* WEATHER CARD — Premium Glass */
+  #weather-floating #weather-card,
+  .weather-forecast-card {
+    background: rgba(74, 91, 168, 0.12) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  .weather-forecast-card:hover {
+    background: rgba(74, 91, 168, 0.18) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  /* BUTTONS IN SHEETS — Glass style */
+  .sheet-inner button,
+  .sheet-body button {
+    backdrop-filter: blur(12px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+    background: rgba(255, 107, 53, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+
+  /* CHIPS — Glassmorphic with proper contrast */
+  .chip {
+    backdrop-filter: blur(15px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(160%) !important;
+    background: rgba(255, 250, 205, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  }
+
+  /* SECTION DIVIDERS WITHIN SHEET */
+  .sheet-inner .section:not(:first-child),
+  .sheet-body > div {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+  }
+
+  /* POI CARDS */
+  .poi-row {
+    backdrop-filter: blur(10px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* MODAL OVERLAY — Slightly frosted */
+  #weather-modal {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
+  /* INPUT FIELDS IN SHEETS — Glass style */
+  .sheet-inner input,
+  .sheet-inner textarea,
+  .sheet-inner select,
+  .sheet-body input,
+  .sheet-body textarea,
+  .sheet-body select {
+    backdrop-filter: blur(8px) saturate(100%) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(100%) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .sheet-inner input::placeholder,
+  .sheet-body input::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+
+  /* HANDLE/DRAG INDICATOR */
+  .sheet-handle {
+    backdrop-filter: blur(5px) saturate(100%) !important;
+    background: rgba(255, 107, 53, 0.25) !important;
+    border: none !important;
+    box-shadow: 0 0 12px rgba(255, 107, 53, 0.4) !important;
+    cursor: grab !important;
+    touch-action: none !important;
+    user-select: none !important;
+  }
+
+  .sheet-handle:active {
+    cursor: grabbing !important;
+  }
+
+  /* GPU ACCELERATION FOR SHEET DURING DRAG */
+  .sheet {
+    will-change: transform !important;
+  }
+
+  .sheet-inner {
+    will-change: transform !important;
+    transform: translate3d(0, 0, 0) !important;
+  }
+
+  /* SCROLLBAR STYLING — Glassmorphic */
+  ::-webkit-scrollbar {
+    width: 6px !important;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-radius: 3px !important;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     WEATHER WIDGET GLASSMORPHISM — AGGRESSIVE OVERRIDE
+     ════════════════════════════════════════════════════════════════ */
+
+  /* All weather div with linear-gradient inline styles */
+  div[style*="background:linear-gradient(135deg,rgba(201"] {
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    background: rgba(74, 91, 168, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  div[style*="background:linear-gradient(135deg,rgba(0,255"] {
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    background: rgba(74, 91, 168, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  div[style*="background:linear-gradient(135deg,rgba(255,215"] {
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    background: rgba(74, 91, 168, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  /* Weather daily forecast cards */
+  div[style*="background:linear-gradient(135deg, #FFF"] {
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    background: rgba(74, 91, 168, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  div[style*="background:linear-gradient(135deg, #F0"] {
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    background: rgba(74, 91, 168, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  div[style*="background:linear-gradient(135deg, #E6"] {
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    background: rgba(74, 91, 168, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  }
+</style>
+
+<!-- Budget Y2K Theme Override -->
+<style>
+.budget-container {
+  background: rgba(0,200,255,0.12) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border-radius: 16px;
+  padding: 24px !important;
+  border: 1px solid rgba(0,200,255,0.3) !important;
+}
+
+.budget-header {
+  background: rgba(0,200,255,0.12) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(0,200,255,0.3) !important;
+  color: #fff !important;
+}
+
+.budget-header h2,
+.budget-header span {
+  color: #fff !important;
+}
+
+.budget-progress-bar {
+  background: rgba(0,200,255,0.2) !important;
+  border: 1px solid #00C8FF !important;
+}
+
+.budget-progress-fill {
+  background: linear-gradient(90deg, #FF1493, #00FF88) !important;
+}
+
+.budget-setup-banner {
+  background: rgba(255,20,147,0.12) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255,20,147,0.3) !important;
+  color: #FF1493 !important;
+}
+
+.budget-stats {
+  background: transparent !important;
+}
+
+.stat-card {
+  background: rgba(0,200,255,0.12) !important;
+  border: 2px solid #00C8FF !important;
+  border-radius: 10px !important;
+  color: #00FF88 !important;
+}
+
+.stat-card .stat-label {
+  color: #00FF88 !important;
+}
+
+.stat-card .stat-value {
+  color: #00FF88 !important;
+}
+
+.budget-categories {
+  background: rgba(0,200,255,0.12) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(0,200,255,0.3) !important;
+}
+
+.budget-categories h3 {
+  color: #FF1493 !important;
+}
+
+.budget-form-section,
+.budget-expenses-section {
+  background: rgba(0,200,255,0.12) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(0,200,255,0.3) !important;
+}
+
+.budget-form-section h3,
+.budget-expenses-section h3 {
+  color: #FF1493 !important;
+}
+
+.expense-item {
+  background: rgba(0,200,255,0.12) !important;
+  border-left: 2px solid #00FF88 !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   BUDGET SPACING FIX — More readable layout
+   ════════════════════════════════════════════════════════════════ */
+.budget-container {
+  padding: 20px !important;
+  line-height: 1.8 !important;
+  font-size: 14px !important;
+}
+
+.budget-header {
+  padding: 16px !important;
+  margin-bottom: 20px !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.budget-header h2 {
+  margin: 0 !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.budget-header span {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  opacity: 0.9 !important;
+}
+
+.budget-progress-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  margin-bottom: 18px !important;
+}
+
+.budget-progress-label {
+  display: flex !important;
+  justify-content: space-between !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  margin-bottom: 6px !important;
+}
+
+.budget-progress-bar {
+  border-radius: 8px !important;
+  height: 8px !important;
+  overflow: hidden !important;
+  margin-bottom: 12px !important;
+}
+
+.budget-info-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  padding: 12px 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  gap: 12px !important;
+}
+
+.budget-info-row:last-child {
+  border-bottom: none !important;
+}
+
+.budget-info-label {
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.budget-info-value {
+  font-weight: 700 !important;
+  color: #00FF88 !important;
+  text-align: right !important;
+}
+
+.budget-setup-banner {
+  padding: 16px !important;
+  margin: 20px 0 !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.budget-setup-banner h3 {
+  margin: 0 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.budget-setup-banner p {
+  margin: 0 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  opacity: 0.95 !important;
+}
+
+.budget-input-group {
+  display: flex !important;
+  gap: 8px !important;
+  margin: 14px 0 !important;
+  align-items: center !important;
+}
+
+.budget-input-group input {
+  flex: 1 !important;
+  padding: 10px 12px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  font-size: 14px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+}
+
+.budget-input-group button {
+  padding: 10px 14px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  background: rgba(255, 107, 53, 0.2) !important;
+  color: #fff !important;
+  min-width: 50px !important;
+}
+
+.budget-total {
+  margin-top: 20px !important;
+  padding: 16px !important;
+  background: rgba(0, 255, 136, 0.12) !important;
+  border: 2px solid #00FF88 !important;
+  border-radius: 10px !important;
+  text-align: center !important;
+}
+
+.budget-total-label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  margin-bottom: 8px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.budget-total-value {
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  color: #00FF88 !important;
+  letter-spacing: 1px !important;
+}
+
+.stat-card {
+  padding: 14px !important;
+  margin: 10px 0 !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.stat-card .stat-label {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  opacity: 0.9 !important;
+}
+
+.stat-card .stat-value {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.budget-categories {
+  padding: 16px !important;
+  margin: 20px 0 !important;
+  border-radius: 12px !important;
+}
+
+.budget-categories h3 {
+  margin: 0 0 14px 0 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.budget-form-section,
+.budget-expenses-section {
+  padding: 16px !important;
+  margin: 20px 0 !important;
+  border-radius: 12px !important;
+}
+
+.budget-form-section h3,
+.budget-expenses-section h3 {
+  margin: 0 0 14px 0 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.expense-item {
+  padding: 10px 12px !important;
+  margin-bottom: 8px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 10px !important;
+  background: rgba(0,200,255,0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  line-height: 1.4 !important;
+}
+
+.expense-item div[style*="display:flex"] {
+  gap: 8px !important;
+}
+
+.expense-item div[style*="font-weight:700"] {
+  margin-bottom: 2px !important;
+  font-size: 13px !important;
+}
+
+.expense-item div[style*="font-size:11px"] {
+  font-size: 11px !important;
+  line-height: 1.3 !important;
+  margin: 0 !important;
+}
+
+.expense-item button {
+  margin: 0 !important;
+  font-size: 11px !important;
+  padding: 0 !important;
+}
+</style>
 <!-- 2026 Performance Optimization -->
 <link rel="preconnect" href="https://api.open-meteo.com" />
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
@@ -189,6 +757,202 @@
 
   new UniversalInstaller();
   console.log('[Install] ✓ System initialized');
+
+  // Show to Waiter Card - Comprehensive celiac disease information
+  window.showWaiterCard = function(jp) {
+    const overlay = document.createElement('div');
+    overlay.id = 'waiter-card-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0d0f17 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      cursor: pointer;
+      overflow: hidden;
+    `;
+
+    const card = document.createElement('div');
+    card.style.cssText = `
+      position: relative;
+      background: rgba(74,91,168,0.12);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 20px;
+      padding: 30px 24px;
+      width: 90vw;
+      max-width: 520px;
+      max-height: 85vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      animation: slideUp 0.4s ease-out;
+    `;
+
+    const title = document.createElement('div');
+    title.style.cssText = `
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.5px;
+      text-align: center;
+    `;
+    title.innerHTML = '🗣️ セリアック病 - 店員様へ<br><span style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:400;">Celiac Disease - For the Waiter</span>';
+
+    const phraseJP = document.createElement('div');
+    phraseJP.style.cssText = `
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      line-height: 1.5;
+      padding: 16px;
+      background: rgba(255,20,147,0.1);
+      border: 1.5px solid rgba(255,20,147,0.3);
+      border-radius: 12px;
+      font-family: 'Segoe UI', sans-serif;
+    `;
+    phraseJP.textContent = jp;
+
+    const translation = document.createElement('div');
+    translation.style.cssText = `
+      font-size: 11px;
+      color: rgba(255,255,255,0.8);
+      text-align: center;
+      line-height: 1.5;
+    `;
+    translation.innerHTML = '<strong>意味：</strong><br>セリアック病があります。<br>パン・小麦を食べられません。<br>グルテン（麦類のタンパク質）にアレルギーがあります。';
+
+    // CRITICAL WARNING
+    const warning = document.createElement('div');
+    warning.style.cssText = `
+      padding: 12px;
+      background: rgba(255,20,147,0.15);
+      border: 1.5px solid rgba(255,20,147,0.5);
+      border-radius: 10px;
+      font-size: 10px;
+      color: #FFB6D9;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.5;
+    `;
+    warning.innerHTML = '⚠️ 重篤な医学的症状です<br><span style="font-size:8px;color:rgba(255,182,211,0.8);">Serious medical condition</span><br>少量のグルテンでも腸に損傷を起こします<br><span style="font-size:8px;color:rgba(255,182,211,0.8);">Even tiny gluten amounts cause intestinal damage</span><br>交差汚染（小麦との接触）は危険です<br><span style="font-size:8px;color:rgba(255,182,211,0.8);">Cross-contamination is NOT safe</span>';
+
+    // FOODS TO AVOID
+    const foodsSection = document.createElement('div');
+    foodsSection.style.cssText = `
+      padding: 12px;
+      background: rgba(100,149,237,0.1);
+      border: 1px solid rgba(100,149,237,0.3);
+      border-radius: 10px;
+      font-size: 9.5px;
+      color: rgba(255,255,255,0.9);
+      line-height: 1.6;
+    `;
+    foodsSection.innerHTML = `<strong style="color:#87CEEB;">🚫 絶対に避けるべき食べ物：</strong><br>
+<span style="font-size:8px;color:rgba(135,206,235,0.8);">Foods to Strictly Avoid:</span><br>
+• パン・パスタ・うどん（小麦製品） <span style="font-size:8px;color:rgba(135,206,235,0.7);">(Bread, pasta, noodles - wheat)</span><br>
+• 麦類（大麦・ライ麦） <span style="font-size:8px;color:rgba(135,206,235,0.7);">(Barley, rye)</span><br>
+• 小麦粉・ケーキ・クッキー・ビール <span style="font-size:8px;color:rgba(135,206,235,0.7);">(Flour, cakes, cookies, beer)</span><br>
+• 醤油（小麦を含む） <span style="font-size:8px;color:rgba(135,206,235,0.7);">(Soy sauce - contains wheat)</span><br>
+• グレービー・ソース・ドレッシング <span style="font-size:8px;color:rgba(135,206,235,0.7);">(Gravy, sauces, dressings)</span><br>
+• 揚げ物（共有の油で揚げたもの） <span style="font-size:8px;color:rgba(135,206,235,0.7);">(Fried foods - shared fryer)</span><br>
+• 加工肉・チーズ（成分確認が必要） <span style="font-size:8px;color:rgba(135,206,235,0.7);">(Processed meats, cheeses)</span>`;
+
+    // CROSS-CONTAMINATION WARNING
+    const crossContam = document.createElement('div');
+    crossContam.style.cssText = `
+      padding: 12px;
+      background: rgba(255,69,0,0.1);
+      border: 1.5px solid rgba(255,69,0,0.4);
+      border-radius: 10px;
+      font-size: 9.5px;
+      color: rgba(255,255,255,0.9);
+      font-weight: 600;
+      line-height: 1.6;
+    `;
+    crossContam.innerHTML = `<strong style="color:#FF6B6B;">⚡ 交差汚染（こうさおせん）の危険性：</strong><br>
+<span style="font-size:8px;color:rgba(255,107,107,0.8);">Cross-Contamination Risk:</span><br>
+❌ 共有のナイフ・まな板を使わないでください <span style="font-size:8px;color:rgba(255,107,107,0.7);">(No shared knives/cutting boards)</span><br>
+❌ 共有の油で揚げないでください <span style="font-size:8px;color:rgba(255,107,107,0.7);">(No shared fryer)</span><br>
+❌ 小麦と同じ鍋・フライパンを使わないでください <span style="font-size:8px;color:rgba(255,107,107,0.7);">(No same pans as wheat)</span><br>
+✅ 清潔で別々の調理器具のみを使用してください <span style="font-size:8px;color:rgba(255,107,107,0.7);">(Use CLEAN, SEPARATE equipment only)</span><br>
+⚠️ パン粉一粒でも危険です <span style="font-size:8px;color:rgba(255,107,107,0.7);">(Even 1 bread crumb = danger)</span>`;
+
+    // SAFE FOODS
+    const safeSection = document.createElement('div');
+    safeSection.style.cssText = `
+      padding: 12px;
+      background: rgba(34,139,34,0.1);
+      border: 1px solid rgba(34,139,34,0.3);
+      border-radius: 10px;
+      font-size: 9.5px;
+      color: rgba(200,255,200,1);
+      line-height: 1.6;
+    `;
+    safeSection.innerHTML = `<strong style="color:#7FFF7F;">✅ 安全な食べ物：</strong><br>
+<span style="font-size:8px;color:rgba(127,255,127,0.8);">Safe Foods:</span><br>
+• ご飯・ジャガイモ・トウモロコシ <span style="font-size:8px;color:rgba(127,255,127,0.7);">(Rice, potatoes, corn)</span><br>
+• 新鮮な肉・魚・卵・乳製品 <span style="font-size:8px;color:rgba(127,255,127,0.7);">(Fresh meat, fish, eggs, dairy)</span><br>
+• 野菜・果物・豆・ナッツ <span style="font-size:8px;color:rgba(127,255,127,0.7);">(Vegetables, fruits, beans, nuts)</span><br>
+• グルテンフリー認証製品のみ <span style="font-size:8px;color:rgba(127,255,127,0.7);">(Gluten-free certified products only)</span>`;
+
+    const hint = document.createElement('div');
+    hint.style.cssText = `
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      margin-top: 8px;
+    `;
+    hint.textContent = 'Tap anywhere to close';
+
+    card.appendChild(title);
+    card.appendChild(phraseJP);
+    card.appendChild(translation);
+    card.appendChild(warning);
+    card.appendChild(foodsSection);
+    card.appendChild(crossContam);
+    card.appendChild(safeSection);
+    card.appendChild(hint);
+    overlay.appendChild(card);
+
+    overlay.onclick = () => overlay.remove();
+
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      #waiter-card-overlay div::-webkit-scrollbar {
+        width: 6px;
+      }
+      #waiter-card-overlay div::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.05);
+        border-radius: 10px;
+      }
+      #waiter-card-overlay div::-webkit-scrollbar-thumb {
+        background: rgba(255,20,147,0.3);
+        border-radius: 10px;
+      }
+    `;
+    document.head.appendChild(style);
+
+    document.body.appendChild(overlay);
+  };
 })();
 </script>
 <!-- ============================================================================ -->
@@ -226,100 +990,6 @@
 <script src="js/google-places-debug.js"></script>
 <script src="js/group-chat.js"></script>
 <script src="js/group-panel.js"></script>
-
-<!-- P1: GF Safety schema + frasi giapponesi -->
-<script type="module" src="js/gf-safety.js"></script>
-
-<!-- P1: Show to waiter — modal emergenza JP (inline) -->
-<script>
-window.openSOSModal = function() {
-  // Remove if exists
-  const existing = document.getElementById('gf-photo-modal');
-  if (existing) existing.remove();
-
-  // Create modal
-  const modal = document.createElement('div');
-  modal.id = 'gf-photo-modal';
-  modal.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    padding: 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: white;
-    text-align: center;
-  `;
-
-  const content = document.createElement('div');
-  content.style.cssText = 'max-width: 100%; width: 100%;';
-
-  const title = document.createElement('h1');
-  title.style.cssText = 'font-size: 2.5rem; margin: 0 0 30px 0; font-weight: bold;';
-  title.textContent = 'Medical Emergency';
-
-  const titleJP = document.createElement('h2');
-  titleJP.style.cssText = 'font-size: 3rem; margin: 0 0 40px 0; font-weight: 300;';
-  titleJP.textContent = 'セリアック病';
-
-  const message = document.createElement('div');
-  message.style.cssText = 'font-size: 4rem; font-weight: bold; margin-bottom: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);';
-  message.innerHTML = '🚫<br>グルテン不可<br><span style="font-size: 2.5rem;">小麦 · 大麦 · ライ麦</span>';
-
-  const closeBtn = document.createElement('button');
-  closeBtn.style.cssText = `
-    margin-top: 40px;
-    padding: 20px 40px;
-    font-size: 1.5rem;
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid white;
-    color: white;
-    border-radius: 50px;
-    cursor: pointer;
-    font-weight: bold;
-  `;
-  closeBtn.textContent = 'Back to App (Escape)';
-  closeBtn.onclick = () => modal.remove();
-
-  content.appendChild(title);
-  content.appendChild(titleJP);
-  content.appendChild(message);
-  content.appendChild(closeBtn);
-  modal.appendChild(content);
-  document.body.appendChild(modal);
-
-  // Close on Escape
-  const escapeHandler = (e) => {
-    if (e.key === 'Escape') {
-      modal.remove();
-      document.removeEventListener('keydown', escapeHandler);
-    }
-  };
-  document.addEventListener('keydown', escapeHandler);
-
-  console.log('[SOS] ✓ Modal opened');
-};
-
-// Keyboard shortcut Ctrl+W
-document.addEventListener('keydown', (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'w') {
-    e.preventDefault();
-    window.openSOSModal();
-  }
-});
-
-console.log('[SOS] ✓ Handler loaded');
-</script>
-
-<!-- P1: Sentry error tracking (async, lazy) -->
-<script src="js/sentry-init.js" async defer></script>
 </head>
 <body>
 <div id="app">
@@ -330,7 +1000,7 @@ console.log('[SOS] ✓ Handler loaded');
     <!-- Install button added by UniversalInstaller class -->
   </header>
   <!-- Filters Tab Bar — FIXED below header -->
-  <div id="filters"></div>
+  <div id="filters" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 100; display: flex; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; gap: 8px; padding: 8px 14px; background: linear-gradient(180deg, rgba(45, 59, 125, 0.98) 0%, rgba(45, 59, 125, 0.95) 100%); border-bottom: 2px solid rgba(255, 20, 147, 0.3); height: 56px; align-items: center; scrollbar-width: none;"></div>
 
     <!-- WEATHER MODAL — Full forecast detail (opens on "Dettagli" click) -->
     <div id="weather-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; padding: 20px; font-family: 'Segoe UI', sans-serif;">
@@ -397,6 +1067,10 @@ console.log('[SOS] ✓ Handler loaded');
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       Posti GF
     </button>
+    <button data-view="gf-suggest" style="background: rgba(100, 200, 100, 0.15); border: 1.5px solid rgba(100, 200, 100, 0.4);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m-7-7h14"/><circle cx="12" cy="12" r="10"/></svg>
+      Suggerisci
+    </button>
     <button data-view="budget">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20m10-10H2"/><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
       Budget
@@ -405,8 +1079,8 @@ console.log('[SOS] ✓ Handler loaded');
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
       Galleria
     </button>
-    <button id="btn-sos" onclick="window.openSOSModal && window.openSOSModal();" style="background: #FF4444; color: white; font-weight: bold;">
-      <span style="font-size: 1.2rem;">🚨</span>
+    <button data-view="sos" style="background: rgba(255, 107, 107, 0.2); border: 2px solid #FF6B6B; color: #FF6B6B;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="14" font-weight="bold" fill="currentColor">SOS</text></svg>
       SOS
     </button>
 
@@ -645,7 +1319,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---- State (persisted) ----
   const STATE_KEY = 'giappone2027_state_v1';
   const state = Object.assign({
-    activeCat:'all', onlyGF:false, onlyLocal:false, savedPOIs:[], notes:{}, customEvents:[], dismissInstall:false,
+    activeCat:'all', onlyGF:false, onlyLocal:false, showGFPlaces:true, savedPOIs:[], notes:{}, customEvents:[], dismissInstall:false,
     itinerary:[], // Collaborative itinerary shared across group members
     userCategoryOverrides:{}, // {poiId: 'newCategory'}
     group:{ name:'Giappone 2027', members:[], myAvatar:null, myName:'', createdBy:null, createdByName:null, isCreator:false }
@@ -3868,6 +4542,81 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   map.addLayer(remotePeersLayer);
 
+  // ===== GLUTEN-FREE PLACES LAYER =====
+  const gfPlacesSource = new ol.source.Vector();
+  const gfPlacesLayer = new ol.layer.Vector({
+    source: gfPlacesSource,
+    style: function(feature) {
+      const safetyLevel = feature.get('safety_level') || 'YELLOW';
+      let color = '#FFD700'; // Default yellow
+      let icon = '🟡';
+
+      if (safetyLevel === 'GREEN') {
+        color = '#7FFF7F';
+        icon = '🟢';
+      } else if (safetyLevel === 'RED') {
+        color = '#FF6B6B';
+        icon = '🔴';
+      }
+
+      return new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 10,
+          fill: new ol.style.Fill({ color: color }),
+          stroke: new ol.style.Stroke({ color: '#ffffff', width: 2.5 })
+        }),
+        text: new ol.style.Text({
+          text: icon,
+          font: '14px Arial',
+          offsetY: -12
+        })
+      });
+    },
+    zIndex: 500
+  });
+  map.addLayer(gfPlacesLayer);
+
+  // Expose GF Places layer to window
+  window.gfPlacesLayer = gfPlacesLayer;
+  window.gfPlacesSource = gfPlacesSource;
+
+  // Function to refresh GF places on map
+  window.refreshGFPlacesLayer = function() {
+    if (!window.GFPlacesDB) return;
+
+    const places = window.GFPlacesDB.getAll();
+    const features = [];
+
+    for (const place of places) {
+      // Use saved coordinates or default to Tokyo if not geo-located
+      let lng = 139.6917; // Tokyo default
+      let lat = 35.6895;
+
+      if (place.lng && place.lat) {
+        lng = parseFloat(place.lng);
+        lat = parseFloat(place.lat);
+      }
+
+      const feature = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat])),
+        name: place.name,
+        city: place.city,
+        safety_level: place.safety_level || 'YELLOW',
+        rating: place.rating,
+        note: place.note,
+        lat: lat,
+        lng: lng
+      });
+
+      features.push(feature);
+    }
+
+    gfPlacesSource.clear();
+    gfPlacesSource.addFeatures(features);
+
+    console.log('[GFPlaces] Layer refreshed with', features.length, 'places');
+  };
+
   // Expose map to window so other modules can access it
   window.map = map;
   console.log('[App] Map exposed to window.map');
@@ -4477,9 +5226,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const id = feature.get('id');
       const type = feature.get('type');
       const peerName = feature.get('peerName');
+      const name = feature.get('name');
+      const safetyLevel = feature.get('safety_level');
+
       if (peerName) {
         console.log('[MAP CLICK] → Peer location');
         toast('Posizione rilevata ' + peerName);
+        handled = true;
+      } else if (safetyLevel) {
+        // GF Place clicked
+        console.log('[MAP CLICK] → Opening GF Place:', name, safetyLevel);
+        const safetyIcon = safetyLevel === 'GREEN' ? '🟢' : safetyLevel === 'RED' ? '🔴' : '🟡';
+        toast(`${safetyIcon} ${name} (${feature.get('city')})`);
         handled = true;
       } else if (type === 'shopping') {
         console.log('[MAP CLICK] → Opening shop:', id);
@@ -4501,6 +5259,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (oldPanel) oldPanel.remove();
     const chips = [];
     chips.push(`<button class="chip local ${state.onlyLocal?'active':''}" data-local="1">🏮 Local</button>`);
+    chips.push(`<button class="chip gf-places ${state.showGFPlaces?'active':''}" data-gf-places="1">🟢 GF Places</button>`);
     Object.keys(CATS).forEach(k => {
       chips.push(`<button class="chip ${state.activeCat===k?'active':''}" data-cat="${k}">${CATS[k].icon} ${CATS[k].label}</button>`);
     });
@@ -4552,6 +5311,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = e.target.closest('.chip'); if (!btn) return;
     if (btn.dataset.gf) state.onlyGF = !state.onlyGF;
     else if (btn.dataset.local) state.onlyLocal = !state.onlyLocal;
+    else if (btn.dataset.gfPlaces) {
+      state.showGFPlaces = !state.showGFPlaces;
+      // Toggle GF Places layer visibility
+      if (window.gfPlacesLayer) {
+        window.gfPlacesLayer.setVisible(state.showGFPlaces);
+        console.log('[Filter] GF Places layer visibility:', state.showGFPlaces);
+      }
+    }
     else if (btn.dataset.cat) state.activeCat = btn.dataset.cat;
     else if (btn.dataset.adv) state.showAdvFilters = !state.showAdvFilters;
     saveState(); renderFilters(); renderMarkers();
@@ -4737,8 +5504,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (view === 'gf') { renderGFView(); return; }
       if (view === 'budget') { renderBudgetView(); return; }
       if (view === 'gallery') { renderGalleryView(); return; }
+      if (view === 'sos') { renderSOSPanel(); return; }
       if (view === 'groq-menu') { window.openGroqPanel(); return; }
       if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
+      if (view === 'gf-suggest') { window.openGFSuggestionPanel(); return; }
     });
   }
 
@@ -5770,24 +6539,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // Helper: Mostra dialog per aggiungere tappa con tempo e giorno
   function showAddItineraryDialog(poi, onConfirm) {
     const html = `
-      <div style="position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto" id="add-itin-overlay">
-        <div style="border-radius:12px;padding:24px;max-width:380px;width:100%;margin:auto 0;">
-          <h3 style="margin:0 0 16px;font-size:18px;font-weight:700;">${poi.name || poi.bestname || 'Aggiungi tappa'}</h3>
+      <div style="position:fixed;inset:0;z-index:3000;background:rgba(20,30,80,.85);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto" id="add-itin-overlay">
+        <div style="background:linear-gradient(170deg,#FFFDF0 0%,#FFF8DC 100%);border-top:3px solid #FF1493;border-radius:12px;padding:24px;max-width:380px;width:100%;margin:auto 0;box-shadow:0 -8px 40px rgba(255,20,147,.3)">
+          <h3 style="margin:0 0 16px;font-size:18px;color:#1A2560;font-weight:700;font-family:'Comic Sans MS',cursive">${poi.name || poi.bestname || 'Aggiungi tappa'}</h3>
           <div class="form-row">
-            <label style="font-weight:700;font-size:12px;display:block;margin-bottom:6px">📅 Giorno del viaggio (1, 2, 3...)</label>
-            <input id="itin-day" type="number" placeholder="1" min="1" max="30" style="font-size:14px;width:100%;padding:8px;border-radius:8px;box-sizing:border-box" />
+            <label style="color:#6B5EA8;font-weight:700;font-size:12px;display:block;margin-bottom:6px">📅 Giorno del viaggio (1, 2, 3...)</label>
+            <input id="itin-day" type="number" placeholder="1" min="1" max="30" style="font-size:14px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
           </div>
           <div class="form-row">
-            <label style="font-weight:700;font-size:12px;display:block;margin-bottom:6px">⏰ Orario (es. 09:30)</label>
-            <input id="itin-time" type="text" placeholder="09:30" style="font-size:14px;width:100%;padding:8px;border-radius:8px;box-sizing:border-box" autocomplete="off" />
+            <label style="color:#6B5EA8;font-weight:700;font-size:12px;display:block;margin-bottom:6px">⏰ Orario (es. 09:30)</label>
+            <input id="itin-time" type="text" placeholder="09:30" style="font-size:14px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" autocomplete="off" />
           </div>
           <div class="form-row">
-            <label style="font-weight:700;font-size:12px;display:block;margin-bottom:6px">💰 Costo (es. 10€, opzionale)</label>
-            <input id="itin-cost" type="text" placeholder="Gratis" style="font-size:14px;width:100%;padding:8px;border-radius:8px;box-sizing:border-box" />
+            <label style="color:#6B5EA8;font-weight:700;font-size:12px;display:block;margin-bottom:6px">💰 Costo (es. 10€, opzionale)</label>
+            <input id="itin-cost" type="text" placeholder="Gratis" style="font-size:14px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
           </div>
           <div style="display:flex;gap:8px;margin-top:18px">
-            <button id="itin-cancel" style="flex:1;padding:11px;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.18s ease">Annulla</button>
-            <button id="itin-confirm" style="flex:1;padding:11px;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.18s ease">✓ Aggiungi</button>
+            <button id="itin-cancel" style="flex:1;padding:11px;background:linear-gradient(135deg,#E8E0FF,#D8CCFF);border:2px solid #C8BDFF;border-radius:8px;color:#1A2560;cursor:pointer;font-weight:600;font-family:'Comic Sans MS',cursive;transition:all 0.18s ease">Annulla</button>
+            <button id="itin-confirm" style="flex:1;padding:11px;background:linear-gradient(135deg,#FF1493,#FF69B4);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;font-family:'Comic Sans MS',cursive;box-shadow:0 0 16px rgba(255,20,147,.45);transition:all 0.18s ease">✓ Aggiungi</button>
           </div>
         </div>
       </div>
@@ -5874,36 +6643,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // HTML PRINCIPALE
     const searchHtml = `
-      <div style="position:sticky;top:0;background:var(--surface) !important;padding:12px 0;margin-bottom:12px;z-index:200;border-bottom:1px solid var(--border)">
+      <div style="position:sticky;top:0;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);padding:12px;margin-bottom:12px;z-index:200;border-radius:14px">
         <!-- Ricerca per città (searchCity) -->
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <input id="list-search" type="text" placeholder="🔍 Scrivi una città (Tokyo, Osaka, Kyoto...)"
-            style="flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit">
-          <button id="btn-google-search" style="padding:8px 12px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;white-space:nowrap">🌍 Google</button>
+            style="flex:1;padding:8px 10px;background:rgba(74,91,168,0.12);backdrop-filter:blur(10px);color:#fff;border:1.5px solid rgba(255,255,255,0.25);border-radius:8px;font:inherit;font-size:13px;placeholder-color:rgba(255,255,255,0.6)">
+          <button id="btn-google-search" style="padding:8px 12px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;white-space:nowrap;font-size:12px;box-shadow:0 0 12px rgba(255,20,147,0.3)">🌍 Google</button>
         </div>
 
         <!-- Pulsanti esporta/condividi -->
         <div style="display:flex;gap:6px;font-size:12px">
-          <button id="btn-export-whatsapp" style="flex:1;padding:6px;background:rgba(76,175,80,.2);border:1px solid #4CAF50;border-radius:6px;color:var(--text);cursor:pointer;font-size:11px;font-weight:600">📤 WhatsApp</button>
-          <button id="btn-share-group" style="flex:1;padding:6px;background:rgba(255,20,147,.2);border:1px solid var(--accent);border-radius:6px;color:var(--text);cursor:pointer;font-size:11px;font-weight:600">👥 Condividi</button>
+          <button id="btn-export-whatsapp" style="flex:1;padding:6px;background:rgba(76,175,80,.2);border:1.5px solid rgba(76,175,80,.5);border-radius:6px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;backdrop-filter:blur(10px)">📤 WhatsApp</button>
+          <button id="btn-share-group" style="flex:1;padding:6px;background:rgba(255,20,147,.2);border:1.5px solid rgba(255,20,147,.5);border-radius:6px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;backdrop-filter:blur(10px)">👥 Condividi</button>
         </div>
       </div>
 
       <!-- ITINERARIO ORDINATO PER DATA -->
-      <div class="section" style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid var(--success);border-radius:10px;padding:12px;margin-bottom:16px">
+      <div class="section" style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <h3 style="margin:0;color:var(--success)">🗓️ Itinerario (${itinerary.length})</h3>
-          <span style="font-size:11px;color:var(--muted)">Tempo reale</span>
+          <h3 style="margin:0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">🗓️ Itinerario (${itinerary.length})</h3>
+          <span style="font-size:11px;color:rgba(255,255,255,0.7)">Tempo reale</span>
         </div>
-        <p style="font-size:12px;color:var(--muted);margin:0 0 8px">Condiviso con i membri della stanza</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:0 0 8px">Condiviso con i membri della stanza</p>
         <div id="itinerary-list">${itineraryHtml}</div>
       </div>
 
       <!-- MESSAGGIO INIZIALE -->
       <div id="list-results" style="margin-top:20px">
-        <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">
+        <div style="padding:20px;text-align:center;color:rgba(255,255,255,0.7);font-size:13px">
           <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
-          <p style="font-size:11px;margin:8px 0 0">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+          <p style="font-size:11px;margin:8px 0 0;color:rgba(255,255,255,0.5)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
         </div>
       </div>
     `;
@@ -5951,9 +6720,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!query) {
           // Torna al messaggio iniziale
           resultsDiv.innerHTML = `
-            <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">
+            <div style="padding:20px;text-align:center;color:rgba(255,255,255,0.7);font-size:13px">
               <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
-              <p style="font-size:11px;margin:8px 0 0">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+              <p style="font-size:11px;margin:8px 0 0;color:rgba(255,255,255,0.5)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
             </div>
           `;
           return;
@@ -5985,8 +6754,8 @@ document.addEventListener('DOMContentLoaded', () => {
           resultsDiv.innerHTML = `
             <div style="padding:20px;text-align:center">
               <p style="font-size:14px;margin:0 0 8px;color:#FF1493;font-weight:700">❌ Nessun POI trovato</p>
-              <p style="font-size:12px;margin:0;color:var(--muted)">Non ci sono luoghi a "${query}"</p>
-              <p style="font-size:11px;margin:8px 0 0;color:var(--muted)">💡 Prova con: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima</p>
+              <p style="font-size:12px;margin:0;color:rgba(255,255,255,0.7)">Non ci sono luoghi a "${query}"</p>
+              <p style="font-size:11px;margin:8px 0 0;color:rgba(255,255,255,0.5)">💡 Prova con: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima</p>
             </div>
           `;
           return;
@@ -6673,14 +7442,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getWeatherColor(code) {
-    // Glassmorphism colors - all using orange theme #FF6B35 with transparency
-    if (code === 0 || code === 1) return 'rgba(255, 107, 53, 0.25)'; // Sole = Orange higher opacity
-    if (code === 2) return 'rgba(255, 107, 53, 0.20)'; // Parzialmente nuvoloso = Orange medium
-    if (code === 3) return 'rgba(255, 107, 53, 0.18)'; // Nuvoloso = Orange light
-    if (code >= 45 && code <= 48) return 'rgba(255, 107, 53, 0.16)'; // Nebbia = Orange very light
-    if (code >= 51 && code <= 82) return 'rgba(255, 107, 53, 0.22)'; // Pioggia = Orange medium
-    if (code >= 85 && code <= 86) return 'rgba(255, 107, 53, 0.19)'; // Neve = Orange light
-    return 'rgba(255, 107, 53, 0.18)'; // Default = Orange light
+    if (code === 0 || code === 1) return '#FFD700'; // Sole = Giallo
+    if (code === 2) return '#E0D5FF'; // Parzialmente nuvoloso = Lavanda
+    if (code === 3) return '#B8ACFF'; // Nuvoloso = Viola
+    if (code >= 45 && code <= 48) return '#8080C0'; // Nebbia = Blu scuro
+    if (code >= 51 && code <= 82) return '#87CEEB'; // Pioggia = Blu
+    if (code >= 85 && code <= 86) return '#E0F0FF'; // Neve = Bianco-blu
+    return '#C8BDFF'; // Default
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -6721,18 +7489,69 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
+  // Tokyo Station fallback coordinates
+  const TOKYO_STATION_LAT = 35.6762;
+  const TOKYO_STATION_LNG = 139.7674;
+
+  async function updateWeatherWithFallback(lat, lng, locationName) {
+    console.log('[Weather] Updating weather with fallback:', { lat, lng, locationName });
+    const weatherData = await fetchWeatherHourly(lat, lng, locationName);
+    if (!weatherData) {
+      console.warn('[Weather] Failed to fetch fallback weather');
+      showWeatherError('Errore API');
+      return;
+    }
+
+    // Get current hour weather
+    const now = new Date();
+    const hourIndex = now.getHours();
+    const hourlyData = weatherData.hourly;
+    const currentTemp = Math.round(hourlyData.temperature_2m[hourIndex]);
+    const currentCode = hourlyData.weathercode[hourIndex];
+    const currentCondition = getWeatherConditionName(currentCode);
+    const icon = getWeatherIcon(currentCode);
+
+    // Format date and time
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dayName = days[now.getDay()];
+    const date = now.getDate();
+    const monthName = months[now.getMonth()];
+    const dateStr = `${dayName}, ${date} ${monthName}`;
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    // Update card fields
+    const weatherIcon = document.getElementById('weather-icon');
+    const weatherDate = document.getElementById('weather-date');
+    const weatherTime = document.getElementById('weather-time');
+    const weatherTemp = document.getElementById('weather-temp');
+    const weatherCondition = document.getElementById('weather-condition');
+    const weatherFloating = document.getElementById('weather-floating');
+
+    if (weatherIcon && weatherDate && weatherTemp && weatherCondition && weatherFloating) {
+      weatherIcon.textContent = icon;
+      weatherDate.textContent = dateStr;
+      if (weatherTime) weatherTime.textContent = timeStr;
+      weatherTemp.innerHTML = `${currentTemp}<span style="font-size: 32px;">°C</span>`;
+      weatherCondition.textContent = currentCondition;
+      weatherFloating.classList.add('show');
+      console.log('[Weather] Card updated with fallback:', { currentTemp, currentCondition, dateStr, timeStr });
+    }
+  }
+
   function updateGpsWeatherWidget() {
     console.log('[Weather] Updating GPS weather widget...');
     if (!navigator.geolocation) {
-      console.warn('[Weather] Geolocation not available');
-      showWeatherError('📍 Geolocation non disponibile');
+      console.warn('[Weather] Geolocation not available - using Tokyo Station fallback');
+      updateWeatherWithFallback(TOKYO_STATION_LAT, TOKYO_STATION_LNG, '🗼 Tokyo (fallback)');
       return;
     }
 
     console.log('[Weather] Requesting GPS position...');
+    let timeoutId = null;
     const timeout = setTimeout(() => {
-      console.warn('[Weather] GPS timeout - no response after 10s');
-      showWeatherError('⏱️ GPS timeout');
+      console.warn('[Weather] GPS timeout - using Tokyo Station fallback');
+      updateWeatherWithFallback(TOKYO_STATION_LAT, TOKYO_STATION_LNG, '🗼 Tokyo (timeout)');
     }, 10000);
 
     navigator.geolocation.getCurrentPosition(
@@ -6788,13 +7607,8 @@ document.addEventListener('DOMContentLoaded', () => {
       (error) => {
         clearTimeout(timeout);
         console.warn('[Weather] GPS error:', error.code, error.message);
-        if (error.code === error.PERMISSION_DENIED) {
-          showWeatherError('📍 Consenti localizzazione', 'Permission denied');
-        } else if (error.code === error.POSITION_UNAVAILABLE) {
-          showWeatherError('🌍 GPS non disponibile', 'Position unavailable');
-        } else {
-          showWeatherError('⚠️ Errore GPS', error.message);
-        }
+        console.log('[Weather] Using Tokyo Station fallback');
+        updateWeatherWithFallback(TOKYO_STATION_LAT, TOKYO_STATION_LNG, '🗼 Tokyo (denied)');
       },
       { timeout: 15000, enableHighAccuracy: false }
     );
@@ -6995,7 +7809,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const bgColor = getWeatherColor(code);
 
       dailyHtml += `
-        <div class="weather-day" data-weather="${code}" style="background-color:${bgColor} !important;">
+        <div class="weather-day" data-weather="${code}" style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);">
           <div class="weather-date">${dayName}</div>
           <div class="weather-icon">${dayIcon}</div>
           <div class="weather-temps">
@@ -7011,7 +7825,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalHtml = `
       <div style="padding:0;">
         <!-- Header -->
-        <div style="background:#FFF9E6;padding:14px 16px;border-bottom:3px solid #FF1493;margin-bottom:16px;">
+        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border-bottom:1.5px solid rgba(255,255,255,0.25);padding:14px 16px;margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div style="display:flex;align-items:center;">
@@ -7034,17 +7848,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <!-- Details Grid -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;padding:0 16px;">
-          <div style="background:rgba(255,20,147,0.1);border:2px solid #FF1493;border-radius:10px;padding:14px;text-align:center;">
-            <div style="font-size:11px;color:var(--y2k-ink);font-weight:700;margin-bottom:6px;text-transform:uppercase;">💧 Precipitazioni</div>
-            <div style="font-size:24px;font-weight:700;color:var(--y2k-ink);font-family:'Courier New';">${precip}mm</div>
+          <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+            <div style="font-size:20px;line-height:1;">💧</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.7);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Precip.</div>
+            <div style="font-size:22px;font-weight:800;color:#fff;font-family:'Courier New',monospace;line-height:1.1;">${precip}<span style="font-size:13px;font-weight:600;margin-left:2px;">mm</span></div>
           </div>
-          <div style="background:rgba(0,255,136,0.1);border:2px solid #00FF88;border-radius:10px;padding:14px;text-align:center;">
-            <div style="font-size:11px;color:var(--y2k-ink);font-weight:700;margin-bottom:6px;text-transform:uppercase;">💦 Umidità</div>
-            <div style="font-size:24px;font-weight:700;color:var(--y2k-ink);font-family:'Courier New';">${humidity}%</div>
+          <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+            <div style="font-size:20px;line-height:1;">💦</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.7);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Umidità</div>
+            <div style="font-size:22px;font-weight:800;color:#fff;font-family:'Courier New',monospace;line-height:1.1;">${humidity}<span style="font-size:13px;font-weight:600;margin-left:2px;">%</span></div>
           </div>
-          <div style="background:rgba(255,215,0,0.1);border:2px solid #FFD700;border-radius:10px;padding:14px;text-align:center;">
-            <div style="font-size:11px;color:var(--y2k-ink);font-weight:700;margin-bottom:6px;text-transform:uppercase;">💨 Vento</div>
-            <div style="font-size:24px;font-weight:700;color:var(--y2k-ink);font-family:'Courier New';">${wind}km</div>
+          <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+            <div style="font-size:20px;line-height:1;">💨</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.7);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Vento</div>
+            <div style="font-size:22px;font-weight:800;color:#fff;font-family:'Courier New',monospace;line-height:1.1;">${wind}<span style="font-size:13px;font-weight:600;margin-left:2px;">km/h</span></div>
           </div>
         </div>
 
@@ -7494,9 +8311,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
-            <input id="config-total-budget-inline" type="number" value="${db.totalBudget}" placeholder="300000" style="flex:1;padding:8px;background:#fff;border:2px solid #FF1493;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:13px;box-sizing:border-box" />
-            <span style="color:var(--y2k-muted);font-weight:700">¥</span>
-            <button id="config-save-inline" class="btn primary" style="padding:8px 16px;font-size:13px">OK</button>
+            <input id="config-total-budget-inline" type="number" value="${db.totalBudget}" placeholder="300000" style="flex:2;padding:10px 12px;background:#fff;border:2px solid #FF1493;border-radius:8px;color:var(--y2k-ink);font-weight:700;font-size:14px;box-sizing:border-box" />
+            <span style="color:var(--y2k-muted);font-weight:700;font-size:14px">¥</span>
+            <button id="config-save-inline" class="btn primary" style="padding:10px 20px;font-size:13px;flex:0.8">OK</button>
           </div>
         </div>
 
@@ -7575,16 +8392,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const date = new Date(exp.date).toLocaleDateString('it-IT');
                 return `
                   <div class="expense-item">
-                    <div style="display:flex;align-items:center;gap:10px;flex:1">
-                      <div style="font-size:18px">${catInfo.name.split(' ')[0]}</div>
-                      <div style="flex:1;min-width:0">
-                        <div style="font-weight:700;color:var(--y2k-ink);font-size:12px;margin-bottom:2px">${exp.description || catInfo.name}</div>
-                        <div style="font-size:11px;color:var(--y2k-muted)">${date}</div>
-                      </div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-weight:700;color:#fff;font-size:11px;margin-bottom:1px">${exp.description || catInfo.name}</div>
+                      <div style="font-size:10px;color:rgba(255,255,255,0.6)">${date}</div>
                     </div>
-                    <div style="text-align:right">
-                      <div style="font-weight:700;color:var(--y2k-ink);font-size:13px">${displayCurr(exp.amount)}</div>
-                      <button class="expense-delete-btn" data-expense-index="${db.expenses.indexOf(exp)}" style="background:none;border:none;color:#FF6B6B;font-size:11px;cursor:pointer;font-weight:700;text-decoration:underline;padding:0;margin-top:2px">Elimina</button>
+                    <div style="text-align:right;flex-shrink:0">
+                      <div style="font-weight:700;color:#fff;font-size:12px">${displayCurr(exp.amount)}</div>
+                      <button class="expense-delete-btn" data-expense-index="${db.expenses.indexOf(exp)}" style="background:none;border:none;color:#FF6B6B;font-size:10px;cursor:pointer;font-weight:700;text-decoration:underline;padding:0;margin-top:1px">Elimina</button>
                     </div>
                   </div>
                 `;
@@ -7764,8 +8578,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <input type="file" id="gallery-file-input" accept="image/*" multiple style="display:none" />
             <div style="text-align:center;padding:20px;cursor:pointer">
               <div style="font-size:32px;margin-bottom:8px">📷</div>
-              <div style="color:var(--y2k-ink);font-weight:700;font-size:14px;margin-bottom:4px">Aggiungi Foto</div>
-              <div style="color:var(--y2k-muted);font-size:12px">Clicca o trascina foto qui</div>
+              <div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:4px">Aggiungi Foto</div>
+              <div style="color:rgba(255,255,255,0.6);font-size:12px">Clicca o trascina foto qui</div>
             </div>
           </div>
         </div>
@@ -8762,6 +9576,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderGroupView() {
     console.log('[Group] renderGroupView', { roomId: state.group?.roomId, myName: state.group?.myName, isCreator: state.group?.isCreator });
 
+    // Hide weather widget when opening group panel
+    const weatherWidget = document.getElementById('weather-floating');
+    if (weatherWidget) {
+      weatherWidget.classList.remove('show');
+      console.log('[Group] Hid weather widget');
+    }
+
     // Se gruppo già creato, usa group-panel.js
     if (state.group?.roomId && state.group?.myName && window.groupPanel) {
       const html = window.groupPanel.render();
@@ -8794,49 +9615,49 @@ document.addEventListener('DOMContentLoaded', () => {
       <div style="padding:12px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box;">
         <!-- Tab selector: Crea o Entra -->
         <div style="display:flex;gap:8px;">
-          <button id="mode-create" style="flex:1;padding:10px;border-radius:8px;font-weight:600;cursor:pointer;box-sizing:border-box;">
+          <button id="mode-create" style="flex:1;padding:10px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive;box-sizing:border-box;">
             ➕ Crea Nuova
           </button>
-          <button id="mode-join" style="flex:1;padding:10px;border-radius:8px;font-weight:600;cursor:pointer;box-sizing:border-box;">
+          <button id="mode-join" style="flex:1;padding:10px;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;font-weight:600;cursor:pointer;box-sizing:border-box;">
             🔓 Entra Esistente
           </button>
         </div>
 
         <!-- CREATE MODE -->
         <div id="create-mode" style="display:block">
-          <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:600;">Il codice della tua stanza</label>
+          <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:600;color:#FF1493">Il codice della tua stanza</label>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap;">
-            <div id="room-code-display" style="padding:16px 12px;border-radius:8px;font-size:24px;font-weight:700;letter-spacing:6px;text-align:center;cursor:default;user-select:all;min-width:160px;flex-shrink:0;">------</div>
+            <div id="room-code-display" style="padding:16px 12px;background:#FFF0F8;border:2px solid #FF1493;border-radius:8px;font-size:24px;font-weight:700;letter-spacing:6px;color:#FF1493;text-align:center;font-family:monospace;cursor:default;user-select:all;min-width:160px;flex-shrink:0;">------</div>
             <button id="copy-code-btn" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Copia codice">📋</button>
             <button id="regen-code-btn" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Genera nuovo codice">🔄</button>
           </div>
-          <div style="font-size:11px;margin-top:6px;">Condividi questo codice con chi vuoi far entrare. Solo chi lo ha può entrare.</div>
+          <div style="font-size:11px;color:#888;margin-top:6px;">Condividi questo codice con chi vuoi far entrare. Solo chi lo ha può entrare.</div>
         </div>
 
         <!-- JOIN MODE -->
         <div id="join-mode" style="display:none">
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Codice stanza</label>
-          <input id="group-room-join" placeholder="Es. ABC123" maxlength="6" style="width:100%;padding:12px;border-radius:8px;box-sizing:border-box;font-size:22px;font-weight:700;letter-spacing:6px;text-transform:uppercase;text-align:center;">
-          <div style="font-size:11px;margin-top:4px;">Inserisci il codice a 6 lettere ricevuto dal creatore della stanza.</div>
+          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#2D3B7D">Codice stanza</label>
+          <input id="group-room-join" placeholder="Es. ABC123" maxlength="6" style="width:100%;padding:12px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:22px;font-weight:700;letter-spacing:6px;text-transform:uppercase;font-family:monospace;text-align:center;">
+          <div style="font-size:11px;color:#888;margin-top:4px;">Inserisci il codice a 6 lettere ricevuto dal creatore della stanza.</div>
         </div>
 
         <!-- COMMON FIELDS -->
         <div>
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Il tuo nome</label>
-          <input id="group-name" placeholder="Es. Marco" style="width:100%;padding:10px;border-radius:8px;box-sizing:border-box;font-size:13px;" value="${state.group?.myName||''}">
+          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#333">Il tuo nome</label>
+          <input id="group-name" placeholder="Es. Marco" style="width:100%;padding:10px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:13px;" value="${state.group?.myName||''}">
         </div>
         <div>
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Avatar profilo (opzionale)</label>
-          <input id="group-avatar" type="text" placeholder="URL immagine (es. https://example.com/avatar.png)" style="width:100%;padding:10px;border-radius:8px;box-sizing:border-box;font-size:13px;margin-bottom:6px;" value="${state.group?.myAvatar?.startsWith('data:') || state.group?.myAvatar?.startsWith('http') ? state.group.myAvatar.substring(0,50) + '...' : state.group?.myAvatar || ''}">
-          <button id="gallery-upload-btn" style="width:100%;padding:10px;border-radius:6px;font-weight:600;cursor:pointer;margin-bottom:6px;box-sizing:border-box;font-size:13px;">
+          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#333">Avatar profilo (opzionale)</label>
+          <input id="group-avatar" type="text" placeholder="URL immagine (es. https://example.com/avatar.png)" style="width:100%;padding:10px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:13px;margin-bottom:6px;" value="${state.group?.myAvatar?.startsWith('data:') || state.group?.myAvatar?.startsWith('http') ? state.group.myAvatar.substring(0,50) + '...' : state.group?.myAvatar || ''}">
+          <button id="gallery-upload-btn" style="width:100%;padding:10px;background:#E8F4FF;border:2px solid #00FF88;color:#2D3B7D;border-radius:6px;font-weight:600;cursor:pointer;margin-bottom:6px;box-sizing:border-box;font-size:13px;">
             🎨 Scegli dalla Galleria
           </button>
           <input id="avatar-file-input" type="file" accept="image/*" style="display:none">
-          <div style="font-size:11px;">Lascia vuoto per generare un avatar con le tue iniziali.</div>
+          <div style="font-size:11px;color:#999;">Lascia vuoto per generare un avatar con le tue iniziali.</div>
         </div>
 
-        <button id="group-start" style="width:100%;padding:12px;border-radius:8px;font-weight:600;cursor:pointer;box-sizing:border-box;font-size:14px;">✅ Connetti</button>
-        <div id="peer-status-box" style="font-size:13px;">Pronto a connettersi...</div>
+        <button id="group-start" style="width:100%;padding:12px;background:linear-gradient(180deg,#FF1493,#FF69B4);color:white;border:2px solid #FF1493;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive;box-sizing:border-box;font-size:14px;">✅ Connetti</button>
+        <div id="peer-status-box" style="color:#999;font-size:13px;">Pronto a connettersi...</div>
       </div>
     `;
 
@@ -9064,6 +9885,168 @@ document.addEventListener('DOMContentLoaded', () => {
     "Beppu":        "https://www.findmeglutenfree.com/map#loc=Beppu,+Japan",
     "Okinawa":      "https://www.findmeglutenfree.com/map#loc=Okinawa,+Japan"
   };
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SOS EMERGENCY PANEL — Celiac Emergency Support
+  // ═══════════════════════════════════════════════════════════════════
+  function renderSOSPanel() {
+    const jp = '私は不治の病です。パン / 小麦は食べられません。';
+
+    const html = `
+      <div style="padding:8px 0;line-height:1.6;">
+        <!-- AMBULANZA -->
+        <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;padding:14px;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;">
+          <div style="flex:0 0 auto;font-size:32px;padding-top:4px;">🚑</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;color:#FF6B6B;margin-bottom:6px;font-size:12px;letter-spacing:0.5px;">AMBULANZA / 救急車</div>
+            <div style="font-size:20px;font-weight:800;color:#FF6B6B;letter-spacing:3px;margin-bottom:8px;">119</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:10px;line-height:1.5;">Numero di emergenza nazionale giapponese</div>
+            <button onclick="copyToClipboard('119')" style="padding:8px 14px;background:linear-gradient(180deg,#FF1493,#FF69B4);color:#fff;border:2px solid #FF1493;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;width:100%;box-shadow:0 0 12px rgba(255,20,147,0.3);">📱 Copia Numero</button>
+          </div>
+        </div>
+
+        <!-- FRASE EMERGENZA -->
+        <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;padding:14px;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;">
+          <div style="flex:0 0 auto;font-size:32px;padding-top:4px;">🗣️</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;color:#fff;margin-bottom:8px;font-size:12px;letter-spacing:0.5px;">FRASE DI EMERGENZA</div>
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:8px;line-height:1.5;padding:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.2);border-radius:6px;">${jp}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:10px;font-style:italic;">Mostra al cameriere o medico in caso di dubbio</div>
+            <div style="display:flex;gap:8px">
+              <button onclick="showWaiterCard('${jp}')" style="flex:1;padding:8px 14px;background:linear-gradient(180deg,#FF1493,#FF69B4);color:#fff;border:2px solid #FF1493;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 0 12px rgba(255,20,147,0.3);">🗣️ Mostra al Cameriere</button>
+              <button onclick="copyToClipboard('${jp}')" style="flex:1;padding:8px 14px;background:rgba(255,255,255,0.1);color:#fff;border:1.5px solid rgba(255,255,255,0.3);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;backdrop-filter:blur(10px);">📋 Copia</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OSPEDALE -->
+        <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;padding:14px;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;">
+          <div style="flex:0 0 auto;font-size:32px;padding-top:4px;">🏥</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;color:#fff;margin-bottom:8px;font-size:12px;letter-spacing:0.5px;">OSPEDALE PRINCIPALE</div>
+            <div style="font-size:12px;color:#fff;margin-bottom:4px;font-weight:600;">St. Luke's International Hospital</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:6px;line-height:1.4;">9-1 Akashicho, Chuo-ku, Tokyo</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:10px;line-height:1.4;">☎️ +81-3-3541-5151</div>
+            <button onclick="openGoogleMaps('St. Luke\\'s International Hospital, Tokyo')" style="padding:8px 14px;background:rgba(255,255,255,0.1);color:#fff;border:1.5px solid rgba(255,255,255,0.3);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;width:100%;backdrop-filter:blur(10px);">🗺️ Apri in Maps</button>
+          </div>
+        </div>
+
+        <!-- TESSERA MEDICA -->
+        <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;padding:14px;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;">
+          <div style="flex:0 0 auto;font-size:32px;padding-top:4px;">🆔</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;color:#fff;margin-bottom:10px;font-size:12px;letter-spacing:0.5px;">TESSERA MEDICA</div>
+            <button onclick="showMedicalCard()" style="width:100%;padding:8px 14px;background:rgba(255,255,255,0.1);color:#fff;border:1.5px solid rgba(255,255,255,0.3);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;margin-bottom:6px;backdrop-filter:blur(10px);">📄 Visualizza / Stampa</button>
+            <button onclick="downloadMedicalCard()" style="width:100%;padding:8px 14px;background:rgba(255,255,255,0.1);color:#fff;border:1.5px solid rgba(255,255,255,0.3);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;backdrop-filter:blur(10px);">⬇️ Scarica</button>
+          </div>
+        </div>
+
+        <!-- CONSIGLI RAPIDI -->
+        <div style="padding:14px;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;margin-bottom:16px;">
+          <div style="font-weight:700;color:#fff;margin-bottom:10px;font-size:12px;letter-spacing:0.5px;">💡 CONSIGLI DI SICUREZZA</div>
+          <div style="line-height:1.8;color:rgba(255,255,255,0.7);font-size:12px;">
+            • Mostra frase <strong>PRIMA</strong> di mangiare<br>
+            • Porta tessera sempre con te<br>
+            • Salva contatto ospedale nel telefono<br>
+            • Dì "グルテン" (glutine) ai ristoranti
+          </div>
+        </div>
+      </div>
+    `;
+
+    window.openSheet('🚨 SOS - Emergenza Celiac', html);
+  }
+
+  // Helper function to copy Japanese phrase to clipboard
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      toast('✅ Frase copiata negli appunti');
+    }).catch(err => {
+      console.error('Copy failed:', err);
+      toast('❌ Errore nella copia');
+    });
+  }
+
+
+  // Helper function to show medical card
+  function showMedicalCard() {
+    const cardContent = `
+      <div style="font-family:monospace;white-space:pre-wrap;font-size:11px;line-height:1.4;background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;margin:12px 0;overflow-x:auto;">
+╔════════════════════════════════════════════════╗
+║        セリアック病医療カード               ║
+║     (Celiac Disease Medical Card)          ║
+╚════════════════════════════════════════════════╝
+
+患者名 (Patient Name): ___________________
+生年月日 (Date of Birth): ___/___/___
+
+⚠️ 重要な医学情報 (Important Medical Info):
+
+私は不治の病です。
+(I have celiac disease.)
+
+パン・小麦は食べられません。
+(I cannot eat bread/wheat.)
+
+グルテンを含む食品に対するアレルギーがあります。
+(I am allergic to foods containing gluten.)
+
+緊急連絡先 (Emergency Contact):
+____________________
+____________________
+
+血液型 (Blood Type): _____
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:12px;">📋 Puoi stampare e completare questa tessera manualmente.</p>
+    `;
+    window.openSheet('Tessera Medica', cardContent);
+  }
+
+  // Helper function to download medical card as text file
+  function downloadMedicalCard() {
+    const cardText = `TESSERA MEDICA - CELIAC DISEASE MEDICAL CARD
+
+患者名 (Patient Name): ___________________
+生年月日 (Date of Birth): ___/___/___
+
+⚠️ INFORMAZIONI MEDICHE IMPORTANTI / 重要な医学情報
+
+私は不治の病です。
+I have celiac disease.
+
+パン・小麦は食べられません。
+I cannot eat bread / wheat.
+
+グルテンを含む食品に対するアレルギーがあります。
+I am allergic to foods containing gluten.
+
+緊急連絡先 (Emergency Contact):
+____________________
+____________________
+
+血液型 (Blood Type): _____
+
+NUMERI DI EMERGENZA / 緊急電話番号:
+Ambulanza: 119
+Police: 110
+Hospital: +81-3-3541-5151 (St. Luke's International Hospital, Tokyo)
+
+Data di creazione (Date Created): ${new Date().toLocaleDateString()}
+`;
+
+    const blob = new Blob([cardText], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'SafeEats-Medical-Card-'+ new Date().toISOString().split('T')[0] + '.txt';
+    link.click();
+    toast('✅ Tessera medica scaricata');
+  }
+
+  // Helper function to open Google Maps (fallback)
+  function openGoogleMaps(location) {
+    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(location)}`;
+    window.open(mapsUrl, '_blank');
+  }
 
 function renderGFList(city, searchText) {
 const container = document.getElementById("gf-list-sheet") || document.getElementById("gf-list");
@@ -9426,9 +10409,51 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   };
 
   /* ================= GF PLACES DATABASE ================= */
+  const GFSuggestionsDB = {
+    STORE_KEY: 'gf_suggestions_submitted',
+
+    getAll() {
+      try {
+        return JSON.parse(localStorage.getItem(this.STORE_KEY) || '[]');
+      } catch { return []; }
+    },
+
+    add(suggestion) {
+      try {
+        const suggestions = this.getAll();
+        suggestion.id = 'gfs_' + Date.now();
+        suggestion.submittedAt = new Date().toISOString();
+        suggestion.status = 'pending'; // pending, approved, rejected
+        suggestions.push(suggestion);
+        localStorage.setItem(this.STORE_KEY, JSON.stringify(suggestions));
+
+        if (window.broadcastToPeers) {
+          window.broadcastToPeers({ type: 'gf_suggestion_add', suggestion });
+        }
+
+        return suggestion;
+      } catch (err) {
+        console.error('[GFSuggestionsDB.add]', err);
+        return null;
+      }
+    },
+
+    delete(id) {
+      try {
+        const suggestions = this.getAll();
+        const filtered = suggestions.filter(s => s.id !== id);
+        localStorage.setItem(this.STORE_KEY, JSON.stringify(filtered));
+        return true;
+      } catch (err) {
+        console.error('[GFSuggestionsDB.delete]', err);
+        return false;
+      }
+    }
+  };
+
   const GFPlacesDB = {
     STORE_KEY: 'gf_custom_places',
-    
+
     getAll() {
       try {
         return JSON.parse(localStorage.getItem(this.STORE_KEY) || '[]');
@@ -9633,75 +10658,178 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     }
   };
 
-  window.openGFPlacesPanel = function() {
+  // Global state for edit mode
+  window.gfEditMode = {
+    enabled: false,
+    placeId: null
+  };
+
+  window.openGFPlacesPanel = function(prefillData = null, editId = null) {
+    // Set edit mode if editId provided
+    if (editId) {
+      window.gfEditMode.enabled = true;
+      window.gfEditMode.placeId = editId;
+    } else {
+      window.gfEditMode.enabled = false;
+      window.gfEditMode.placeId = null;
+    }
+
     const places = GFPlacesDB.getAll();
-    
+
     let placesHtml = '';
     if (places.length === 0) {
       placesHtml = '<div class="gf-empty-state"><div class="icon">📍</div>Nessun posto aggiunto. Comincia ad aggiungere i tuoi posti GF!</div>';
     } else {
       placesHtml = places.map(p => `
-        <div class="gf-place-card">
-          <div class="gpc-header">
+        <div class="gf-place-card" style="background:rgba(74,91,168,0.08);border:1px solid rgba(74,91,168,0.2);border-radius:12px;padding:12px;">
+          <div class="gpc-header" style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
             <div>
-              <div class="gpc-name">${p.name}</div>
-              <div class="gpc-city">${p.city}${p.area ? ' · ' + p.area : ''}</div>
+              <div class="gpc-name" style="font-weight:700;color:var(--text);margin-bottom:4px;">${p.name}</div>
+              <div class="gpc-city" style="font-size:12px;color:var(--muted);">${p.city}${p.area ? ' · ' + p.area : ''}</div>
             </div>
-            <div class="gpc-rating">${'⭐'.repeat(p.rating || 0)}</div>
+            <div class="gpc-rating" style="font-size:14px;">${'⭐'.repeat(p.rating || 0)}</div>
           </div>
-          <div class="gpc-meta">
-            ${(p.tags || []).map(t => `<span class="gpc-tag">${t}</span>`).join('')}
+          ${p.safety_level ? `<div style="display:inline-block;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-bottom:8px;${p.safety_level === 'GREEN' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F' : p.safety_level === 'YELLOW' ? 'background:rgba(255,215,0,0.2);color:#FFD700' : 'background:rgba(255,107,107,0.2);color:#FF6B6B'};">${p.safety_level === 'GREEN' ? '🟢 SAFE' : p.safety_level === 'YELLOW' ? '🟡 CAUTION' : '🔴 DANGER'}</div>` : ''}
+          <div class="gpc-meta" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            ${(p.tags || []).map(t => `<span class="gpc-tag" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:3px 8px;font-size:11px;">${t}</span>`).join('')}
           </div>
-          ${p.note ? `<div style="margin-top:8px;font-size:12px;color:var(--muted);">${p.note}</div>` : ''}
-          <div class="gpc-actions">
-            <button onclick="window.editGFPlace('${p.id}')">✏️ Modifica</button>
-            <button onclick="if(confirm('Elimina?')) { window.deleteGFPlace('${p.id}'); window.openGFPlacesPanel(); }">🗑️ Elimina</button>
+          ${p.note ? `<div style="margin:8px 0;font-size:12px;color:var(--muted);line-height:1.4;">${p.note}</div>` : ''}
+          <div class="gpc-actions" style="display:flex;gap:6px;margin-top:10px;">
+            <button onclick="window.startEditGFPlace('${p.id}')" style="flex:1;padding:6px;background:rgba(100,149,237,0.2);border:1px solid rgba(100,149,237,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">✏️ Modifica</button>
+            <button onclick="if(confirm('Elimina?')) { window.deleteGFPlace('${p.id}'); window.openGFPlacesPanel(); }" style="flex:1;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">🗑️ Elimina</button>
           </div>
         </div>
       `).join('');
     }
-    
+
     const addFormHtml = `
-      <div class="gf-place-form">
-        <h3 style="margin:0 0 12px;font-size:14px;color:var(--text)">➕ Aggiungi Posto GF</h3>
-        <div class="form-row">
-          <label>Nome Ristorante</label>
-          <input type="text" id="gf-place-name" placeholder="Es: Sakura Gluten-Free" />
+      <div class="gf-place-form" style="background:rgba(74,91,168,0.12);backdrop-filter:blur(10px);border:1px solid rgba(74,91,168,0.3);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <a href="https://www.findmeglutenfree.com/jp" target="_blank" style="flex:1;padding:10px;background:linear-gradient(180deg,#4A5BA8,#3A4B98);color:#fff;border:none;border-radius:6px;text-decoration:none;font-weight:700;font-size:12px;text-align:center;cursor:pointer;">🌐 Trova su Find Me GF</a>
         </div>
-        <div class="form-row">
-          <label>Città</label>
-          <input type="text" id="gf-place-city" placeholder="Es: Kyoto" />
+
+        <h3 style="margin:0;font-size:13px;color:var(--text);font-weight:700;">➕ Aggiungi Manualmente</h3>
+
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="gf-place-name" placeholder="Nome" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
+          <input type="text" id="gf-place-city" placeholder="Città" style="flex:0.8;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
         </div>
-        <div class="form-row">
-          <label>Zona (opzionale)</label>
-          <input type="text" id="gf-place-area" placeholder="Es: Gion" />
-        </div>
-        <div class="form-row">
-          <label>Note</label>
-          <textarea id="gf-place-note" placeholder="Menu completamente GF, staff parla inglese..."></textarea>
-        </div>
-        <div class="form-row">
-          <label>Tags (separati da virgola)</label>
-          <input type="text" id="gf-place-tags" placeholder="100% sicuro, Cucina separata, Delivery online" />
-        </div>
-        <div class="form-row">
-          <label>Rating (1-5 stelle)</label>
-          <select id="gf-place-rating">
-            <option value="5">⭐⭐⭐⭐⭐ Perfetto</option>
-            <option value="4">⭐⭐⭐⭐ Molto buono</option>
-            <option value="3">⭐⭐⭐ Buono</option>
-            <option value="2">⭐⭐ Discreto</option>
-            <option value="1">⭐ Scadente</option>
+
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="gf-place-area" placeholder="Zona (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
+          <select id="gf-place-rating" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;">
+            <option value="5">⭐⭐⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+            <option value="2">⭐⭐</option>
+            <option value="1">⭐</option>
           </select>
         </div>
-        <div class="form-actions">
-          <button onclick="window.saveGFPlace()">💾 Salva Posto</button>
+
+        <select id="gf-place-safety" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;">
+          <option value="GREEN">🟢 GREEN - 100% Safe</option>
+          <option value="YELLOW" selected>🟡 YELLOW - Caution</option>
+          <option value="RED">🔴 RED - Danger</option>
+        </select>
+
+        <textarea id="gf-place-note" placeholder="Note personali..." style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;min-height:70px;"></textarea>
+
+        <input type="text" id="gf-place-tags" placeholder="Tags (Es: 100% sicuro, Cucina separata)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
+
+        <input type="hidden" id="gf-place-source-url" value="" />
+        <input type="hidden" id="gf-place-lat" value="" />
+        <input type="hidden" id="gf-place-lng" value="" />
+
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button onclick="window.geocodeGFPlace()" style="flex:1;padding:8px;background:rgba(100,149,237,0.2);border:1px solid rgba(100,149,237,0.4);color:var(--text);border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">📍 Geo-localizza</button>
+          <button onclick="window.saveGFPlace()" id="gf-save-button" style="flex:1;padding:8px;background:linear-gradient(180deg,#7FFF7F,#6FEF6F);color:#000;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">💾 Salva</button>
         </div>
       </div>
     `;
-    
-    const html = `<div class="gf-places-container">${addFormHtml}${placesHtml}</div>`;
+
+    const html = `<div class="gf-places-container" style="padding:16px;display:flex;flex-direction:column;gap:16px;">${addFormHtml}${placesHtml}</div>`;
     window.openSheet('🏪 I Miei Posti GF', html);
+
+    // Pre-fill form if data provided (deep linking or edit mode)
+    if (prefillData) {
+      setTimeout(() => {
+        if (prefillData.name) {
+          const nameField = document.getElementById('gf-place-name');
+          if (nameField) nameField.value = prefillData.name;
+        }
+        if (prefillData.city) {
+          const cityField = document.getElementById('gf-place-city');
+          if (cityField) cityField.value = prefillData.city;
+        }
+        if (prefillData.area) {
+          const areaField = document.getElementById('gf-place-area');
+          if (areaField) areaField.value = prefillData.area;
+        }
+        if (prefillData.rating) {
+          const ratingField = document.getElementById('gf-place-rating');
+          if (ratingField) ratingField.value = prefillData.rating;
+        }
+        if (prefillData.safety_level) {
+          const safetyField = document.getElementById('gf-place-safety');
+          if (safetyField) safetyField.value = prefillData.safety_level;
+        }
+        if (prefillData.note) {
+          const noteField = document.getElementById('gf-place-note');
+          if (noteField) noteField.value = prefillData.note;
+        }
+        if (prefillData.tags && Array.isArray(prefillData.tags)) {
+          const tagsField = document.getElementById('gf-place-tags');
+          if (tagsField) tagsField.value = prefillData.tags.join(', ');
+        }
+        if (prefillData.source_url) {
+          const sourceUrlField = document.getElementById('gf-place-source-url');
+          if (sourceUrlField) sourceUrlField.value = prefillData.source_url;
+        }
+        if (prefillData.lat) {
+          document.getElementById('gf-place-lat').value = prefillData.lat;
+        }
+        if (prefillData.lng) {
+          document.getElementById('gf-place-lng').value = prefillData.lng;
+        }
+
+        // Update button text if in edit mode
+        if (window.gfEditMode && window.gfEditMode.enabled) {
+          const saveBtn = document.getElementById('gf-save-button');
+          if (saveBtn) {
+            saveBtn.innerHTML = '✏️ Aggiorna';
+            saveBtn.style.background = 'linear-gradient(180deg,#6BA3D4,#5B93C4)';
+          }
+        }
+
+        console.log('[openGFPlacesPanel] Form pre-filled with:', prefillData);
+      }, 100);
+    } else {
+      // Reset button text if not in edit mode
+      setTimeout(() => {
+        const saveBtn = document.getElementById('gf-save-button');
+        if (saveBtn) {
+          saveBtn.innerHTML = '💾 Salva';
+          saveBtn.style.background = 'linear-gradient(180deg,#7FFF7F,#6FEF6F)';
+        }
+      }, 100);
+    }
+  };
+
+  window.startEditGFPlace = function(placeId) {
+    console.log('[startEditGFPlace] Starting edit for:', placeId);
+
+    const places = GFPlacesDB.getAll();
+    const place = places.find(p => p.id === placeId);
+
+    if (!place) {
+      toast('❌ Posto non trovato');
+      return;
+    }
+
+    console.log('[startEditGFPlace] Found place:', place);
+
+    // Open panel with edit mode
+    window.openGFPlacesPanel(place, placeId);
   };
 
   window.saveGFPlace = function() {
@@ -9713,7 +10841,9 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     const areaField = document.getElementById('gf-place-area');
     const noteField = document.getElementById('gf-place-note');
     const ratingField = document.getElementById('gf-place-rating');
+    const safetyField = document.getElementById('gf-place-safety');
     const tagsField = document.getElementById('gf-place-tags');
+    const sourceUrlField = document.getElementById('gf-place-source-url');
 
     console.log('[saveGFPlace] Fields found:', {
       name: !!nameField,
@@ -9721,7 +10851,9 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
       area: !!areaField,
       note: !!noteField,
       rating: !!ratingField,
-      tags: !!tagsField
+      safety: !!safetyField,
+      tags: !!tagsField,
+      sourceUrl: !!sourceUrlField
     });
 
     const name = nameField?.value.trim();
@@ -9729,10 +10861,14 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     const area = areaField?.value.trim() || null;
     const note = noteField?.value.trim() || null;
     const rating = parseInt(ratingField?.value || '5');
+    const safety_level = safetyField?.value || 'YELLOW';
     const tags = (tagsField?.value || '')
       .split(',').map(t => t.trim()).filter(Boolean);
+    const source_url = sourceUrlField?.value.trim() || null;
+    const lat = document.getElementById('gf-place-lat')?.value || null;
+    const lng = document.getElementById('gf-place-lng')?.value || null;
 
-    console.log('[saveGFPlace] Values:', { name, city, area, note, rating, tags });
+    console.log('[saveGFPlace] Values:', { name, city, area, note, rating, safety_level, tags, source_url });
 
     // Validazione
     if (!name || !city) {
@@ -9742,11 +10878,21 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     }
 
     // Crea l'oggetto place
-    const place = { name, city, area, note, rating, tags };
+    const place = { name, city, area, note, rating, safety_level, tags, source_url, lat, lng };
     console.log('[saveGFPlace] Place object:', place);
 
-    // Salva nel database
-    const saved = GFPlacesDB.add(place);
+    // Salva o aggiorna nel database
+    let saved;
+    const isEdit = window.gfEditMode && window.gfEditMode.enabled;
+
+    if (isEdit) {
+      console.log('[saveGFPlace] Edit mode - updating place:', window.gfEditMode.placeId);
+      saved = GFPlacesDB.edit(window.gfEditMode.placeId, place);
+    } else {
+      console.log('[saveGFPlace] Add mode - creating new place');
+      saved = GFPlacesDB.add(place);
+    }
+
     console.log('[saveGFPlace] Saved to DB:', saved);
 
     if (!saved) {
@@ -9762,28 +10908,354 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     if (noteField) noteField.value = '';
     if (ratingField) ratingField.value = '5';
     if (tagsField) tagsField.value = '';
+    document.getElementById('gf-place-lat').value = '';
+    document.getElementById('gf-place-lng').value = '';
+    document.getElementById('gf-place-source-url').value = '';
 
     console.log('[saveGFPlace] Form cleared');
 
     // Mostra successo
-    toast('✅ Posto aggiunto! Sincronizzazione in corso...');
+    const successMsg = isEdit ? '✅ Posto aggiornato!' : '✅ Posto aggiunto!';
+    toast(successMsg);
     console.log('[saveGFPlace] Success - reopening panel');
+
+    // Reset edit mode
+    window.gfEditMode.enabled = false;
+    window.gfEditMode.placeId = null;
 
     // Riapri il panel dopo un po'
     setTimeout(() => {
       console.log('[saveGFPlace] Reopening GFPlacesPanel');
       window.openGFPlacesPanel();
     }, 500);
+
+    // Refresh GF places layer on map
+    if (window.refreshGFPlacesLayer) {
+      window.refreshGFPlacesLayer();
+    }
+  };
+
+  // ===== INITIAL GF PLACES LAYER LOAD =====
+  // Load GF places on map when app initializes
+  setTimeout(() => {
+    if (window.refreshGFPlacesLayer) {
+      window.refreshGFPlacesLayer();
+      console.log('[App] GF Places layer initialized');
+    }
+  }, 1000);
+
+// ===== DEEP LINKING & SHARE TARGET SUPPORT =====
+  window.handleDeepLink = function() {
+    const params = new URLSearchParams(window.location.search);
+
+    // Check for Share Target API data (when shared from another app)
+    const sharedTitle = params.get('title');
+    const sharedText = params.get('text');
+    const sharedUrl = params.get('url');
+
+    if (sharedTitle || sharedText || sharedUrl) {
+      console.log('[handleDeepLink] Detected Share Target data:', { sharedTitle, sharedText, sharedUrl });
+
+      // Parse the shared data to extract restaurant info
+      const prefillData = window.parseSharedRestaurantData(sharedTitle, sharedText, sharedUrl);
+
+      // Clean URL bar (remove parameters)
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      console.log('[handleDeepLink] Opening GF Places panel from shared data:', prefillData);
+
+      // Show confirmation toast
+      if (window.toast && typeof window.toast === 'function') {
+        window.toast('📲 Ristorante importato da Find Me GF!');
+      } else {
+        console.log('[handleDeepLink] Toast function not available');
+      }
+
+      // Open panel after a brief delay
+      setTimeout(() => {
+        window.openGFPlacesPanel(prefillData);
+      }, 500);
+
+      return true;
+    }
+
+    // Check if any GF deep link parameters exist (custom deep links)
+    const gfName = params.get('gf_name');
+    const gfCity = params.get('gf_city');
+
+    if (gfName || gfCity) {
+      console.log('[handleDeepLink] Detected GF deep link parameters');
+
+      // Build prefill data
+      const prefillData = {
+        name: gfName || '',
+        city: gfCity || '',
+        area: params.get('gf_area') || '',
+        rating: params.get('gf_rating') || '5',
+        safety_level: params.get('gf_safety') || 'YELLOW',
+        note: params.get('gf_note') || '',
+        tags: params.get('gf_tags') ? params.get('gf_tags').split(',').map(t => t.trim()) : [],
+        source_url: params.get('gf_source_url') || ''
+      };
+
+      // Clean URL bar (remove parameters)
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      console.log('[handleDeepLink] Opening GF Places panel with prefilled data:', prefillData);
+
+      // Open panel after a brief delay to ensure page is ready
+      setTimeout(() => {
+        window.openGFPlacesPanel(prefillData);
+      }, 500);
+
+      return true;
+    }
+
+    return false;
+  };
+
+  // ===== GEOCODING SUPPORT (OpenStreetMap Nominatim) =====
+  window.geocodeRestaurant = async function(name, city, address) {
+    try {
+      console.log('[Geocode] Looking up:', { name, city, address });
+
+      // Build search query
+      const query = address ? address : `${name}, ${city}, Japan`;
+      console.log('[Geocode] Query:', query);
+
+      // Use Nominatim (OpenStreetMap) free geocoding service
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
+      );
+
+      if (!response.ok) {
+        console.warn('[Geocode] API error:', response.status);
+        return null;
+      }
+
+      const results = await response.json();
+      if (results.length === 0) {
+        console.warn('[Geocode] No results found for:', query);
+        return null;
+      }
+
+      const result = results[0];
+      const coords = {
+        lat: parseFloat(result.lat),
+        lng: parseFloat(result.lon),
+        address: result.display_name
+      };
+
+      console.log('[Geocode] Found:', coords);
+      return coords;
+    } catch (err) {
+      console.error('[Geocode] Error:', err);
+      return null;
+    }
+  };
+
+  // ===== PARSE SHARED RESTAURANT DATA =====
+  // Extract restaurant name and city from shared text/title
+  window.parseSharedRestaurantData = function(title, text, url) {
+    console.log('[parseSharedRestaurantData] Input:', { title, text, url });
+
+    let restaurantName = '';
+    let city = '';
+    let sourceUrl = url || '';
+    let notes = '';
+
+    // Strategy 1: If title looks like a restaurant name (from FMGF or similar)
+    if (title && title.length > 0) {
+      restaurantName = title.trim();
+    }
+
+    // Strategy 2: Extract from text/description
+    if (text && text.length > 0) {
+      const textLines = text.split('\n');
+
+      // First line often has the restaurant name
+      if (!restaurantName && textLines.length > 0) {
+        restaurantName = textLines[0].trim();
+      }
+
+      // Look for city patterns (Tokyo, Kyoto, Osaka, etc.)
+      const cityPatterns = /(?:Tokyo|Kyoto|Osaka|Kobe|Nagoya|Sapporo|Fukuoka|Hiroshima|Kobe|Nara|Kanazawa|Nagano|Sendai)/i;
+      const cityMatch = text.match(cityPatterns);
+      if (cityMatch) {
+        city = cityMatch[0];
+      }
+
+      // Store full text as notes
+      notes = text.substring(0, 200); // First 200 chars as notes
+    }
+
+    // Strategy 3: Extract restaurant name from URL (if it's a FMGF or similar URL)
+    if (!restaurantName && url && url.includes('findmeglutenfree')) {
+      // Try to extract from URL path
+      const nameMatch = url.match(/\/places\/([\w-]+)/i);
+      if (nameMatch) {
+        restaurantName = decodeURIComponent(nameMatch[1]).replace(/-/g, ' ');
+      }
+    }
+
+    const prefillData = {
+      name: restaurantName,
+      city: city,
+      area: '',
+      rating: '4',
+      safety_level: 'YELLOW',
+      note: notes,
+      tags: url && url.includes('findmeglutenfree') ? ['Da FMGF'] : [],
+      source_url: sourceUrl
+    };
+
+    console.log('[parseSharedRestaurantData] Result:', prefillData);
+    return prefillData;
+  };
+
+  window.geocodeGFPlace = async function() {
+    console.log('[geocodeGFPlace] Starting geocoding...');
+
+    const nameField = document.getElementById('gf-place-name');
+    const cityField = document.getElementById('gf-place-city');
+    const areaField = document.getElementById('gf-place-area');
+
+    const name = nameField?.value.trim();
+    const city = cityField?.value.trim();
+    const area = areaField?.value.trim();
+
+    if (!name || !city) {
+      toast('⚠️ Inserisci nome e città prima di geo-localizzare');
+      return;
+    }
+
+    toast('🔍 Geo-localizzando ' + name + '...');
+
+    const address = area ? `${name}, ${area}, ${city}, Japan` : `${name}, ${city}, Japan`;
+    const coords = await window.geocodeRestaurant(name, city, address);
+
+    if (coords) {
+      console.log('[geocodeGFPlace] Success:', coords);
+      document.getElementById('gf-place-lat').value = coords.lat;
+      document.getElementById('gf-place-lng').value = coords.lng;
+      toast(`✅ Trovato! ${coords.address.substring(0, 40)}...`);
+    } else {
+      toast('❌ Posizione non trovata. Riprova con un indirizzo più specifico.');
+    }
   };
 
   window.deleteGFPlace = function(id) {
     GFPlacesDB.delete(id);
     toast('✅ Posto eliminato');
+
+    // Refresh GF places layer on map
+    if (window.refreshGFPlacesLayer) {
+      window.refreshGFPlacesLayer();
+    }
   };
 
   window.editGFPlace = function(id) {
     toast('⚠️ Edit in progress — salva come nuovo e elimina vecchio');
   };
+
+  // ===== GF POI SUGGESTION PANEL =====
+  window.openGFSuggestionPanel = function() {
+    const suggestions = GFSuggestionsDB.getAll();
+
+    let suggestionsHtml = '';
+    if (suggestions.length === 0) {
+      suggestionsHtml = '<div style="text-align:center;padding:20px;color:var(--muted);">Nessun suggerimento inviato ancora</div>';
+    } else {
+      suggestionsHtml = suggestions.map(s => `
+        <div style="background:rgba(74,91,168,0.08);border:1px solid rgba(74,91,168,0.2);border-radius:12px;padding:12px;margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+            <div>
+              <div style="font-weight:700;color:var(--text);">${s.name}</div>
+              <div style="font-size:12px;color:var(--muted);">${s.city}${s.area ? ' · ' + s.area : ''}</div>
+            </div>
+            <div style="padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;${
+              s.status === 'approved' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F' :
+              s.status === 'rejected' ? 'background:rgba(255,107,107,0.2);color:#FF6B6B' :
+              'background:rgba(255,215,0,0.2);color:#FFD700'
+            };">${s.status === 'approved' ? '✅ Approvato' : s.status === 'rejected' ? '❌ Rifiutato' : '⏳ In attesa'}</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Inviato: ${new Date(s.submittedAt).toLocaleDateString('it-IT')}</div>
+          <button onclick="if(confirm('Elimina questo suggerimento?')) { GFSuggestionsDB.delete('${s.id}'); window.openGFSuggestionPanel(); }" style="width:100%;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">🗑️ Elimina</button>
+        </div>
+      `).join('');
+    }
+
+    const formHtml = `
+      <div style="background:rgba(100,200,100,0.12);backdrop-filter:blur(10px);border:1px solid rgba(100,200,100,0.3);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+        <h3 style="margin:0;font-size:13px;color:var(--text);font-weight:700;">✨ Suggerisci un Nuovo POI</h3>
+
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="gf-suggest-name" placeholder="Nome ristorante" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+          <input type="text" id="gf-suggest-city" placeholder="Città" style="flex:0.8;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+        </div>
+
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="gf-suggest-area" placeholder="Zona (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+          <input type="text" id="gf-suggest-address" placeholder="Indirizzo (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+        </div>
+
+        <input type="email" id="gf-suggest-email" placeholder="La tua email (opzionale)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+
+        <textarea id="gf-suggest-description" placeholder="Descrizione / Motivo (Eg: Menu 100% GF, staff attento...)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;min-height:70px;box-sizing:border-box;"></textarea>
+
+        <button onclick="window.submitGFSuggestion()" style="width:100%;padding:10px;background:linear-gradient(180deg,#64C864,#54B854);color:#000;border:none;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;box-sizing:border-box;">🚀 Invia Suggerimento</button>
+      </div>
+    `;
+
+    const html = `<div style="padding:16px;display:flex;flex-direction:column;gap:16px;">${formHtml}<div><h3 style="margin:0 0 12px;font-size:13px;color:var(--text);font-weight:700;">📋 I Tuoi Suggerimenti</h3>${suggestionsHtml}</div></div>`;
+    window.openSheet('💡 Suggerisci POI', html);
+  };
+
+  window.submitGFSuggestion = function() {
+    const name = document.getElementById('gf-suggest-name')?.value.trim();
+    const city = document.getElementById('gf-suggest-city')?.value.trim();
+    const area = document.getElementById('gf-suggest-area')?.value.trim() || null;
+    const address = document.getElementById('gf-suggest-address')?.value.trim() || null;
+    const email = document.getElementById('gf-suggest-email')?.value.trim() || null;
+    const description = document.getElementById('gf-suggest-description')?.value.trim() || null;
+
+    if (!name || !city) {
+      toast('❌ Nome e città sono obbligatori');
+      return;
+    }
+
+    const suggestion = {
+      name,
+      city,
+      area,
+      address,
+      email,
+      description
+    };
+
+    const saved = GFSuggestionsDB.add(suggestion);
+
+    if (saved) {
+      toast('🎉 Suggerimento inviato! Grazie per aver contribuito! 🙏');
+
+      // Pulisci il form
+      document.getElementById('gf-suggest-name').value = '';
+      document.getElementById('gf-suggest-city').value = '';
+      document.getElementById('gf-suggest-area').value = '';
+      document.getElementById('gf-suggest-address').value = '';
+      document.getElementById('gf-suggest-email').value = '';
+      document.getElementById('gf-suggest-description').value = '';
+
+      // Riapri panel
+      setTimeout(() => {
+        window.openGFSuggestionPanel();
+      }, 500);
+    } else {
+      toast('❌ Errore nel salvataggio');
+    }
+  };
+
+  // ===== FIND ME GLUTEN FREE INTEGRATION =====
 
   // Hook: broadcast GF places quando ricevi aggiornamenti P2P
   const originalOnMessage = window.onDataChannelMessage;
@@ -10160,6 +11632,11 @@ navigator.serviceWorker?.addEventListener('message', (event) => {
     renderGroupView();
   }
 });
+
+// ===== DEEP LINKING HANDLER =====
+// Check for deep link parameters from Find Me Gluten Free
+console.log('[DeepLink] Checking for deep link parameters...');
+window.handleDeepLink();
 
 }); // close DOMContentLoaded
 </script>

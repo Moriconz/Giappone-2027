@@ -45,11 +45,11 @@ window.groupPanel = (() => {
       const isClickable = isOnline && !isSelf && hasGPS;
 
       return `
-      <div class="group-member-card" data-member-name="${escapeHtml(m.name)}" style="display:flex;gap:10px;align-items:center;padding:10px;background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;margin-bottom:8px;${isClickable ? 'cursor:pointer;transition:all 0.2s;' : ''}transition:background 0.2s" onmouseover="if(${isClickable})this.style.background='#D0E8FF'" onmouseout="this.style.background='#E8F4FF'">
+      <div class="group-member-card" data-member-name="${escapeHtml(m.name)}" style="display:flex;gap:10px;align-items:center;padding:10px;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:10px;margin-bottom:8px;transition:all 0.3s" data-clickable="${isClickable}">
         ${avatarHtml}
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:14px;color:#FF1493">${escapeHtml(m.name || 'Unnamed')}${isSelf ? ' <span style="font-size:10px;color:#888">(tu)</span>' : ''}</div>
-          <div style="font-size:11px;color:#666">${isOnline ? '🟢 Online' : '🔴 Offline'}${hasGPS && !isSelf ? ' 📍 GPS' : ''}</div>
+        <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <div style="font-weight:700;font-size:14px;color:#fff">${escapeHtml(m.name || 'Unnamed')}${isSelf ? ' <span style="font-size:10px;color:rgba(255,255,255,0.5)">(tu)</span>' : ''}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.7)">${isOnline ? '🟢 Online' : '🔴 Offline'}${hasGPS && !isSelf ? ' 📍 GPS' : ''}</div>
         </div>
       </div>
     `;
@@ -59,40 +59,40 @@ window.groupPanel = (() => {
       <div style="padding: 0;">
 
         <!-- STANZA INFO -->
-        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin-bottom:16px;margin:12px;">
-          <h3 style="margin:0 0 6px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">🏠 Stanza: <strong>${escapeHtml(group.roomId)}</strong></h3>
-          <p style="font-size:12px;color:#666;margin:0;">Creata da: <strong style="color:#FF1493">${escapeHtml(group.createdBy || 'Sconosciuto')}</strong></p>
+        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 6px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">🏠 Stanza: <strong>${escapeHtml(group.roomId)}</strong></h3>
+          <p style="font-size:12px;color:rgba(255,255,255,0.7);margin:0;">Creata da: <strong style="color:#fff">${escapeHtml(group.createdBy || 'Sconosciuto')}</strong></p>
         </div>
 
         <!-- MEMBRI -->
-        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;margin-bottom:16px">
-          <h3 style="margin:0 0 12px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">👥 Membri (${members.length})</h3>
-          ${membersList ? `<div style="display:flex;flex-direction:column;gap:8px">${membersList}</div>` : '<p style="color:#999;font-size:13px">Nessun membro.</p>'}
+        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 12px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">👥 Membri (${members.length})</h3>
+          ${membersList ? `<div style="display:flex;flex-direction:column;gap:8px">${membersList}</div>` : '<p style="color:rgba(255,255,255,0.6);font-size:13px;margin:0">Nessun membro.</p>'}
         </div>
 
         <!-- GPS SHARING -->
-        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;margin-bottom:16px">
-          <h3 style="margin:0 0 10px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📍 Condivisione GPS</h3>
-          <div style="display:flex;gap:10px;align-items:center;padding:10px;background:#E8F4FF;border:2px solid #00FF88;border-radius:8px">
+        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📍 Condivisione GPS</h3>
+          <div style="display:flex;gap:10px;align-items:center;padding:10px;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:10px">
             <input type="checkbox" id="gps-share-toggle" ${gpsEnabled ? 'checked' : ''}
               style="width:18px;height:18px;cursor:pointer;accent-color:#FF1493">
             <label for="gps-share-toggle" style="flex:1;cursor:pointer;margin:0">
-              <strong style="color:#FF1493">${gpsEnabled ? '✅ Posizione in diretta' : '⬜ Posizione inattiva'}</strong>
-              <div style="font-size:11px;color:#666;margin-top:2px">
+              <strong style="color:#fff">${gpsEnabled ? '✅ Posizione in diretta' : '⬜ Posizione inattiva'}</strong>
+              <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px">
                 ${FORCE_FAKE_GPS ? '📍 Usando Tokyo (test mode)' : '📍 Usando posizione reale'}
               </div>
             </label>
           </div>
-          <p style="font-size:11px;color:#666;margin-top:8px;margin-bottom:0">
+          <p style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:8px;margin-bottom:0">
             La tua posizione è visibile ai membri del gruppo solo se attiva.
           </p>
         </div>
 
         <!-- ITINERARI DI GRUPPO (Phase 3) -->
-        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;margin-bottom:16px">
-          <h3 style="margin:0 0 10px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📋 Itinerari di Gruppo</h3>
+        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📋 Itinerari di Gruppo</h3>
           <div id="group-itineraries-list" style="margin-bottom:10px;max-height:200px;overflow-y:auto">
-            <p style="font-size:12px;color:#666;margin:0;padding:8px">Nessun itinerario condiviso.</p>
+            <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:0;padding:8px">Nessun itinerario condiviso.</p>
           </div>
           <div style="display:flex;gap:6px;margin-bottom:10px">
             <button id="undo-group-btn" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:6px;padding:8px;font-weight:600;cursor:pointer;font-size:12px;opacity:0.6" disabled title="Annulla ultimo cambio">
@@ -102,28 +102,28 @@ window.groupPanel = (() => {
               ➡️ Rifai
             </button>
           </div>
-          <p style="font-size:11px;color:#666;margin:0">
+          <p style="font-size:11px;color:rgba(255,255,255,0.6);margin:0">
             Modifica condivisa e sincronizzazione in tempo reale.
           </p>
         </div>
 
         <!-- CHAT -->
-        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;margin-bottom:16px">
-          <h3 style="margin:0 0 10px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">💬 Chat Gruppo</h3>
+        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">💬 Chat Gruppo</h3>
           <button class="btn primary" id="open-group-chat" style="width:100%;margin-bottom:8px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;font-family:'Comic Sans MS',cursive;cursor:pointer;box-shadow:0 0 12px rgba(255,20,147,0.3)">
             💬 Apri chat stanza
           </button>
           <button class="btn" id="clear-group-chat" style="width:100%;margin-bottom:10px;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
             🧹 Pulisci chat
           </button>
-          <p style="font-size:11px;color:#666;margin:0">
+          <p style="font-size:11px;color:rgba(255,255,255,0.6);margin:0">
             Comunica con i membri della stanza (messaggi P2P).
           </p>
         </div>
 
         <!-- GESTIONE STANZA -->
-        <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;margin-bottom:16px">
-          <h3 style="margin:0 0 10px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">⚙️ Gestione Stanza</h3>
+        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">⚙️ Gestione Stanza</h3>
           ${isCreator ? `
             <button class="btn" id="delete-room" style="width:100%;margin-bottom:8px;background:#FF6B6B;border:2px solid #FF6B6B;color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer">
               🗑️ Elimina stanza (solo creatore)
@@ -132,7 +132,7 @@ window.groupPanel = (() => {
           <button class="btn" id="exit-room" style="width:100%;background:#FFB84D;border:2px solid #FFB84D;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer">
             ❌ Esci dalla stanza
           </button>
-          <p style="font-size:11px;color:#666;margin-top:8px;margin-bottom:0">
+          <p style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:8px;margin-bottom:0">
             Esci dal gruppo. Non riceverai più messaggi.
           </p>
         </div>
@@ -274,7 +274,7 @@ window.groupPanel = (() => {
 
     const roomId = window.state?.group?.roomId;
     if (!roomId) {
-      listDiv.innerHTML = '<p style="font-size:12px;color:#666;margin:0;padding:8px">Non sei in un gruppo.</p>';
+      listDiv.innerHTML = '<p style="font-size:12px;color:rgba(255,255,255,0.6);margin:0;padding:8px">Non sei in un gruppo.</p>';
       return;
     }
 
@@ -282,7 +282,7 @@ window.groupPanel = (() => {
     const itineraryIds = Object.keys(itineraries);
 
     if (itineraryIds.length === 0) {
-      listDiv.innerHTML = '<p style="font-size:12px;color:#666;margin:0;padding:8px">Nessun itinerario condiviso.</p>';
+      listDiv.innerHTML = '<p style="font-size:12px;color:rgba(255,255,255,0.6);margin:0;padding:8px">Nessun itinerario condiviso.</p>';
       return;
     }
 
@@ -292,18 +292,20 @@ window.groupPanel = (() => {
       const createdBy = itin.createdBy || 'Sconosciuto';
 
       return `
-        <div style="background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-            <div style="flex:1;min-width:0;cursor:pointer" data-edit-itinerary="${itinId}">
-              <div style="color:#FF1493;font-weight:600">${escapeHtml(itin.name?.value || itin.name || 'Itinerario')}</div>
-              <div style="color:#666;font-size:11px">📍 ${poiCount} tappe • v${itin.version || 1}</div>
+        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:14px;margin-bottom:12px;font-size:14px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+            <div style="flex:1;min-width:0;cursor:pointer;padding-top:2px" data-edit-itinerary="${itinId}">
+              <div style="color:#fff;font-weight:700;font-size:15px;line-height:1.4;margin-bottom:6px">${escapeHtml(itin.name?.value || itin.name || 'Itinerario')}</div>
+              <div style="color:rgba(255,255,255,0.65);font-size:12px;line-height:1.4">📍 ${poiCount} tappe • v${itin.version || 1}</div>
             </div>
-            <button data-edit-itinerary="${itinId}" style="background:#FFD700;border:none;color:#2D3B7D;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;font-weight:600;flex-shrink:0">
-              ✏️
-            </button>
-            <button data-delete-itinerary="${itinId}" style="background:#FF6B6B;border:none;color:white;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;font-weight:600;flex-shrink:0">
-              🗑️
-            </button>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+              <button data-edit-itinerary="${itinId}" style="background:rgba(74,91,168,0.3);backdrop-filter:blur(15px);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px">
+                ✏️
+              </button>
+              <button data-delete-itinerary="${itinId}" style="background:rgba(255,20,147,0.2);backdrop-filter:blur(15px);border:1px solid rgba(255,20,147,0.4);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px">
+                🗑️
+              </button>
+            </div>
           </div>
         </div>
       `;
