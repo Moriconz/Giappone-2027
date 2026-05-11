@@ -612,29 +612,8 @@
   const isFirefox = /firefox|fxios/.test(ua);
   const isSafari = /safari|version.*mobile/.test(ua) && !/chrome/.test(ua) && !/edg/.test(ua);
 
-  // Listen for beforeinstallprompt (Chrome/Edge)
-  // NON mostrare il modal - il UniversalInstaller gestirà tutto
-  window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('[Install] 🎯 beforeinstallprompt FIRED');
-    e.preventDefault();
-    window.__deferredPrompt = e;
-    // RIMOSSO: showPrompt() — il modal non serve più
-    console.log('[Install] deferredPrompt saved, waiting for button click');
-  });
-
-  // Log if beforeinstallprompt never fires
-  setTimeout(() => {
-    if (!window.__deferredPrompt) {
-      console.warn('[Install] ⚠️ beforeinstallprompt NEVER FIRED');
-      console.warn('[Install] Browser non supporta PWA install prompt');
-      console.warn('[Install] UA:', ua);
-      console.warn('[Install] Fallback a istruzioni manuali');
-    }
-  }, 3000);
-
-  // ✅ OLD MODAL SYSTEM COMPLETELY REMOVED
-  // The UniversalInstaller class (below) handles all browser/device scenarios
-  // No modal, just a clean button in the header
+  // ✅ beforeinstallprompt è gestito SOLO dalla classe UniversalInstaller (sotto)
+  // Niente listener globale duplicati!
 
   // ════════════════════════════════════════════════════════════════════
   // UNIVERSAL INSTALLER 2026 — Works on ALL browsers & devices
