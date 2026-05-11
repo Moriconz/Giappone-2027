@@ -11383,10 +11383,9 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   console.log('[SW] 🔍 Registering Service Worker...');
   console.log('[SW] Protocol:', window.location.protocol);
   console.log('[SW] Host:', window.location.host);
-  console.log('[SW] Manifest link:', document.querySelector('link[rel=manifest]')?.href);
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./js/sw.js', { scope: './' })
+    navigator.serviceWorker.register('./sw.js')
       .then(reg => {
         console.log('[SW] ✅ Service Worker Registered successfully');
         console.log('[SW] Scope:', reg.scope);
@@ -11396,15 +11395,11 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
       .catch(err => {
         console.error('[SW] ❌ Service Worker Registration FAILED');
         console.error('[SW] Error:', err.message);
-        console.error('[SW] Stack:', err.stack);
         console.warn('[SW] Installation prompt NON funzionerà senza SW');
       });
   } else {
     console.warn('[SW] ⚠️ Service Worker API non supportata');
   }
-
-  // Debug: Log quando beforeinstallprompt potrebbe attivarsi
-  console.log('[Install] 🔍 Ascoltando beforeinstallprompt...');
 
   // ===================== EXPOSE HELPERS TO GLOBAL SCOPE =====================
   window.addToItinerary = addToItinerary;
@@ -11743,6 +11738,17 @@ navigator.serviceWorker?.addEventListener('message', (event) => {
 // Check for deep link parameters from Find Me Gluten Free
 console.log('[DeepLink] Checking for deep link parameters...');
 window.handleDeepLink();
+
+// ===== SERVICE WORKER REGISTRATION =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(reg => {
+      console.log('[SW] ✓ Registered successfully', reg);
+    })
+    .catch(err => {
+      console.error('[SW] Registration failed:', err);
+    });
+}
 
 }); // close DOMContentLoaded
 </script>
