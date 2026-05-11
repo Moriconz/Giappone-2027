@@ -226,6 +226,100 @@
 <script src="js/google-places-debug.js"></script>
 <script src="js/group-chat.js"></script>
 <script src="js/group-panel.js"></script>
+
+<!-- P1: GF Safety schema + frasi giapponesi -->
+<script type="module" src="js/gf-safety.js"></script>
+
+<!-- P1: Show to waiter — modal emergenza JP (inline) -->
+<script>
+window.openSOSModal = function() {
+  // Remove if exists
+  const existing = document.getElementById('gf-photo-modal');
+  if (existing) existing.remove();
+
+  // Create modal
+  const modal = document.createElement('div');
+  modal.id = 'gf-photo-modal';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    text-align: center;
+  `;
+
+  const content = document.createElement('div');
+  content.style.cssText = 'max-width: 100%; width: 100%;';
+
+  const title = document.createElement('h1');
+  title.style.cssText = 'font-size: 2.5rem; margin: 0 0 30px 0; font-weight: bold;';
+  title.textContent = 'Medical Emergency';
+
+  const titleJP = document.createElement('h2');
+  titleJP.style.cssText = 'font-size: 3rem; margin: 0 0 40px 0; font-weight: 300;';
+  titleJP.textContent = 'セリアック病';
+
+  const message = document.createElement('div');
+  message.style.cssText = 'font-size: 4rem; font-weight: bold; margin-bottom: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);';
+  message.innerHTML = '🚫<br>グルテン不可<br><span style="font-size: 2.5rem;">小麦 · 大麦 · ライ麦</span>';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.style.cssText = `
+    margin-top: 40px;
+    padding: 20px 40px;
+    font-size: 1.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+    color: white;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+  `;
+  closeBtn.textContent = 'Back to App (Escape)';
+  closeBtn.onclick = () => modal.remove();
+
+  content.appendChild(title);
+  content.appendChild(titleJP);
+  content.appendChild(message);
+  content.appendChild(closeBtn);
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  // Close on Escape
+  const escapeHandler = (e) => {
+    if (e.key === 'Escape') {
+      modal.remove();
+      document.removeEventListener('keydown', escapeHandler);
+    }
+  };
+  document.addEventListener('keydown', escapeHandler);
+
+  console.log('[SOS] ✓ Modal opened');
+};
+
+// Keyboard shortcut Ctrl+W
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'w') {
+    e.preventDefault();
+    window.openSOSModal();
+  }
+});
+
+console.log('[SOS] ✓ Handler loaded');
+</script>
+
+<!-- P1: Sentry error tracking (async, lazy) -->
+<script src="js/sentry-init.js" async defer></script>
 </head>
 <body>
 <div id="app">
@@ -236,7 +330,7 @@
     <!-- Install button added by UniversalInstaller class -->
   </header>
   <!-- Filters Tab Bar — FIXED below header -->
-  <div id="filters" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 100; display: flex; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; gap: 8px; padding: 8px 14px; background: linear-gradient(180deg, rgba(45, 59, 125, 0.98) 0%, rgba(45, 59, 125, 0.95) 100%); border-bottom: 2px solid rgba(255, 20, 147, 0.3); height: 56px; align-items: center; scrollbar-width: none;"></div>
+  <div id="filters"></div>
 
     <!-- WEATHER MODAL — Full forecast detail (opens on "Dettagli" click) -->
     <div id="weather-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; padding: 20px; font-family: 'Segoe UI', sans-serif;">
@@ -310,6 +404,10 @@
     <button data-view="gallery">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
       Galleria
+    </button>
+    <button id="btn-sos" onclick="window.openSOSModal && window.openSOSModal();" style="background: #FF4444; color: white; font-weight: bold;">
+      <span style="font-size: 1.2rem;">🚨</span>
+      SOS
     </button>
 
   </nav>
@@ -4522,10 +4620,22 @@ document.addEventListener('DOMContentLoaded', () => {
     sheetTitle.textContent = title;
     sheetBody.innerHTML = html;
     sheet.classList.add('open');
+    // Hide weather widget when sheet opens
+    const weatherWidget = document.getElementById('weather-floating');
+    if (weatherWidget) weatherWidget.classList.remove('show');
     console.log('[openSheet] ✅ Sheet opened, class added');
   }
   function closeSheet(){
+    console.log('[closeSheet] 🔴 closeSheet called');
     sheet.classList.remove('open');
+    // Show weather widget again when sheet closes
+    const weatherWidget = document.getElementById('weather-floating');
+    if (weatherWidget) {
+      weatherWidget.classList.add('show');
+      console.log('[closeSheet] ✅ Added .show to weather widget');
+    } else {
+      console.error('[closeSheet] ❌ Weather widget element not found!');
+    }
     // Always reset tab buttons to "Mappa" when closing any sheet
     const bottomNav = document.querySelector('nav.bottom');
     if (bottomNav) {
@@ -4541,7 +4651,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const mapBtn = bottomNav.querySelector('button[data-view="map"]');
       if (mapBtn) {
         mapBtn.classList.add('active');
-        console.log('[closeSheet] Added .active to map button');
+        console.log('[closeSheet] ✅ Added .active to map button');
       }
     } else {
       console.warn('[closeSheet] bottomNav element not found');
@@ -4560,8 +4670,15 @@ document.addEventListener('DOMContentLoaded', () => {
   window.openSheet = openSheet;
   window.closeSheet = closeSheet;
 
-  // Track active tab to avoid resetting it when opening POI details
-  let activeTabView = 'map';
+  // Initialize weather widget as visible on page load
+  const initWeatherWidget = document.getElementById('weather-floating');
+  if (initWeatherWidget) {
+    initWeatherWidget.classList.add('show');
+    console.log('[Init] ✅ Weather widget initialized as visible');
+  }
+
+  // Track active tab to avoid resetting it when opening POI details (GLOBAL per y2k-windows.js)
+  window.activeTabView = 'map';
 
   const bottomNav = document.querySelector('nav.bottom');
   if (bottomNav) {
@@ -4570,8 +4687,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!btn) return;
       bottomNav.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
       const view = btn.dataset.view;
-      activeTabView = view; // Traccia quale tab è attivo
+      window.activeTabView = view; // Traccia quale tab è attivo (GLOBAL per y2k-windows.js)
+      console.log('[BottomNav] Clicked view:', view);
+
+      // Hide weather widget when opening any tab
+      const weatherWidget = document.getElementById('weather-floating');
+      if (weatherWidget && view !== 'map') {
+        weatherWidget.classList.remove('show');
+        console.log('[BottomNav] Removed .show from weather widget (non-map tab)');
+      }
+
       if (view === 'map') {
+        console.log('[BottomNav] Map tab clicked, showing weather widget');
+        // Show weather widget when returning to map
+        if (weatherWidget) {
+          weatherWidget.classList.add('show');
+          console.log('[BottomNav] ✅ Added .show to weather widget');
+        } else {
+          console.error('[BottomNav] ❌ Weather widget element not found!');
+        }
         closeSheet();
         // Center map on user's GPS location if active, otherwise on last known position
         setTimeout(() => {
@@ -5636,24 +5770,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // Helper: Mostra dialog per aggiungere tappa con tempo e giorno
   function showAddItineraryDialog(poi, onConfirm) {
     const html = `
-      <div style="position:fixed;inset:0;z-index:3000;background:rgba(20,30,80,.85);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto" id="add-itin-overlay">
-        <div style="background:linear-gradient(170deg,#FFFDF0 0%,#FFF8DC 100%);border-top:3px solid #FF1493;border-radius:12px;padding:24px;max-width:380px;width:100%;margin:auto 0;box-shadow:0 -8px 40px rgba(255,20,147,.3)">
-          <h3 style="margin:0 0 16px;font-size:18px;color:#1A2560;font-weight:700;font-family:'Comic Sans MS',cursive">${poi.name || poi.bestname || 'Aggiungi tappa'}</h3>
+      <div style="position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto" id="add-itin-overlay">
+        <div style="border-radius:12px;padding:24px;max-width:380px;width:100%;margin:auto 0;">
+          <h3 style="margin:0 0 16px;font-size:18px;font-weight:700;">${poi.name || poi.bestname || 'Aggiungi tappa'}</h3>
           <div class="form-row">
-            <label style="color:#6B5EA8;font-weight:700;font-size:12px;display:block;margin-bottom:6px">📅 Giorno del viaggio (1, 2, 3...)</label>
-            <input id="itin-day" type="number" placeholder="1" min="1" max="30" style="font-size:14px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
+            <label style="font-weight:700;font-size:12px;display:block;margin-bottom:6px">📅 Giorno del viaggio (1, 2, 3...)</label>
+            <input id="itin-day" type="number" placeholder="1" min="1" max="30" style="font-size:14px;width:100%;padding:8px;border-radius:8px;box-sizing:border-box" />
           </div>
           <div class="form-row">
-            <label style="color:#6B5EA8;font-weight:700;font-size:12px;display:block;margin-bottom:6px">⏰ Orario (es. 09:30)</label>
-            <input id="itin-time" type="text" placeholder="09:30" style="font-size:14px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" autocomplete="off" />
+            <label style="font-weight:700;font-size:12px;display:block;margin-bottom:6px">⏰ Orario (es. 09:30)</label>
+            <input id="itin-time" type="text" placeholder="09:30" style="font-size:14px;width:100%;padding:8px;border-radius:8px;box-sizing:border-box" autocomplete="off" />
           </div>
           <div class="form-row">
-            <label style="color:#6B5EA8;font-weight:700;font-size:12px;display:block;margin-bottom:6px">💰 Costo (es. 10€, opzionale)</label>
-            <input id="itin-cost" type="text" placeholder="Gratis" style="font-size:14px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
+            <label style="font-weight:700;font-size:12px;display:block;margin-bottom:6px">💰 Costo (es. 10€, opzionale)</label>
+            <input id="itin-cost" type="text" placeholder="Gratis" style="font-size:14px;width:100%;padding:8px;border-radius:8px;box-sizing:border-box" />
           </div>
           <div style="display:flex;gap:8px;margin-top:18px">
-            <button id="itin-cancel" style="flex:1;padding:11px;background:linear-gradient(135deg,#E8E0FF,#D8CCFF);border:2px solid #C8BDFF;border-radius:8px;color:#1A2560;cursor:pointer;font-weight:600;font-family:'Comic Sans MS',cursive;transition:all 0.18s ease">Annulla</button>
-            <button id="itin-confirm" style="flex:1;padding:11px;background:linear-gradient(135deg,#FF1493,#FF69B4);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;font-family:'Comic Sans MS',cursive;box-shadow:0 0 16px rgba(255,20,147,.45);transition:all 0.18s ease">✓ Aggiungi</button>
+            <button id="itin-cancel" style="flex:1;padding:11px;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.18s ease">Annulla</button>
+            <button id="itin-confirm" style="flex:1;padding:11px;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.18s ease">✓ Aggiungi</button>
           </div>
         </div>
       </div>
@@ -6539,13 +6673,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getWeatherColor(code) {
-    if (code === 0 || code === 1) return '#FFD700'; // Sole = Giallo
-    if (code === 2) return '#E0D5FF'; // Parzialmente nuvoloso = Lavanda
-    if (code === 3) return '#B8ACFF'; // Nuvoloso = Viola
-    if (code >= 45 && code <= 48) return '#8080C0'; // Nebbia = Blu scuro
-    if (code >= 51 && code <= 82) return '#87CEEB'; // Pioggia = Blu
-    if (code >= 85 && code <= 86) return '#E0F0FF'; // Neve = Bianco-blu
-    return '#C8BDFF'; // Default
+    // Glassmorphism colors - all using orange theme #FF6B35 with transparency
+    if (code === 0 || code === 1) return 'rgba(255, 107, 53, 0.25)'; // Sole = Orange higher opacity
+    if (code === 2) return 'rgba(255, 107, 53, 0.20)'; // Parzialmente nuvoloso = Orange medium
+    if (code === 3) return 'rgba(255, 107, 53, 0.18)'; // Nuvoloso = Orange light
+    if (code >= 45 && code <= 48) return 'rgba(255, 107, 53, 0.16)'; // Nebbia = Orange very light
+    if (code >= 51 && code <= 82) return 'rgba(255, 107, 53, 0.22)'; // Pioggia = Orange medium
+    if (code >= 85 && code <= 86) return 'rgba(255, 107, 53, 0.19)'; // Neve = Orange light
+    return 'rgba(255, 107, 53, 0.18)'; // Default = Orange light
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -6795,6 +6930,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('weather-modal');
     if (modal) {
       modal.style.display = 'none';
+      // Show weather widget again
+      const weatherWidget = document.getElementById('weather-floating');
+      if (weatherWidget) weatherWidget.classList.add('show');
       console.log('[Weather Modal] Closed');
     }
   };
@@ -6929,6 +7067,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.openWeatherModal = function() {
     console.log('[Weather] Opening detailed weather modal');
+
+    // Hide weather widget
+    const weatherWidget = document.getElementById('weather-floating');
+    if (weatherWidget) weatherWidget.classList.remove('show');
 
     // Open loading state immediately
     window.openSheet('🌤️ Meteo', `
@@ -8652,49 +8794,49 @@ document.addEventListener('DOMContentLoaded', () => {
       <div style="padding:12px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box;">
         <!-- Tab selector: Crea o Entra -->
         <div style="display:flex;gap:8px;">
-          <button id="mode-create" style="flex:1;padding:10px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive;box-sizing:border-box;">
+          <button id="mode-create" style="flex:1;padding:10px;border-radius:8px;font-weight:600;cursor:pointer;box-sizing:border-box;">
             ➕ Crea Nuova
           </button>
-          <button id="mode-join" style="flex:1;padding:10px;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;font-weight:600;cursor:pointer;box-sizing:border-box;">
+          <button id="mode-join" style="flex:1;padding:10px;border-radius:8px;font-weight:600;cursor:pointer;box-sizing:border-box;">
             🔓 Entra Esistente
           </button>
         </div>
 
         <!-- CREATE MODE -->
         <div id="create-mode" style="display:block">
-          <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:600;color:#FF1493">Il codice della tua stanza</label>
+          <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:600;">Il codice della tua stanza</label>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap;">
-            <div id="room-code-display" style="padding:16px 12px;background:#FFF0F8;border:2px solid #FF1493;border-radius:8px;font-size:24px;font-weight:700;letter-spacing:6px;color:#FF1493;text-align:center;font-family:monospace;cursor:default;user-select:all;min-width:160px;flex-shrink:0;">------</div>
+            <div id="room-code-display" style="padding:16px 12px;border-radius:8px;font-size:24px;font-weight:700;letter-spacing:6px;text-align:center;cursor:default;user-select:all;min-width:160px;flex-shrink:0;">------</div>
             <button id="copy-code-btn" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Copia codice">📋</button>
             <button id="regen-code-btn" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Genera nuovo codice">🔄</button>
           </div>
-          <div style="font-size:11px;color:#888;margin-top:6px;">Condividi questo codice con chi vuoi far entrare. Solo chi lo ha può entrare.</div>
+          <div style="font-size:11px;margin-top:6px;">Condividi questo codice con chi vuoi far entrare. Solo chi lo ha può entrare.</div>
         </div>
 
         <!-- JOIN MODE -->
         <div id="join-mode" style="display:none">
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#2D3B7D">Codice stanza</label>
-          <input id="group-room-join" placeholder="Es. ABC123" maxlength="6" style="width:100%;padding:12px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:22px;font-weight:700;letter-spacing:6px;text-transform:uppercase;font-family:monospace;text-align:center;">
-          <div style="font-size:11px;color:#888;margin-top:4px;">Inserisci il codice a 6 lettere ricevuto dal creatore della stanza.</div>
+          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Codice stanza</label>
+          <input id="group-room-join" placeholder="Es. ABC123" maxlength="6" style="width:100%;padding:12px;border-radius:8px;box-sizing:border-box;font-size:22px;font-weight:700;letter-spacing:6px;text-transform:uppercase;text-align:center;">
+          <div style="font-size:11px;margin-top:4px;">Inserisci il codice a 6 lettere ricevuto dal creatore della stanza.</div>
         </div>
 
         <!-- COMMON FIELDS -->
         <div>
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#333">Il tuo nome</label>
-          <input id="group-name" placeholder="Es. Marco" style="width:100%;padding:10px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:13px;" value="${state.group?.myName||''}">
+          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Il tuo nome</label>
+          <input id="group-name" placeholder="Es. Marco" style="width:100%;padding:10px;border-radius:8px;box-sizing:border-box;font-size:13px;" value="${state.group?.myName||''}">
         </div>
         <div>
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#333">Avatar profilo (opzionale)</label>
-          <input id="group-avatar" type="text" placeholder="URL immagine (es. https://example.com/avatar.png)" style="width:100%;padding:10px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:13px;margin-bottom:6px;" value="${state.group?.myAvatar?.startsWith('data:') || state.group?.myAvatar?.startsWith('http') ? state.group.myAvatar.substring(0,50) + '...' : state.group?.myAvatar || ''}">
-          <button id="gallery-upload-btn" style="width:100%;padding:10px;background:#E8F4FF;border:2px solid #00FF88;color:#2D3B7D;border-radius:6px;font-weight:600;cursor:pointer;margin-bottom:6px;box-sizing:border-box;font-size:13px;">
+          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Avatar profilo (opzionale)</label>
+          <input id="group-avatar" type="text" placeholder="URL immagine (es. https://example.com/avatar.png)" style="width:100%;padding:10px;border-radius:8px;box-sizing:border-box;font-size:13px;margin-bottom:6px;" value="${state.group?.myAvatar?.startsWith('data:') || state.group?.myAvatar?.startsWith('http') ? state.group.myAvatar.substring(0,50) + '...' : state.group?.myAvatar || ''}">
+          <button id="gallery-upload-btn" style="width:100%;padding:10px;border-radius:6px;font-weight:600;cursor:pointer;margin-bottom:6px;box-sizing:border-box;font-size:13px;">
             🎨 Scegli dalla Galleria
           </button>
           <input id="avatar-file-input" type="file" accept="image/*" style="display:none">
-          <div style="font-size:11px;color:#999;">Lascia vuoto per generare un avatar con le tue iniziali.</div>
+          <div style="font-size:11px;">Lascia vuoto per generare un avatar con le tue iniziali.</div>
         </div>
 
-        <button id="group-start" style="width:100%;padding:12px;background:linear-gradient(180deg,#FF1493,#FF69B4);color:white;border:2px solid #FF1493;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive;box-sizing:border-box;font-size:14px;">✅ Connetti</button>
-        <div id="peer-status-box" style="color:#999;font-size:13px;">Pronto a connettersi...</div>
+        <button id="group-start" style="width:100%;padding:12px;border-radius:8px;font-weight:600;cursor:pointer;box-sizing:border-box;font-size:14px;">✅ Connetti</button>
+        <div id="peer-status-box" style="font-size:13px;">Pronto a connettersi...</div>
       </div>
     `;
 

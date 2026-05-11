@@ -18,77 +18,91 @@
   console.log('[Y2K] document.readyState:', document.readyState);
   console.log('[Y2K] window.openSheet exists?', typeof window.openSheet);
 
-  /* ── CSS FINESTRE ──────────────────────────────────────────────── */
+  /* ── CSS FINESTRE — GLASSMORPHISM ──────────────────────────────── */
   const style = document.createElement('style');
   style.textContent = `
     .y2k-win {
       position: fixed;
-      background: linear-gradient(180deg, #FFFACD, #FFF8DC);
-      border: 3px solid #FF1493;
+      backdrop-filter: blur(20px);
+      background: rgba(26, 31, 46, 0.6);
+      border: 1px solid rgba(255, 107, 53, 0.2);
       border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(255,20,147,0.4), 0 0 30px rgba(0,255,136,0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       z-index: 2000;
-      min-width: 260px;
-      min-height: 180px;
-      max-height: 80vh;
-      width: 950px;
-      font-family: 'Courier New', monospace;
+      min-width: 280px;
+      min-height: 200px;
+      max-height: 85vh;
+      width: 90vw;
+      max-width: 950px;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     .y2k-win::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, #FF1493, #00FF88, #FFD700);
+      height: 1px;
+      background: rgba(255, 107, 53, 0.2);
       border-radius: 12px 12px 0 0;
       z-index: 1;
     }
 
     .y2k-win-title {
-      background: linear-gradient(90deg, #FF1493, #FF69B4);
-      padding: 8px 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: move;
-      user-select: none;
-      flex-shrink: 0;
+      backdrop-filter: blur(15px) !important;
+      background: rgba(255, 107, 53, 0.1) !important;
+      padding: 8px 12px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      cursor: move !important;
+      user-select: none !important;
+      flex-shrink: 0 !important;
+      border-bottom: 1px solid rgba(255, 107, 53, 0.15) !important;
+      gap: 12px !important;
     }
 
     .y2k-win-title span {
-      color: white;
-      font-size: 13px;
-      font-weight: 700;
-      font-family: 'Comic Sans MS', cursive;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      color: #fff !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+      flex: 1 !important;
+      padding-left: 10px !important;
+      text-align: left !important;
     }
 
     .y2k-win-close {
-      width: 24px;
-      height: 24px;
-      background: linear-gradient(135deg, #E0D5FF, #D8CCFF);
-      border: 2px solid #00FF88;
-      border-radius: 50%;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: #2D3B7D;
-      box-shadow: 0 0 8px rgba(0,255,136,0.5);
-      transition: all 0.15s;
-      padding: 0;
-      line-height: 1;
+      width: 28px !important;
+      height: 28px !important;
+      min-width: 28px !important;
+      min-height: 28px !important;
+      max-width: 28px !important;
+      max-height: 28px !important;
+      backdrop-filter: blur(8px) !important;
+      background: rgba(239, 68, 68, 0.4) !important;
+      border: none !important;
+      border-radius: 50% !important;
+      font-size: 16px !important;
+      cursor: pointer !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-weight: 700 !important;
+      color: rgba(239, 68, 68, 1) !important;
+      box-shadow: none !important;
+      transition: all 0.15s ease !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      line-height: 1 !important;
+      flex-shrink: 0 !important;
     }
 
     .y2k-win-close:hover {
-      box-shadow: 0 0 16px rgba(0,255,136,0.8);
-      transform: scale(1.15);
+      background: rgba(239, 68, 68, 0.6) !important;
     }
 
     .y2k-win-body {
@@ -96,7 +110,7 @@
       overflow-y: auto;
       overflow-x: hidden;
       padding: 14px !important;
-      color: #2D3B7D;
+      color: #fff;
       -webkit-overflow-scrolling: touch;
       width: 100%;
       box-sizing: border-box !important;
@@ -135,8 +149,8 @@
     }
 
     .y2k-win-body::-webkit-scrollbar { width: 10px; }
-    .y2k-win-body::-webkit-scrollbar-track { background: #E0D5FF; border-radius: 10px; }
-    .y2k-win-body::-webkit-scrollbar-thumb { background: linear-gradient(180deg,#FF1493,#FF69B4); border-radius: 10px; }
+    .y2k-win-body::-webkit-scrollbar-track { background: rgba(255, 107, 53, 0.1); border-radius: 10px; }
+    .y2k-win-body::-webkit-scrollbar-thumb { background: rgba(255, 107, 53, 0.4); border-radius: 10px; }
 
     .y2k-win-resize {
       position: absolute;
@@ -145,7 +159,7 @@
       width: 20px;
       height: 20px;
       cursor: se-resize;
-      background: linear-gradient(135deg, transparent 50%, #FF1493 50%);
+      background: rgba(255, 107, 53, 0.25);
       border-radius: 0 0 10px 0;
       z-index: 10;
       touch-action: none;
@@ -205,31 +219,63 @@
       position: sticky !important;
       top: 0 !important;
       z-index: 300 !important;
-      background: linear-gradient(180deg, #FFFACD, #FFF8DC) !important;
+      backdrop-filter: blur(10px) !important;
+      background: rgba(255, 107, 53, 0.1) !important;
       padding: 12px !important;
-      border-bottom: 2px solid #FF1493 !important;
-      box-shadow: 0 3px 12px rgba(255,20,147,0.1) !important;
+      border-bottom: 1px solid rgba(255, 107, 53, 0.2) !important;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
     }
 
     /* Adatta contenuto sheet dentro la finestra */
     .y2k-win-body .sheet-handle { display: none !important; }
     .y2k-win-body .sheet-header { display: none !important; }
-    .y2k-win-body .sheet-body { padding: 0 !important; }
+    .y2k-win-body .sheet-body { padding: 0 !important; color: #fff !important; }
     /* ══ TYPOGRAPHY ══════════════════════════════════── */
-    .y2k-win-body h1 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 18px !important; font-weight: 700 !important; }
-    .y2k-win-body h2 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 16px !important; font-weight: 700 !important; }
-    .y2k-win-body h3 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 14px !important; font-weight: 700 !important; }
-    .y2k-win-body h4 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 13px !important; font-weight: 700 !important; }
-    .y2k-win-body p { color: #2D3B7D !important; line-height: 1.4 !important; }
-    .y2k-win-body strong { color: #FF1493 !important; font-weight: 700 !important; }
+    .y2k-win-body h1 { color: #fff !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; font-size: 18px !important; font-weight: 700 !important; }
+    .y2k-win-body h2 { color: #fff !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; font-size: 16px !important; font-weight: 700 !important; }
+    .y2k-win-body h3 { color: rgba(255, 107, 53, 0.95) !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; font-size: 14px !important; font-weight: 700 !important; }
+    .y2k-win-body h4 { color: rgba(255, 107, 53, 0.9) !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; font-size: 13px !important; font-weight: 700 !important; }
+    .y2k-win-body p { color: rgba(255, 255, 255, 0.85) !important; line-height: 1.4 !important; }
+    .y2k-win-body strong { color: #fff !important; font-weight: 700 !important; }
+    .y2k-win-body label { color: rgba(255, 255, 255, 0.8) !important; }
+    .y2k-win-body div { color: rgba(255, 255, 255, 0.85) !important; }
+    .y2k-win-body span { color: rgba(255, 255, 255, 0.85) !important; }
 
     /* ══ SECTIONS ════════════════════════════════════ */
     .y2k-win-body .section {
-      background: linear-gradient(135deg, rgba(74,124,89,.15), rgba(201,76,76,.1)) !important;
-      border: 1px solid #00FF88 !important;
+      backdrop-filter: blur(15px) !important;
+      background: rgba(255, 107, 53, 0.25) !important;
+      border: 1px solid rgba(255, 107, 53, 0.4) !important;
       border-radius: 10px !important;
       padding: 14px !important;
       margin-bottom: 16px !important;
+    }
+
+    /* Override inline styles per renderli visibili */
+    .y2k-win-body .section[style*="background:linear-gradient"] {
+      backdrop-filter: blur(15px) !important;
+      background: rgba(255, 107, 53, 0.25) !important;
+      border: 1px solid rgba(255, 107, 53, 0.4) !important;
+    }
+
+    .y2k-win-body .section[style*="border:2px"] {
+      backdrop-filter: blur(15px) !important;
+      background: rgba(255, 107, 53, 0.25) !important;
+      border: 1px solid rgba(255, 107, 53, 0.4) !important;
+    }
+
+    .y2k-win-body div[style*="background:linear-gradient"] {
+      backdrop-filter: blur(15px) !important;
+      background: rgba(255, 107, 53, 0.2) !important;
+      border: 1px solid rgba(255, 107, 53, 0.3) !important;
+      border-radius: 8px !important;
+      padding: 12px !important;
+    }
+
+    .y2k-win-body div[style*="border:2px solid"] {
+      backdrop-filter: blur(15px) !important;
+      background: rgba(255, 107, 53, 0.25) !important;
+      border: 1px solid rgba(255, 107, 53, 0.4) !important;
     }
 
     /* ══ BUTTONS ═════════════════════════════════════ */
@@ -237,35 +283,39 @@
       border-radius: 8px !important;
       padding: 10px 12px !important;
       font-weight: 600 !important;
-      font-family: 'Comic Sans MS', cursive !important;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
       cursor: pointer !important;
       transition: all 0.15s ease !important;
-      border: 2px solid !important;
+      border: 1px solid !important;
     }
     .y2k-win-body .btn:hover {
       transform: translateY(-2px) !important;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
     }
     .y2k-win-body .btn.primary {
-      background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
-      color: white !important;
-      border-color: #FF1493 !important;
-      box-shadow: 0 0 12px rgba(255,20,147,0.3) !important;
+      backdrop-filter: blur(10px) !important;
+      background: rgba(255, 107, 53, 0.35) !important;
+      color: #fff !important;
+      border-color: rgba(255, 107, 53, 0.6) !important;
+      box-shadow: 0 0 12px rgba(255, 107, 53, 0.2) !important;
     }
     .y2k-win-body .btn.success {
-      background: linear-gradient(180deg, #00FF88, #00DD77) !important;
-      color: #2D3B7D !important;
-      border-color: #00FF88 !important;
+      backdrop-filter: blur(10px) !important;
+      background: rgba(0, 255, 136, 0.25) !important;
+      color: #fff !important;
+      border-color: rgba(0, 255, 136, 0.5) !important;
     }
     .y2k-win-body .btn.warning {
-      background: #FFD700 !important;
-      color: #2D3B7D !important;
-      border-color: #FFD700 !important;
+      backdrop-filter: blur(10px) !important;
+      background: rgba(255, 215, 0, 0.25) !important;
+      color: #fff !important;
+      border-color: rgba(255, 215, 0, 0.5) !important;
     }
     .y2k-win-body .btn.danger {
-      background: #FF6B6B !important;
-      color: white !important;
-      border-color: #FF6B6B !important;
+      backdrop-filter: blur(10px) !important;
+      background: rgba(255, 107, 53, 0.4) !important;
+      color: #fff !important;
+      border-color: rgba(255, 107, 53, 0.6) !important;
     }
     /* ══ FORM ELEMENTS ══════════════════════════════ */
     .y2k-win-body input[type="text"],
@@ -274,20 +324,27 @@
     .y2k-win-body input[type="password"],
     .y2k-win-body textarea,
     .y2k-win-body select {
-      background: white !important;
-      border: 2px solid #00FF88 !important;
-      color: #2D3B7D !important;
+      backdrop-filter: blur(10px) !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid rgba(255, 107, 53, 0.3) !important;
+      color: #fff !important;
       border-radius: 6px !important;
       padding: 8px 10px !important;
       font-size: 13px !important;
-      font-family: 'Courier New', monospace !important;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
     }
     .y2k-win-body input::placeholder,
     .y2k-win-body textarea::placeholder {
-      color: #999 !important;
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
+    .y2k-win-body input:focus,
+    .y2k-win-body textarea:focus,
+    .y2k-win-body select:focus {
+      border-color: rgba(255, 107, 53, 0.6) !important;
+      box-shadow: 0 0 12px rgba(255, 107, 53, 0.2) !important;
     }
     .y2k-win-body label {
-      color: #FF1493 !important;
+      color: rgba(255, 255, 255, 0.85) !important;
       font-weight: 700 !important;
       font-size: 12px !important;
       display: block !important;
@@ -296,22 +353,24 @@
 
     /* Buttons in sticky header */
     .y2k-win-body [style*="position:sticky"] button {
-      background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
-      color: white !important;
-      border: 2px solid #FF1493 !important;
+      backdrop-filter: blur(10px) !important;
+      background: rgba(255, 107, 53, 0.35) !important;
+      color: #fff !important;
+      border: 1px solid rgba(255, 107, 53, 0.5) !important;
       border-radius: 6px !important;
       padding: 8px 12px !important;
       font-weight: 600 !important;
       cursor: pointer !important;
     }
     .y2k-win-body [style*="position:sticky"] button:hover {
-      box-shadow: 0 0 12px rgba(255,20,147,0.4) !important;
+      box-shadow: 0 0 12px rgba(255, 107, 53, 0.3) !important;
       transform: scale(1.02) !important;
+      background: rgba(255, 107, 53, 0.45) !important;
     }
 
     .y2k-win-body .category-section { margin-bottom: 16px !important; }
-    .y2k-win-body .category-section h4 { color: #FF1493 !important; font-family: 'Comic Sans MS', cursive !important; font-size: 14px !important; font-weight: 700 !important; margin: 12px 0 8px 0 !important; display: flex !important; gap: 8px !important; align-items: center !important; }
-    .y2k-win-body .category-section h4 .count { background: #00FF88 !important; color: #2D3B7D !important; padding: 2px 8px !important; border-radius: 12px !important; font-size: 12px !important; font-weight: 600 !important; }
+    .y2k-win-body .category-section h4 { color: rgba(255, 107, 53, 0.95) !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; font-size: 14px !important; font-weight: 700 !important; margin: 12px 0 8px 0 !important; display: flex !important; gap: 8px !important; align-items: center !important; }
+    .y2k-win-body .category-section h4 .count { backdrop-filter: blur(10px) !important; background: rgba(255, 107, 53, 0.25) !important; color: #fff !important; padding: 2px 8px !important; border-radius: 12px !important; font-size: 12px !important; font-weight: 600 !important; border: 1px solid rgba(255, 107, 53, 0.4) !important; }
     /* ══ LISTS & CARDS ══════════════════════════════ */
     .y2k-win-body .action-row {
       display: flex !important;
@@ -324,7 +383,7 @@
       min-width: 120px !important;
     }
     .y2k-win-body ul, .y2k-win-body ol {
-      color: #2D3B7D !important;
+      color: rgba(255, 255, 255, 0.85) !important;
       padding-left: 20px !important;
     }
     .y2k-win-body li {
@@ -333,24 +392,30 @@
     }
 
     /* ══ POI ROWS ════════════════════════════════════ */
-    .y2k-win-body .poi-row { display: flex !important; align-items: stretch !important; gap: 10px !important; background: linear-gradient(135deg,#E8F4FF,#F0EDFF) !important; border: 2px solid #00FF88 !important; color: #2D3B7D !important; padding: 10px !important; border-radius: 8px !important; min-height: 70px !important; transition: all 0.15s ease !important; }
+    .y2k-win-body .poi-row { display: flex !important; align-items: stretch !important; gap: 10px !important; backdrop-filter: blur(10px) !important; background: rgba(255, 107, 53, 0.15) !important; border: 1px solid rgba(255, 107, 53, 0.3) !important; color: rgba(255, 255, 255, 0.85) !important; padding: 10px !important; border-radius: 8px !important; min-height: 70px !important; transition: all 0.15s ease !important; }
     .y2k-win-body .poi-row .icon { flex-shrink: 0; width: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
     .y2k-win-body .poi-row .body { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; overflow: hidden; }
-    .y2k-win-body .poi-row .body .name { color: #2D3B7D !important; font-weight: 700 !important; font-size: 13px !important; line-height: 1.2; word-break: break-word; }
-    .y2k-win-body .poi-row .body .sub { color: #666 !important; font-size: 11px !important; line-height: 1.3; margin-top: 2px; }
+    .y2k-win-body .poi-row .body .name { color: #fff !important; font-weight: 700 !important; font-size: 13px !important; line-height: 1.2; word-break: break-word; }
+    .y2k-win-body .poi-row .body .sub { color: rgba(255, 255, 255, 0.65) !important; font-size: 11px !important; line-height: 1.3; margin-top: 2px; }
     .y2k-win-body .poi-row img { flex-shrink: 0; width: 50px; height: 50px; border-radius: 6px; }
     .y2k-win-body .poi-row .btn { flex-shrink: 0; }
-    .y2k-win-body .btn { background: linear-gradient(180deg,#E0D5FF,#F0E5FF) !important; border: 2px solid #E0D5FF !important; color: #2D3B7D !important; font-family: 'Courier New',monospace !important; }
-    .y2k-win-body .btn.primary { background: linear-gradient(180deg,#FF1493,#FF69B4) !important; border-color: #00FF88 !important; color: white !important; }
+    .y2k-win-body .btn { backdrop-filter: blur(10px) !important; background: rgba(255, 107, 53, 0.25) !important; border: 1px solid rgba(255, 107, 53, 0.4) !important; color: #fff !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; }
+    .y2k-win-body .btn.primary { backdrop-filter: blur(10px) !important; background: rgba(255, 107, 53, 0.35) !important; border-color: rgba(255, 107, 53, 0.6) !important; color: white !important; }
   `;
   document.head.appendChild(style);
+  console.log('[Y2K] CSS INJECTED. Checking rules:');
+  console.log('[Y2K] .y2k-win-title span padding-left should be: 24px');
+  console.log('[Y2K] .y2k-win-close width should be: 8px');
+  console.log('[Y2K] .y2k-win-close height should be: 8px');
+  console.log('[Y2K] .y2k-win-close font-size should be: 6px');
 
   /* ── WINDOW MANAGER ─────────────────────────────────────────────── */
   const wins = {};
+  const winViews = {}; // Traccia il dataView per ogni finestra
   let topZ = 2000;
 
-  function openWin(id, title, html) {
-    console.log('%c[Y2K] openWin called', 'background: #FF1493; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold', 'id:', id, 'title:', title);
+  function openWin(id, title, html, dataView) {
+    console.log('%c[Y2K] openWin called', 'background: #FF1493; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold', 'id:', id, 'title:', title, 'view:', dataView);
 
     // Se già aperta, AGGIORNA il contenuto e porta in foreground
     if (wins[id]) {
@@ -409,19 +474,80 @@
     }, 100);
     document.body.appendChild(win);
     wins[id] = win;
-    console.log('[Y2K] ✅ Window added to DOM, id:', id, 'win:', win);
+    winViews[id] = dataView; // Salva il dataView per questa finestra
+    console.log('[Y2K] ✅ Window added to DOM, id:', id, 'view:', dataView);
     console.log('[Y2K] Window position - left:', win.style.left, 'top:', win.style.top);
     console.log('[Y2K] Window in DOM?', document.getElementById('y2kwin-' + id) ? 'YES' : 'NO');
+
+    // Hide weather widget when opening window
+    const weatherWidget = document.getElementById('weather-floating');
+    if (weatherWidget) {
+      weatherWidget.classList.remove('show');
+      console.log('[Y2K] openWin: 🔴 Removed .show from weather widget');
+    }
+
+    // Activate the tab button corresponding to this window's view
+    console.log('[Y2K] openWin: dataView parameter:', dataView, 'activeTabView:', window.activeTabView);
+    if (dataView) {
+      const bottomNav = document.querySelector('nav.bottom');
+      if (bottomNav) {
+        bottomNav.querySelectorAll('button').forEach(b => {
+          b.classList.toggle('active', b.dataset.view === dataView);
+        });
+        console.log('[Y2K] openWin: ✅ Activated tab button for view:', dataView);
+      }
+    } else {
+      console.warn('[Y2K] openWin: ⚠️ dataView is undefined!');
+    }
 
     // Blur mappa
     updateMapBlur();
 
-    // Porta in primo piano al click
-    win.addEventListener('mousedown', () => { win.style.zIndex = ++topZ; });
-    win.addEventListener('touchstart', () => { win.style.zIndex = ++topZ; }, { passive: true });
+    // Porta in primo piano al click e aggiorna il bottone attivo
+    win.addEventListener('mousedown', () => {
+      win.style.zIndex = ++topZ;
+      // Activate tab button when window is brought to front
+      const view = winViews[id];
+      if (view) {
+        const bottomNav = document.querySelector('nav.bottom');
+        if (bottomNav) {
+          bottomNav.querySelectorAll('button').forEach(b => {
+            b.classList.toggle('active', b.dataset.view === view);
+          });
+          console.log('[Y2K] mousedown: ✅ Activated tab button for view:', view);
+        }
+      }
+    });
+    win.addEventListener('touchstart', () => {
+      win.style.zIndex = ++topZ;
+      // Activate tab button when window is brought to front
+      const view = winViews[id];
+      if (view) {
+        const bottomNav = document.querySelector('nav.bottom');
+        if (bottomNav) {
+          bottomNav.querySelectorAll('button').forEach(b => {
+            b.classList.toggle('active', b.dataset.view === view);
+          });
+          console.log('[Y2K] touchstart: ✅ Activated tab button for view:', view);
+        }
+      }
+    }, { passive: true });
 
     // Close button
-    win.querySelector('.y2k-win-close').onclick = () => closeWin(id);
+    const closeBtn = win.querySelector('.y2k-win-close');
+    closeBtn.onclick = () => closeWin(id);
+
+    // DEBUG: Check actual computed styles
+    setTimeout(() => {
+      const titleSpan = win.querySelector('.y2k-win-title span');
+      const btnComputed = window.getComputedStyle(closeBtn);
+      const titleComputed = window.getComputedStyle(titleSpan);
+      console.log(`[Y2K] WINDOW "${id}" ACTUAL STYLES:`);
+      console.log(`  Title span padding-left: ${titleComputed.paddingLeft}`);
+      console.log(`  Close btn width: ${btnComputed.width}`);
+      console.log(`  Close btn height: ${btnComputed.height}`);
+      console.log(`  Close btn font-size: ${btnComputed.fontSize}`);
+    }, 50);
 
     // Drag
     makeDraggable(win, win.querySelector('.y2k-win-title'));
@@ -435,6 +561,7 @@
     if (!win) return;
     win.remove();
     delete wins[id];
+    delete winViews[id]; // Pulisci il dataView tracciato
     updateMapBlur();
 
     // Emit event so other modules know the window closed
@@ -442,14 +569,51 @@
       detail: { id }
     }));
 
-    // Reset tab button to map (always return to map when closing a window)
-    const bottomNav = document.querySelector('nav.bottom');
-    if (bottomNav) {
-      bottomNav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-      const mapBtn = bottomNav.querySelector('button[data-view="map"]');
-      if (mapBtn) {
-        mapBtn.classList.add('active');
-        console.log('[Y2K] closeWin: Reset button to map');
+    // Reset tab button to map ONLY if no other windows are open
+    if (Object.keys(wins).length === 0) {
+      // Reset activeTabView to 'map' so next openWin gets the correct view
+      window.activeTabView = 'map';
+      console.log('[Y2K] closeWin: Reset activeTabView to map');
+
+      const bottomNav = document.querySelector('nav.bottom');
+      if (bottomNav) {
+        bottomNav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        const mapBtn = bottomNav.querySelector('button[data-view="map"]');
+        if (mapBtn) {
+          mapBtn.classList.add('active');
+          console.log('[Y2K] closeWin: Reset button to map (no other windows open)');
+        }
+      }
+
+      // Show weather widget when ALL windows are closed (returning to map)
+      const weatherWidget = document.getElementById('weather-floating');
+      if (weatherWidget) {
+        weatherWidget.classList.add('show');
+        console.log('[Y2K] closeWin: ✅ Added .show to weather widget (all windows closed)');
+      }
+    } else {
+      // Find the window with the highest z-index (frontmost) and activate its tab button
+      let frontmostId = null;
+      let maxZ = -Infinity;
+      for (const [wid, win] of Object.entries(wins)) {
+        const z = parseInt(win.style.zIndex) || 0;
+        if (z > maxZ) {
+          maxZ = z;
+          frontmostId = wid;
+        }
+      }
+
+      if (frontmostId) {
+        const view = winViews[frontmostId];
+        if (view) {
+          const bottomNav = document.querySelector('nav.bottom');
+          if (bottomNav) {
+            bottomNav.querySelectorAll('button').forEach(b => {
+              b.classList.toggle('active', b.dataset.view === view);
+            });
+            console.log('[Y2K] closeWin: ✅ Activated tab button for frontmost window:', view);
+          }
+        }
       }
     }
   }
@@ -477,8 +641,31 @@
     };
     const move = (cx, cy) => {
       if (!dragging) return;
-      win.style.left = (cx - ox) + 'px';
-      win.style.top  = (cy - oy) + 'px';
+      // Boundary constraints RIGOROSI
+      const winWidth = win.offsetWidth;
+      const winHeight = win.offsetHeight;
+
+      // Aree NO-DRAG: Top filters + Bottom tabs
+      const minTop = 145; // 145px min (header ~70px + filters ~75px, prevents overlap)
+      const maxTop = window.innerHeight - winHeight - 150; // 150px min per tab area
+      const minLeft = 20;
+      const maxLeft = window.innerWidth - winWidth - 20;
+
+      let newLeft = cx - ox;
+      let newTop = cy - oy;
+
+      // Constraint STRETTO
+      newLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
+      newTop = Math.max(minTop, Math.min(newTop, maxTop));
+
+      // Ensure window stays visible (non può andare fuori)
+      if (newTop < minTop) newTop = minTop;
+      if (newTop > maxTop) newTop = maxTop;
+      if (newLeft < minLeft) newLeft = minLeft;
+      if (newLeft > maxLeft) newLeft = maxLeft;
+
+      win.style.left = newLeft + 'px';
+      win.style.top  = newTop + 'px';
       win.style.transform = 'none';
     };
     const end = () => { dragging = false; };
@@ -503,11 +690,32 @@
     };
     const move = (cx, cy) => {
       if (!resizing) return;
-      const newWidth = Math.max(260, sw + cx - sx) + 'px';
-      const newHeight = Math.max(180, sh + cy - sy) + 'px';
+
+      // Get window's current position
+      const currentLeft = parseInt(win.style.left) || win.offsetLeft;
+      const currentTop = parseInt(win.style.top) || win.offsetTop;
+
+      // Calculate max dimensions based on position + safety margins
+      // Horizontal: must fit within screen leaving 20px margin on both sides
+      const maxWidthForPosition = Math.max(260, window.innerWidth - currentLeft - 20);
+      const maxAllowedWidth = Math.min(950, maxWidthForPosition);
+
+      // Vertical: symmetric padding (145px top = 145px bottom from nav)
+      // Top: windows start at 145px minimum
+      // Bottom: windows must stop 145px before bottom (same padding as top)
+      const minBottomPosition = window.innerHeight - 145;
+      const maxHeightForPosition = Math.max(180, minBottomPosition - currentTop);
+      const maxAllowedHeight = maxHeightForPosition;
+
+      const limitedWidth = Math.max(260, Math.min(sw + cx - sx, maxAllowedWidth));
+      const limitedHeight = Math.max(180, Math.min(sh + cy - sy, maxAllowedHeight));
+
+      const newWidth = limitedWidth + 'px';
+      const newHeight = limitedHeight + 'px';
       win.style.setProperty('width', newWidth, 'important');
       win.style.setProperty('height', newHeight, 'important');
-      win.style.setProperty('max-width', 'none', 'important');
+      win.style.setProperty('max-width', maxAllowedWidth + 'px', 'important');
+      win.style.setProperty('max-height', maxAllowedHeight + 'px', 'important');
     };
     const end = () => { resizing = false; };
 
@@ -538,7 +746,9 @@
         // Genera id dall'iniziale del titolo
         const id = title.replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20) || 'win';
         console.log('[Y2K] Generated id:', id);
-        openWin(id, title, html);
+        // Passa activeTabView per attivare il bottone corretto
+        const view = window.activeTabView || 'map';
+        openWin(id, title, html, view);
       };
     } else {
       console.error('[Y2K] ❌ origOpen is not a function!');

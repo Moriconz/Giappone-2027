@@ -7,6 +7,30 @@
      Rosa acceso    #FF1493  —  accenti primari, bordi
      Verde neon     #00FF88  —  successo, bordi secondari
      Oro            #FFD700  —  avvisi, titoli su scuro
+
+/* ═══════════════════════════════════════════════════════════════════
+   WEATHER DAY GLASSMORPHISM FORCE — Highest Priority
+═══════════════════════════════════════════════════════════════════ */
+.weather-day {
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  background-color: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
+  border-radius: 12px !important;
+  padding: 10px 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  min-height: auto !important;
+  max-height: none !important;
+  height: auto !important;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1) !important;
+  transition: all 0.2s ease !important;
+  cursor: default !important;
+  text-align: center !important;
+}
      Crema          #FFFACD  —  sfondo finestre / testo su scuro
      Blu testo      #1A2560  —  testo su sfondi chiari
 
@@ -37,14 +61,15 @@ html, body, * {
 }
 
 html, body {
-  font-family: 'Courier New', monospace !important;
-  background: #f0f0f0 !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0d0f17 100%) !important;
+  color: #fff !important;
 }
 
 #app {
   margin: 0 !important;
   padding: 0 !important;
-  background: #f0f0f0 !important;
+  background: transparent !important;
 }
 
 main {
@@ -64,9 +89,10 @@ header {
   justify-content: space-between !important;
   gap: 12px !important;
   padding: 24px 16px 16px 16px !important;
-  background: linear-gradient(180deg, #4A5BA8 0%, #2D3B7D 100%) !important;
-  border-bottom: 3px solid var(--y2k-pink) !important;
-  box-shadow: 0 4px 20px rgba(255,20,147,0.25) !important;
+  backdrop-filter: blur(20px) !important;
+  background: rgba(26, 31, 46, 0.4) !important;
+  border-bottom: 1px solid rgba(255, 107, 53, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
 }
 
 header h1 {
@@ -124,11 +150,15 @@ header h1 .badge {
   top: auto !important;
   right: auto !important;
   z-index: 9999 !important;
-  display: block !important;
   cursor: pointer !important;
   user-select: none !important;
+  display: none !important;  /* HIDDEN BY DEFAULT */
+}
+
+/* SHOW CLASS — applies to ALL screen sizes */
+#weather-floating.show {
+  display: block !important;
   visibility: visible !important;
-  opacity: 1 !important;
 }
 
 #weather-card {
@@ -145,7 +175,7 @@ header h1 .badge {
   #weather-floating {
     bottom: 160px !important;
     left: 10px !important;
-    visibility: visible !important;
+    /* display: none is inherited from base rule */
   }
 
   #weather-floating.show {
@@ -350,7 +380,7 @@ header h1 .badge {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   BOTTOM NAV
+   BOTTOM NAV — Glassmorphism
 ══════════════════════════════════════════════════════════════════ */
 nav.bottom {
   position: fixed !important;
@@ -365,22 +395,24 @@ nav.bottom {
   flex-wrap: wrap !important;
   justify-content: flex-start !important;
   align-items: stretch !important;
-  background: linear-gradient(180deg, #3D4E9A 0%, #2D3B7D 100%) !important;
-  border-top: 3px solid var(--y2k-green) !important;
-  box-shadow: 0 -4px 20px rgba(0,255,136,0.15) !important;
+  backdrop-filter: blur(20px) !important;
+  background: rgba(26, 31, 46, 0.5) !important;
+  border-top: 1px solid rgba(255, 107, 53, 0.2) !important;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3) !important;
   padding: 5px 3px calc(5px + var(--safe-bottom)) !important;
   gap: 2px !important;
 }
 
 nav.bottom button {
   flex: 1 !important;
-  background: linear-gradient(180deg, #5A6EC0, #4A5BA8) !important;
-  border: 1.5px solid rgba(224,213,255,0.5) !important;
-  border-radius: 7px !important;
-  color: #E0D5FF !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.2) !important;
+  border-radius: 10px !important;
+  color: #fff !important;
   font-size: 9px !important;
   font-weight: 700 !important;
-  font-family: 'Comic Sans MS', cursive !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   padding: 5px 2px 4px !important;
   display: flex !important;
   flex-direction: column !important;
@@ -388,7 +420,7 @@ nav.bottom button {
   gap: 2px !important;
   cursor: pointer !important;
   transition: all 0.18s ease !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
 }
 nav.bottom button svg {
   width: 20px !important;
@@ -396,15 +428,17 @@ nav.bottom button svg {
   stroke: currentColor !important;
 }
 nav.bottom button:hover {
-  background: linear-gradient(180deg, #6A7ED0, #5A6EC0) !important;
+  background: rgba(255, 107, 53, 0.25) !important;
   transform: translateY(-1px) !important;
   color: #fff !important;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.2) !important;
 }
 nav.bottom button.active {
-  background: linear-gradient(180deg, #FF1493, #FF69B4) !important;
-  border-color: var(--y2k-green) !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.4) !important;
+  border-color: rgba(255, 107, 53, 0.6) !important;
   color: #fff !important;
-  box-shadow: var(--y2k-glow-p) !important;
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.3) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -430,15 +464,43 @@ nav.bottom button.active {
     backdrop-filter: none !important;
     background: rgba(20,30,80,0.8) !important;
   }
+
+  .sheet-body {
+    padding: 12px !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+  }
+
+  .sheet-body h1,
+  .sheet-body h2,
+  .sheet-body h3 {
+    font-size: 16px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .sheet-body p {
+    margin-bottom: 10px !important;
+  }
+
+  .sheet-body > div {
+    margin-bottom: 12px !important;
+  }
+
+  .sheet-body button {
+    padding: 10px !important;
+    font-size: 13px !important;
+  }
 }
 .sheet-inner {
   z-index: 51 !important;
-  background: linear-gradient(170deg, #FFFDF0 0%, #FFF8DC 100%) !important;
-  border-top: 3px solid var(--y2k-pink) !important;
+  backdrop-filter: blur(20px) !important;
+  background: rgba(26, 31, 46, 0.6) !important;
+  border-top: 1px solid rgba(255, 107, 53, 0.2) !important;
   border-radius: 18px 18px 0 0 !important;
-  box-shadow: 0 -8px 40px rgba(255,20,147,0.3) !important;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3) !important;
   padding-bottom: calc(20px + var(--safe-bottom)) !important;
   width: 100% !important;
+  color: #fff !important;
 }
 
 /* Mobile: limita larghezza panel */
@@ -478,19 +540,20 @@ nav.bottom button.active {
   top: 0 !important;
 }
 .sheet-handle {
-  background: var(--y2k-pink) !important;
+  background: rgba(255, 107, 53, 0.5) !important;
   width: 44px !important;
   height: 5px !important;
-  box-shadow: 0 0 8px rgba(255,20,147,0.4) !important;
+  box-shadow: 0 0 12px rgba(255, 107, 53, 0.4) !important;
 }
 .sheet-header {
   padding: 14px 20px !important;
-  background: linear-gradient(180deg, #FFFDF0, #FFF8DC) !important;
-  border-bottom: 2px solid rgba(255,20,147,0.25) !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.1) !important;
+  border-bottom: 1px solid rgba(255, 107, 53, 0.15) !important;
 }
 .sheet-header h2 {
-  color: var(--y2k-ink) !important;
-  font-family: 'Comic Sans MS', cursive !important;
+  color: #fff !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-weight: 700 !important;
   font-size: 17px !important;
 }
@@ -504,7 +567,7 @@ nav.bottom button.active {
 /* ── Corpo finestra — padding generoso ──────────────────────────── */
 .sheet-body {
   padding: 18px 20px !important;
-  color: var(--y2k-ink) !important;
+  color: #fff !important;
   display: block !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
@@ -512,9 +575,9 @@ nav.bottom button.active {
   -webkit-overflow-scrolling: touch !important;
 }
 
-/* tutti i testi dentro la finestra ereditano colore scuro */
+/* tutti i testi dentro la finestra ereditano colore chiaro */
 .sheet-inner *:not(button):not(.tag.cat):not(.tag.gf-full):not(.tag.gf-partial):not(.chip.active):not(.btn.primary):not(.btn.success):not(.ai-msg.user):not(.booking-date-badge):not(.item-tag):not(.gpc-tag):not(.nav-badge) {
-  color: var(--y2k-ink) !important;
+  color: #fff !important;
 }
 
 /* ── Sezioni ────────────────────────────────────────────────────── */
@@ -523,8 +586,8 @@ nav.bottom button.active {
 }
 .sheet-inner .section h3,
 .sheet-body .section h3 {
-  color: #A8005A !important;
-  font-family: 'Comic Sans MS', cursive !important;
+  color: rgba(255, 107, 53, 0.9) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-size: 12px !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
@@ -536,6 +599,7 @@ nav.bottom button.active {
   font-size: 14px !important;
   line-height: 1.6 !important;
   margin: 0 0 8px !important;
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 
 /* ── Category headers in search results ────────────────────────── */
@@ -543,8 +607,8 @@ nav.bottom button.active {
   margin-bottom: 16px !important;
 }
 .category-section h4 {
-  color: var(--y2k-pink) !important;
-  font-family: 'Comic Sans MS', cursive !important;
+  color: rgba(255, 107, 53, 0.9) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-size: 14px !important;
   font-weight: 700 !important;
   margin: 12px 0 8px 0 !important;
@@ -553,8 +617,8 @@ nav.bottom button.active {
   align-items: center !important;
 }
 .category-section h4 .count {
-  background: var(--y2k-green) !important;
-  color: var(--y2k-ink) !important;
+  background: rgba(255, 107, 53, 0.3) !important;
+  color: #fff !important;
   padding: 2px 8px !important;
   border-radius: 12px !important;
   font-size: 12px !important;
@@ -582,12 +646,13 @@ nav.bottom button.active {
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
-  background: linear-gradient(135deg, #3D4E9A, #4A5BA8) !important;
-  border: 2px solid var(--y2k-green) !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.25) !important;
   border-radius: 10px !important;
   padding: 12px 14px !important;
   margin-bottom: 16px !important;
-  box-shadow: 0 3px 10px rgba(0,255,136,0.15) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
   transition: transform 0.15s ease, box-shadow 0.15s ease !important;
 }
 
@@ -599,88 +664,98 @@ nav.bottom button.active {
 .sheet-inner .poi-row:hover,
 .sheet-body .poi-row:hover {
   transform: translateX(3px) !important;
-  box-shadow: 0 4px 14px rgba(0,255,136,0.25) !important;
+  background: rgba(255, 107, 53, 0.25) !important;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.2) !important;
 }
 .sheet-inner .poi-row .icon,
 .sheet-body .poi-row .icon {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  box-shadow: 0 0 8px rgba(255,20,147,0.35) !important;
+  background: rgba(255, 107, 53, 0.4) !important;
+  box-shadow: 0 0 12px rgba(255, 107, 53, 0.3) !important;
 }
 .sheet-inner .poi-row .name,
 .sheet-body .poi-row .name {
-  color: var(--y2k-cream) !important;
-  font-family: 'Courier New', monospace !important;
+  color: #fff !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-weight: 700 !important;
   font-size: 14px !important;
 }
 .sheet-inner .poi-row .sub,
 .sheet-body .poi-row .sub {
-  color: #C0B8F0 !important;
+  color: rgba(255, 255, 255, 0.7) !important;
   font-size: 12px !important;
   font-weight: 500 !important;
 }
 
 /* ── Tags ───────────────────────────────────────────────────────── */
 .tag {
-  background: linear-gradient(135deg, #E8E0FF, #F0E8FF) !important;
-  color: var(--y2k-ink) !important;
-  border: 1.5px solid #C8BDFF !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
   border-radius: 5px !important;
   font-size: 11px !important;
   padding: 3px 8px !important;
   font-weight: 600 !important;
 }
 .tag.cat {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.35) !important;
   color: #fff !important;
-  border-color: #FF1493 !important;
+  border-color: rgba(255, 107, 53, 0.6) !important;
 }
 .tag.gf-full {
-  background: linear-gradient(135deg, #00FF88, #00CC66) !important;
-  color: var(--y2k-ink) !important;
-  border-color: #00FF88 !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(0, 255, 136, 0.25) !important;
+  color: #fff !important;
+  border-color: rgba(0, 255, 136, 0.5) !important;
 }
 .tag.gf-partial {
-  background: linear-gradient(135deg, #FFD700, #FFB800) !important;
-  color: var(--y2k-ink) !important;
-  border-color: #FFD700 !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 215, 0, 0.25) !important;
+  color: #fff !important;
+  border-color: rgba(255, 215, 0, 0.5) !important;
 }
 .tag.gf-none {
-  background: #4A5BA8 !important;
-  color: #C8BDFF !important;
-  border-color: #8080C0 !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.1) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  border-color: rgba(255, 107, 53, 0.2) !important;
 }
 
 /* ── Pulsanti ───────────────────────────────────────────────────── */
 .btn {
   padding: 11px 18px !important;
-  background: linear-gradient(180deg, #E8E0FF, #D8CCFF) !important;
-  border: 2px solid #C8BDFF !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
   border-radius: 9px !important;
-  color: var(--y2k-ink) !important;
-  font-family: 'Comic Sans MS', cursive !important;
+  color: #fff !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-weight: 700 !important;
   font-size: 13px !important;
   transition: all 0.18s ease !important;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
 }
-.btn:hover { transform: translateY(-2px) !important; box-shadow: 0 5px 14px rgba(0,0,0,0.12) !important; }
+.btn:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 20px rgba(255, 107, 53, 0.2) !important; background: rgba(255, 107, 53, 0.25) !important; }
 .btn:active { transform: scale(0.96) !important; }
 .btn.primary {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  border-color: var(--y2k-green) !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.35) !important;
+  border-color: rgba(255, 107, 53, 0.6) !important;
   color: #fff !important;
-  box-shadow: var(--y2k-glow-p) !important;
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.3) !important;
 }
 .btn.success {
-  background: linear-gradient(135deg, #00FF88, #00CC66) !important;
-  border-color: #FF1493 !important;
-  color: var(--y2k-ink) !important;
-  box-shadow: var(--y2k-glow-g) !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(0, 255, 136, 0.25) !important;
+  border-color: rgba(0, 255, 136, 0.5) !important;
+  color: #fff !important;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.2) !important;
 }
 .btn.navigate {
-  background: linear-gradient(135deg, #00BB55, #009944) !important;
-  border-color: #00FF88 !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(0, 255, 136, 0.2) !important;
+  border-color: rgba(0, 255, 136, 0.4) !important;
   color: #fff !important;
 }
 
@@ -688,8 +763,8 @@ nav.bottom button.active {
 .sheet-inner .form-row label,
 .sheet-body .form-row label,
 .groq-panel label {
-  color: var(--y2k-muted) !important;
-  font-family: 'Courier New', monospace !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-size: 12px !important;
   font-weight: 700 !important;
   margin-bottom: 5px !important;
@@ -705,66 +780,70 @@ nav.bottom button.active {
 .groq-menu-textarea {
   width: 100% !important;
   box-sizing: border-box !important;
-  background: #fff !important;
-  color: var(--y2k-ink) !important;
-  border: 2px solid #C8BDFF !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
   border-radius: 8px !important;
   padding: 10px 12px !important;
-  font-family: 'Courier New', monospace !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-size: 13px !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  backdrop-filter: blur(10px) !important;
 }
 .sheet-inner .form-row input:focus,
 .sheet-body input:focus,
 .sheet-body textarea:focus,
 .groq-menu-textarea:focus {
   outline: none !important;
-  border-color: #FF1493 !important;
-  box-shadow: 0 0 0 3px rgba(255,20,147,0.15) !important;
+  border-color: rgba(255, 107, 53, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2) !important;
 }
 .form-row { margin-bottom: 14px !important; }
 
 /* ── Booking cards ──────────────────────────────────────────────── */
 .booking-card {
-  background: linear-gradient(135deg, #FFFDF0, #FFF8DC) !important;
-  border: 2px solid #FFD700 !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.25) !important;
   border-radius: 12px !important;
   padding: 14px 16px !important;
   margin-bottom: 12px !important;
-  box-shadow: 0 3px 12px rgba(255,215,0,0.15) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
 }
-.booking-card .bc-title  { color: var(--y2k-ink) !important; font-weight: 700 !important; font-size: 14px !important; }
-.booking-card .bc-city   { color: var(--y2k-muted) !important; font-size: 12px !important; }
-.booking-card .bc-icon   { background: linear-gradient(135deg, #FF1493, #FF69B4) !important; box-shadow: var(--y2k-glow-p) !important; }
-.booking-card .bc-reminder { color: var(--y2k-muted) !important; }
+.booking-card .bc-title  { color: #fff !important; font-weight: 700 !important; font-size: 14px !important; }
+.booking-card .bc-city   { color: rgba(255, 255, 255, 0.6) !important; font-size: 12px !important; }
+.booking-card .bc-icon   { background: rgba(255, 107, 53, 0.4) !important; box-shadow: 0 0 12px rgba(255, 107, 53, 0.3) !important; }
+.booking-card .bc-reminder { color: rgba(255, 255, 255, 0.6) !important; }
 .bc-status.confirmed {
-  background: rgba(0,200,100,0.15) !important;
-  color: #00884A !important;
-  border: 1.5px solid #00AA55 !important;
+  background: rgba(0, 255, 136, 0.2) !important;
+  color: rgba(0, 255, 136, 0.9) !important;
+  border: 1px solid rgba(0, 255, 136, 0.4) !important;
 }
 .bc-status.pending {
-  background: rgba(200,150,0,0.15) !important;
-  color: #886000 !important;
-  border: 1.5px solid #AA8000 !important;
+  background: rgba(255, 215, 0, 0.2) !important;
+  color: rgba(255, 215, 0, 0.9) !important;
+  border: 1px solid rgba(255, 215, 0, 0.4) !important;
 }
 .booking-date-badge {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  background: rgba(255, 107, 53, 0.4) !important;
   color: #fff !important;
 }
 
 /* ── Shop cards ─────────────────────────────────────────────────── */
 .shop-card {
-  background: linear-gradient(135deg, #FFFDF0, #FFF8DC) !important;
-  border: 2px solid #FFD700 !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.25) !important;
   border-radius: 12px !important;
   padding: 14px 16px !important;
   margin-bottom: 24px !important;
-  box-shadow: 0 3px 12px rgba(255,215,0,0.12) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
   transition: all 0.2s ease !important;
 }
 .shop-card:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 5px 16px rgba(255,215,0,0.2) !important;
+  background: rgba(255, 107, 53, 0.25) !important;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.2) !important;
 }
 
 /* ── Shop detail (quando clicchi su un negozio) ────────────────── */
@@ -775,27 +854,27 @@ nav.bottom button.active {
   margin-bottom: 12px !important;
 }
 .shop-card .sc-name {
-  color: #1A2560 !important;
+  color: #fff !important;
   font-weight: 700 !important;
   font-size: 18px !important;
   margin-bottom: 6px !important;
-  font-family: 'Courier New', monospace !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 .shop-card .sc-meta {
-  color: #6B5EA8 !important;
+  color: rgba(255, 255, 255, 0.6) !important;
   font-size: 14px !important;
   font-weight: 600 !important;
 }
 .shop-card .sc-hours {
-  color: #1A2560 !important;
+  color: rgba(255, 255, 255, 0.7) !important;
   font-size: 13px !important;
   line-height: 1.6 !important;
   font-weight: 500 !important;
 }
 .sheet-body .shop-card h4,
 .sheet-inner .shop-card h4 {
-  color: #A8005A !important;
-  font-family: 'Comic Sans MS', cursive !important;
+  color: rgba(255, 107, 53, 0.9) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-size: 14px !important;
   font-weight: 700 !important;
   margin: 16px 0 8px 0 !important;
@@ -804,9 +883,10 @@ nav.bottom button.active {
 /* ── Shopping tab buttons ─────────────────────────────────────── */
 #tab-general,
 #tab-vintage {
-  background: rgba(200,190,240,0.15) !important;
-  border: 2px solid #C8BDFF !important;
-  color: var(--y2k-ink) !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.25) !important;
+  color: #fff !important;
   padding: 12px 16px !important;
   border-radius: 8px !important;
   cursor: pointer !important;
@@ -817,25 +897,28 @@ nav.bottom button.active {
 
 #tab-general:hover,
 #tab-vintage:hover {
-  background: rgba(200,190,240,0.3) !important;
-  border-color: #FF1493 !important;
+  background: rgba(255, 107, 53, 0.25) !important;
+  border-color: rgba(255, 107, 53, 0.5) !important;
 }
 
 #tab-general.active,
 #tab-vintage.active {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  border-color: #FF1493 !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.4) !important;
+  border-color: rgba(255, 107, 53, 0.6) !important;
   color: #fff !important;
 }
-.shop-card .sc-name   { color: var(--y2k-ink) !important; font-weight: 700 !important; }
-.shop-card .sc-meta   { color: var(--y2k-muted) !important; font-size: 12px !important; }
-.shop-card .sc-rating { color: #996600 !important; font-weight: 700 !important; }
-.shop-card .sc-hours  { color: var(--y2k-muted) !important; font-size: 12px !important; }
-.shop-card .sc-notes  { color: #4A3D8A !important; font-style: italic !important; font-size: 13px !important; }
+.shop-card .sc-name   { color: #fff !important; font-weight: 700 !important; }
+.shop-card .sc-meta   { color: rgba(255, 255, 255, 0.6) !important; font-size: 12px !important; }
+.shop-card .sc-rating { color: rgba(255, 215, 0, 0.8) !important; font-weight: 700 !important; }
+.shop-card .sc-hours  { color: rgba(255, 255, 255, 0.6) !important; font-size: 12px !important; }
+.shop-card .sc-notes  { color: rgba(255, 107, 53, 0.8) !important; font-style: italic !important; font-size: 13px !important; }
 .item-tag {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.35) !important;
   color: #fff !important;
   border-radius: 5px !important;
+  border: 1px solid rgba(255, 107, 53, 0.5) !important;
   font-size: 11px !important;
   padding: 3px 8px !important;
   font-weight: 600 !important;
@@ -847,74 +930,82 @@ nav.bottom button.active {
   padding: 16px 4px !important;
 }
 .ai-welcome {
-  background: rgba(45,59,125,0.08) !important;
-  border: 2px solid rgba(255,20,147,0.2) !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.1) !important;
+  border: 1px solid rgba(255, 107, 53, 0.2) !important;
   border-radius: 14px !important;
   padding: 16px !important;
 }
-.ai-welcome-title { color: var(--y2k-ink) !important; font-family: 'Comic Sans MS', cursive !important; font-size: 16px !important; font-weight: 700 !important; }
-.ai-welcome-sub   { color: var(--y2k-muted) !important; font-size: 13px !important; }
+.ai-welcome-title { color: #fff !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; font-size: 16px !important; font-weight: 700 !important; }
+.ai-welcome-sub   { color: rgba(255, 255, 255, 0.6) !important; font-size: 13px !important; }
 .ai-msg.user {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.4) !important;
   color: #fff !important;
   border-radius: 14px 14px 3px 14px !important;
   padding: 10px 14px !important;
-  box-shadow: var(--y2k-glow-p) !important;
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.2) !important;
 }
 .ai-msg.ai {
-  background: linear-gradient(135deg, #EEF0FF, #E8E0FF) !important;
-  border: 2px solid #C8BDFF !important;
-  color: var(--y2k-ink) !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.1) !important;
+  border: 1px solid rgba(255, 107, 53, 0.25) !important;
+  color: #fff !important;
   border-radius: 14px 14px 14px 3px !important;
   padding: 10px 14px !important;
   font-weight: 500 !important;
 }
 .ai-msg.placeholder {
-  background: rgba(200,190,240,0.15) !important;
-  border: 1.5px dashed #C8BDFF !important;
-  color: var(--y2k-muted) !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.1) !important;
+  border: 1px dashed rgba(255, 107, 53, 0.3) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 .ai-input-row textarea {
-  background: #fff !important;
-  border: 2px solid #C8BDFF !important;
-  color: var(--y2k-ink) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
+  color: #fff !important;
   border-radius: 10px !important;
   padding: 10px 14px !important;
+  backdrop-filter: blur(10px) !important;
 }
 .ai-input-row textarea:focus {
-  border-color: #FF1493 !important;
-  box-shadow: 0 0 0 3px rgba(255,20,147,0.12) !important;
+  border-color: rgba(255, 107, 53, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2) !important;
 }
 .ai-send {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.4) !important;
   color: #fff !important;
-  border: none !important;
+  border: 1px solid rgba(255, 107, 53, 0.5) !important;
   border-radius: 10px !important;
   font-weight: 700 !important;
-  box-shadow: var(--y2k-glow-p) !important;
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.2) !important;
 }
 .ai-quick-chip {
-  background: linear-gradient(135deg, #E8E0FF, #D8CCFF) !important;
-  border: 1.5px solid #C8BDFF !important;
-  color: var(--y2k-ink) !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
+  color: #fff !important;
   font-size: 12px !important;
   font-weight: 600 !important;
   border-radius: 999px !important;
   padding: 6px 12px !important;
 }
 .ai-quick-chip:hover {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  background: rgba(255, 107, 53, 0.35) !important;
   color: #fff !important;
-  border-color: #FF1493 !important;
+  border-color: rgba(255, 107, 53, 0.6) !important;
 }
 .ai-itinerary-day {
-  background: rgba(45,59,125,0.06) !important;
-  border: 1.5px solid #C8BDFF !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.1) !important;
+  border: 1px solid rgba(255, 107, 53, 0.2) !important;
   border-radius: 10px !important;
   padding: 12px 14px !important;
 }
-.ai-itinerary-day h4 { color: #A8005A !important; font-family: 'Comic Sans MS', cursive !important; }
-.ai-footer-note { color: var(--y2k-muted) !important; font-size: 13px !important; }
+.ai-itinerary-day h4 { color: rgba(255, 107, 53, 0.9) !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; }
+.ai-footer-note { color: rgba(255, 255, 255, 0.5) !important; font-size: 13px !important; }
 
 /* ── Groq / Menu analyzer ───────────────────────────────────────── */
 .groq-panel {
@@ -924,30 +1015,32 @@ nav.bottom button.active {
   gap: 14px !important;
 }
 .groq-panel label {
-  color: var(--y2k-muted) !important;
-  font-family: 'Courier New', monospace !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-size: 12px !important;
   font-weight: 700 !important;
 }
 .groq-api-setup {
-  background: rgba(45,59,125,0.06) !important;
-  border: 2px solid #C8BDFF !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.1) !important;
+  border: 1px solid rgba(255, 107, 53, 0.2) !important;
   border-radius: 12px !important;
   padding: 14px 16px !important;
 }
-.groq-api-setup p { color: var(--y2k-muted) !important; font-size: 12px !important; }
+.groq-api-setup p { color: rgba(255, 255, 255, 0.6) !important; font-size: 12px !important; }
 .groq-analyze-btn {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.4) !important;
   color: #fff !important;
-  border: none !important;
+  border: 1px solid rgba(255, 107, 53, 0.5) !important;
   border-radius: 10px !important;
-  font-family: 'Comic Sans MS', cursive !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-weight: 700 !important;
   padding: 13px !important;
   font-size: 14px !important;
-  box-shadow: var(--y2k-glow-p) !important;
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.2) !important;
 }
-.gf-result-card h4 { color: var(--y2k-ink) !important; font-weight: 700 !important; }
+.gf-result-card h4 { color: #fff !important; font-weight: 700 !important; }
 
 /* ── GF Places ──────────────────────────────────────────────────── */
 .gf-places-container {
@@ -955,15 +1048,16 @@ nav.bottom button.active {
   gap: 14px !important;
 }
 .gf-place-card {
-  background: linear-gradient(135deg, #FFFDF0, #FFF8DC) !important;
-  border: 2px solid #FFD700 !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.25) !important;
   border-radius: 12px !important;
   padding: 14px 16px !important;
   margin-bottom: 12px !important;
 }
-.gpc-name   { color: var(--y2k-ink) !important; font-weight: 700 !important; font-size: 14px !important; }
-.gpc-city   { color: var(--y2k-muted) !important; font-size: 12px !important; }
-.gpc-rating { color: #996600 !important; font-weight: 700 !important; }
+.gpc-name   { color: #fff !important; font-weight: 700 !important; font-size: 14px !important; }
+.gpc-city   { color: rgba(255, 255, 255, 0.6) !important; font-size: 12px !important; }
+.gpc-rating { color: rgba(255, 215, 0, 0.8) !important; font-weight: 700 !important; }
 .gpc-tag {
   background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
   color: #fff !important;
@@ -1194,32 +1288,38 @@ nav.bottom button.active {
 ══════════════════════════════════════════════════════════════════ */
 
 .weather-container {
-  padding: 18px 20px !important;
+  padding: 16px 16px !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 24px !important;
+  gap: 14px !important;
 }
 
 .weather-city {
   display: flex !important;
   flex-direction: column !important;
-  gap: 16px !important;
-  margin-bottom: 12px !important;
+  gap: 12px !important;
+  margin-bottom: 18px !important;
+  padding: 16px !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
 }
 
 .weather-city h3 {
-  color: var(--y2k-ink) !important;
-  font-family: 'Comic Sans MS', cursive !important;
-  font-size: 18px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 14px !important;
   font-weight: 700 !important;
-  margin: 0 0 12px 0 !important;
+  margin: 0 0 6px 0 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.1em !important;
+  letter-spacing: 0.05em !important;
   display: flex !important;
   align-items: center !important;
-  gap: 10px !important;
-  border-bottom: 2px solid rgba(255,20,147,0.2) !important;
-  padding-bottom: 8px !important;
+  gap: 8px !important;
+  border: none !important;
+  padding: 0 !important;
 }
 
 .weather-city h3::before {
@@ -1229,21 +1329,35 @@ nav.bottom button.active {
 
 .weather-days {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
-  gap: 12px !important;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)) !important;
+  gap: 10px !important;
   width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Mobile responsive - 2 columns max on small screens */
+@media (max-width: 480px) {
+  .weather-days {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
 }
 
 .weather-day {
-  background: linear-gradient(135deg, #FFFDF0, #FFF8DC) !important;
-  border: 2px solid #FFD700 !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  background-color: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
   border-radius: 12px !important;
-  padding: 14px 12px !important;
+  padding: 10px 10px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  gap: 8px !important;
-  box-shadow: 0 3px 12px rgba(255,215,0,0.15) !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  min-height: auto !important;
+  max-height: none !important;
+  height: auto !important;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1) !important;
   transition: all 0.2s ease !important;
   cursor: default !important;
   text-align: center !important;
@@ -1251,69 +1365,33 @@ nav.bottom button.active {
 
 .weather-day:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 5px 16px rgba(255,215,0,0.25) !important;
+  box-shadow: 0 4px 12px rgba(255,107,53,0.2) !important;
 }
 
-/* Color-coded weather conditions — based on WMO codes */
-.weather-day[data-weather="0"],
-.weather-day[data-weather="1"],
-.weather-day[data-weather="2"] {
-  border-color: var(--y2k-gold) !important;
-  background: linear-gradient(135deg, #FFF9E6, #FFFDF0) !important;
-}
-
-.weather-day[data-weather="3"],
-.weather-day[data-weather="45"],
-.weather-day[data-weather="48"] {
-  border-color: #B0B0C0 !important;
-  background: linear-gradient(135deg, #F0F0F5, #F5F5FA) !important;
-}
-
-.weather-day[data-weather="51"],
-.weather-day[data-weather="53"],
-.weather-day[data-weather="55"],
-.weather-day[data-weather="61"],
-.weather-day[data-weather="63"],
-.weather-day[data-weather="65"],
-.weather-day[data-weather="80"],
-.weather-day[data-weather="81"],
-.weather-day[data-weather="82"] {
-  border-color: #3D7CA5 !important;
-  background: linear-gradient(135deg, #E6F2FF, #F0F7FF) !important;
-}
-
-.weather-day[data-weather="71"],
-.weather-day[data-weather="73"],
-.weather-day[data-weather="75"],
-.weather-day[data-weather="77"],
-.weather-day[data-weather="85"],
-.weather-day[data-weather="86"] {
-  border-color: #E0E8FF !important;
-  background: linear-gradient(135deg, #F5F7FF, #F9FBFF) !important;
-}
-
-.weather-day[data-weather="80"],
-.weather-day[data-weather="81"],
-.weather-day[data-weather="82"],
-.weather-day[data-weather="95"],
-.weather-day[data-weather="96"],
-.weather-day[data-weather="99"] {
-  border-color: #6B5EA8 !important;
-  background: linear-gradient(135deg, #ECECF5, #F0F0FA) !important;
+/* Force glassmorphism over ALL inline styles - use multiple selectors */
+.y2k-win-body .weather-day,
+.y2k-win-body .weather-day[style],
+.y2k-win-body .weather-day[data-weather],
+div[class*="weather-day"][style*="background"] {
+  background: rgba(255, 107, 53, 0.15) !important;
+  background-color: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .weather-date {
-  color: var(--y2k-ink) !important;
-  font-family: 'Courier New', monospace !important;
-  font-size: 12px !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 10px !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
+  margin: 0 !important;
 }
 
 .weather-icon {
-  font-size: 32px !important;
-  height: 40px !important;
+  font-size: 24px !important;
+  height: 28px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1323,66 +1401,255 @@ nav.bottom button.active {
 .weather-temps {
   display: flex !important;
   flex-direction: column !important;
-  gap: 4px !important;
+  gap: 2px !important;
   width: 100% !important;
 }
 
 .weather-temp-max {
-  color: var(--y2k-ink) !important;
-  font-family: 'Courier New', monospace !important;
-  font-size: 14px !important;
+  color: #fff !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 12px !important;
   font-weight: 700 !important;
+  margin: 0 !important;
 }
 
 .weather-temp-min {
-  color: var(--y2k-muted) !important;
-  font-family: 'Courier New', monospace !important;
-  font-size: 12px !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 10px !important;
   font-weight: 600 !important;
+  margin: 0 !important;
 }
 
 .weather-details {
   display: flex !important;
-  flex-direction: column !important;
-  gap: 3px !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-around !important;
   width: 100% !important;
-  border-top: 1px solid rgba(200,190,240,0.3) !important;
-  padding-top: 8px !important;
-  margin-top: 6px !important;
-  font-size: 11px !important;
+  border-top: 1px solid rgba(255, 107, 53, 0.25) !important;
+  border-bottom: 1px solid rgba(255, 107, 53, 0.25) !important;
+  padding: 14px 0 !important;
+  margin: 12px 0 !important;
+  gap: 0 !important;
 }
 
 .weather-detail-item {
-  color: var(--y2k-muted) !important;
-  font-family: 'Courier New', monospace !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-weight: 500 !important;
   display: flex !important;
-  justify-content: space-between !important;
-  gap: 4px !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  background: transparent !important;
+  border: none !important;
+  border-right: 1px solid rgba(255, 107, 53, 0.15) !important;
+  border-radius: 0 !important;
+  padding: 0 16px !important;
+  transition: none !important;
+}
+
+.weather-detail-item:last-child {
+  border-right: none !important;
+}
+
+.weather-detail-item:hover {
+  background: transparent !important;
+  border-color: transparent !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .weather-detail-label {
-  font-weight: 600 !important;
-  color: #6B5EA8 !important;
+  font-size: 20px !important;
+  font-weight: 500 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  display: block !important;
+  line-height: 1 !important;
 }
 
 .weather-detail-value {
-  color: var(--y2k-ink) !important;
+  color: #fff !important;
   font-weight: 700 !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
 }
 
-/* Responsive — stack on very small screens */
-@media (max-width: 360px) {
+/* Responsive — mobile optimization (max-width: 480px) */
+@media (max-width: 480px) {
+  .weather-container {
+    padding: 12px 14px !important;
+    gap: 14px !important;
+  }
+
+  .weather-city {
+    gap: 10px !important;
+    margin-bottom: 14px !important;
+    padding: 14px !important;
+  }
+
+  .weather-city h3 {
+    font-size: 12px !important;
+    margin: 0 0 4px 0 !important;
+    gap: 6px !important;
+  }
+
+  .weather-city h3::before {
+    font-size: 14px !important;
+  }
+
   .weather-days {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
+    gap: 8px !important;
   }
 
   .weather-day {
-    padding: 12px 10px !important;
+    padding: 10px 8px !important;
+    gap: 6px !important;
+  }
+
+  .weather-date {
+    font-size: 10px !important;
   }
 
   .weather-icon {
-    font-size: 28px !important;
+    font-size: 24px !important;
+  }
+
+  .weather-temps {
+    gap: 2px !important;
+  }
+
+  .weather-temp-max {
+    font-size: 12px !important;
+  }
+
+  .weather-temp-min {
+    font-size: 10px !important;
+  }
+
+  .weather-details {
+    flex-direction: row !important;
+    padding: 12px 0 !important;
+    margin: 10px 0 !important;
+    gap: 0 !important;
+  }
+
+  .weather-detail-item {
+    padding: 0 12px !important;
+    gap: 4px !important;
+    border-right: 1px solid rgba(255, 107, 53, 0.15) !important;
+    flex: 1 !important;
+  }
+
+  .weather-detail-label {
+    font-size: 16px !important;
+  }
+
+  .weather-detail-value {
+    font-size: 12px !important;
+  }
+
+  .weather-section-divider {
+    padding: 10px 12px 2px 12px !important;
+    margin: 12px 0 0 0 !important;
+  }
+
+  .weather-hourly-grid {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)) !important;
+    gap: 6px !important;
+    padding: 12px !important;
+  }
+
+  .weather-hourly-card {
+    padding: 8px !important;
+  }
+
+  .hourly-time {
+    font-size: 9px !important;
+  }
+
+  .hourly-icon {
+    font-size: 20px !important;
+    margin: 2px 0 !important;
+  }
+
+  .hourly-temp {
+    font-size: 12px !important;
+  }
+
+  .hourly-condition {
+    font-size: 9px !important;
+  }
+
+  .hourly-details {
+    font-size: 8px !important;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+  .weather-container {
+    padding: 12px 14px !important;
+    gap: 12px !important;
+  }
+
+  .weather-city {
+    margin-bottom: 12px !important;
+    padding: 12px !important;
+  }
+
+  .weather-city h3 {
+    font-size: 11px !important;
+    margin: 0 0 3px 0 !important;
+  }
+
+  .weather-days {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .weather-day {
+    padding: 8px 6px !important;
+    gap: 5px !important;
+  }
+
+  .weather-details {
+    flex-direction: row !important;
+    padding: 10px 0 !important;
+    margin: 8px 0 !important;
+    gap: 0 !important;
+  }
+
+  .weather-detail-item {
+    padding: 0 10px !important;
+    gap: 3px !important;
+    border-right: 1px solid rgba(255, 107, 53, 0.15) !important;
+    flex: 1 !important;
+  }
+
+  .weather-detail-label {
+    font-size: 14px !important;
+  }
+
+  .weather-detail-value {
+    font-size: 11px !important;
+  }
+
+  .weather-hourly-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 5px !important;
+    padding: 10px !important;
+  }
+
+  .weather-hourly-card {
+    padding: 6px !important;
+  }
+
+  .hourly-icon {
+    font-size: 18px !important;
   }
 }
 
@@ -1403,7 +1670,7 @@ nav.bottom button.active {
 
 .weather-section-divider {
   padding: 16px 16px 4px 16px !important;
-  border-bottom: 2px solid #FF1493 !important;
+  border-bottom: 1px solid rgba(255, 107, 53, 0.3) !important;
   margin: 16px 0 0 0 !important;
 }
 
@@ -1416,27 +1683,29 @@ nav.bottom button.active {
 }
 
 .weather-hourly-card {
-  background: linear-gradient(135deg, #F0E6FF 0%, #E8D4FF 100%) !important;
-  border: 2px solid #D0B5FF !important;
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
   border-radius: 8px !important;
   padding: 10px !important;
   text-align: center !important;
-  font-family: 'Courier New', monospace !important;
-  color: var(--y2k-ink) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  color: rgba(255, 255, 255, 0.85) !important;
   font-size: 12px !important;
   transition: all 0.2s ease !important;
-  box-shadow: 0 2px 6px rgba(107, 94, 168, 0.15) !important;
+  box-shadow: 0 2px 6px rgba(255, 107, 53, 0.1) !important;
 }
 
 .weather-hourly-card:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 4px 12px rgba(107, 94, 168, 0.25) !important;
-  border-color: #C0A0FF !important;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2) !important;
+  border-color: rgba(255, 107, 53, 0.6) !important;
+  background: rgba(255, 107, 53, 0.25) !important;
 }
 
 .hourly-time {
   font-size: 10px !important;
-  color: #6B5EA8 !important;
+  color: rgba(255, 107, 53, 0.8) !important;
   font-weight: 700 !important;
   margin-bottom: 4px !important;
   text-transform: uppercase !important;
@@ -1453,18 +1722,18 @@ nav.bottom button.active {
 .hourly-temp {
   font-size: 14px !important;
   font-weight: 700 !important;
-  color: var(--y2k-ink) !important;
+  color: #fff !important;
   margin: 4px 0 !important;
 }
 
 .hourly-condition {
-  color: #6B5EA8 !important;
+  color: rgba(255, 107, 53, 0.8) !important;
   font-weight: 600 !important;
   line-height: 1.2 !important;
 }
 
 .hourly-details {
-  color: var(--y2k-muted) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
   font-size: 9px !important;
   font-weight: 500 !important;
   line-height: 1.3 !important;
@@ -1651,10 +1920,10 @@ main {
   -webkit-overflow-scrolling: touch !important;
   scrollbar-width: none !important;
 
-  /* APPEARANCE — THIS IS CRITICAL */
-  background-color: rgba(45, 59, 125, 0.98) !important;
-  background: linear-gradient(180deg, rgba(45, 59, 125, 0.98) 0%, rgba(45, 59, 125, 0.95) 100%) !important;
-  border-bottom: 2px solid rgba(255, 20, 147, 0.3) !important;
+  /* APPEARANCE — GLASSMORPHISM */
+  backdrop-filter: blur(20px) !important;
+  background: rgba(26, 31, 46, 0.5) !important;
+  border-bottom: 1px solid rgba(255, 107, 53, 0.2) !important;
 }
 
 #filters::-webkit-scrollbar {
@@ -1669,21 +1938,18 @@ main {
    ╚═══════════════════════════════════════════════════════════════════╝ */
 
 
-/* ── AGGRESSIVE OVERRIDE: Filter chip styling ── */
+/* ── AGGRESSIVE OVERRIDE: Filter chip styling — GLASSMORPHISM ── */
 #filters button,
 #filters .chip {
   /* KILL all problematic inherited styles */
   background-image: none !important;
-  background-color: rgba(255, 255, 255, 0.15) !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-  border: none !important;
-  border-color: transparent !important;
-  border-width: 0 !important;
-  border-radius: 6px !important;
-  border-style: none !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.25) !important;
+  border-radius: 8px !important;
 
   /* KILL Y2K styles */
-  box-shadow: none !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
   text-shadow: none !important;
   filter: none !important;
 
@@ -1703,7 +1969,7 @@ main {
   font-weight: 700 !important;
   white-space: nowrap !important;
   color: #fff !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
   line-height: 1.3 !important;
   font-style: normal !important;
 
@@ -1719,21 +1985,21 @@ main {
 /* ── HOVER STATE ── */
 #filters button:hover,
 #filters .chip:hover {
-  background-color: rgba(255, 255, 255, 0.25) !important;
-  background: rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 107, 53, 0.25) !important;
+  border-color: rgba(255, 107, 53, 0.4) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.2) !important;
 }
 
 /* ── ACTIVE STATE — Only when explicitly marked as .active ── */
 #filters button.active,
 #filters .chip.active {
-  background-color: #FF1493 !important;
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.4) !important;
   color: #fff !important;
-  box-shadow: 0 4px 12px rgba(255,20,147,0.3) !important;
+  border-color: rgba(255, 107, 53, 0.6) !important;
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.3) !important;
   border-radius: 8px !important;
-  border: none !important;
 }
 
 /* ── FOCUS STATE for accessibility ── */
@@ -1871,6 +2137,9 @@ main {
 ══════════════════════════════════════════════════════════════════ */
 .y2k-win-body {
   padding: 16px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 .y2k-win-body > div {
@@ -2875,4 +3144,261 @@ main {
   nav.bottom {
     padding-bottom: calc(12px + env(safe-area-inset-bottom));
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   INLINE STYLE OVERRIDES — Glassmorphism on all remaining inline styles
+══════════════════════════════════════════════════════════════════ */
+
+/* Override all divs con background Y2K */
+div[style*="background:linear-gradient(170deg,#FFFDF0"],
+div[style*="background:#FFF9E6"],
+div[style*="background:rgba(255,20,147,0.1)"],
+div[style*="background:rgba(0,255,136,0.1)"],
+div[style*="background:rgba(200,150,0,0.15)"] {
+  background: transparent !important;
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border-color: rgba(255, 107, 53, 0.25) !important;
+}
+
+/* Override buttons con gradient Y2K */
+button[style*="background:linear-gradient"],
+button[style*="background:#FF1493"],
+button[style*="background:#E8E0FF"] {
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.25) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+button[style*="background:linear-gradient(135deg,#FF1493"] {
+  background: rgba(255, 107, 53, 0.4) !important;
+  border-color: rgba(255, 107, 53, 0.6) !important;
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.2) !important;
+}
+
+/* Override inputs con colori Y2K */
+input[style*="border:2px solid #C8BDFF"],
+input[style*="border:2px solid #FF1493"],
+textarea[style*="border:2px solid #C8BDFF"] {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
+  color: #fff !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+input[style*="background:#fff"]::placeholder,
+textarea[style*="background:#fff"]::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Override headers con colori scuri */
+h2[style*="color:var(--y2k-pink)"],
+h2[style*="color:#1A2560"],
+h3[style*="color:#1A2560"] {
+  color: #fff !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Override labels con colori Y2K */
+label[style*="color:#6B5EA8"],
+label[style*="color:var(--y2k-muted)"],
+label[style*="color:#FF1493"] {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Override paragraphs e div text */
+p[style*="color:var(--y2k-muted)"],
+p[style*="color:#FF1493"],
+div[style*="color:var(--y2k-ink)"],
+div[style*="color:var(--y2k-muted)"],
+div[style*="color:#FF1493"],
+div[style*="color:#666"] {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Override input/button with background white */
+input[style*="background:#fff"],
+input[style*="background:white"] {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+/* Override specific weather boxes */
+div[style*="background:rgba(0,0,0,0.6)"] {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Override borders rosa Y2K */
+div[style*="border-bottom:3px solid #FF1493"],
+div[style*="border:2px solid #FF1493"],
+div[style*="border-top:3px solid #FF1493"] {
+  border-color: rgba(255, 107, 53, 0.2) !important;
+  border-width: 1px !important;
+}
+
+/* ══ VISIBILITY FIX: Sezioni con background troppo trasparente ══ */
+/* Override sezioni con gradient ultra-trasparente */
+.section[style*="background:linear-gradient(135deg"],
+div[style*="background:linear-gradient(135deg,rgba(74,124,89"],
+div[style*="background:linear-gradient(135deg,rgba(201,76,76"],
+div[style*="background:linear-gradient(135deg,rgba(0,255,136"],
+div[style*="background:linear-gradient(135deg,rgba(255,215,0"] {
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.25) !important;
+  border: 1px solid rgba(255, 107, 53, 0.4) !important;
+  border-radius: 10px !important;
+  padding: 12px !important;
+}
+
+/* Override sezioni con border:2px solid e background ultra-trasparente */
+.section[style*="border:2px solid"],
+div[style*="border:2px solid #00FF88"],
+div[style*="border:2px solid #FFD700"],
+div[style*="border:1px solid var(--success)"] {
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.25) !important;
+  border: 1px solid rgba(255, 107, 53, 0.4) !important;
+}
+
+/* ══ WEATHER WIDGET INLINE STYLES ══════════════════════════════ */
+/* Override weather cards con background gradient chiaro */
+div[style*="background:linear-gradient(135deg, #FFFDF0"],
+div[style*="background:linear-gradient(135deg, #FFF9E6"],
+div[style*="background:linear-gradient(135deg, #F0F0F5"],
+div[style*="background:linear-gradient(135deg, #E6F2FF"],
+div[style*="background:linear-gradient(135deg, #F5F7FF"],
+div[style*="background:linear-gradient(135deg, #ECECF5"] {
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border-color: rgba(255, 107, 53, 0.3) !important;
+}
+
+/* Override hourly cards con gradient */
+div[style*="background:linear-gradient(135deg, #F0E6FF"] {
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
+}
+
+/* ══ WEATHER MODAL WRAPPER ════════════════════════════════════════ */
+.y2k-win-body > div[style*="padding:0;"] {
+  background: transparent !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+}
+
+/* ══ WEATHER MODAL HEADER ═════════════════════════════════════════ */
+/* Override cream header to glassmorphism */
+div[style*="background:#FFF9E6"],
+div[style*="background:#FFF9E6"] {
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.12) !important;
+  border-bottom: 1px solid rgba(255, 107, 53, 0.3) !important;
+  margin-bottom: 20px !important;
+  padding: 16px !important;
+}
+
+/* Header h2 white text */
+div[style*="background:#FFF9E6"] h2,
+div[style*="background:#FFF9E6"] h2[style*="color:var(--y2k-pink)"] {
+  color: #fff !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Header paragraphs */
+div[style*="background:#FFF9E6"] p {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Hide FALLBACK badge (debug code) */
+span[style*="background:#FFD700"],
+span[style*="color:#1A2560"] {
+  display: none !important;
+}
+
+/* ══ WEATHER DETAIL BOXES (Precipitazioni, Umidità, Vento) ══════ */
+/* Override detail boxes with inline Y2K colors to glassmorphism */
+/* Detail boxes grid */
+div[style*="display:grid;grid-template-columns:repeat(3,1fr)"] {
+  gap: 16px !important;
+  margin-bottom: 24px !important;
+  padding: 0 16px !important;
+}
+
+/* Detail boxes glassmorphism */
+div[style*="background:rgba(255,20,147,0.1)"],
+div[style*="background:rgba(0,255,136,0.1)"],
+div[style*="background:rgba(255,215,0,0.1)"],
+div[style*="border:2px solid #FF1493"],
+div[style*="border:2px solid #00FF88"],
+div[style*="border:2px solid #FFD700"] {
+  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 107, 53, 0.15) !important;
+  border: 1px solid rgba(255, 107, 53, 0.3) !important;
+  border-radius: 12px !important;
+  padding: 18px 16px !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-height: 80px !important;
+}
+
+/* Weather detail text styling */
+div[style*="background:rgba(255,20,147,0.1)"] > div,
+div[style*="background:rgba(0,255,136,0.1)"] > div,
+div[style*="background:rgba(255,215,0,0.1)"] > div {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+div[style*="background:rgba(255,20,147,0.1)"] > div[style*="font-size:11px"],
+div[style*="background:rgba(0,255,136,0.1)"] > div[style*="font-size:11px"],
+div[style*="background:rgba(255,215,0,0.1)"] > div[style*="font-size:11px"] {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+div[style*="background:rgba(255,20,147,0.1)"] > div[style*="font-size:24px"],
+div[style*="background:rgba(0,255,136,0.1)"] > div[style*="font-size:24px"],
+div[style*="background:rgba(255,215,0,0.1)"] > div[style*="font-size:24px"] {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+}
+
+/* ══ WEATHER MODAL FOOTER ══════════════════════════════════════════ */
+.y2k-win-body div[style*="border-top:2px solid"],
+.y2k-win-body div[style*="padding:16px;text-align:center;border-top"] {
+  backdrop-filter: blur(10px) !important;
+  background: rgba(255, 107, 53, 0.08) !important;
+  border-top: 1px solid rgba(255, 107, 53, 0.3) !important;
+  border-bottom: none !important;
+  margin-top: 20px !important;
+  padding: 20px 16px !important;
+}
+
+/* Daily forecast section */
+.y2k-win-body > div:has(> .weather-days),
+.y2k-win-body div[style*="padding:0 16px"] {
+  margin-bottom: 20px !important;
+  padding: 0 16px !important;
+}
+
+/* Daily forecast grid */
+.y2k-win-body .weather-days,
+.y2k-win-body div[style*="display:grid;grid-template-columns:repeat(auto"] {
+  background: transparent !important;
+  gap: 12px !important;
 }
