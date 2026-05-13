@@ -6463,6 +6463,48 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log('[openPOI] ✅ Window width set to 680px for two-column layout');
         }
       }, 50);
+
+      // Category editor - DOPO openSheet
+      setTimeout(() => {
+        const editCatBtn = document.getElementById('edit-cat-btn');
+        const catSelector = document.getElementById('cat-selector');
+        const catOptions = document.getElementById('cat-options');
+
+        if (editCatBtn && catSelector && catOptions) {
+          // Popola categorie
+          catOptions.innerHTML = Object.entries(CATS)
+            .filter(([k]) => k !== 'all')
+            .map(([k, v]) => {
+              const isSelected = (state.userCategoryOverrides?.[id] || p.cat) === k;
+              return `<button class="btn" data-cat="${k}" style="font-size:11px;padding:8px;text-align:center;background:${isSelected ? '#FF1493' : '#f0f0f0'};color:${isSelected ? 'white' : '#333'};border:none;border-radius:4px;cursor:pointer">
+                ${v.icon}<br>${v.label}
+              </button>`;
+            })
+            .join('');
+
+          // Click matita = toggle
+          editCatBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            catSelector.style.display = catSelector.style.display === 'none' ? 'block' : 'none';
+          };
+
+          // Click categoria = salva
+          catOptions.querySelectorAll('button[data-cat]').forEach(btn => {
+            btn.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const newCat = btn.dataset.cat;
+              if (!state.userCategoryOverrides) state.userCategoryOverrides = {};
+              state.userCategoryOverrides[id] = newCat;
+              saveState();
+              toast(`✏️ Categoria cambiata a ${CATS[newCat]?.label || newCat}`);
+              catSelector.style.display = 'none';
+              openPOI(id);
+            };
+          });
+        }
+      }, 10);
     })();
 
     // Enrichisci il POI in background (non blocca UI)
@@ -6660,46 +6702,6 @@ document.addEventListener('DOMContentLoaded', () => {
       state.notes[id] = e.target.value; saveState();
     });
     document.getElementById('add-cal').onclick = () => promptAddToCalendar(p);
-
-    // Category editor - SEMPLIFICATO
-    const editCatBtn = document.getElementById('edit-cat-btn');
-    const catSelector = document.getElementById('cat-selector');
-    const catOptions = document.getElementById('cat-options');
-
-    if (editCatBtn && catSelector && catOptions) {
-      // Popola le opzioni di categoria
-      catOptions.innerHTML = Object.entries(CATS)
-        .filter(([k]) => k !== 'all')
-        .map(([k, v]) => {
-          const isSelected = (state.userCategoryOverrides?.[id] || p.cat) === k;
-          return `<button class="btn" data-cat="${k}" style="font-size:11px;padding:8px;text-align:center;background:${isSelected ? '#FF1493' : '#f0f0f0'};color:${isSelected ? 'white' : '#333'};border:none;border-radius:4px;cursor:pointer;transition:all 0.2s">
-            ${v.icon}<br>${v.label}
-          </button>`;
-        })
-        .join('');
-
-      // Click sul bottone matita = toggle selector
-      editCatBtn.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        catSelector.style.display = catSelector.style.display === 'none' ? 'block' : 'none';
-      };
-
-      // Click su una categoria
-      catOptions.querySelectorAll('button[data-cat]').forEach(btn => {
-        btn.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const newCat = btn.dataset.cat;
-          if (!state.userCategoryOverrides) state.userCategoryOverrides = {};
-          state.userCategoryOverrides[id] = newCat;
-          saveState();
-          toast(`✏️ Categoria cambiata a ${CATS[newCat]?.label || newCat}`);
-          catSelector.style.display = 'none';
-          openPOI(id); // Re-render
-        };
-      });
-    }
   }
   window.__openPOI = openPOI;
   window.openPOI = openPOI;
