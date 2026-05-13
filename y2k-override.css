@@ -706,6 +706,14 @@ nav.bottom button.active {
   font-size: 12px !important;
   font-weight: 500 !important;
 }
+.sheet-inner .poi-row .body,
+.sheet-body .poi-row .body {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  gap: 4px !important;
+}
 
 /* ── Tags ───────────────────────────────────────────────────────── */
 .tag {
