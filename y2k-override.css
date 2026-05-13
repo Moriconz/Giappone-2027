@@ -676,6 +676,7 @@ nav.bottom button.active {
   border-radius: 10px !important;
   padding: 8px 10px !important;
   margin-bottom: 10px !important;
+  min-height: auto !important;
   transition: transform 0.15s ease, box-shadow 0.15s ease !important;
 }
 
