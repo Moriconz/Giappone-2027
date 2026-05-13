@@ -6166,16 +6166,14 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="font-size:10px;opacity:0.85;margin-left:28px">${p.city || 'Posizione'}</div>
         </div>
 
-        <!-- BOTTONE MATITA (destra) - POSIZIONATO RELATIVAMENTE PER POPOVER -->
-        <div style="position:relative">
-          <button id="edit-cat-btn" onclick="const sel=document.getElementById('cat-selector-${id}'); sel.style.display = sel.style.display === 'none' ? 'block' : 'none'; sel.style.pointerEvents = sel.style.display === 'block' ? 'auto' : 'none'" style="font-size:24px !important;padding:0 !important;height:56px !important;width:48px !important;min-width:48px !important;background:linear-gradient(135deg,${catColor},${catColor}dd) !important;color:white !important;border:1px solid rgba(255,255,255,0.5) !important;border-radius:6px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;appearance:none !important;-webkit-appearance:none !important;font-family:inherit !important;box-shadow:0 2px 8px rgba(0,0,0,0.2) !important;flex-shrink:0 !important">✏️</button>
+        <!-- BOTTONE MATITA (destra) -->
+        <button class="btn" id="edit-cat-btn" style="font-size:24px !important;padding:0 !important;height:56px !important;width:48px !important;min-width:48px !important;background:linear-gradient(135deg,${catColor},${catColor}dd) !important;color:white !important;border:1px solid rgba(255,255,255,0.5) !important;border-radius:6px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;appearance:none !important;-webkit-appearance:none !important;font-family:inherit !important;box-shadow:0 2px 8px rgba(0,0,0,0.2) !important;flex-shrink:0 !important">✏️</button>
+      </div>
 
-          <!-- CATEGORIA SELECTOR - POPOVER (nascosto di default) -->
-          <div id="cat-selector-${id}" style="display:none;position:absolute;top:100%;right:0;margin-top:6px;background:white;border:2px solid ${catColor};border-radius:8px;padding:8px;min-width:200px;box-shadow:0 4px 16px rgba(0,0,0,0.25);z-index:1000;pointer-events:none">
-            <div style="font-size:11px;color:#666;margin-bottom:8px;font-weight:600;padding:0 4px">Cambia categoria:</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px" id="cat-options-${id}"></div>
-          </div>
-        </div>
+      <!-- CATEGORIA SELECTOR (nascosto di default) -->
+      <div id="cat-selector" style="display:none;margin:12px 0;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.1),rgba(255,20,147,.1));border:2px solid #00FF88;border-radius:12px">
+        <div style="font-size:12px;color:#666;margin-bottom:8px;font-weight:600">📂 CAMBIA CATEGORIA:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="cat-options"></div>
       </div>
 
       <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - ALWAYS SIDE-BY-SIDE -->
@@ -6663,20 +6661,27 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-cal').onclick = () => promptAddToCalendar(p);
 
     // Category editor
-    const catSelector = document.getElementById(`cat-selector-${id}`);
-    const catOptions = document.getElementById(`cat-options-${id}`);
+    const editCatBtn = document.getElementById('edit-cat-btn');
+    const catSelector = document.getElementById('cat-selector');
+    const catOptions = document.getElementById('cat-options');
 
-    if (catSelector && catOptions) {
+    if (editCatBtn && catSelector && catOptions) {
       // Populate category options
       catOptions.innerHTML = Object.entries(CATS)
         .filter(([k]) => k !== 'all')
         .map(([k, v]) => {
           const isSelected = (state.userCategoryOverrides?.[id] || p.cat) === k;
-          return `<button data-cat="${k}" style="font-size:11px;padding:6px 8px;text-align:center;background:${isSelected ? 'linear-gradient(135deg,' + CATS[k].color + ',' + CATS[k].color + 'dd)' : '#f5f5f5'};color:${isSelected ? 'white' : '#666'};border:1px solid #ddd;border-radius:4px;cursor:pointer">
+          return `<button class="btn" data-cat="${k}" style="font-size:11px;padding:6px 8px;text-align:center;background:${isSelected ? '#FF1493' : '#f5f5f5'};color:${isSelected ? 'white' : '#333'};border:none;border-radius:4px;cursor:pointer">
             ${v.icon} ${v.label}
           </button>`;
         })
         .join('');
+
+      // Toggle selector
+      editCatBtn.onclick = e => {
+        e.preventDefault();
+        catSelector.style.display = catSelector.style.display === 'none' ? 'block' : 'none';
+      };
 
       // Save category change
       catOptions.querySelectorAll('button[data-cat]').forEach(btn => {
@@ -6686,7 +6691,6 @@ document.addEventListener('DOMContentLoaded', () => {
           state.userCategoryOverrides[id] = newCat;
           saveState();
           toast(`✏️ Categoria cambiata a ${CATS[newCat]?.label || newCat}`);
-          catSelector.style.display = 'none'; // Chiudi selector
           openPOI(id); // Re-render
         };
       });
