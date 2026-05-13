@@ -6164,16 +6164,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const html = `
       ${photoHtml}
       <!-- HEADER con categoria colorata -->
-      <div style="background:linear-gradient(135deg,${catColor},${catColor}dd);padding:16px;border-radius:12px;margin-bottom:12px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.15)">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="background:linear-gradient(135deg,${catColor},${catColor}dd);padding:16px;border-radius:12px;margin-bottom:8px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.15)">
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px">
           <span style="font-size:28px">${catEmoji}</span>
-          <div style="flex:1">
-            <div style="font-size:13px;opacity:0.9;font-weight:600">${catData.label.toUpperCase()}</div>
-            <div style="font-size:11px;opacity:0.8">Selezionato</div>
+          <div style="text-align:center">
+            <div style="font-size:14px;opacity:0.9;font-weight:600">${catData.label.toUpperCase()}</div>
+            <div style="font-size:12px;opacity:0.8">Selezionato</div>
           </div>
-          <button id="edit-cat-btn" style="font-size:12px !important;padding:0 !important;height:18px !important;width:18px !important;background:rgba(255,255,255,0.2) !important;color:white !important;border:1px solid rgba(255,255,255,0.5) !important;border-radius:3px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-shrink:0 !important;min-width:18px !important;min-height:18px !important;overflow:hidden !important;appearance:none !important;-webkit-appearance:none !important;font-family:inherit !important">✎</button>
         </div>
-        <div style="font-size:12px;opacity:0.95">📍 ${p.city || 'Posizione'}</div>
+        <div style="font-size:12px;opacity:0.95;text-align:center">📍 ${p.city || 'Posizione'}</div>
+      </div>
+
+      <!-- BOTTONE MATITA SEPARATO -->
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+        <button id="edit-cat-btn" style="font-size:20px !important;padding:0 !important;height:28px !important;width:28px !important;background:linear-gradient(135deg,${catColor},${catColor}dd) !important;color:white !important;border:1px solid rgba(255,255,255,0.5) !important;border-radius:6px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-shrink:0 !important;min-width:28px !important;min-height:28px !important;overflow:hidden !important;appearance:none !important;-webkit-appearance:none !important;font-family:inherit !important;box-shadow:0 2px 8px rgba(0,0,0,0.2) !important">✏️</button>
       </div>
 
       <!-- CATEGORIA SELECTOR (nascosto per default) -->
