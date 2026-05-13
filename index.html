@@ -18,6 +18,8 @@
 <link rel="icon" type="image/png" href="./icon-192.png" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css" />
 <link rel="stylesheet" href="./y2k-override.css" />
+<link rel="stylesheet" href="./css/glass.css" />
+<link rel="stylesheet" href="./css/safety.css" />
 
 <!-- ═══════════════════════════════════════════════════════════════
      GLASSMORPHISM MASTER STYLES — Applied to ALL app surfaces
@@ -1416,7 +1418,10 @@ document.addEventListener('DOMContentLoaded', () => {
     activeCat:'all', onlyGF:false, onlyLocal:false, showGFPlaces:true, savedPOIs:[], notes:{}, customEvents:[], dismissInstall:false,
     itinerary:[], // Collaborative itinerary shared across group members
     userCategoryOverrides:{}, // {poiId: 'newCategory'}
-    group:{ name:'Giappone 2027', members:[], myAvatar:null, myName:'', createdBy:null, createdByName:null, isCreator:false }
+    group:{ name:'Giappone 2027', members:[], myAvatar:null, myName:'', createdBy:null, createdByName:null, isCreator:false },
+    // NEW: Itinerary sharing & sync metadata
+    itinerarySharing:{}, // {itineraryId: {owner, sharedWith: [{groupId, sharedAt, sharedBy}]}}
+    groupItineraries:{} // {groupId: {id, owner, originItineraryId, pois[], syncStatus, vectorClock}}
   }, JSON.parse(localStorage.getItem(STATE_KEY) || '{}'));
   window.state = state;
   window.saveState = saveState;
@@ -1490,6 +1495,290 @@ document.addEventListener('DOMContentLoaded', () => {
       toast('⚠️ Impossibile salvare: storage pieno.');
     }
   }
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // ITINERARY SHARING & AUDIT TRAIL HELPERS — Phase 1
+  // ═════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Add audit entry to a tappa in the itinerary
+   * @param {object} tappa - The tappa object to modify
+   * @param {string} action - 'added', 'removed', 'reordered', 'note_updated', etc.
+   * @param {string} memberName - Who performed the action
+   * @param {object} extra - Optional extra data (e.g., note content, new position)
+   */
+  function addTappaAuditEntry(tappa, action, memberName, extra = {}) {
+    if (!tappa) return;
+    const now = Date.now();
+
+    // Initialize audit trail if needed
+    if (!tappa.audit) {
+      tappa.audit = {
+        createdAt: now,
+        createdBy: memberName || state.group?.myName || 'Unknown',
+        lastModifiedAt: now,
+        lastModifiedBy: memberName || state.group?.myName || 'Unknown',
+        modificationHistory: []
+      };
+    }
+
+    // Update modification timestamps
+    tappa.audit.lastModifiedAt = now;
+    tappa.audit.lastModifiedBy = memberName || state.group?.myName || 'Unknown';
+
+    // Add to history (full history, no pruning per user request)
+    tappa.audit.modificationHistory.push({
+      action,
+      by: memberName || state.group?.myName || 'Unknown',
+      at: now,
+      ...extra
+    });
+
+    console.log('[Audit] Added entry to tappa:', { id: tappa.id, action, by: memberName, at: new Date(now).toISOString() });
+  }
+
+  /**
+   * Get all groups that an itinerary is shared with
+   */
+  function getSharedGroups(itineraryId) {
+    if (!state.itinerarySharing || !state.itinerarySharing[itineraryId]) {
+      return [];
+    }
+    return state.itinerarySharing[itineraryId].sharedWith || [];
+  }
+
+  /**
+   * Check if itinerary is shared with a specific group
+   */
+  function isItinerarySharedWithGroup(itineraryId, groupId) {
+    const shared = getSharedGroups(itineraryId);
+    return shared.some(s => s.groupId === groupId);
+  }
+
+  /**
+   * Mark itinerary as shared with a group (call before sharing)
+   */
+  function markItinerarySharedWithGroup(itineraryId, groupId) {
+    if (!state.itinerarySharing) state.itinerarySharing = {};
+    if (!state.itinerarySharing[itineraryId]) {
+      state.itinerarySharing[itineraryId] = {
+        owner: state.group?.myName || 'Unknown',
+        sharedWith: []
+      };
+    }
+
+    // Check if already shared
+    const alreadyShared = state.itinerarySharing[itineraryId].sharedWith.some(s => s.groupId === groupId);
+    if (!alreadyShared) {
+      state.itinerarySharing[itineraryId].sharedWith.push({
+        groupId: groupId,
+        sharedAt: Date.now(),
+        sharedBy: state.group?.myName || 'Unknown'
+      });
+      console.log('[Sharing] Marked itinerary shared:', { itineraryId, groupId });
+    }
+  }
+
+  /**
+   * Unmark itinerary as shared with a group
+   */
+  function unmarkItinerarySharedWithGroup(itineraryId, groupId) {
+    if (!state.itinerarySharing || !state.itinerarySharing[itineraryId]) return;
+
+    const idx = state.itinerarySharing[itineraryId].sharedWith.findIndex(s => s.groupId === groupId);
+    if (idx !== -1) {
+      state.itinerarySharing[itineraryId].sharedWith.splice(idx, 1);
+      console.log('[Sharing] Unmarked itinerary shared:', { itineraryId, groupId });
+    }
+  }
+
+  /**
+   * Get formatted audit log for a tappa (for UI display)
+   */
+  function formatAuditLog(tappa) {
+    if (!tappa?.audit?.modificationHistory) return [];
+
+    return tappa.audit.modificationHistory.map(entry => {
+      const date = new Date(entry.at);
+      const timeAgo = getTimeAgo(entry.at);
+
+      let action_text = '';
+      switch(entry.action) {
+        case 'added': action_text = `Aggiunto da ${entry.by} ${timeAgo}`; break;
+        case 'removed': action_text = `Rimosso da ${entry.by} ${timeAgo}`; break;
+        case 'reordered': action_text = `Riordinato da ${entry.by} ${timeAgo}`; break;
+        case 'note_updated': action_text = `Nota aggiornata da ${entry.by} ${timeAgo}`; break;
+        default: action_text = `${entry.action} da ${entry.by} ${timeAgo}`;
+      }
+
+      return {
+        action: entry.action,
+        by: entry.by,
+        at: entry.at,
+        text: action_text,
+        extra: entry
+      };
+    });
+  }
+
+  /**
+   * Get human-readable time ago string
+   */
+  function getTimeAgo(timestamp) {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}g fa`;
+    if (hours > 0) return `${hours}h fa`;
+    if (minutes > 0) return `${minutes}m fa`;
+    if (seconds > 0) return `${seconds}s fa`;
+    return 'proprio adesso';
+  }
+
+  /**
+   * Get the most recent edit information for a tappa
+   */
+  function getLastModifiedInfo(tappa) {
+    if (!tappa?.audit) return null;
+    return {
+      by: tappa.audit.lastModifiedBy,
+      at: tappa.audit.lastModifiedAt,
+      text: `Modificato da ${tappa.audit.lastModifiedBy} ${getTimeAgo(tappa.audit.lastModifiedAt)}`
+    };
+  }
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // BIDIRECTIONAL SYNC LOGIC — Phase 5
+  // ═════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Sync personal itinerary to all shared groups
+   * Call this after editing personal itinerary
+   */
+  function syncPersonalToSharedGroups() {
+    if (!state.itinerary || state.itinerary.length === 0) return;
+
+    const sharedGroups = getSharedGroups('personal_itinerary') || [];
+    if (sharedGroups.length === 0) return;
+
+    console.log('[Sync] Syncing personal itinerary to', sharedGroups.length, 'groups');
+
+    sharedGroups.forEach(share => {
+      const groupId = share.groupId;
+      const groupItinId = `group_${groupId}_shared`;
+
+      // Update the group's itinerary
+      if (!state.groupItineraries) state.groupItineraries = {};
+      state.groupItineraries[groupItinId] = {
+        id: groupItinId,
+        groupId: groupId,
+        owner: state.group?.myName || 'Unknown',
+        originItineraryId: 'personal_itinerary',
+        pois: JSON.parse(JSON.stringify(state.itinerary)), // Deep copy
+        syncStatus: 'syncing',
+        lastSyncAt: Date.now(),
+        lastSyncedBy: state.group?.myName || 'Unknown',
+        vectorClock: { [state.group?.myName || 'Unknown']: (Date.now() % 10000) }
+      };
+
+      // Broadcast to MQTT
+      if (window.peerGPS?.broadcastItineraryShare) {
+        window.peerGPS.broadcastItineraryShare('personal_itinerary', groupId);
+      }
+
+      console.log('[Sync] ✅ Synced personal itinerary to group:', groupId);
+    });
+
+    saveState();
+  }
+
+  /**
+   * Sync group itinerary back to personal (call this when group members edit)
+   */
+  function syncGroupToPersonal(originItineraryId, groupId) {
+    if (originItineraryId !== 'personal_itinerary') return; // Only sync if origin is personal
+
+    const groupItinId = `group_${groupId}_shared`;
+    const groupItin = state.groupItineraries?.[groupItinId];
+    if (!groupItin || !groupItin.pois) return;
+
+    console.log('[Sync] Syncing group itinerary back to personal from group:', groupId);
+
+    // Merge group changes into personal itinerary using CRDT
+    if (window.mergeGroupItinerary) {
+      const merged = window.mergeGroupItinerary(state.itinerary, groupItin);
+      state.itinerary = merged;
+    } else {
+      state.itinerary = JSON.parse(JSON.stringify(groupItin.pois));
+    }
+
+    saveState();
+    console.log('[Sync] ✅ Synced group changes back to personal itinerary');
+
+    // Notify UI
+    window.dispatchEvent(new CustomEvent('personal_itinerary_updated', {
+      detail: { source: 'group', groupId: groupId }
+    }));
+  }
+
+  /**
+   * Handle document events for itinerary edits and broadcast
+   */
+  function setupSyncEventListeners() {
+    // When group itinerary is edited
+    document.addEventListener('itinerary_edited', (e) => {
+      const { groupId, itineraryId, from } = e.detail;
+      console.log('[Sync Event] Itinerary edited by', from, 'in group', groupId);
+
+      // If this is a shared itinerary, sync back to personal
+      const groupItin = state.groupItineraries?.[itineraryId];
+      if (groupItin?.originItineraryId === 'personal_itinerary' && state.group?.myName === groupItin.owner) {
+        syncGroupToPersonal('personal_itinerary', groupId);
+      }
+    });
+
+    // When personal itinerary is shared (broadcasts to group)
+    document.addEventListener('itinerary_shared', (e) => {
+      const { itineraryId, groupId } = e.detail;
+      console.log('[Sync Event] Itinerary shared:', itineraryId, '→', groupId);
+      syncPersonalToSharedGroups();
+    });
+
+    // When sync back happens (owner receives group updates)
+    document.addEventListener('sync_group_to_personal', (e) => {
+      const { originItineraryId, groupId } = e.detail;
+      console.log('[Sync Event] Syncing group back to personal');
+      syncGroupToPersonal(originItineraryId, groupId);
+    });
+
+    // When personal itinerary changes
+    document.addEventListener('personal_itinerary_changed', (e) => {
+      console.log('[Sync Event] Personal itinerary changed');
+      // Debounce the sync
+      clearTimeout(window._syncDebounceTimer);
+      window._syncDebounceTimer = setTimeout(() => {
+        syncPersonalToSharedGroups();
+      }, 500);
+    });
+  }
+
+  // Initialize sync listeners
+  setupSyncEventListeners();
+
+  // Make helpers globally accessible
+  window.addTappaAuditEntry = addTappaAuditEntry;
+  window.getSharedGroups = getSharedGroups;
+  window.isItinerarySharedWithGroup = isItinerarySharedWithGroup;
+  window.markItinerarySharedWithGroup = markItinerarySharedWithGroup;
+  window.unmarkItinerarySharedWithGroup = unmarkItinerarySharedWithGroup;
+  window.formatAuditLog = formatAuditLog;
+  window.getLastModifiedInfo = getLastModifiedInfo;
+  window.syncPersonalToSharedGroups = syncPersonalToSharedGroups;
+  window.syncGroupToPersonal = syncGroupToPersonal;
 
   // ── Genera un codice stanza univoco (6 char, nessun carattere ambiguo) ────
   function generateRoomCode() {
@@ -1569,6 +1858,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return false; // Already in itinerary
     }
     state.itinerary.push(entry);
+    // NEW: Add audit trail entry
+    const newEntry = state.itinerary[state.itinerary.length - 1];
+    addTappaAuditEntry(newEntry, 'added', state.group?.myName || 'Unknown');
     console.log('[addToItinerary] ✓ ADDED to state.itinerary. New length:', state.itinerary.length);
     saveState();
     // ✅ Sincronizza con il gruppo via WebRTC
@@ -1581,6 +1873,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!state.itinerary) state.itinerary = [];
     const idx = state.itinerary.findIndex(e => e.id === id);
     if (idx === -1) return false;
+    // NEW: Log removal in audit before removing
+    const removedEntry = state.itinerary[idx];
+    addTappaAuditEntry(removedEntry, 'removed', state.group?.myName || 'Unknown');
     state.itinerary.splice(idx, 1);
     saveState();
     // ✅ Sincronizza con il gruppo via WebRTC
@@ -1598,6 +1893,122 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!state.itinerary) return false;
     return state.itinerary.some(e => e.id === id);
   }
+
+  // ═════════════════════════════════════════════════════════════════
+  // PHASE 6: DELETE & UNSHARE FUNCTIONALITY
+  // ═════════════════════════════════════════════════════════════════
+
+  /**
+   * Delete personal itinerary with confirmation if it's shared (Option C)
+   * If shared: asks "Itinerario condiviso con N gruppi. Eliminare ovunque?"
+   */
+  function deletePersonalItinerary() {
+    const sharedGroups = getSharedGroups('personal_itinerary') || [];
+
+    if (sharedGroups.length > 0) {
+      // Shared itinerary: ask for confirmation
+      const message = sharedGroups.length === 1
+        ? `⚠️ Itinerario condiviso con 1 gruppo (${sharedGroups[0].groupId}). Eliminare ovunque?`
+        : `⚠️ Itinerario condiviso con ${sharedGroups.length} gruppi. Eliminare ovunque?`;
+
+      if (!confirm(message)) {
+        return false; // User cancelled
+      }
+
+      // Delete from all shared groups
+      sharedGroups.forEach(share => {
+        const groupItinId = `group_${share.groupId}_shared`;
+        if (state.groupItineraries?.[groupItinId]) {
+          delete state.groupItineraries[groupItinId];
+        }
+        unmarkItinerarySharedWithGroup('personal_itinerary', share.groupId);
+
+        // Broadcast deletion to group
+        if (window.peerGPS && window.rtdbBroadcast) {
+          window.rtdbBroadcast({
+            type: 'itinerary_deleted',
+            payload: {
+              itineraryId: groupItinId,
+              groupId: share.groupId,
+              deletedBy: state.group?.myName || 'Unknown'
+            }
+          });
+        }
+      });
+
+      console.log('[Delete] Deleted shared itinerary from all groups');
+    }
+
+    // Delete personal itinerary
+    state.itinerary = [];
+    saveState();
+    console.log('[Delete] Deleted personal itinerary');
+    toast('🗑️ Itinerario eliminato');
+    return true;
+  }
+
+  /**
+   * Request unshare of itinerary from a specific group (for non-owners)
+   * Owner receives: "Marco ha richiesto di smettere di condividere l'itinerario"
+   */
+  function requestUnshare(itineraryId, groupId) {
+    const myName = state.group?.myName || 'Unknown';
+    const owner = state.groupItineraries?.[`group_${groupId}_shared`]?.owner;
+
+    if (!owner) {
+      toast('⚠️ Impossibile trovare il proprietario dell\'itinerario');
+      return;
+    }
+
+    // Send request to owner
+    if (window.rtdbBroadcast) {
+      window.rtdbBroadcast({
+        type: 'itinerary_unshare_request',
+        payload: {
+          itineraryId: itineraryId,
+          groupId: groupId,
+          requestedBy: myName,
+          requestedAt: Date.now()
+        }
+      });
+    }
+
+    toast(`📨 Richiesta inviata a ${owner} per smettere di condividere`);
+    console.log('[Unshare] Requested unshare from', owner);
+  }
+
+  /**
+   * Accept unshare request and remove itinerary from group
+   */
+  function acceptUnshareRequest(groupId, requestedBy) {
+    unmarkItinerarySharedWithGroup('personal_itinerary', groupId);
+    const groupItinId = `group_${groupId}_shared`;
+    if (state.groupItineraries?.[groupItinId]) {
+      delete state.groupItineraries[groupItinId];
+    }
+
+    saveState();
+
+    // Notify group
+    if (window.rtdbBroadcast) {
+      window.rtdbBroadcast({
+        type: 'itinerary_unshared',
+        payload: {
+          groupId: groupId,
+          unsharedBy: state.group?.myName || 'Unknown',
+          unsharedAt: Date.now()
+        }
+      });
+    }
+
+    toast(`✅ Non più condiviso con ${groupId}`);
+    console.log('[Unshare] Accepted unshare request from', requestedBy);
+  }
+
+  // Make delete/unshare functions globally accessible
+  window.deletePersonalItinerary = deletePersonalItinerary;
+  window.requestUnshare = requestUnshare;
+  window.acceptUnshareRequest = acceptUnshareRequest;
 
   // ═════════════════════════════════════════════════════════════════
   // ===== CRDT MERGE FUNCTIONS (Phase 1: Foundation) =====
@@ -1674,8 +2085,12 @@ document.addEventListener('DOMContentLoaded', () => {
       Object.keys(poi).forEach(key => {
         if (key === 'googlePlaceId' || key === 'fields') return;
         const val = poi[key];
+        // Special handling: preserve audit trail as-is
+        if (key === 'audit') {
+          normalized[key] = val;
+        }
         // If value is a field metadata object, extract the value
-        if (val && typeof val === 'object' && 'value' in val && 'timestamp' in val) {
+        else if (val && typeof val === 'object' && 'value' in val && 'timestamp' in val) {
           normalized[key] = val.value;
         } else {
           normalized[key] = val;
@@ -1706,7 +2121,8 @@ document.addEventListener('DOMContentLoaded', () => {
       ]);
 
       fieldNames.forEach(fieldName => {
-        if (fieldName === 'googlePlaceId' || fieldName === 'fields' || fieldName === 'deleted' || fieldName === 'deletionTimestamp') return;
+        if (fieldName === 'googlePlaceId' || fieldName === 'fields' || fieldName === 'deleted' || fieldName === 'deletionTimestamp' || fieldName === 'audit') return;
+        // Note: 'audit' is handled separately below to preserve full history
 
         // Get local field metadata
         let localFieldMeta = local.fields?.[fieldName];
@@ -1759,6 +2175,41 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       mergedPoi.timestamp = Math.max(local.timestamp || 0, remote.timestamp || 0);
+
+      // PRESERVE AUDIT TRAIL: Merge audit information from both sides
+      if (local.audit || remote.audit) {
+        const localAudit = local.audit || { modificationHistory: [] };
+        const remoteAudit = remote.audit || { modificationHistory: [] };
+
+        // Merge modification histories (deduplicate by timestamp + action + by)
+        const mergedHistory = [];
+        const seen = new Set();
+
+        const combinedHistory = [
+          ...(localAudit.modificationHistory || []),
+          ...(remoteAudit.modificationHistory || [])
+        ];
+
+        // Sort by timestamp and deduplicate
+        combinedHistory.sort((a, b) => a.at - b.at);
+        combinedHistory.forEach(entry => {
+          const key = `${entry.at}|${entry.action}|${entry.by}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            mergedHistory.push(entry);
+          }
+        });
+
+        mergedPoi.audit = {
+          createdAt: Math.min(localAudit.createdAt || Date.now(), remoteAudit.createdAt || Date.now()),
+          createdBy: localAudit.createdBy || remoteAudit.createdBy || 'Unknown',
+          lastModifiedAt: Math.max(localAudit.lastModifiedAt || 0, remoteAudit.lastModifiedAt || 0),
+          lastModifiedBy: (localAudit.lastModifiedAt || 0) > (remoteAudit.lastModifiedAt || 0)
+            ? localAudit.lastModifiedBy
+            : remoteAudit.lastModifiedBy,
+          modificationHistory: mergedHistory
+        };
+      }
 
       return mergedPoi;
     }).filter(poi => !poi.deleted);  // Hide soft-deleted items
@@ -7197,6 +7648,32 @@ document.addEventListener('DOMContentLoaded', () => {
         <div id="itinerary-list">${itineraryHTML}</div>
       </div>
 
+      <!-- SHARING CONTROLS SECTION -->
+      <div id="itinerary-sharing-section" class="section" style="background:rgba(255,107,53,0.08);border:1.5px solid rgba(255,107,53,0.3);border-radius:10px;padding:12px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <h3 style="margin:0;font-weight:700;color:#FF6B35;">📤 Condividi con Gruppo</h3>
+          <span id="itinerary-sync-status" style="font-size:11px;color:#888;background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;">Sincronizzato</span>
+        </div>
+
+        <!-- List of groups this itinerary is shared with -->
+        <div id="shared-with-list" style="margin-bottom:10px;font-size:12px;">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Share with new group (only show if not already in a group or if multiple groups) -->
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <select id="group-share-select" style="flex:1;padding:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,107,53,0.3);border-radius:6px;color:#fff;font-size:12px;">
+            <option value="">-- Seleziona gruppo --</option>
+          </select>
+          <button id="share-itinerary-btn" style="padding:8px 12px;background:linear-gradient(180deg,#FF1493,#FF69B4);color:#fff;border:1px solid #FF1493;border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;">✓ Condividi</button>
+        </div>
+
+        <!-- Audit log: Show recent changes -->
+        <div id="itinerary-audit-log" style="margin-top:10px;font-size:11px;max-height:100px;overflow-y:auto;color:rgba(255,255,255,0.7);">
+          <!-- Populated by JS with audit entries -->
+        </div>
+      </div>
+
       <!-- PERSONAL ITEMS SECTION -->
       <div id="itinerary-results">
         <div class="section"><h3>★ Tappe salvate</h3><p style="font-size:12px;color:var(--muted);margin:0 0 8px">Clicca "+ Aggiungi" per aggiungere all'itinerario di gruppo</p><div id="saved-list">${savedHTML}</div></div>
@@ -7318,6 +7795,119 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
+    // ===== SHARING SECTION SETUP =====
+    // Populate groups dropdown
+    const groupShareSelect = document.getElementById('group-share-select');
+    if (groupShareSelect && state.group?.roomId) {
+      // Add current group as option (if in a group)
+      const groupId = state.group.roomId;
+      const option = document.createElement('option');
+      option.value = groupId;
+      option.textContent = `${groupId} (Il nostro gruppo)`;
+      groupShareSelect.appendChild(option);
+    }
+
+    // Populate "shared with" list
+    const sharedWithList = document.getElementById('shared-with-list');
+    const sharedGroups = getSharedGroups('personal_itinerary') || [];
+    if (sharedGroups.length > 0) {
+      const sharedHTML = sharedGroups.map(share => {
+        const timeAgo = getTimeAgo(share.sharedAt);
+        return `<div style="padding:6px 8px;background:rgba(255,107,53,0.15);border-radius:4px;margin-bottom:4px;border-left:2px solid #FF6B35;">
+          <strong>${share.groupId}</strong> — Condiviso da ${share.sharedBy} ${timeAgo}
+          <button class="btn" style="float:right;padding:2px 6px;font-size:10px;background:rgba(255,107,53,0.3);border:none;cursor:pointer;margin-left:8px;" data-unshare-group="${share.groupId}">Smetti</button>
+        </div>`;
+      }).join('');
+      sharedWithList.innerHTML = sharedHTML;
+
+      // Unshare handlers
+      sharedWithList.querySelectorAll('[data-unshare-group]').forEach(btn => {
+        btn.onclick = () => {
+          const groupId = btn.dataset.unshareGroup;
+          if (confirm(`Smettere di condividere l'itinerario con ${groupId}?`)) {
+            unmarkItinerarySharedWithGroup('personal_itinerary', groupId);
+            saveState();
+            toast(`✓ Non più condiviso con ${groupId}`);
+            renderItineraryView();
+          }
+        };
+      });
+    } else {
+      sharedWithList.innerHTML = '<p style="color:#888;font-size:11px;margin:0;">Non condiviso con nessun gruppo</p>';
+    }
+
+    // Share button
+    const shareBtn = document.getElementById('share-itinerary-btn');
+    if (shareBtn) {
+      shareBtn.onclick = () => {
+        const groupId = groupShareSelect.value.trim();
+        if (!groupId) {
+          toast('⚠️ Seleziona un gruppo');
+          return;
+        }
+
+        if (isItinerarySharedWithGroup('personal_itinerary', groupId)) {
+          toast('⚠️ Già condiviso con questo gruppo');
+          return;
+        }
+
+        if (itinerary.length === 0) {
+          toast('⚠️ Aggiungi almeno una tappa prima di condividere');
+          return;
+        }
+
+        // Mark as shared
+        markItinerarySharedWithGroup('personal_itinerary', groupId);
+        saveState();
+
+        // Broadcast to group
+        if (window.peerGPS?.broadcastItineraryShare) {
+          window.peerGPS.broadcastItineraryShare('personal_itinerary', groupId);
+        }
+
+        toast(`📤 Itinerario condiviso con ${groupId}!`);
+        renderItineraryView();
+      };
+    }
+
+    // Populate audit log (show recent 5 edits)
+    const auditLog = document.getElementById('itinerary-audit-log');
+    if (auditLog && itinerary.length > 0) {
+      // Collect all audit entries from all tappe
+      const allAuditEntries = [];
+      itinerary.forEach(tappa => {
+        if (tappa.audit?.modificationHistory) {
+          allAuditEntries.push(...tappa.audit.modificationHistory.map(entry => ({
+            ...entry,
+            tappaName: tappa.name
+          })));
+        }
+      });
+
+      // Sort by timestamp descending and take last 5
+      const recentEdits = allAuditEntries.sort((a, b) => b.at - a.at).slice(0, 5);
+
+      if (recentEdits.length > 0) {
+        const auditHTML = recentEdits.map(entry => {
+          const timeAgo = getTimeAgo(entry.at);
+          let actionText = '';
+          switch(entry.action) {
+            case 'added': actionText = '➕ aggiunto'; break;
+            case 'removed': actionText = '❌ rimosso'; break;
+            case 'reordered': actionText = '🔄 riordinato'; break;
+            case 'note_updated': actionText = '📝 nota aggiornata'; break;
+            default: actionText = entry.action;
+          }
+          return `<div style="margin:4px 0;padding:4px 6px;background:rgba(255,255,255,0.05);border-radius:3px;">
+            ${actionText} da <strong>${entry.by}</strong> ${timeAgo}
+          </div>`;
+        }).join('');
+        auditLog.innerHTML = auditHTML;
+      } else {
+        auditLog.innerHTML = '<p style="color:#888;font-size:11px;margin:0;">Nessuna modifica recente</p>';
+      }
+    }
+
     updateGPSStatusPanel();
     sheetBody.querySelectorAll('[data-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
     sheetBody.querySelectorAll('[data-custom-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.customId); });
@@ -7328,6 +7918,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportPdfBtn = document.getElementById('export-pdf');
     if (exportPdfBtn) exportPdfBtn.onclick = exportItineraryPDF;
     document.getElementById('add-custom').onclick = openCustomEventForm;
+
+    // Listen for real-time itinerary updates from group members
+    window.addEventListener('itinerary_edited', (e) => {
+      console.log('[UI] Received itinerary_edited event:', e.detail);
+      toast(`✅ ${e.detail.from} ha aggiornato l'itinerario`);
+      renderItineraryView(); // Refresh UI
+    });
+
+    window.addEventListener('personal_itinerary_synced', (e) => {
+      console.log('[UI] Received personal_itinerary_synced event:', e.detail);
+      toast(`✅ L'itinerario è sincronizzato`);
+      renderItineraryView();
+    });
   }
   function exportAllSaved(){
     const today = new Date();
@@ -11753,6 +12356,9 @@ if ('serviceWorker' in navigator) {
 }); // close DOMContentLoaded
 </script>
 <script src="./js/y2k-windows.js"></script>
+<script src="./js/gf-places-loader.js"></script>
+<script src="./js/allergy-cards.js"></script>
+<script type="module" src="./js/core-modular.js"></script>
 
 <!-- Vercel Analytics - Performance Monitoring -->
 <script defer src="https://vercel-analytics.com/script.js"></script>

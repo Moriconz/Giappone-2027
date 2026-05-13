@@ -289,23 +289,51 @@ window.groupPanel = (() => {
     const itinerariesList = itineraryIds.map(itinId => {
       const itin = itineraries[itinId];
       const poiCount = itin.pois?.length || 0;
-      const createdBy = itin.createdBy || 'Sconosciuto';
+      const owner = itin.owner || 'Sconosciuto';
+      const lastModBy = itin.lastSyncedBy || itin.owner || 'Sconosciuto';
+      const lastModTime = itin.lastSyncAt ? window.getTimeAgo?.(itin.lastSyncAt) : 'mai';
+      const isShared = itinId.includes('shared');
+
+      // Build tappe list with member attribution
+      const tappeListHTML = (itin.pois || []).slice(0, 3).map((poi, idx) => {
+        const lastMod = poi.audit?.lastModifiedBy || 'Sconosciuto';
+        const modTime = poi.audit?.lastModifiedAt ? window.getTimeAgo?.(poi.audit.lastModifiedAt) : '';
+        return `<div style="font-size:11px;color:rgba(255,255,255,0.7);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.1)">
+          ${idx + 1}. ${escapeHtml(poi.name || '?')} <span style="color:rgba(255,255,255,0.5)">via ${escapeHtml(lastMod)}</span>
+        </div>`;
+      }).join('');
+
+      const moreText = poiCount > 3 ? `<div style="font-size:11px;color:rgba(255,255,255,0.5);padding:4px 0">+${poiCount - 3} altre tappe</div>` : '';
 
       return `
         <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:14px;margin-bottom:12px;font-size:14px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-            <div style="flex:1;min-width:0;cursor:pointer;padding-top:2px" data-edit-itinerary="${itinId}">
-              <div style="color:#fff;font-weight:700;font-size:15px;line-height:1.4;margin-bottom:6px">${escapeHtml(itin.name?.value || itin.name || 'Itinerario')}</div>
-              <div style="color:rgba(255,255,255,0.65);font-size:12px;line-height:1.4">📍 ${poiCount} tappe • v${itin.version || 1}</div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px">
+            <div style="flex:1;min-width:0">
+              <div style="color:#fff;font-weight:700;font-size:15px;line-height:1.4;margin-bottom:4px">
+                📋 ${escapeHtml(itin.name?.value || itin.name || 'Itinerario')}
+              </div>
+              <div style="color:rgba(255,255,255,0.65);font-size:11px;line-height:1.3;margin-bottom:4px">
+                ${isShared ? '📤 Condiviso da ' : '👤 Creato da '}<strong>${escapeHtml(owner)}</strong>
+              </div>
+              <div style="color:rgba(255,255,255,0.5);font-size:11px">
+                Ultimo aggiornamento: <strong>${escapeHtml(lastModBy)}</strong> ${lastModTime}
+              </div>
             </div>
             <div style="display:flex;gap:6px;flex-shrink:0">
-              <button data-edit-itinerary="${itinId}" style="background:rgba(74,91,168,0.3);backdrop-filter:blur(15px);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px">
-                ✏️
+              <button data-edit-itinerary="${itinId}" title="Modifica itinerario" style="background:rgba(74,91,168,0.3);backdrop-filter:blur(15px);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;white-space:nowrap">
+                ✏️ Modifica
               </button>
-              <button data-delete-itinerary="${itinId}" style="background:rgba(255,20,147,0.2);backdrop-filter:blur(15px);border:1px solid rgba(255,20,147,0.4);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px">
-                🗑️
+              <button data-delete-itinerary="${itinId}" title="Elimina itinerario" style="background:rgba(255,20,147,0.2);backdrop-filter:blur(15px);border:1px solid rgba(255,20,147,0.4);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;white-space:nowrap">
+                🗑️ Elimina
               </button>
             </div>
+          </div>
+
+          <!-- Tappe preview with member info -->
+          <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:8px;margin-top:8px;border-left:2px solid rgba(255,107,53,0.4)">
+            <div style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:600;margin-bottom:4px">📍 ${poiCount} tappe</div>
+            ${tappeListHTML}
+            ${moreText}
           </div>
         </div>
       `;

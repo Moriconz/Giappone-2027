@@ -192,6 +192,227 @@ console.log('[RTDB] Loading MQTT transport...');
         }
         break;
 
+      case 'itinerary_share':
+        // Someone shared an itinerary with this group
+        if (data.payload && myRoomId) {
+          const { originItineraryId, groupId, itinerary } = data.payload;
+          if (groupId !== myRoomId) return; // Not for our group
+
+          console.log(`%c[RTDB] 📤 Itinerary shared with us by ${data.from}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+
+          // Create group itinerary entry
+          const groupItinId = `group_${groupId}_shared`;
+          if (!window.state?.groupItineraries) window.state.groupItineraries = {};
+
+          window.state.groupItineraries[groupItinId] = {
+            id: groupItinId,
+            groupId: groupId,
+            owner: data.from,
+            originItineraryId: originItineraryId,
+            pois: itinerary.pois || [],
+            syncStatus: 'synced',
+            lastSyncAt: data.ts || Date.now(),
+            lastSyncedBy: data.from,
+            vectorClock: itinerary.vectorClock || { [data.from]: 1 }
+          };
+
+          if (window.saveState) window.saveState();
+
+          // Notify UI
+          window.dispatchEvent(new CustomEvent('itinerary_shared_received', {
+            detail: { groupId, from: data.from, itinerary: window.state.groupItineraries[groupItinId] }
+          }));
+
+          // Show toast
+          if (window.toast) window.toast(`📤 ${data.from} ha condiviso un itinerario con il gruppo`);
+        }
+        break;
+
+      case 'itinerary_edit':
+        // Someone edited a shared itinerary in the group
+        if (data.payload && myRoomId) {
+          const { groupId, itineraryId, originItineraryId, action, tappId, data: actionData, vectorClock } = data.payload;
+          if (groupId !== myRoomId) return; // Not for our group
+
+          console.log(`%c[RTDB] ✏️ Itinerary edit from ${data.from}: ${action}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+
+          // Get or create group itinerary
+          const groupItinId = itineraryId || `group_${groupId}_shared`;
+          if (!window.state?.groupItineraries) window.state.groupItineraries = {};
+          if (!window.state.groupItineraries[groupItinId]) {
+            console.warn('[RTDB] Received edit for unknown itinerary:', groupItinId);
+            return;
+          }
+
+          const groupItin = window.state.groupItineraries[groupItinId];
+          let modified = false;
+
+          // Apply the edit action
+          switch (action) {
+            case 'add':
+              if (actionData?.poi) {
+                groupItin.pois.push(actionData.poi);
+                // Add audit entry
+                if (window.addTappaAuditEntry) {
+                  window.addTappaAuditEntry(actionData.poi, 'added', data.from);
+                }
+                modified = true;
+              }
+              break;
+
+            case 'remove':
+              if (tappId) {
+                const idx = groupItin.pois.findIndex(p => p.id === tappId);
+                if (idx !== -1) {
+                  window.addTappaAuditEntry(groupItin.pois[idx], 'removed', data.from);
+                  groupItin.pois.splice(idx, 1);
+                  modified = true;
+                }
+              }
+              break;
+
+            case 'reorder':
+              if (tappId && actionData?.newPosition !== undefined) {
+                const idx = groupItin.pois.findIndex(p => p.id === tappId);
+                if (idx !== -1) {
+                  const [poi] = groupItin.pois.splice(idx, 1);
+                  groupItin.pois.splice(actionData.newPosition, 0, poi);
+                  window.addTappaAuditEntry(poi, 'reordered', data.from);
+                  modified = true;
+                }
+              }
+              break;
+
+            case 'note_updated':
+              if (tappId && actionData?.note !== undefined) {
+                const poi = groupItin.pois.find(p => p.id === tappId);
+                if (poi) {
+                  poi.note = actionData.note;
+                  window.addTappaAuditEntry(poi, 'note_updated', data.from, { note: actionData.note });
+                  modified = true;
+                }
+              }
+              break;
+          }
+
+          if (modified) {
+            // Update vector clock
+            groupItin.vectorClock = vectorClock || groupItin.vectorClock || {};
+            groupItin.lastSyncAt = data.ts || Date.now();
+            groupItin.lastSyncedBy = data.from;
+            groupItin.syncStatus = 'synced';
+
+            if (window.saveState) window.saveState();
+
+            // Notify UI
+            window.dispatchEvent(new CustomEvent('itinerary_edited', {
+              detail: { groupId, itineraryId: groupItinId, action, from: data.from, itinerary: groupItin }
+            }));
+
+            // If this was originally owned by me, sync back to personal itinerary
+            if (originItineraryId && window.state?.group?.myName === groupItin.owner) {
+              window.dispatchEvent(new CustomEvent('sync_group_to_personal', {
+                detail: { originItineraryId, groupItinId, groupId }
+              }));
+            }
+          }
+        }
+        break;
+
+      case 'itinerary_sync_personal':
+        // Owner's personal itinerary is syncing back from group edits
+        if (data.payload && window.state?.group?.myName) {
+          const { originItineraryId, groupId, itinerary, fromMember } = data.payload;
+
+          console.log(`%c[RTDB] 🔄 Personal itinerary synced from group by ${fromMember}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+
+          // Update personal itinerary if we're the owner
+          if (originItineraryId && window.state.itinerary) {
+            const personalItin = window.state.itinerary;
+
+            // Use CRDT merge to avoid conflicts
+            if (window.mergeGroupItinerary) {
+              const merged = window.mergeGroupItinerary(personalItin, itinerary);
+              window.state.itinerary = merged;
+            } else {
+              window.state.itinerary = itinerary.pois || [];
+            }
+
+            if (window.saveState) window.saveState();
+
+            // Notify UI
+            window.dispatchEvent(new CustomEvent('personal_itinerary_synced', {
+              detail: { groupId, fromMember, itinerary: window.state.itinerary }
+            }));
+
+            if (window.toast) window.toast(`✅ ${fromMember} ha aggiornato l'itinerario del gruppo`);
+          }
+        }
+        break;
+
+      case 'itinerary_unshare_request':
+        // Non-owner requesting to unshare
+        if (data.payload && window.state?.group?.myName === window.state?.groupItineraries?.[`group_${data.payload.groupId}_shared`]?.owner) {
+          const { requestedBy, groupId } = data.payload;
+          console.log(`%c[RTDB] 📨 Unshare request from ${requestedBy} for group ${groupId}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+
+          // Notify owner with toast
+          if (window.toast) {
+            window.toast(`📨 ${requestedBy} ha richiesto di smettere di condividere l'itinerario`);
+          }
+
+          // Could trigger a modal asking owner to accept/deny
+          // For now, log it
+          document.dispatchEvent(new CustomEvent('unshare_requested', {
+            detail: { groupId, requestedBy, ts: data.ts }
+          }));
+        }
+        break;
+
+      case 'itinerary_unshared':
+        // Owner has unshared the itinerary
+        if (data.payload && myRoomId === data.payload.groupId) {
+          const { unsharedBy, groupId } = data.payload;
+          console.log(`%c[RTDB] 🚫 Itinerary unshared by ${unsharedBy}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+
+          // Remove from our groupItineraries
+          const groupItinId = `group_${groupId}_shared`;
+          if (window.state?.groupItineraries?.[groupItinId]) {
+            delete window.state.groupItineraries[groupItinId];
+            if (window.saveState) window.saveState();
+          }
+
+          if (window.toast) {
+            window.toast(`🚫 ${unsharedBy} ha smesso di condividere l'itinerario`);
+          }
+
+          document.dispatchEvent(new CustomEvent('itinerary_unshared', {
+            detail: { groupId, unsharedBy }
+          }));
+        }
+        break;
+
+      case 'itinerary_deleted':
+        // Itinerary was deleted
+        if (data.payload && myRoomId === data.payload.groupId) {
+          const { itineraryId, deletedBy } = data.payload;
+          console.log(`%c[RTDB] 🗑️ Itinerary deleted by ${deletedBy}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+
+          if (window.state?.groupItineraries?.[itineraryId]) {
+            delete window.state.groupItineraries[itineraryId];
+            if (window.saveState) window.saveState();
+          }
+
+          if (window.toast) {
+            window.toast(`🗑️ ${deletedBy} ha eliminato l'itinerario condiviso`);
+          }
+
+          document.dispatchEvent(new CustomEvent('itinerary_deleted', {
+            detail: { itineraryId, groupId: data.payload.groupId, deletedBy }
+          }));
+        }
+        break;
+
       case 'heartbeat':
         if (window.onPeerMessage) window.onPeerMessage(data);
         break;
@@ -364,6 +585,68 @@ console.log('[RTDB] Loading MQTT transport...');
         hash        : window.computeItineraryHash?.(itin) || '',
         timestamp   : Date.now(),
       });
+    },
+
+    broadcastItineraryShare(itineraryId, groupId) {
+      // Share a personal itinerary with a group
+      const personalItin = window.state?.itinerary;
+      if (!personalItin || !groupId) return;
+
+      rtdbBroadcast({
+        type: 'itinerary_share',
+        payload: {
+          originItineraryId: itineraryId,
+          groupId: groupId,
+          itinerary: {
+            pois: personalItin,
+            vectorClock: { [myName]: 1 }
+          }
+        }
+      });
+      console.log('[RTDB] 📤 Broadcasting itinerary share:', itineraryId, groupId);
+    },
+
+    broadcastItineraryEdit(groupId, itineraryId, action, tappId, data) {
+      // Broadcast an edit to a shared itinerary
+      if (!groupId || !itineraryId) return;
+
+      const groupItin = window.state?.groupItineraries?.[itineraryId];
+      const vectorClock = groupItin?.vectorClock || {};
+      vectorClock[myName] = (vectorClock[myName] || 0) + 1;
+
+      rtdbBroadcast({
+        type: 'itinerary_edit',
+        payload: {
+          groupId: groupId,
+          itineraryId: itineraryId,
+          originItineraryId: groupItin?.originItineraryId,
+          action: action,  // 'add', 'remove', 'reorder', 'note_updated'
+          tappId: tappId,
+          data: data,
+          vectorClock: vectorClock
+        }
+      });
+      console.log('[RTDB] ✏️ Broadcasting itinerary edit:', action, tappId);
+    },
+
+    broadcastPersonalItinerarySyncBack(originItineraryId, groupId) {
+      // Sync personal itinerary back to group after group member edits
+      const personalItin = window.state?.itinerary;
+      if (!personalItin) return;
+
+      rtdbBroadcast({
+        type: 'itinerary_sync_personal',
+        payload: {
+          originItineraryId: originItineraryId,
+          groupId: groupId,
+          itinerary: {
+            pois: personalItin,
+            vectorClock: { [myName]: 1 }
+          },
+          fromMember: myName
+        }
+      });
+      console.log('[RTDB] 🔄 Broadcasting personal itinerary sync back:', originItineraryId);
     },
 
     reconnectIfNeeded(room, name, onStatus) {
