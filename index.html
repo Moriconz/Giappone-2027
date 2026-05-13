@@ -6166,15 +6166,14 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="font-size:10px;opacity:0.85;margin-left:28px">${p.city || 'Posizione'}</div>
         </div>
 
-        <!-- BOTTONE MATITA (destra) con POPOVER -->
-        <div style="position:relative;flex-shrink:0">
-          <button class="btn" id="edit-cat-btn" style="font-size:24px !important;padding:0 !important;height:56px !important;width:48px !important;min-width:48px !important;background:linear-gradient(135deg,${catColor},${catColor}dd) !important;color:white !important;border:1px solid rgba(255,255,255,0.5) !important;border-radius:6px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;appearance:none !important;-webkit-appearance:none !important;font-family:inherit !important;box-shadow:0 2px 8px rgba(0,0,0,0.2) !important;flex-shrink:0 !important">✏️</button>
+        <!-- BOTTONE MATITA (destra) -->
+        <button class="btn" id="edit-cat-btn" style="font-size:24px !important;padding:0 !important;height:56px !important;width:48px !important;min-width:48px !important;background:linear-gradient(135deg,${catColor},${catColor}dd) !important;color:white !important;border:1px solid rgba(255,255,255,0.5) !important;border-radius:6px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;appearance:none !important;-webkit-appearance:none !important;font-family:inherit !important;box-shadow:0 2px 8px rgba(0,0,0,0.2) !important;flex-shrink:0 !important">✏️</button>
+      </div>
 
-          <!-- POPOVER SELECTOR -->
-          <div id="cat-selector" style="display:none;position:absolute;top:100%;right:0;margin-top:8px;background:white;border:2px solid ${catColor};border-radius:8px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:10000;pointer-events:none;min-width:200px">
-            <div id="cat-options" style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            </div>
-          </div>
+      <!-- CATEGORIA SELECTOR (si mostra quando clicchi la matita) -->
+      <div id="cat-selector" style="display:none;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));border:2px solid ${catColor};border-radius:8px;padding:12px;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:600;color:${catColor};margin-bottom:10px">✏️ Cambia categoria:</div>
+        <div id="cat-options" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px">
         </div>
       </div>
 
@@ -6662,50 +6661,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('add-cal').onclick = () => promptAddToCalendar(p);
 
-    // Category editor
+    // Category editor - SEMPLIFICATO
     const editCatBtn = document.getElementById('edit-cat-btn');
     const catSelector = document.getElementById('cat-selector');
     const catOptions = document.getElementById('cat-options');
 
-    console.log('[POI Category] Button:', !!editCatBtn, 'Selector:', !!catSelector, 'Options:', !!catOptions);
-
     if (editCatBtn && catSelector && catOptions) {
-      // Populate category options
+      // Popola le opzioni di categoria
       catOptions.innerHTML = Object.entries(CATS)
         .filter(([k]) => k !== 'all')
         .map(([k, v]) => {
           const isSelected = (state.userCategoryOverrides?.[id] || p.cat) === k;
-          return `<button class="btn" data-cat="${k}" style="font-size:11px;padding:8px 10px;text-align:center;background:${isSelected ? '#FF1493' : '#f0f0f0'};color:${isSelected ? 'white' : '#333'};border:1px solid ${isSelected ? '#FF1493' : '#ddd'};border-radius:4px;cursor:pointer;white-space:nowrap">
-            ${v.icon} ${v.label}
+          return `<button class="btn" data-cat="${k}" style="font-size:11px;padding:8px;text-align:center;background:${isSelected ? '#FF1493' : '#f0f0f0'};color:${isSelected ? 'white' : '#333'};border:none;border-radius:4px;cursor:pointer;transition:all 0.2s">
+            ${v.icon}<br>${v.label}
           </button>`;
         })
         .join('');
 
-      // Toggle selector
-      editCatBtn.onclick = e => {
+      // Click sul bottone matita = toggle selector
+      editCatBtn.onclick = (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        const isHidden = catSelector.style.display === 'none';
-        console.log('[POI Category] Clicked. Showing:', isHidden);
-        catSelector.style.display = isHidden ? 'block' : 'none';
-        catSelector.style.pointerEvents = isHidden ? 'auto' : 'none';
+        catSelector.style.display = catSelector.style.display === 'none' ? 'block' : 'none';
       };
 
-      // Close popover when clicking inside modal but outside button/popover
-      const modalContent = editCatBtn.closest('.poi-modal-content') || editCatBtn.closest('[data-poi-id]');
-      if (modalContent) {
-        modalContent.addEventListener('click', e => {
-          if (!editCatBtn.contains(e.target) && !catSelector.contains(e.target)) {
-            if (catSelector.style.display !== 'none') {
-              catSelector.style.display = 'none';
-              catSelector.style.pointerEvents = 'none';
-            }
-          }
-        }, { capture: false });
-      }
-
-      // Save category change
+      // Click su una categoria
       catOptions.querySelectorAll('button[data-cat]').forEach(btn => {
-        btn.onclick = e => {
+        btn.onclick = (e) => {
+          e.preventDefault();
           e.stopPropagation();
           const newCat = btn.dataset.cat;
           if (!state.userCategoryOverrides) state.userCategoryOverrides = {};
@@ -6713,26 +6696,13 @@ document.addEventListener('DOMContentLoaded', () => {
           saveState();
           toast(`✏️ Categoria cambiata a ${CATS[newCat]?.label || newCat}`);
           catSelector.style.display = 'none';
-          catSelector.style.pointerEvents = 'none';
           openPOI(id); // Re-render
         };
       });
     }
   }
-  // Close any open popover before opening new POI
-  const closeAllPopovers = () => {
-    const allSelectors = document.querySelectorAll('[id$="cat-selector"]');
-    allSelectors.forEach(sel => {
-      sel.style.display = 'none';
-      sel.style.pointerEvents = 'none';
-    });
-  };
-
   window.__openPOI = openPOI;
-  window.openPOI = (id) => {
-    closeAllPopovers();
-    openPOI(id);
-  };
+  window.openPOI = openPOI;
   window.renderMarkers = renderMarkers;
   window.analyzeGlutenFreeStatus = analyzeGlutenFreeStatus;
   // ---- Calendar (.ics) ----
