@@ -6156,19 +6156,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const html = `
       ${photoHtml}
       <!-- HEADER con categoria colorata + BOTTONE MATITA FIANCO A FIANCO -->
-      <div style="display:flex;gap:8px;margin-bottom:12px;align-items:stretch">
+      <div style="display:flex;gap:8px;margin-bottom:12px;align-items:stretch;min-height:56px">
         <!-- BOX CATEGORIA (sinistra) -->
-        <div style="background:linear-gradient(135deg,${catColor},${catColor}dd);padding:14px 16px;border-radius:12px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.15);flex:1;display:flex;flex-direction:column;justify-content:center">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-            <span style="font-size:24px">${catEmoji}</span>
-            <div style="font-size:13px;font-weight:600">${catData.label.toUpperCase()}</div>
+        <div style="background:linear-gradient(135deg,${catColor},${catColor}dd);padding:10px 14px;border-radius:12px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.15);flex:1;display:flex;flex-direction:column;justify-content:center;min-height:56px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+            <span style="font-size:20px">${catEmoji}</span>
+            <div style="font-size:12px;font-weight:600">${catData.label.toUpperCase()}</div>
           </div>
-          <div style="font-size:11px;opacity:0.85;margin-left:34px">${p.city || 'Posizione'}</div>
+          <div style="font-size:10px;opacity:0.85;margin-left:28px">${p.city || 'Posizione'}</div>
         </div>
 
         <!-- BOTTONE MATITA (destra) - POSIZIONATO RELATIVAMENTE PER POPOVER -->
         <div style="position:relative">
-          <button id="edit-cat-btn" style="font-size:28px !important;padding:0 !important;height:100% !important;width:48px !important;min-width:48px !important;background:linear-gradient(135deg,${catColor},${catColor}dd) !important;color:white !important;border:1px solid rgba(255,255,255,0.5) !important;border-radius:6px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;appearance:none !important;-webkit-appearance:none !important;font-family:inherit !important;box-shadow:0 2px 8px rgba(0,0,0,0.2) !important">✏️</button>
+          <button id="edit-cat-btn" style="font-size:24px !important;padding:0 !important;height:56px !important;width:48px !important;min-width:48px !important;background:linear-gradient(135deg,${catColor},${catColor}dd) !important;color:white !important;border:1px solid rgba(255,255,255,0.5) !important;border-radius:6px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;appearance:none !important;-webkit-appearance:none !important;font-family:inherit !important;box-shadow:0 2px 8px rgba(0,0,0,0.2) !important;flex-shrink:0 !important">✏️</button>
 
           <!-- CATEGORIA SELECTOR - POPOVER (nascosto di default) -->
           <div id="cat-selector" style="display:none;position:absolute;top:100%;right:0;margin-top:6px;background:white;border:2px solid ${catColor};border-radius:8px;padding:8px;min-width:200px;box-shadow:0 4px 16px rgba(0,0,0,0.25);z-index:1000">
