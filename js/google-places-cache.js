@@ -55,14 +55,25 @@ class GooglePlacesCache {
       lat,
       lng,
       radiusM,
-      pois: pois.map(poi => ({
+      pois: pois.map(poi => {
+        // Extract city from address for search filtering
+        const extractCity = (addr) => {
+          if (!addr) return '';
+          // Format: "name, city, prefecture, Japan" — extract city
+          const parts = addr.split(',').map(s => s.trim());
+          if (parts.length >= 2) return parts[parts.length - 3] || parts[0]; // Usually prefecture or city
+          return parts[0] || '';
+        };
+        const searchCity = poi.city || poi.searchCity || extractCity(poi.formatted_address) || extractCity(poi.vicinity) || '';
+
+        return {
         googlePlaceId: poi.place_id,
         name: poi.name,
         lat: poi.geometry.location.lat,
         lng: poi.geometry.location.lng,
         address: poi.vicinity || poi.formatted_address || '',
         city: poi.city || null,
-        searchCity: poi.searchCity || null,
+        searchCity: searchCity,
         cat: poi.cat || (window.mapGoogleTypesToCategory ? window.mapGoogleTypesToCategory(poi.types) : 'poi'),
         rating: poi.rating || null,
         ratingCount: poi.user_ratings_total || 0,
@@ -78,7 +89,8 @@ class GooglePlacesCache {
         openNow: poi.opening_hours?.open_now || null,
         // Full response for details API later
         fullData: poi
-      })),
+        };
+      }),
       expiresAt,
       cachedAt: Date.now()
     };

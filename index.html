@@ -6186,6 +6186,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <p style="color:#333;line-height:1.6;margin:0 0 12px 0;word-break:break-word !important">${p.desc || ''}</p>
           ${infoChips.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${infoChips.join('')}</div>` : ''}
 
+          <!-- GF TAG INITIAL (show current status) -->
+          ${p.gf && p.gf.lvl && p.gf.lvl !== 'unknown' ? `<div style="margin-bottom:12px">${gfTag(p.gf)}</div>` : ''}
+
           <!-- GF Section (sinistra) -->
           ${(['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) ?
             `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))" data-gf-section>
@@ -7344,12 +7347,14 @@ document.addEventListener('DOMContentLoaded', () => {
               ? `/api/placePhoto?reference=${encodeURIComponent(p.photos[0].reference)}&maxwidth=150`
               : '';
 
+            const displayName = getPoiDisplayName(p);
+            const catLabel = CATS[cat]?.label || cat;
             return `
               <div class="poi-row" data-id="${p.googlePlaceId}">
                 <div class="icon">${CATS[p.cat]?.icon || '📍'}</div>
                 <div class="body">
-                  <div class="name">${getPoiDisplayName(p)}</div>
-                  <div class="sub">${CATS[cat]?.label || cat} · ${distStr}${ratingStr ? ' · ' + ratingStr : ''}${costStr ? ' · ' + costStr : ''}</div>
+                  <div class="name">${displayName}</div>
+                  <div class="sub">${catLabel} · ${distStr}${ratingStr ? ' · ' + ratingStr : ''}${costStr ? ' · ' + costStr : ''}</div>
                 </div>
                 ${photoUrl ? `<img
                   src="${photoUrl}"
