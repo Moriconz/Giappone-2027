@@ -6191,10 +6191,11 @@ document.addEventListener('DOMContentLoaded', () => {
           ${infoChips.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${infoChips.join('')}</div>` : ''}
 
           <!-- GF Section (sinistra) -->
-          ${(p.gf && p.gf.notes) || (['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) ?
-            `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))">
+          ${(['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) ?
+            `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))" data-gf-section>
               <h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">🌾 Gluten-Free</h3>
-              <p style="font-size:12px;${p.gf && p.gf.notes ? 'color:#333;margin-top:8px' : 'color:#999;margin-top:8px'}margin-bottom:0">${p.gf && p.gf.notes ? p.gf.notes : '⏳ Analisi in corso...'}</p>
+              <p style="font-size:12px;color:#999;margin-top:8px;margin-bottom:8px">Verifica il menu o contatta il ristorante</p>
+              <a href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent((p.name || displayName) + ' ' + (p.city || '') + ' Japan')}" target="_blank" rel="noopener" style="display:inline-block;padding:8px 12px;background:${catColor};color:white;border-radius:6px;text-decoration:none;font-size:12px;margin-top:4px">🔍 Find Me Gluten Free</a>
             </div>`
             : ''}
 
@@ -9654,61 +9655,43 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn(logPrefix + ` localStorage read error: ${e.message}`, logStyle);
     }
 
-    const apiUrl = `/api/analyzeGlutenFree?place_id=${encodeURIComponent(placeId)}&name=${encodeURIComponent(name)}&city=${encodeURIComponent(city)}`;
-    console.log(logPrefix + ' 🌐 Fetching API...', logStyle);
-    console.log(logPrefix + ` URL: ${apiUrl}`, logStyle);
+    // FALLBACK: Use smart local detection instead of API
+    // (Backend API doesn't exist in static deployment)
+    console.log(logPrefix + ' 📊 Using smart local GF detection (no API available)', logStyle);
 
-    try {
-      const fetchStart = Date.now();
+    // Try to find matching GF shop in local database
+    const localGFMatch = allGlutenFreeShops.find(shop => {
+      const nameMatch = shop.name && shop.name.toLowerCase().includes(name.toLowerCase().substring(0, 8));
+      const cityMatch = shop.city === city;
+      return nameMatch && cityMatch;
+    });
 
-      // Fetch with 10s timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-      const response = await fetch(apiUrl, { signal: controller.signal });
-      clearTimeout(timeoutId);
-
-      const fetchTime = Date.now() - fetchStart;
-      console.log(logPrefix + ` ✅ Fetch complete (${fetchTime}ms)`, logStyle);
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const parseStart = Date.now();
-      const data = await response.json();
-      const parseTime = Date.now() - parseStart;
-      console.log(logPrefix + ` ✅ JSON parsed (${parseTime}ms)`, logStyle);
-
-      const result = data.gf || { lvl: 'unknown', confidence: 0 };
-
-      // Cache the result in memory
+    if (localGFMatch && localGFMatch.gf) {
+      const result = {
+        lvl: localGFMatch.gf.lvl || 'unknown',
+        confidence: 85,
+        notes: localGFMatch.gf.notes || 'Trovato nel database locale',
+        mentions: 1,
+        total_reviews: 1
+      };
       gfAnalysisCache[memKey] = result;
-
-      // Cache the result in localStorage
-      try {
-        localStorage.setItem(storageKey, JSON.stringify({
-          result: result,
-          timestamp: Date.now(),
-          placeId: placeId,
-          name: name,
-          city: city
-        }));
-        console.log(logPrefix + ' 💾 Result saved to localStorage', logStyle);
-      } catch (e) {
-        console.warn(logPrefix + ` localStorage write error: ${e.message}`, logStyle);
-      }
-
       const totalTime = Date.now() - startTime;
-      console.log(logPrefix + ` ✅ DONE in ${totalTime}ms - Result: ${result.lvl} (${Math.round(result.confidence*100)}%)`, logStyle);
+      console.log(logPrefix + ` ✅ DONE in ${totalTime}ms - LOCAL MATCH: ${result.lvl}`, logStyle);
       return result;
-    } catch (err) {
-      const totalTime = Date.now() - startTime;
-      console.error(logPrefix + ` ❌ ERROR after ${totalTime}ms: ${err.message}`, logStyle);
-
-      // Cache the error result too
-      const errorResult = { lvl: 'unknown', confidence: 0 };
-      gfAnalysisCache[memKey] = errorResult;
-      return errorResult;
     }
+
+    // If no local match, return "ask restaurant" placeholder
+    const defaultResult = {
+      lvl: 'unknown',
+      confidence: 0,
+      notes: '❓ Non disponibile nel nostro database',
+      mentions: 0,
+      total_reviews: 0
+    };
+    gfAnalysisCache[memKey] = defaultResult;
+    const totalTime = Date.now() - startTime;
+    console.log(logPrefix + ` ⏳ DONE in ${totalTime}ms - Using fallback message`, logStyle);
+    return defaultResult;
   }
 
   // Shopping view cache
