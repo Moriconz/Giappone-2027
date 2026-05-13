@@ -2145,8 +2145,8 @@ main {
 }
 
 /* Div text uniformi */
-.sheet-body div:not(.poi-row):not(.chip):not(.tag):not(.btn):not(.section):not(.category-items),
-.sheet-inner div:not(.poi-row):not(.chip):not(.tag):not(.btn):not(.section):not(.category-items) {
+.sheet-body div:not(.poi-row):not(.chip):not(.tag):not(.btn):not(.section):not(.category-items):not(.body):not(.name):not(.sub),
+.sheet-inner div:not(.poi-row):not(.chip):not(.tag):not(.btn):not(.section):not(.category-items):not(.body):not(.name):not(.sub) {
   color: var(--y2k-ink) !important;
 }
 
