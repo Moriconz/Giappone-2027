@@ -7349,11 +7349,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const displayName = getPoiDisplayName(p);
             const catLabel = CATS[cat]?.label || cat;
+            const nameDebug = displayName || `❌ [${p.name || 'no-name'} / ${p.bestname || 'no-bestname'}]`;
             return `
               <div class="poi-row" data-id="${p.googlePlaceId}">
                 <div class="icon">${CATS[p.cat]?.icon || '📍'}</div>
                 <div class="body">
-                  <div class="name">${displayName}</div>
+                  <div class="name">${nameDebug}</div>
                   <div class="sub">${catLabel} · ${distStr}${ratingStr ? ' · ' + ratingStr : ''}${costStr ? ' · ' + costStr : ''}</div>
                 </div>
                 ${photoUrl ? `<img

@@ -670,8 +670,8 @@ nav.bottom button.active {
   background: rgba(74,91,168,0.12) !important;
   border: 1.5px solid rgba(255,255,255,0.25) !important;
   border-radius: 10px !important;
-  padding: 12px 14px !important;
-  margin-bottom: 16px !important;
+  padding: 8px 10px !important;
+  margin-bottom: 10px !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
   transition: transform 0.15s ease, box-shadow 0.15s ease !important;
 }
@@ -679,7 +679,7 @@ nav.bottom button.active {
 /* Spazio ancora maggiore per shopping negozi */
 #regular-shops .poi-row,
 #vintage-shops .poi-row {
-  margin-bottom: 20px !important;
+  margin-bottom: 14px !important;
 }
 .sheet-inner .poi-row:hover,
 .sheet-body .poi-row:hover {
