@@ -42,12 +42,16 @@ async function initGooglePlacesLoader() {
   // Wait for GPS coordinates (from window.state for testing, or navigator.geolocation for production)
   let gpsCoords = await waitForGPS();
 
+  // FALLBACK: If no GPS, use Tokyo center for testing
+  if (!gpsCoords) {
+    console.warn('[GooglePlacesLoader] No GPS available. Using Tokyo fallback for testing.');
+    gpsCoords = { lat: 35.6762, lng: 139.6503 }; // Tokyo center
+  }
+
   if (gpsCoords) {
     currentGPS = gpsCoords;
-    console.log(`[GooglePlacesLoader] Starting with GPS: ${currentGPS.lat.toFixed(4)}, ${currentGPS.lng.toFixed(4)}`);
+    console.log(`[GooglePlacesLoader] Starting with coordinates: ${currentGPS.lat.toFixed(4)}, ${currentGPS.lng.toFixed(4)}`);
     loadNearbyPOIs(currentGPS.lat, currentGPS.lng);
-  } else {
-    console.warn('[GooglePlacesLoader] No GPS coordinates available');
   }
 
   // Monitor GPS for changes (optional: use navigator.geolocation if available)

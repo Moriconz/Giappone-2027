@@ -1421,7 +1421,10 @@ document.addEventListener('DOMContentLoaded', () => {
     group:{ name:'Giappone 2027', members:[], myAvatar:null, myName:'', createdBy:null, createdByName:null, isCreator:false },
     // NEW: Itinerary sharing & sync metadata
     itinerarySharing:{}, // {itineraryId: {owner, sharedWith: [{groupId, sharedAt, sharedBy}]}}
-    groupItineraries:{} // {groupId: {id, owner, originItineraryId, pois[], syncStatus, vectorClock}}
+    groupItineraries:{}, // {groupId: {id, owner, originItineraryId, pois[], syncStatus, vectorClock}}
+    // TEMPORARY: Default GPS for testing (Tokyo center)
+    gpsCurrentLat: 35.6762,
+    gpsCurrentLng: 139.6503
   }, JSON.parse(localStorage.getItem(STATE_KEY) || '{}'));
   window.state = state;
   window.saveState = saveState;
@@ -10851,7 +10854,14 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
 
   // ========== GOOGLE PLACES INTEGRATION ==========
   // Store all POIs loaded from Google Places
-  window.GOOGLE_PLACES_POIS = [];
+  // FALLBACK TEST POIs for development (when Google Places API isn't working)
+  window.GOOGLE_PLACES_POIS = [
+    { id: 'test-tsukiji', name: 'Tsukiji Outer Market', city: 'Tokyo', lat: 35.6645, lng: 139.7713, cat: 'food', gf: { lvl: 'full' }, desc: 'Fresh seafood market' },
+    { id: 'test-senso', name: 'Senso-ji Temple', city: 'Tokyo', lat: 35.7148, lng: 139.7967, cat: 'experience', desc: 'Historic Buddhist temple' },
+    { id: 'test-shibuya', name: 'Shibuya Crossing', city: 'Tokyo', lat: 35.6595, lng: 139.7004, cat: 'experience', desc: 'Iconic pedestrian crossing' },
+    { id: 'test-tokyo-tower', name: 'Tokyo Tower', city: 'Tokyo', lat: 35.6586, lng: 139.7454, cat: 'experience', desc: 'Historic observation tower' },
+    { id: 'test-meiji', name: 'Meiji Shrine', city: 'Tokyo', lat: 35.6763, lng: 139.7003, cat: 'experience', desc: 'Shinto shrine in Shibuya' }
+  ];
 
   // Listen for Google Places POI data loaded
   window.addEventListener('google-places-pois-loaded', (e) => {
