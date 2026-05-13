@@ -6179,10 +6179,10 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
 
-      <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - ALWAYS SIDE-BY-SIDE -->
+      <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - RESPONSIVE -->
       <div style="display:flex !important;gap:12px !important;margin:12px 0 !important;width:100% !important;box-sizing:border-box !important;flex-wrap:wrap !important;">
         <!-- COLONNA SINISTRA: Informazioni Generali -->
-        <div style="flex:1 !important;min-width:0 !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
+        <div style="flex:1 1 auto !important;min-width:250px !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
           ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic;word-break:break-word !important">🗣️ ${p.jp}</div>` : ''}
           <p style="color:#333;line-height:1.6;margin:0 0 12px 0;word-break:break-word !important">${p.desc || ''}</p>
           ${infoChips.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${infoChips.join('')}</div>` : ''}
@@ -6203,7 +6203,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <!-- COLONNA DESTRA: Google Places Info -->
-        <div style="flex:1 !important;min-width:0 !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
+        <div style="flex:1 1 auto !important;min-width:250px !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
           ${p.fromGooglePlaces ? `
           <div style="background:linear-gradient(135deg,rgba(42,63,95,.9),rgba(30,50,80,.9));padding:14px;border-radius:12px;border-left:5px solid #FFD700;box-shadow:0 4px 8px rgba(0,0,0,0.2);margin-bottom:12px;word-break:break-word !important">
             <div style="font-size:11px;color:#FFD700;margin-bottom:8px;font-weight:700">📍 GOOGLE PLACES</div>
@@ -6667,6 +6667,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const catSelector = document.getElementById('cat-selector');
     const catOptions = document.getElementById('cat-options');
 
+    console.log('[POI Category] Button:', !!editCatBtn, 'Selector:', !!catSelector, 'Options:', !!catOptions);
+
     if (editCatBtn && catSelector && catOptions) {
       // Populate category options
       catOptions.innerHTML = Object.entries(CATS)
@@ -6681,19 +6683,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Toggle selector
       editCatBtn.onclick = e => {
-        e.preventDefault();
+        e.stopPropagation();
         const isHidden = catSelector.style.display === 'none';
+        console.log('[POI Category] Clicked. Showing:', isHidden);
         catSelector.style.display = isHidden ? 'block' : 'none';
         catSelector.style.pointerEvents = isHidden ? 'auto' : 'none';
       };
 
-      // Close popover when clicking outside
-      document.addEventListener('click', e => {
-        if (!editCatBtn.contains(e.target) && !catSelector.contains(e.target)) {
-          catSelector.style.display = 'none';
-          catSelector.style.pointerEvents = 'none';
-        }
-      });
+      // Close popover when clicking inside modal but outside button/popover
+      const modalContent = editCatBtn.closest('.poi-modal-content') || editCatBtn.closest('[data-poi-id]');
+      if (modalContent) {
+        modalContent.addEventListener('click', e => {
+          if (!editCatBtn.contains(e.target) && !catSelector.contains(e.target)) {
+            if (catSelector.style.display !== 'none') {
+              catSelector.style.display = 'none';
+              catSelector.style.pointerEvents = 'none';
+            }
+          }
+        }, { capture: false });
+      }
 
       // Save category change
       catOptions.querySelectorAll('button[data-cat]').forEach(btn => {
@@ -6711,8 +6719,20 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
+  // Close any open popover before opening new POI
+  const closeAllPopovers = () => {
+    const allSelectors = document.querySelectorAll('[id$="cat-selector"]');
+    allSelectors.forEach(sel => {
+      sel.style.display = 'none';
+      sel.style.pointerEvents = 'none';
+    });
+  };
+
   window.__openPOI = openPOI;
-  window.openPOI = openPOI;
+  window.openPOI = (id) => {
+    closeAllPopovers();
+    openPOI(id);
+  };
   window.renderMarkers = renderMarkers;
   window.analyzeGlutenFreeStatus = analyzeGlutenFreeStatus;
   // ---- Calendar (.ics) ----
