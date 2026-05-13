@@ -6168,12 +6168,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <!-- BOTTONE MATITA (destra) - POSIZIONATO RELATIVAMENTE PER POPOVER -->
         <div style="position:relative">
-          <button id="edit-cat-btn" style="font-size:24px !important;padding:0 !important;height:56px !important;width:48px !important;min-width:48px !important;background:linear-gradient(135deg,${catColor},${catColor}dd) !important;color:white !important;border:1px solid rgba(255,255,255,0.5) !important;border-radius:6px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;appearance:none !important;-webkit-appearance:none !important;font-family:inherit !important;box-shadow:0 2px 8px rgba(0,0,0,0.2) !important;flex-shrink:0 !important">✏️</button>
+          <button id="edit-cat-btn" onclick="document.getElementById('cat-selector-${id}').style.display = document.getElementById('cat-selector-${id}').style.display === 'none' ? 'block' : 'none'" style="font-size:24px !important;padding:0 !important;height:56px !important;width:48px !important;min-width:48px !important;background:linear-gradient(135deg,${catColor},${catColor}dd) !important;color:white !important;border:1px solid rgba(255,255,255,0.5) !important;border-radius:6px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;appearance:none !important;-webkit-appearance:none !important;font-family:inherit !important;box-shadow:0 2px 8px rgba(0,0,0,0.2) !important;flex-shrink:0 !important">✏️</button>
 
           <!-- CATEGORIA SELECTOR - POPOVER (nascosto di default) -->
-          <div id="cat-selector" style="display:none;position:absolute;top:100%;right:0;margin-top:6px;background:white;border:2px solid ${catColor};border-radius:8px;padding:8px;min-width:200px;box-shadow:0 4px 16px rgba(0,0,0,0.25);z-index:1000">
+          <div id="cat-selector-${id}" style="display:none;position:absolute;top:100%;right:0;margin-top:6px;background:white;border:2px solid ${catColor};border-radius:8px;padding:8px;min-width:200px;box-shadow:0 4px 16px rgba(0,0,0,0.25);z-index:1000">
             <div style="font-size:11px;color:#666;margin-bottom:8px;font-weight:600;padding:0 4px">Cambia categoria:</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px" id="cat-options"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px" id="cat-options-${id}"></div>
           </div>
         </div>
       </div>
@@ -6663,27 +6663,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-cal').onclick = () => promptAddToCalendar(p);
 
     // Category editor
-    const editCatBtn = document.getElementById('edit-cat-btn');
-    const catSelector = document.getElementById('cat-selector');
-    const catOptions = document.getElementById('cat-options');
+    const catSelector = document.getElementById(`cat-selector-${id}`);
+    const catOptions = document.getElementById(`cat-options-${id}`);
 
-    if (editCatBtn && catSelector && catOptions) {
+    if (catSelector && catOptions) {
       // Populate category options
       catOptions.innerHTML = Object.entries(CATS)
         .filter(([k]) => k !== 'all')
         .map(([k, v]) => {
           const isSelected = (state.userCategoryOverrides?.[id] || p.cat) === k;
-          return `<button class="btn ${isSelected?'primary':''}" data-cat="${k}" style="font-size:11px;padding:6px 8px;text-align:center">
+          return `<button data-cat="${k}" style="font-size:11px;padding:6px 8px;text-align:center;background:${isSelected ? 'linear-gradient(135deg,' + CATS[k].color + ',' + CATS[k].color + 'dd)' : '#f5f5f5'};color:${isSelected ? 'white' : '#666'};border:1px solid #ddd;border-radius:4px;cursor:pointer">
             ${v.icon} ${v.label}
           </button>`;
         })
         .join('');
-
-      // Toggle selector
-      editCatBtn.onclick = e => {
-        e.preventDefault();
-        catSelector.style.display = catSelector.style.display === 'none' ? 'block' : 'none';
-      };
 
       // Save category change
       catOptions.querySelectorAll('button[data-cat]').forEach(btn => {
@@ -6693,6 +6686,7 @@ document.addEventListener('DOMContentLoaded', () => {
           state.userCategoryOverrides[id] = newCat;
           saveState();
           toast(`✏️ Categoria cambiata a ${CATS[newCat]?.label || newCat}`);
+          catSelector.style.display = 'none'; // Chiudi selector
           openPOI(id); // Re-render
         };
       });
