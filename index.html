@@ -6012,17 +6012,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     sheetTitle.textContent = title;
     sheetBody.innerHTML = html;
-
-    // CLEANUP: Rimuovi i wrapper address vuoti (se non contengono poi-address-row)
-    const addressWrappers = sheetBody.querySelectorAll('.poi-address-wrapper');
-    addressWrappers.forEach(wrapper => {
-      const addressRow = wrapper.querySelector('.poi-address-row');
-      if (!addressRow) {
-        console.debug('[openSheet] Rimozione wrapper address vuoto');
-        wrapper.remove();
-      }
-    });
-
     sheet.classList.add('open');
     // Hide weather widget when sheet opens
     const weatherWidget = document.getElementById('weather-floating');
@@ -6527,52 +6516,51 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. SEZIONI DINAMICHE DA GOOGLE PLACES
     sections.push(SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '');
 
-    // INDIRIZZO — Wrapper con cleanup post-render
-    // Se non c'è indirizzo valido → wrapper viene rimosso completamente
+    // INDIRIZZO — Nessun wrapper, renderizza SOLO il blocco se indirizzo esiste
     const cleanAddress = getCleanAddress(p);
-    sections.push(`
-      <div class="poi-address-wrapper" data-poi-id="${p.id}">
-        ${cleanAddress && cleanAddress.trim() ? `
-          <div class="poi-address-row" style="
-            display: flex;
+    const addressIsValid = cleanAddress && typeof cleanAddress === 'string' && cleanAddress.trim().length > 0;
+    console.debug('[poiDetailHTML] Address check:', { value: cleanAddress, isValid: addressIsValid, trimmed: cleanAddress?.trim?.() });
+    if (addressIsValid) {
+      sections.push(`
+        <div class="poi-address-row" style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 10px 12px;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          margin: 12px 16px;
+        ">
+          <span class="poi-address-text" style="
+            flex: 1;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.85);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+          ">📍 ${cleanAddress}</span>
+          <button class="copy-address-btn" data-address="${cleanAddress}" aria-label="Copia indirizzo" title="Copia indirizzo" style="
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 10px 12px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin: 12px 16px;
-          ">
-            <span class="poi-address-text" style="
-              flex: 1;
-              font-size: 14px;
-              color: rgba(255, 255, 255, 0.85);
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              min-width: 0;
-            ">📍 ${cleanAddress}</span>
-            <button class="copy-address-btn" data-address="${cleanAddress}" aria-label="Copia indirizzo" title="Copia indirizzo" style="
-              width: 32px;
-              height: 32px;
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              border: none;
-              border-radius: 8px;
-              background: transparent;
-              color: rgba(255, 255, 255, 0.5);
-              cursor: pointer;
-              flex-shrink: 0;
-              transition: all 0.2s;
-            " onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'; this.style.color='rgba(255, 255, 255, 0.9)';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255, 255, 255, 0.5)';">
-              ⧉
-            </button>
-          </div>
-        ` : ''}
-      </div>
-    `);
+            justify-content: center;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+          " onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'; this.style.color='rgba(255, 255, 255, 0.9)';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255, 255, 255, 0.5)';">
+            ⧉
+          </button>
+        </div>
+      `);
+    }
 
     // NON renderizzare SB.renderAddress (crea duplicazione) — usiamo solo la versione custom sopra
     // sections.push(SB.renderAddress ? (SB.renderAddress(p, p._details || p) || '') : '');
