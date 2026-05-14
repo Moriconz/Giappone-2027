@@ -15,19 +15,27 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { reference, maxwidth = '400' } = req.query;
+  const { reference, photoName, maxwidth = '400', maxheight = '600' } = req.query;
   const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
   if (!GOOGLE_API_KEY) {
     return res.status(500).json({ error: 'Google API key not configured' });
   }
 
-  if (!reference) {
-    return res.status(400).json({ error: 'Missing photo reference' });
+  if (!reference && !photoName) {
+    return res.status(400).json({ error: 'Missing photo reference or photoName' });
   }
 
-  // Redirect to Google Places Photo API
-  const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${encodeURIComponent(maxwidth)}&photoreference=${encodeURIComponent(reference)}&key=${GOOGLE_API_KEY}`;
+  // Support both old API (reference) and new API (photoName)
+  let photoUrl;
+
+  if (photoName) {
+    // New Places API (V1) - photo.name format: "places/abc123/photos/xyz"
+    photoUrl = `https://places.googleapis.com/v1/${encodeURIComponent(photoName)}/media?maxHeightPx=${encodeURIComponent(maxheight)}&maxWidthPx=${encodeURIComponent(maxwidth)}&key=${GOOGLE_API_KEY}`;
+  } else {
+    // Old Places API - using photo_reference
+    photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${encodeURIComponent(maxwidth)}&photoreference=${encodeURIComponent(reference)}&key=${GOOGLE_API_KEY}`;
+  }
 
   try {
     const response = await fetch(photoUrl);

@@ -1078,6 +1078,7 @@
 <script src="js/google-places-cache.js"></script>
 <script src="js/google-places-loader.js"></script>
 <script src="js/google-places-multitype.js"></script>
+<script src="js/google-places-details.js"></script>
 <script src="js/google-places-debug.js"></script>
 <script src="js/group-chat.js"></script>
 <script src="js/group-panel.js"></script>
@@ -6167,6 +6168,149 @@ document.addEventListener('DOMContentLoaded', () => {
     const [t,c] = map[gf.lvl] || map.none;
     return `<span class="tag ${c}">${t}</span>`;
   }
+  /**
+   * Generate enhanced sections (photos, reviews, hours, attributes)
+   * for POI detail card with glassmorphism styling
+   */
+  function renderEnhancedPoiSections(p) {
+    const details = p._details;
+    if (!details) return ''; // No enhanced data available
+
+    const sections = [];
+
+    // ===== PHOTO GALLERY =====
+    if (p._photoNames && p._photoNames.length > 0) {
+      const slides = p._photoNames.slice(0, 6).map((photo, idx) => {
+        return `
+          <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,rgba(74,91,168,0.2),rgba(255,107,53,0.2));display:flex;align-items:center;justify-content:center;color:#999;font-size:12px">
+              📷 Foto ${idx + 1}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      sections.push(`
+        <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+          <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">📸 Galleria Foto</h3>
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%">
+            ${slides}
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);text-align:center;margin-top:8px">${p._photoNames.length} foto disponibili</div>
+        </div>
+      `);
+    }
+
+    // ===== REVIEWS =====
+    if (details.reviews && details.reviews.length > 0) {
+      const reviewCards = details.reviews.slice(0, 3).map(review => {
+        const stars = Array(review.rating).fill('⭐').join('');
+        return `
+          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
+              <div style="font-weight:600;color:#fff;font-size:13px">${review.author}</div>
+              <div style="color:#FFD700;font-size:12px">${stars}</div>
+            </div>
+            <div style="color:rgba(255,255,255,0.8);font-size:12px;line-height:1.5;margin-bottom:4px">"${review.text.substring(0, 120)}${review.text.length > 120 ? '...' : ''}"</div>
+            <div style="color:rgba(255,255,255,0.5);font-size:10px">${review.relativePublishTimeDescription}</div>
+          </div>
+        `;
+      }).join('');
+
+      sections.push(`
+        <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+          <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">⭐ Recensioni (${details.reviews.length} totali)</h3>
+          ${reviewCards}
+        </div>
+      `);
+    }
+
+    // ===== OPENING HOURS =====
+    if (details.currentOpeningHours) {
+      const periods = details.currentOpeningHours.periods || [];
+      const weekdayText = details.currentOpeningHours.weekdayDescriptions || [];
+
+      let hoursHtml = '';
+      if (weekdayText.length > 0) {
+        hoursHtml = weekdayText.map((day, idx) => {
+          return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);font-size:12px">
+            <span>${day.split(':')[0]}</span>
+            <span style="font-weight:600;color:#FFD700">${day.includes(':') ? day.split(': ')[1] : 'Chiuso'}</span>
+          </div>`;
+        }).join('');
+      }
+
+      if (hoursHtml) {
+        sections.push(`
+          <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+            <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">⏰ Orari (Prossimi 7 giorni)</h3>
+            ${hoursHtml}
+          </div>
+        `);
+      }
+    }
+
+    // ===== RESTAURANT ATTRIBUTES =====
+    const attrs = [
+      { key: 'servesLunch', label: '🍽️ Pranzo', icon: '🍽️' },
+      { key: 'servesDinner', label: '🍴 Cena', icon: '🍴' },
+      { key: 'reservable', label: '📅 Prenotabile', icon: '📅' },
+      { key: 'takeout', label: '📦 Asporto', icon: '📦' },
+      { key: 'servesBeer', label: '🍺 Birra', icon: '🍺' },
+      { key: 'servesVegetarianFood', label: '🥗 Vegetariano', icon: '🥗' }
+    ];
+
+    const activeAttrs = attrs.filter(a => details[a.key] === true);
+
+    if (activeAttrs.length > 0) {
+      const chips = activeAttrs.map(attr => `
+        <span style="background:linear-gradient(135deg,rgba(255,107,53,0.3),rgba(255,20,147,0.3));border:1px solid rgba(255,107,53,0.6);color:#fff;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block">
+          ${attr.label}
+        </span>
+      `).join('');
+
+      sections.push(`
+        <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+          <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">🏷️ Caratteristiche</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${chips}
+          </div>
+        </div>
+      `);
+    }
+
+    // ===== ACCESSIBILITY =====
+    if (details.accessibilityOptions && Object.keys(details.accessibilityOptions).length > 0) {
+      const accOptions = details.accessibilityOptions;
+      const accessibilityItems = [];
+
+      if (accOptions.wheelchairAccessibleEntrance) accessibilityItems.push('♿ Ingresso accessibile');
+      if (accOptions.wheelchairAccessibleParking) accessibilityItems.push('♿ Parcheggio accessibile');
+      if (accOptions.wheelchairAccessibleRestroom) accessibilityItems.push('♿ Bagno accessibile');
+      if (accOptions.wheelchairAccessibleSeating) accessibilityItems.push('♿ Posti a sedere accessibili');
+
+      if (accessibilityItems.length > 0) {
+        const items = accessibilityItems.map(item => `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 0;color:rgba(255,255,255,0.8);font-size:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+            <span style="font-size:14px">✓</span>
+            <span>${item}</span>
+          </div>
+        `).join('');
+
+        sections.push(`
+          <div style="background:linear-gradient(135deg,rgba(74,124,89,0.12),rgba(100,150,110,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(100,200,150,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+            <h3 style="margin:0 0 12px 0;color:#90EE90;font-size:14px;font-weight:700">♿ Accessibilità</h3>
+            ${items}
+          </div>
+        `);
+      }
+    }
+
+    return sections.join('');
+  }
+  // Rendi globale
+  window.renderEnhancedPoiSections = renderEnhancedPoiSections;
+
   function poiDetailHTML(p){
     const displayName = getPoiDisplayName(p);
     const saved = state.savedPOIs.includes(p.id);
@@ -6223,6 +6367,9 @@ document.addEventListener('DOMContentLoaded', () => {
       photoHtml = googleFallbackHtml('Foto non disponibili offline');
     }
 
+    // Generate enhanced sections if data is available
+    const enhancedSections = renderEnhancedPoiSections(p);
+
     const html = `
       ${photoHtml}
       <!-- HEADER con categoria colorata + BOTTONE MATITA FIANCO A FIANCO -->
@@ -6247,6 +6394,8 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
+      <!-- ENHANCED SECTIONS FROM GOOGLE PLACES DETAILS API -->
+      ${enhancedSections}
 
       <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - RESPONSIVE -->
       <div style="display:flex !important;gap:12px !important;margin:12px 0 !important;width:100% !important;box-sizing:border-box !important;flex-wrap:wrap !important;">
@@ -6520,6 +6669,16 @@ document.addEventListener('DOMContentLoaded', () => {
         p = { ...p, ...verified };
       } else {
         console.warn('[openPOI] ⚠️ POI verification failed, using local data');
+      }
+
+      // NEW: Enrich con Google Places Details API
+      if (window.GooglePlacesDetailsClient && p.googlePlaceId) {
+        console.log('[openPOI] Enriching with Places Details API...');
+        const enriched = await window.GooglePlacesDetailsClient.enrichPOI(p);
+        if (enriched._details) {
+          p = enriched;
+          console.log('[openPOI] ✅ POI enriched with full details');
+        }
       }
 
       console.log('[openPOI] Calling openSheet with:', displayName);
