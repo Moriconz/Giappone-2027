@@ -1083,6 +1083,8 @@
 <!-- POI Detail UI Components -->
 <script src="js/poi-photo-gallery.js"></script>
 <script src="js/poi-section-builders.js"></script>
+<script src="js/services/gfDetector.js"></script>
+<script src="js/poi-detail-events.js"></script>
 <script src="js/group-chat.js"></script>
 <script src="js/group-panel.js"></script>
 <!-- FASE 2: Aggiunta Tappa — 3-step modal flow -->
@@ -6352,7 +6354,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const rating = state.ratings?.[p.id] || 0;
-    const stars = [1,2,3,4,5].map(n => `<span class="star ${n<=rating?'on':''}" data-star="${n}" data-id="${p.id}">★</span>`).join('');
+    const stars = [1,2,3,4,5].map(n => `<span class="star-rating" data-star="${n}" data-id="${p.id}" style="
+      font-size: 28px;
+      color: ${n<=rating ? '#f59e0b' : 'rgba(255, 255, 255, 0.3)'};
+      cursor: pointer;
+      transition: all 0.15s;
+      transform: scale(1);
+    " onmouseover="this.style.color='#f59e0b'; this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'; this.style.color='${n<=rating ? '#f59e0b' : 'rgba(255, 255, 255, 0.3)'}'">★</span>`).join('');
 
     // FOTO: Use new PhotoGallery component
     let photoHtml = '';
@@ -6393,8 +6401,75 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `);
 
-    // 3. SEZIONI DINAMICHE DA GOOGLE PLACES
+    // 3. GF SECTION: Loader immediato per ristoranti
+    if (p.isRestaurant || p.cat === 'restaurant' || p.cat === 'cafe' || p.cat === 'food') {
+      sections.push(`
+        <div class="gf-section" id="gf-status-container-${p.id}" data-poi-id="${p.id}" style="
+          padding: 0 16px;
+          margin: 12px 0;
+        ">
+          <div class="gf-pending" style="
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+          ">
+            <span class="gf-spinner" style="
+              width: 12px;
+              height: 12px;
+              border: 2px solid rgba(255, 255, 255, 0.2);
+              border-top-color: #4ade80;
+              border-radius: 50%;
+              display: inline-block;
+              animation: spin 0.8s linear infinite;
+            "></span>
+            <span>Verifica opzioni gluten-free...</span>
+          </div>
+          <style>
+            @keyframes spin { to { transform: rotate(360deg); } }
+          </style>
+        </div>
+      `);
+    }
+
+    // 4. SEZIONI DINAMICHE DA GOOGLE PLACES
     sections.push(SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '');
+
+    // INDIRIZZO — Solo indirizzo senza label INDIRIZZO
+    const addressHtml = (p._details?.address || p.address) ? `
+      <div style="
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 12px;
+        margin: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        color: #fff;
+      ">
+        <span>📍 ${p._details?.address || p.address}</span>
+        <button class="copy-address-btn" data-address="${p._details?.address || p.address}" style="
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.5);
+          cursor: pointer;
+          font-size: 14px;
+          padding: 4px 8px;
+          transition: color 0.2s;
+        " onmouseover="this.style.color='rgba(255, 255, 255, 0.8)'" onmouseout="this.style.color='rgba(255, 255, 255, 0.5)'">
+          ⧉
+        </button>
+      </div>
+    ` : '';
+    sections.push(addressHtml);
+
     sections.push(SB.renderAddress ? (SB.renderAddress(p, p._details || p) || '') : '');
     sections.push(SB.renderWebsite ? (SB.renderWebsite(p._details || p) || '') : '');
     sections.push(SB.renderPhone ? (SB.renderPhone(p._details || p) || '') : '');
@@ -6460,47 +6535,97 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- DIVIDER -->
       <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0"></div>
 
-      <!-- PRIMARY ACTION: ADD TO ITINERARY (CTA principale, deve spiccare) -->
+      <!-- PRIMARY ACTION: ADD TO ITINERARY (CTA principale, ruggine saturo #b5541e) -->
       <div style="padding:0 16px;margin:16px 0">
-        <button id="add-to-itinerary-btn" class="btn primary" style="
+        <button id="add-to-itinerary-btn" class="btn-primary-cta" style="
           width:100%;
-          background:linear-gradient(135deg,#d97706,#b45309);
+          background-color:#b5541e;
           border:none;
           color:white;
           height:50px;
-          border-radius:12px;
+          border-radius:8px;
           font-weight:700;
           font-size:15px;
           cursor:pointer;
           transition:all 0.2s;
-          box-shadow:0 6px 20px rgba(217,119,6,0.35);
+          box-shadow:0 4px 14px rgba(181,84,30,0.4);
           display:flex;
           align-items:center;
           justify-content:center;
           gap:8px;
-        " onmouseover="this.style.background='linear-gradient(135deg,#f59e0b,#d97706)';this.style.boxShadow='0 8px 24px rgba(217,119,6,0.45)'" onmouseout="this.style.background='linear-gradient(135deg,#d97706,#b45309)';this.style.boxShadow='0 6px 20px rgba(217,119,6,0.35)'">📅 Aggiungi all'itinerario</button>
+        " onmouseover="this.style.boxShadow='0 6px 18px rgba(181,84,30,0.5)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(181,84,30,0.4)'; this.style.transform='translateY(0)'">📅 Aggiungi all'itinerario</button>
       </div>
 
-      <!-- SECONDARY ACTIONS (ghost buttons) -->
-      <div style="display:flex;gap:10px;margin:16px;justify-content:space-between">
-        <button class="btn navigate" id="navigate-poi" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${encodeURIComponent(displayName)}" style="
-          flex:1;
-          height:42px;
-          background:transparent;
-          border:1px solid rgba(255,255,255,0.15);
-          color:rgba(255,255,255,0.7);
-          border-radius:10px;
-          cursor:pointer;
-          font-weight:600;
-          font-size:13px;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          gap:6px;
-          transition:all 0.2s;
-        " onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.7)'">🧭 Naviga</button>
+      <!-- SECONDARY ACTIONS (ghost buttons) + Maps dropdown -->
+      <div style="display:flex;gap:10px;margin:16px;justify-content:space-between;position:relative">
+        <!-- Maps dropdown (SOLO bottone, NO link testuali) -->
+        <div style="flex:1;position:relative">
+          <button class="btn-maps-dropdown" data-poi-id="${p.id}" style="
+            width:100%;
+            height:42px;
+            background:transparent;
+            border:1px solid rgba(255,255,255,0.15);
+            color:rgba(255,255,255,0.7);
+            border-radius:10px;
+            cursor:pointer;
+            font-weight:600;
+            font-size:13px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:6px;
+            transition:all 0.2s;
+          " onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.7)'">
+            🧭 Maps
+          </button>
 
-        <button class="btn primary" id="save-poi" style="
+          <!-- Dropdown menu (hidden by default) -->
+          <div class="maps-dropdown-menu" data-poi-id="${p.id}" style="
+            display:none;
+            position:absolute;
+            top:100%;
+            left:0;
+            background:rgba(30,30,35,0.95);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:8px;
+            box-shadow:0 4px 16px rgba(0,0,0,0.3);
+            z-index:1000;
+            min-width:180px;
+            margin-top:4px;
+            overflow:hidden;
+            animation:slideDown 0.2s ease-out;
+          ">
+            <style>
+              @keyframes slideDown {
+                from { opacity:0; transform:translateY(-8px); }
+                to { opacity:1; transform:translateY(0); }
+              }
+            </style>
+            <a href="https://maps.google.com/?q=${p.lat},${p.lon}&z=17" target="_blank" style="
+              display:block;
+              padding:12px 16px;
+              color:#fff;
+              text-decoration:none;
+              font-size:13px;
+              border-bottom:1px solid rgba(255,255,255,0.05);
+              transition:background 0.2s;
+            " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
+              🗺️ Google Maps
+            </a>
+            <a href="https://maps.apple.com/?ll=${p.lat},${p.lon}" target="_blank" style="
+              display:block;
+              padding:12px 16px;
+              color:#fff;
+              text-decoration:none;
+              font-size:13px;
+              transition:background 0.2s;
+            " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
+              🍎 Apple Maps
+            </a>
+          </div>
+        </div>
+
+        <button class="btn-secondary" id="save-poi" style="
           flex:1;
           height:42px;
           background:transparent;
@@ -6517,7 +6642,7 @@ document.addEventListener('DOMContentLoaded', () => {
           transition:all 0.2s;
         " onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.7)'">${saved?'⭐ Salvato':'☆ Salva'}</button>
 
-        <button class="btn" id="add-cal" style="
+        <button class="btn-secondary" id="add-cal" style="
           flex:1;
           height:42px;
           background:transparent;
@@ -6533,23 +6658,6 @@ document.addEventListener('DOMContentLoaded', () => {
           gap:6px;
           transition:all 0.2s;
         " onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.7)'">📅 Calendario</button>
-      </div>
-
-      <!-- TERTIARY ACTIONS (link style) -->
-      <div style="display:flex;gap:16px;margin:16px;justify-content:center;font-size:13px;padding:0 16px">
-        <a href="${gmaps}" target="_blank" rel="noopener" style="
-          color:rgba(255,255,255,0.5);
-          text-decoration:underline;
-          cursor:pointer;
-          transition:color 0.2s;
-        " onmouseover="this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Apri in Google Maps</a>
-        <span style="color:rgba(255,255,255,0.2)">·</span>
-        <a href="${amaps}" target="_blank" rel="noopener" style="
-          color:rgba(255,255,255,0.5);
-          text-decoration:underline;
-          cursor:pointer;
-          transition:color 0.2s;
-        " onmouseover="this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Apri in Apple Maps</a>
       </div>
 
       <!-- Bottom spacing -->
