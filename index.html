@@ -1136,6 +1136,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2 3 5v17l6-3 6 3 6-3V2l-6 3-6-3z"/><path d="M9 2v17M15 5v17"/></svg>
       Mappa
     </button>
+    <button data-view="itinerary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      Itinerario
+    </button>
     <button data-view="list">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
       Tappe
@@ -5159,6 +5163,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   map.addLayer(vectorLayer);
+
+  // Expose vectorSource and vectorLayer to window for filter-system.js
+  window.vectorSource = vectorSource;
+  window.vectorLayer = vectorLayer;
+
   // GPS marker layer — nessuno style di default: ogni feature porta il proprio (iniziali o avatar)
   const gpsSource = new ol.source.Vector();
   const gpsLayer = new ol.layer.Vector({
@@ -5477,7 +5486,13 @@ document.addEventListener('DOMContentLoaded', () => {
           name: getPoiDisplayName(p),
           id: p.id,
           cat: p.cat || 'poi',
-          isGF: p.gf?.lvl === 'full'
+          lat: p.lat,
+          lng: p.lng,
+          isGF: p.gf?.lvl === 'full',
+          gf: p.gf || {},
+          paid: p.paid === true ? true : false, // paid=false means free/gratis
+          indoor: p.indoor === true,
+          family_friendly: p.family_friendly === true
         });
         vectorSource.addFeature(feature);
         added++;
@@ -6129,7 +6144,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (view === 'list') { renderListView(); return; }
       if (view === 'weather') { renderWeatherView(); return; }
-      if (view === 'itinerary') { renderItineraryView(); return; }
+      if (view === 'itinerary') { renderItineraryViewNew(); return; }
       if (view === 'bookings') { renderBookingsView(); return; }
       if (view === 'shopping') { renderShoppingView(); return; }
       if (view === 'group') { renderGroupView(); return; }
@@ -6431,40 +6446,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // LAYOUT ADATTIVO — Build dynamic sections based on POI type and data availability
-    const sections = [];
+    // ═════════════════════════════════════════════════════════════════
+    // REORDERED LAYOUT FOR RAPID DECISION-MAKING (FASE 1.3)
+    // Extract sections in new order for better UX
+    // ═════════════════════════════════════════════════════════════════
 
-    // 1. HEADER COMPATTO
-    sections.push(SB.renderHeaderCompact ? SB.renderHeaderCompact(p, displayName, catColor, catEmoji) : '');
-
-    // 1.5 SUBTITLE (microdescrizione intelligente via helper)
+    // Get readable subtype label (category/subcategory)
     const poiSubtypeLabel = getReadableSubtypeLabel(p);
 
-    if (poiSubtypeLabel) {
-      sections.push(`
-        <div style="
-          padding: 0 16px;
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.5);
-          font-weight: 500;
-          margin-bottom: 0;
-        ">${poiSubtypeLabel}</div>
-        <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 6px 0 12px 0"></div>
-      `);
-    }
+    // Extract specific sections we need to reorder
+    const openingHoursHtml = SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '';
+    const websiteHtml = SB.renderWebsite ? (SB.renderWebsite(p._details || p) || '') : '';
+    const phoneHtml = SB.renderPhone ? (SB.renderPhone(p._details || p) || '') : '';
+    const descriptionHtml = SB.renderDescription ? (SB.renderDescription(p._details || p) || '') : '';
+    const restaurantAttrHtml = SB.renderRestaurantAttributes ? (SB.renderRestaurantAttributes(p, p._details || p) || '') : '';
+    const priceLevelHtml = SB.renderPriceLevel ? (SB.renderPriceLevel(p._details || p) || '') : '';
+    const durationHtml = SB.renderSuggestedDuration ? (SB.renderSuggestedDuration(p) || '') : '';
+    const entranceFeeHtml = SB.renderEntranceFee ? (SB.renderEntranceFee(p) || '') : '';
 
-    // 2. CATEGORIA SELECTOR (hidden)
-    sections.push(`
-      <div id="cat-selector" style="display:none;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));border:2px solid ${catColor};border-radius:8px;padding:12px;margin-bottom:12px">
-        <div style="font-size:12px;font-weight:600;color:${catColor};margin-bottom:10px">✏️ Cambia categoria:</div>
-        <div id="cat-options" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px"></div>
-      </div>
-    `);
-
-    // 3. GF SECTION: Loader immediato SOLO per ristoranti (LEGGERO e temporaneo)
-    // REGOLA: GF box appare SOLO per isRestaurant === true
+    // Build GF status HTML (only for restaurants, but prominent)
+    let gfStatusHtml = '';
     if (isRestaurant) {
-      sections.push(`
+      gfStatusHtml = `
         <div class="gf-section" id="gf-status-container-${p.id}" data-poi-id="${p.id}" style="
           padding: 0 16px;
           margin: 6px 0 12px 0;
@@ -6510,44 +6513,69 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           </style>
         </div>
-      `);
+      `;
     }
 
-    // 4. SEZIONI DINAMICHE DA GOOGLE PLACES
-    sections.push(SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '');
-
-    // INDIRIZZO — Rimosso completamente (user request: "levalo di mezzo")
-
-    // NON renderizzare SB.renderAddress (crea duplicazione) — usiamo solo la versione custom sopra
-    // sections.push(SB.renderAddress ? (SB.renderAddress(p, p._details || p) || '') : '');
-    sections.push(SB.renderWebsite ? (SB.renderWebsite(p._details || p) || '') : '');
-    sections.push(SB.renderPhone ? (SB.renderPhone(p._details || p) || '') : '');
-    sections.push(SB.renderDescription ? (SB.renderDescription(p._details || p) || '') : '');
-
-    // 4. ATTRIBUTI RISTORANTE (per food/drink POIs)
-    sections.push(SB.renderRestaurantAttributes ? (SB.renderRestaurantAttributes(p, p._details || p) || '') : '');
-    sections.push(SB.renderPriceLevel ? (SB.renderPriceLevel(p._details || p) || '') : '');
-
-    // 5. SEZIONI PER MUSEI/ATTRAZIONI
-    sections.push(SB.renderSuggestedDuration ? (SB.renderSuggestedDuration(p) || '') : '');
-    sections.push(SB.renderEntranceFee ? (SB.renderEntranceFee(p) || '') : '');
-
-    const dynamicSections = sections.filter(s => s && s.trim()).join('');
-
-    // Fallback old sections if no new data
+    // Fallback old sections if needed
     const enhancedSections = renderEnhancedPoiSections ? renderEnhancedPoiSections(p) : '';
 
     const html = `
+      <!-- 1. PHOTO GALLERY (large, immediately visible) -->
       ${photoHtml}
-      ${dynamicSections}
+
+      <!-- 2. COMPACT HEADER (name + metadata) -->
+      ${SB.renderHeaderCompact ? SB.renderHeaderCompact(p, displayName, catColor, catEmoji) : ''}
+
+      <!-- 3. CATEGORY/SUBTYPE (readable label) -->
+      ${poiSubtypeLabel ? `
+        <div style="
+          padding: 0 16px;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.5);
+          font-weight: 500;
+          margin-bottom: 0;
+        ">${poiSubtypeLabel}</div>
+        <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 6px 0 12px 0"></div>
+      ` : ''}
+
+      <!-- 4. BRIEF DESCRIPTION (earlier for context) -->
+      ${descriptionHtml}
+
+      <!-- 5. GF STATUS (prominent, only for restaurants) -->
+      ${gfStatusHtml}
+
+      <!-- 6. PRACTICAL INFO (hours, entry fee, duration, info chips) -->
+      ${openingHoursHtml}
+      ${infoChips.length > 0 ? `<div style="padding:0 16px;margin:8px 0;display:flex;flex-wrap:wrap;gap:6px">${infoChips.join('')}</div>` : ''}
+      ${entranceFeeHtml}
+      ${durationHtml}
+
+      <!-- 7. RESTAURANT ATTRIBUTES & PRICE (if available) -->
+      ${restaurantAttrHtml}
+      ${priceLevelHtml}
+
+      <!-- 8. CONTACTS (website, phone) -->
+      ${websiteHtml}
+      ${phoneHtml}
+
+      <!-- 9. RATING (stars) -->
+      <div style="padding:0 16px;margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:16px">
+        <label style="font-size:13px;color:rgba(255,255,255,0.6);font-weight:600;white-space:nowrap">La tua valutazione</label>
+        ${stars}
+      </div>
 
       <!-- LEGACY SECTIONS (fallback) -->
       ${enhancedSections}
 
-      <!-- DIVIDER -->
+      <!-- DIVIDER — separates from main action -->
       <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0"></div>
 
-      <!-- NOTE PERSONALI — Collapsato di default -->
+      <!-- 10. MAIN CTA: ADD TO ITINERARY (prominent, ruggine saturo) -->
+      <div style="padding:0 16px;margin:16px 0">
+        <button id="add-to-itinerary-btn" class="btn-cta">📅 Aggiungi all'itinerario</button>
+      </div>
+
+      <!-- 11. PERSONAL NOTES (collapsible by default) -->
       <div class="notes-section" id="notes-section-${p.id}">
         ${note ? `
           <label class="text-sm">📝 Note</label>
@@ -6559,26 +6587,9 @@ document.addEventListener('DOMContentLoaded', () => {
         `}
       </div>
 
-      <!-- DIVIDER -->
-      <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0"></div>
-
-      <!-- IL TUO VOTO — Semplificato, inline -->
-      <div style="padding:0 16px;margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:16px">
-        <label style="font-size:13px;color:rgba(255,255,255,0.6);font-weight:600;white-space:nowrap">La tua valutazione</label>
-        ${stars}
-      </div>
-
-      <!-- DIVIDER -->
-      <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0"></div>
-
-      <!-- PRIMARY ACTION: ADD TO ITINERARY (CTA principale, ruggine saturo #b5541e) -->
-      <div style="padding:0 16px;margin:16px 0">
-        <button id="add-to-itinerary-btn" class="btn-cta">📅 Aggiungi all'itinerario</button>
-      </div>
-
-      <!-- SECONDARY ACTIONS (ghost buttons) + Maps dropdown -->
+      <!-- 12. SECONDARY ACTIONS (save, calendar, maps) -->
       <div style="display:flex;gap:8px;margin:12px 16px;justify-content:space-between;position:relative">
-        <!-- Maps dropdown (SOLO bottone, NO link testuali) -->
+        <!-- Maps dropdown -->
         <div style="flex:1;position:relative">
           <button class="btn-maps-dropdown" data-poi-id="${p.id}" style="
             width:100%;
@@ -7154,15 +7165,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const addToItineraryBtn = document.getElementById('add-to-itinerary-btn');
     if (addToItineraryBtn) {
       addToItineraryBtn.onclick = () => {
-        if (window.TappaFlow) {
-          console.log('[openPOI] Opening 3-step Tappa Flow for:', p.name || p.displayName);
-          // Get number of days from state
-          const numDays = state.tripDays || 7; // Default to 7 days if not set
-          window.TappaFlow.showStep1(p, numDays);
-        } else {
-          console.error('[openPOI] TappaFlow module not loaded');
-          toast('❌ Errore: modulo non caricato');
+        // FASE 1.4: Show day selector for adding POI to itinerary
+        if (!window.ITINERARY) {
+          console.error('[openPOI] ITINERARY system not available');
+          toast('❌ Sistema itinerario non pronto');
+          return;
         }
+
+        const tripProfile = window.state?.tripProfile || {};
+        const days = tripProfile.days || 8;
+        const poiName = getPoiDisplayName(p);
+        const poiId = p.id;
+
+        // Create day selector HTML
+        const daySelectorHTML = `
+          <div style="padding: 16px; text-align: center;">
+            <p style="color: #fff; margin-bottom: 16px;">📅 Scegli il giorno per aggiungere <strong>${poiName}</strong></p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px;">
+              ${Array.from({length: days}, (_, i) => `
+                <button class="day-select-btn" data-day="${i}" style="
+                  padding: 12px;
+                  background: rgba(255, 107, 53, 0.15);
+                  border: 1px solid rgba(255, 107, 53, 0.3);
+                  color: #FF6B35;
+                  border-radius: 6px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  transition: all 0.2s;
+                " onmouseover="this.style.background='rgba(255, 107, 53, 0.25)'" onmouseout="this.style.background='rgba(255, 107, 53, 0.15)'">
+                  Day ${i + 1}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+
+        window.openSheet('📅 Aggiungi a giorno', daySelectorHTML);
+
+        // Attach day selector handlers
+        document.querySelectorAll('.day-select-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const dayIndex = parseInt(btn.dataset.day);
+            window.ITINERARY.addPOIToDay(poiId, poiName, dayIndex, '10:00');
+            window.saveState?.();
+            window.closeSheet();
+            window.toast(`✓ Aggiunto al Day ${dayIndex + 1}`);
+          });
+        });
       };
     }
   }
@@ -12882,6 +12931,8 @@ if ('serviceWorker' in navigator) {
 
 }); // close DOMContentLoaded
 </script>
+<script src="./js/itinerary.js"></script>
+<script src="./js/itinerary-ui.js"></script>
 <script src="./js/onboarding.js"></script>
 <script src="./js/filter-system.js"></script>
 <script src="./js/y2k-windows.js"></script>

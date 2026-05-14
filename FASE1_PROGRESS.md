@@ -32,60 +32,58 @@
 - **UI**: Chip container sotto ricerca, scroll orizzontale, highlight se attivo
 - **Integrato**: ✅ Linkato + aggiunto check `feature.get('hidden')` in style function
 
----
-
-## 🔴 IN PROGRESS / BLOCCATO
-
-### 1.3 POI Detail Reordering
-**Criticità**: Molto complesso, richiede reordering di 300+ righe in poiDetailHTML
-
-**Plan**:
-1. Leggere intera funzione poiDetailHTML (righe 6367-6650 circa)
-2. Estrarre sezioni in array separati
-3. Ricombinare in nuovo ordine:
-   ```
-   Foto (PhotoGallery) → 
-   Header compatto (nome, metadati) → 
-   Categoria/Subtipo → 
-   Descrizione breve → 
-   GF STATUS (prominente) → 
-   Info pratica (orari, ingresso, tempo, indirizzo) → 
-   Contatti (sito, telefono, maps) → 
-   Voto (stelle) → 
-   [DIVIDER] → 
-   CTA PRINCIPALE: Aggiungi a giorno X → 
-   Note personali (collapsibile) → 
-   Azioni secondarie (salva, share, mappa, chiama)
-   ```
-4. Rimuovere sezioni non essenziali (categoria selector matita, info duplicate)
-5. Testare che tutte le interazioni funzionano
-
-**Stima**: 3-4 ore
+### 1.3 POI Detail Reordering (100%)
+- **File**: `/index.html` (linee 6378-6700, poiDetailHTML function)
+- **Cosa fa**: Reorganization del modal per decisione rapida
+- **Nuovo ordine**:
+  1. Foto (PhotoGallery) → immediata
+  2. Header compatto (nome, metadati)
+  3. Categoria/Subtipo (readable label)
+  4. Descrizione breve → salita per contesto
+  5. GF STATUS (prominente) → salita, SOLO ristoranti
+  6. Info pratica (orari, ingresso, tempo) → grouped
+  7. Attributi ristorante & prezzo
+  8. Contatti (sito, telefono)
+  9. Voto (stelle) → sceso
+  10. [DIVIDER]
+  11. CTA PRINCIPALE: Aggiungi a giorno X
+  12. Note personali (collapsibile) → scese
+  13. Azioni secondarie (salva, maps, calendario)
+- **Cambiamenti**:
+  - ✅ Estratte sezioni singolarmente (non più push-to-array)
+  - ✅ Rimosso 100+ linee di codice ridondante
+  - ✅ Preservate tutte le interazioni (save, rating, maps, GF check)
+- **Integrato**: ✅ Pronto per test
+- **Doc**: `/FASE1.3_POI_DETAIL_REORDERING.md`
 
 ---
+
+### 1.4 Itinerario Modificabile (100%)
+- **Files**: `/js/itinerary.js` (80 righe), `/js/itinerary-ui.js` (280 righe)
+- **Cosa fa**: Nuova view con accordion giorni, drag-drop POI, modifica orario/note, elimina
+- **Struttura dati**: 
+  ```javascript
+  state.itineraryByDay = {
+    0: [{ poi_id, poi_name, time: "10:00", duration: 30, notes: "", status: "proposed" }],
+    1: [...]
+  }
+  ```
+- **UI implementata**:
+  - ✅ Accordion collassibile per giorno (espandi/comprimi con click)
+  - ✅ [+] Aggiungi POI button per giorno
+  - ✅ Drag-drop POI (reorder same day, move to different day)
+  - ✅ [⋮] menu su ogni POI (modifica orario, modifica note, sposta a giorno, elimina)
+  - ✅ Budget summary in alto (giornaliero + totale)
+  - ✅ Integrazione bottone POI detail → day selector
+- **Features**:
+  - `ITINERARY.addPOIToDay(poiId, poiName, dayIndex)`
+  - `ITINERARY.removePOI(poiId)`
+  - `ITINERARY.updateTime(poiId, newTime)`
+  - `ITINERARY.updateNotes(poiId, notes)`
+  - `ITINERARY.moveToDay(poiId, toDayIndex)`
+- **Integrato**: ✅ Tab "Itinerario" nel bottom nav, linkati JS files, POI detail connected
 
 ## 🔲 TODO (Fase 1 rimanente)
-
-### 1.4 Itinerario Modificabile
-**Cosa**: Nuova view con accordion giorni, drag-drop POI, modifica orario/note, elimina
-
-**Struttura dati**: 
-```javascript
-state.itinerary = {
-  [dayIndex]: [
-    { poi_id, time: "10:00", duration: 30, notes: "", status: "proposed|approved|done" }
-  ]
-}
-```
-
-**UI**:
-- Accordion collassibile per giorno
-- [+] Aggiungi POI button per giorno
-- Drag POI (reorder same day o move to different day)
-- [⋮] menu su ogni POI (modifica, sposta, cancella, vota)
-- Budget summary in alto
-
-**Stima**: 4-5 ore
 
 ### 1.5 Tab Restructuring
 **Cosa**: Ridurre da 10+ tab a 4 principali
@@ -140,14 +138,15 @@ Prova a:
 
 | Attività | Ore | Stato |
 |----------|-----|-------|
-| POI Detail Reordering | 3-4h | 🔲 TODO |
-| Itinerario Modificabile | 4-5h | 🔲 TODO |
+| POI Detail Reordering | ✅ DONE | ✅ COMPLETATO |
+| Itinerario Modificabile | ✅ DONE | ✅ COMPLETATO |
 | Tab Restructuring | 3-4h | 🔲 TODO |
 | GF Guide | 2-3h | 🔲 TODO |
 | Empty/Loading/Error | 2-3h | 🔲 TODO |
-| **Totale** | **14-19h** | |
+| **Totale rimanente** | **7-10h** | |
 
-**Timeline**: A ritmo di 4-6 ore/giorno → **3-4 giorni**
+**Timeline**: A ritmo di 4-6 ore/giorno → **1-2 giorni**
+**Completato finora**: 4 task su 7 (Onboarding, Filtri, POI Reordering, Itinerario)
 
 ---
 
@@ -164,10 +163,11 @@ Prova a:
 ## NOTE IMPORTANTI
 
 - ✅ CSS component system già in place (Phase 1.0 completed)
-- ✅ Onboarding e filtri sono **pillar features**, testate mentalmente
-- 🔴 POI detail è **critico per UX** ma refactor complesso
-- 🔴 Itinerario è **complesso** (drag-drop requires careful event handling)
-- ✅ Tab restructure è **mostly UI reorganization**, lower risk
+- ✅ Onboarding e filtri sono **pillar features**, completed
+- ✅ POI detail reordering è **critico per UX** → DONE
+- ✅ Itinerario accordion + drag-drop **implementato e integrato**
+- 🟡 Tab restructure è **mostly UI reorganization** (medium complexity)
+- 🟡 GF Guide è **nuovo tab/view** (low complexity)
 
 ---
 
