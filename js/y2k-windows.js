@@ -391,15 +391,16 @@
       line-height: 1.4 !important;
     }
 
-    /* ══ POI ROWS — Material Design Two-Line List ════════ */
-    .y2k-win-body .poi-row { display: flex !important; align-items: center !important; gap: 12px !important; backdrop-filter: blur(10px) !important; background: rgba(255, 107, 53, 0.12) !important; border: 1px solid rgba(255, 107, 53, 0.25) !important; color: rgba(255, 255, 255, 0.9) !important; padding: 10px 12px !important; border-radius: 8px !important; min-height: 64px !important; transition: all 0.15s ease !important; }
-    .y2k-win-body .poi-row:hover { background: rgba(255, 107, 53, 0.18) !important; }
-    .y2k-win-body .poi-row .icon { flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-    .y2k-win-body .poi-row .body { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; min-width: 0; gap: 4px; }
-    .y2k-win-body .poi-row .body .name { color: #fff !important; font-weight: 600 !important; font-size: 14px !important; line-height: 1.3; word-break: break-word; display: block; }
-    .y2k-win-body .poi-row .body .sub { color: rgba(255, 255, 255, 0.7) !important; font-size: 12px !important; line-height: 1.3; display: block; }
-    .y2k-win-body .poi-row img { flex-shrink: 0; width: 48px; height: 48px; border-radius: 6px; object-fit: cover; }
-    .y2k-win-body .poi-row .btn { flex-shrink: 0; }
+    /* ══ POI ROWS — WARM DARK MODE CARD DESIGN ════════════════════ */
+    .y2k-win-body .poi-row { display: flex !important; align-items: stretch !important; gap: 12px !important; background: linear-gradient(135deg, rgba(60, 40, 30, 0.25), rgba(50, 35, 25, 0.15)) !important; border: 1px solid rgba(255, 140, 80, 0.2) !important; border-radius: 10px !important; padding: 8px !important; min-height: 76px !important; transition: all 0.2s ease !important; overflow: hidden !important; }
+    .y2k-win-body .poi-row:hover { background: linear-gradient(135deg, rgba(60, 45, 35, 0.35), rgba(50, 40, 30, 0.25)) !important; border-color: rgba(255, 140, 80, 0.4) !important; box-shadow: 0 6px 16px rgba(232, 124, 62, 0.15) !important; transform: translateY(-2px) !important; }
+    .y2k-win-body .poi-row img { flex-shrink: 0; width: 56px; height: 56px; border-radius: 8px; object-fit: cover; order: 1; }
+    .y2k-win-body .poi-row .icon { display: none; }
+    .y2k-win-body .poi-row .body { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; gap: 3px; order: 2; padding: 2px 4px; }
+    .y2k-win-body .poi-row .body .name { color: #fff !important; font-weight: 600 !important; font-size: 15px !important; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+    .y2k-win-body .poi-row .body .sub { color: rgba(255, 200, 150, 0.75) !important; font-size: 13px !important; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+    .y2k-win-body .poi-row .btn { flex-shrink: 0; order: 3; min-width: 48px; min-height: 44px; padding: 6px 12px; background: linear-gradient(135deg, #e87c3e, #d96a2e); border: 1px solid rgba(232, 124, 62, 0.5); border-radius: 6px; color: #fff; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
+    .y2k-win-body .poi-row .btn:hover { background: linear-gradient(135deg, #f08d50, #e07a38) !important; border-color: rgba(232, 124, 62, 0.8) !important; box-shadow: 0 4px 12px rgba(232, 124, 62, 0.25) !important; transform: translateY(-1px) !important; }
     .y2k-win-body .btn { backdrop-filter: blur(10px) !important; background: rgba(255, 107, 53, 0.25) !important; border: 1px solid rgba(255, 107, 53, 0.4) !important; color: #fff !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; }
     .y2k-win-body .btn.primary { backdrop-filter: blur(10px) !important; background: rgba(255, 107, 53, 0.35) !important; border-color: rgba(255, 107, 53, 0.6) !important; color: white !important; }
   `;
