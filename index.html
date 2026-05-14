@@ -6511,11 +6511,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. SEZIONI DINAMICHE DA GOOGLE PLACES
     sections.push(SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '');
 
-    // INDIRIZZO — Se non esiste, NON renderizza niente. Punto.
-    const cleanAddress = getCleanAddress(p);
-    if (cleanAddress) {
-      sections.push(`<div class="address-row"><span class="address-text">📍 ${cleanAddress}</span><button class="btn-copy-address" data-address="${cleanAddress}" aria-label="Copia indirizzo" title="Copia indirizzo">⧉</button></div>`);
-    }
+    // INDIRIZZO — Rimosso completamente (user request: "levalo di mezzo")
 
     // NON renderizzare SB.renderAddress (crea duplicazione) — usiamo solo la versione custom sopra
     // sections.push(SB.renderAddress ? (SB.renderAddress(p, p._details || p) || '') : '');
