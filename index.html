@@ -6318,6 +6318,46 @@ document.addEventListener('DOMContentLoaded', () => {
   // Rendi globale
   window.renderEnhancedPoiSections = renderEnhancedPoiSections;
 
+  // ═══════════════════════════════════════════════════════════════════
+  // HELPER FUNCTIONS — Logica unificata per POI detail
+  // ═══════════════════════════════════════════════════════════════════
+
+  // FOOD_TYPES — Unica fonte di verità per classificazione ristorante
+  const FOOD_TYPES = ['restaurant','food','cafe','bar','meal_takeaway','bakery','izakaya'];
+
+  function isRestaurantPOI(poi) {
+    return FOOD_TYPES.includes(poi.primaryType || poi.cat);
+  }
+
+  function getCleanAddress(poi) {
+    const addr = (poi._details?.address || poi.address || '').trim();
+    return addr && addr.length > 0 ? addr : null;
+  }
+
+  function getReadableSubtypeLabel(poi) {
+    const subtypeMap = {
+      // Food & Drink
+      'restaurant': 'Ristorante',
+      'cafe': 'Caffetteria',
+      'bar': 'Bar',
+      'food': 'Ristorante',
+      'izakaya': 'Izakaya',
+      'bakery': 'Panetteria',
+      'meal_takeaway': 'Asporto',
+      // Culture & History
+      'museum': 'Museo',
+      'shrine': 'Santuario',
+      'temple': 'Tempio',
+      'church': 'Chiesa',
+      'landmark': 'Landmark',
+      'tourist_attraction': 'Attrazione turistica',
+      // Services & Admin
+      'post_office': 'Ufficio postale',
+      'services': 'Servizi'
+    };
+    return subtypeMap[poi.cat] || (poi.cat ? poi.cat.charAt(0).toUpperCase() + poi.cat.slice(1) : 'Luogo');
+  }
+
   function poiDetailHTML(p){
     console.log('[poiDetailHTML] Rendering new adaptive layout for:', p.name || p.displayName);
     const displayName = getPoiDisplayName(p);
@@ -6327,9 +6367,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const catColor = getCategoryColor(p.cat);
     const catEmoji = getCategoryEmoji(p.cat);
 
-    // IMPORTANTE: Determina SE è un ristorante (UNICA fonte di verità)
-    const FOOD_TYPES = ['restaurant','food','cafe','bar','meal_takeaway','bakery','izakaya'];
-    const isRestaurant = FOOD_TYPES.includes(p.primaryType || p.cat);
+    // IMPORTANTE: Determina SE è un ristorante (UNICA fonte di verità = helper isRestaurantPOI)
+    const isRestaurant = isRestaurantPOI(p);
     console.debug('[POI Classification] Name:', p.name, 'Type:', p.primaryType || p.cat, 'IsRestaurant:', isRestaurant);
 
     // Helper: use PoiSectionBuilders if available, otherwise fallback
@@ -6398,33 +6437,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. HEADER COMPATTO
     sections.push(SB.renderHeaderCompact ? SB.renderHeaderCompact(p, displayName, catColor, catEmoji) : '');
 
-    // 1.5 SUBTITLE (microdescrizione contestuale + contenuto contextual per schede vuote)
-    const subtypeLabels = {
-      'restaurant': 'Ristorante',
-      'cafe': 'Caffetteria',
-      'bar': 'Bar',
-      'food': 'Ristorante',
-      'izakaya': 'Izakaya',
-      'bakery': 'Panetteria',
-      'meal_takeaway': 'Asporto',
-      'museum': 'Museo',
-      'shrine': 'Santuario',
-      'temple': 'Tempio',
-      'church': 'Chiesa',
-      'landmark': 'Punto di interesse',
-      'tourist_attraction': 'Attrazione turistica',
-      'post_office': 'Ufficio postale',
-      'services': 'Servizi'
-    };
-    const poiSubtypeLabel = subtypeLabels[p.cat] || (p.cat ? p.cat.charAt(0).toUpperCase() + p.cat.slice(1) : '');
-
-    // Contenuto contestuale per schede vuote (quando non ci sono tanti dati)
-    const hasRichData = (p._details?.address || p.address) &&
-                        (p._details?.currentOpeningHours || p.hours) &&
-                        (p._details?.priceLevel || p.cost);
-    const contextualContent = !hasRichData && poiSubtypeLabel ?
-      (isRestaurant ? `${poiSubtypeLabel} • ${p._details?.priceLevel ? '💰 ' + p._details.priceLevel : ''}` : poiSubtypeLabel).trim() :
-      '';
+    // 1.5 SUBTITLE (microdescrizione intelligente via helper)
+    const poiSubtypeLabel = getReadableSubtypeLabel(p);
 
     if (poiSubtypeLabel) {
       sections.push(`
@@ -6503,44 +6517,46 @@ document.addEventListener('DOMContentLoaded', () => {
     sections.push(SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '');
 
     // INDIRIZZO — Una sola riga STABILE e ben definita (SOLO se presente e non vuoto)
-    // REGOLA: non mostrare mai solo l'icona copia senza testo
-    const cleanAddress = (p._details?.address || p.address || '').trim();
-    const addressHtml = cleanAddress ? `
-      <div class="poi-address-container" style="
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 8px;
-        padding: 12px;
-        margin: 12px 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-      ">
-        <span class="poi-address-text" style="
-          flex: 1;
-          font-size: 13px;
-          color: #fff;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          min-width: 0;
-        ">📍 ${cleanAddress}</span>
-        <button class="copy-address-btn" data-address="${cleanAddress}" aria-label="Copia indirizzo" style="
-          background: transparent;
-          border: none;
-          color: rgba(255, 255, 255, 0.5);
-          cursor: pointer;
-          font-size: 14px;
-          padding: 4px 8px;
-          flex-shrink: 0;
-          transition: color 0.2s;
-        " onmouseover="this.style.color='rgba(255, 255, 255, 0.8)'" onmouseout="this.style.color='rgba(255, 255, 255, 0.5)'">
-          ⧉
-        </button>
-      </div>
-    ` : '';
-    if (cleanAddress) sections.push(addressHtml);
+    // REGOLA: non mostrare mai solo l'icona copia senza testo — usa helper getCleanAddress()
+    const cleanAddress = getCleanAddress(p);
+    if (cleanAddress) {
+      const addressHtml = `
+        <div class="poi-address-container" style="
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 8px;
+          padding: 12px;
+          margin: 12px 16px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+        ">
+          <span class="poi-address-text" style="
+            flex: 1;
+            font-size: 13px;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+          ">📍 ${cleanAddress}</span>
+          <button class="copy-address-btn" data-address="${cleanAddress}" aria-label="Copia indirizzo" style="
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+            flex-shrink: 0;
+            transition: color 0.2s;
+          " onmouseover="this.style.color='rgba(255, 255, 255, 0.8)'" onmouseout="this.style.color='rgba(255, 255, 255, 0.5)'">
+            ⧉
+          </button>
+        </div>
+      `;
+      sections.push(addressHtml);
+    }
 
     // NON renderizzare SB.renderAddress (crea duplicazione) — usiamo solo la versione custom sopra
     // sections.push(SB.renderAddress ? (SB.renderAddress(p, p._details || p) || '') : '');
