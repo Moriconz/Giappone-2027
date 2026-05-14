@@ -36,41 +36,61 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
 
   const metadataRow = parts.join(' · ');
 
+  // Mappa categorie inglesi → italiano
+  const catLabels = {
+    'restaurant': 'Ristorante',
+    'food': 'Cibo',
+    'cafe': 'Caffè',
+    'bar': 'Bar',
+    'meal_takeaway': 'Asporto',
+    'bakery': 'Panetteria',
+    'izakaya': 'Izakaya',
+    'museum': 'Museo',
+    'shrine': 'Santuario',
+    'temple': 'Tempio',
+    'church': 'Chiesa',
+    'landmark': 'Punto di interesse',
+    'tourist_attraction': 'Attrazione turistica',
+    'post_office': 'Ufficio postale',
+    'services': 'Servizi'
+  };
+  const catLabel = catLabels[poi.cat] || (poi.cat ? poi.cat.charAt(0).toUpperCase() + poi.cat.slice(1) : 'POI');
+
   return `
-    <!-- Row 1: Category inline (flat, no card) -->
+    <!-- Row 1: Category inline (flat, no card) - compatto -->
     <div style="
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px 4px 16px;
+      padding: 10px 16px 2px 16px;
       margin-bottom: 0;
     ">
       <div style="
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 500;
-        color: rgba(255, 255, 255, 0.6);
+        color: rgba(255, 255, 255, 0.5);
         letter-spacing: 0.3px;
       ">
         <span style="font-size: 16px;">${catEmoji}</span>
-        <span>${poi.cat ? poi.cat.charAt(0).toUpperCase() + poi.cat.slice(1) : 'POI'}</span>
+        <span>${catLabel}</span>
       </div>
       <button id="edit-cat-btn" style="
         background: transparent;
         border: none;
         color: rgba(255, 255, 255, 0.5);
         cursor: pointer;
-        font-size: 16px;
-        padding: 4px 8px;
-        opacity: 0.7;
+        font-size: 14px;
+        padding: 2px 6px;
+        opacity: 0.6;
         transition: opacity 0.2s;
-      " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">✏️</button>
+      " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">✏️</button>
     </div>
 
-    <!-- Row 2: Name (FIX: flex: 1, minWidth: 0 per evitare rendering verticale) -->
-    <div style="padding: 0 16px; margin-bottom: 8px;">
+    <!-- Row 2: Name - più compatto -->
+    <div style="padding: 0 16px; margin-bottom: 4px;">
       <h2 style="
         margin: 0;
         font-size: 18px;
@@ -81,13 +101,13 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       ">${displayName}</h2>
     </div>
 
-    <!-- Row 3: Metadata con badge colorati -->
+    <!-- Row 3: Metadata compatto -->
     ${metadataRow ? `
       <div style="
         font-size: 12px;
         color: rgba(255, 255, 255, 0.6);
-        line-height: 1.5;
-        padding: 0 16px 12px 16px;
+        line-height: 1.4;
+        padding: 0 16px 8px 16px;
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
