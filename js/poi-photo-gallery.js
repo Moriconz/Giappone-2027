@@ -227,6 +227,7 @@ class PhotoGallery {
 
   /**
    * Render empty state when no photos available
+   * Elegante stato vuoto con icona categoria o torii
    */
   renderEmpty() {
     return `
@@ -234,22 +235,28 @@ class PhotoGallery {
         width: 100%;
         height: 260px;
         border-radius: 12px 12px 0 0;
-        background: linear-gradient(135deg, rgba(0, 255, 136, 0.05), rgba(255, 20, 147, 0.05));
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: linear-gradient(135deg, rgba(74, 91, 168, 0.08), rgba(74, 91, 168, 0.04));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         display: flex;
         align-items: center;
         justify-content: center;
         margin-bottom: 16px;
         flex-direction: column;
         gap: 12px;
+        backdrop-filter: blur(8px);
       ">
-        <div style="font-size: 48px;">📷</div>
+        <div style="
+          font-size: 56px;
+          opacity: 0.6;
+          line-height: 1;
+        ">⛩️</div>
         <div style="
           color: rgba(255, 255, 255, 0.5);
           font-size: 13px;
           text-align: center;
+          font-weight: 500;
         ">
-          Foto non disponibili offline
+          Nessuna foto disponibile
         </div>
       </div>
     `;

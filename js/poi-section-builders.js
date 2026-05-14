@@ -6,70 +6,83 @@
  */
 
 /**
- * Compact header: [EMOJI] NAME [EDIT] · City · ⭐ Rating · 🟢 Status
+ * HEADER COMPATTO RIDISEGNATO
+ * Layout: [EMOJI] CATEGORIA [EDIT] su riga 1
+ *         NOME POI (bold, grande) su riga 2
+ *         📍 Città · ⭐ Rating · 🟢 Status su riga 3
  */
 function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = false) {
   if (!displayName) return '';
 
   const parts = [];
-
-  // City
   if (poi.city) parts.push(`📍 ${poi.city}`);
-
-  // Rating (from Google Places)
-  if (poi.rating) {
-    parts.push(`⭐ ${poi.rating.toFixed(1)} (${poi.ratingCount || 0})`);
-  }
-
-  // Open status
+  if (poi.rating) parts.push(`⭐ ${poi.rating.toFixed(1)} (${poi.ratingCount || 0})`);
   if (poi.openNow !== null) {
-    const status = poi.openNow ? '🟢 Aperto ora' : '🔴 Chiuso ora';
-    parts.push(status);
+    parts.push(poi.openNow ? '🟢 Aperto' : '🔴 Chiuso');
   }
 
   const metadataRow = parts.join(' · ');
 
   return `
     <div style="
-      background: linear-gradient(135deg, rgba(0, 255, 136, 0.03), rgba(255, 20, 147, 0.03));
+      padding: 14px 16px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 12px 16px;
       margin-bottom: 16px;
-      border-radius: 0 0 8px 8px;
     ">
-      <!-- Title row with edit button -->
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-        <span style="font-size: 20px; flex-shrink: 0;">${catEmoji}</span>
-        <h2 style="
-          margin: 0;
-          font-size: 16px;
-          font-weight: 700;
-          color: #fff;
-          flex: 1;
-          word-break: break-word;
-        ">${displayName}</h2>
+      <!-- Row 1: Category + Edit -->
+      <div style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      ">
+        <div style="
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 11px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.6);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        ">
+          <span style="font-size: 16px;">${catEmoji}</span>
+          <span>CIBO</span>
+        </div>
         <button id="edit-cat-btn" style="
-          background: rgba(${catColor === '#FF1493' ? '255, 20, 147' : '74, 124, 89'}, 0.2);
+          background: transparent;
           border: 1px solid rgba(255, 255, 255, 0.2);
           color: #fff;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           border-radius: 6px;
           cursor: pointer;
-          font-size: 14px;
+          font-size: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          flex-shrink: 0;
+          padding: 0;
         ">✏️</button>
       </div>
 
-      <!-- Metadata row -->
+      <!-- Row 2: Name (FIX: flex: 1, minWidth: 0 per evitare rendering verticale) -->
+      <h2 style="
+        margin: 0 0 6px 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        flex: 1;
+        min-width: 0;
+        word-wrap: break-word;
+        line-height: 1.3;
+      ">${displayName}</h2>
+
+      <!-- Row 3: Metadata -->
       ${metadataRow ? `
         <div style="
           font-size: 12px;
-          color: rgba(255, 255, 255, 0.6);
-          line-height: 1.4;
+          color: rgba(255, 255, 255, 0.5);
+          line-height: 1.3;
         ">
           ${metadataRow}
         </div>
