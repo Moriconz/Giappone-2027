@@ -1082,6 +1082,8 @@
 <script src="js/google-places-debug.js"></script>
 <script src="js/group-chat.js"></script>
 <script src="js/group-panel.js"></script>
+<!-- FASE 2: Aggiunta Tappa — 3-step modal flow -->
+<script src="js/fase2-tappa-flow.js"></script>
 </head>
 <body>
 <div id="app">
@@ -6457,6 +6459,21 @@ document.addEventListener('DOMContentLoaded', () => {
         <textarea id="poi-note" placeholder="Aggiungi note, orari di arrivo, partecipanti..." style="width:100%;padding:10px;border:2px solid #00FF88;border-radius:8px;font-size:12px;resize:vertical;min-height:80px;font-family:inherit;box-sizing:border-box">${note}</textarea>
       </div>
 
+      <!-- PRIMARY ACTION: ADD TO ITINERARY -->
+      <button id="add-to-itinerary-btn" class="btn primary" style="
+        width:100%;
+        background:linear-gradient(135deg,rgba(255,107,53,0.6),rgba(255,107,53,0.4));
+        border:2px solid rgba(255,107,53,0.7);
+        color:white;
+        padding:14px;
+        border-radius:10px;
+        font-weight:700;
+        font-size:16px;
+        cursor:pointer;
+        margin:12px 0;
+        transition:all 0.2s;
+      ">📅 Aggiungi all'itinerario</button>
+
       <!-- ACTION BUTTONS -->
       <div class="action-row" style="display:flex;gap:6px;margin:12px 0">
         <button class="btn navigate" id="navigate-poi" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${encodeURIComponent(displayName)}" style="flex:1;background:linear-gradient(135deg,#4A7C59,#3A6C49);color:white;border:none;border-radius:8px;padding:12px;font-weight:600">🧭 Portami lì</button>
@@ -6934,6 +6951,22 @@ document.addEventListener('DOMContentLoaded', () => {
       state.notes[id] = e.target.value; saveState();
     });
     document.getElementById('add-cal').onclick = () => promptAddToCalendar(p);
+
+    // FASE 2: Add to Itinerary button
+    const addToItineraryBtn = document.getElementById('add-to-itinerary-btn');
+    if (addToItineraryBtn) {
+      addToItineraryBtn.onclick = () => {
+        if (window.TappaFlow) {
+          console.log('[openPOI] Opening 3-step Tappa Flow for:', p.name || p.displayName);
+          // Get number of days from state
+          const numDays = state.tripDays || 7; // Default to 7 days if not set
+          window.TappaFlow.showStep1(p, numDays);
+        } else {
+          console.error('[openPOI] TappaFlow module not loaded');
+          toast('❌ Errore: modulo non caricato');
+        }
+      };
+    }
   }
   window.__openPOI = openPOI;
   window.openPOI = openPOI;
