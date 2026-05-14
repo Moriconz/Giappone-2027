@@ -6413,6 +6413,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fallback old sections if no new data
     const enhancedSections = renderEnhancedPoiSections ? renderEnhancedPoiSections(p) : '';
 
+    const html = `
+      ${photoHtml}
       ${dynamicSections}
 
       <!-- LEGACY SECTIONS (fallback) -->

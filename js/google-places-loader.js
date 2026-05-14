@@ -75,23 +75,56 @@ async function initGooglePlacesLoader() {
   }
 
   // Listen for map movements and load POIs accordingly
-  if (window.map) {
-    window.map.on('moveend', () => {
-      const view = window.map.getView();
-      const center = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326');
-      const newLat = center[1];
-      const newLng = center[0];
+  // Wait for map to be properly initialized before attaching event listener
+  if (window.map && typeof window.map.on === 'function') {
+    try {
+      window.map.on('moveend', () => {
+        try {
+          const view = window.map.getView();
+          const center = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326');
+          const newLat = center[1];
+          const newLng = center[0];
 
-      // Load POIs from new map center if moved significantly (300m threshold for responsive updates)
-      const distance = currentGPS ? getDistance(currentGPS.lat, currentGPS.lng, newLat, newLng) : Infinity;
-      if (distance > 300) {
-        currentGPS = { lat: newLat, lng: newLng };
-        console.log(`[GooglePlacesLoader] Map moved ${distance.toFixed(0)}m, loading POIs from: ${newLat.toFixed(4)}, ${newLng.toFixed(4)}`);
-        loadNearbyPOIs(newLat, newLng);
-      } else {
-        console.log(`[GooglePlacesLoader] Map moved ${distance.toFixed(0)}m (threshold 300m) - skipped load`);
+          // Load POIs from new map center if moved significantly (300m threshold for responsive updates)
+          const distance = currentGPS ? getDistance(currentGPS.lat, currentGPS.lng, newLat, newLng) : Infinity;
+          if (distance > 300) {
+            currentGPS = { lat: newLat, lng: newLng };
+            console.log(`[GooglePlacesLoader] Map moved ${distance.toFixed(0)}m, loading POIs from: ${newLat.toFixed(4)}, ${newLng.toFixed(4)}`);
+            loadNearbyPOIs(newLat, newLng);
+          } else {
+            console.log(`[GooglePlacesLoader] Map moved ${distance.toFixed(0)}m (threshold 300m) - skipped load`);
+          }
+        } catch (err) {
+          console.error('[GooglePlacesLoader] Error in moveend handler:', err);
+        }
+      });
+      console.log('[GooglePlacesLoader] Map moveend listener attached');
+    } catch (err) {
+      console.error('[GooglePlacesLoader] Could not attach moveend listener:', err);
+    }
+  } else {
+    console.warn('[GooglePlacesLoader] window.map not ready or does not have .on() method - will retry');
+    // Retry in 500ms
+    setTimeout(() => {
+      if (window.map && typeof window.map.on === 'function') {
+        window.map.on('moveend', () => {
+          try {
+            const view = window.map.getView();
+            const center = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326');
+            const newLat = center[1];
+            const newLng = center[0];
+            const distance = currentGPS ? getDistance(currentGPS.lat, currentGPS.lng, newLat, newLng) : Infinity;
+            if (distance > 300) {
+              currentGPS = { lat: newLat, lng: newLng };
+              loadNearbyPOIs(newLat, newLng);
+            }
+          } catch (err) {
+            console.error('[GooglePlacesLoader] Error in moveend handler (retry):', err);
+          }
+        });
+        console.log('[GooglePlacesLoader] Map moveend listener attached (retry)');
       }
-    });
+    }, 500);
   }
 
   console.log('[GooglePlacesLoader] Initialized');
