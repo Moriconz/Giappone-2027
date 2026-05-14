@@ -69,7 +69,7 @@ async function sourceB_fmgfApi(placeId, placeName) {
       return { points: isGlutenFriendly ? 3 : 0, source: 'fmgf' };
     }
   } catch (err) {
-    console.log('[GF Detector] FMGF source unavailable:', err.message);
+    console.debug('[GF Detector] FMGF source unavailable:', err.message);
   }
 
   return { points: 0, source: 'fmgf' };
@@ -145,11 +145,11 @@ async function detectGlutenFree(poi, placeId, details = {}, reviews = []) {
   // Check cache prima
   const cached = getCachedGFStatus(placeId);
   if (cached) {
-    console.log('[GF Detector] Cache hit:', cached.status);
+    console.debug('[GF Detector] Cache hit:', cached.status);
     return cached;
   }
 
-  console.log('[GF Detector] Starting detection for:', poi.name);
+  console.debug('[GF Detector] Starting detection for:', poi.name);
 
   // Parallelo su 3 fonti
   const results = await Promise.allSettled([
@@ -188,7 +188,7 @@ async function detectGlutenFree(poi, placeId, details = {}, reviews = []) {
     score: totalScore
   };
 
-  console.log('[GF Detector] Result:', status, '(score:', totalScore, ')');
+  console.debug('[GF Detector] Result:', status, '(score:', totalScore, ')');
 
   // Cache
   setCachedGFStatus(placeId, result.status, result.source);
@@ -211,4 +211,4 @@ window.GlutenFreeDetector = {
   }
 };
 
-console.log('[GlutenFreeDetector] Module loaded');
+console.debug('[GlutenFreeDetector] Module loaded');

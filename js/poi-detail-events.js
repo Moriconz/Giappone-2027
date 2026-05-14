@@ -63,9 +63,9 @@ document.addEventListener('click', (e) => {
 });
 
 /**
- * GF DETECTION: Asincrono con cache localStorage
+ * GF DETECTION: Asincrono con cache localStorage + TIMEOUT 2.5s
  *
- * Mostra loader subito, poi aggiorna con il risultato
+ * Mostra loader subito, poi aggiorna con il risultato o fallback
  */
 async function detectAndRenderGF(poi, details = {}, reviews = []) {
   const containerId = `gf-status-container-${poi.id}`;
@@ -83,48 +83,61 @@ async function detectAndRenderGF(poi, details = {}, reviews = []) {
       const TTL = 30 * 24 * 60 * 60 * 1000; // 30 giorni
 
       if (age < TTL) {
+        console.debug('[GF Cache] Hit for:', poi.name);
         renderGFStatus(container, status, fmgfUrl);
         return;
       }
     } catch (err) {
-      console.error('[GF Cache] Parse error:', err);
+      console.debug('[GF Cache] Parse error:', err);
     }
   }
 
-  // Altrimenti lancia il lookup asincrono (non blocca UI)
+  // Lookup asincrono CON TIMEOUT 2.5s (non blocca UI)
   try {
-    const result = await GlutenFreeDetector.detectGlutenFree(
-      poi,
-      poi.place_id || poi.id,
-      details,
-      reviews
-    );
+    const result = await Promise.race([
+      GlutenFreeDetector.detectGlutenFree(
+        poi,
+        poi.place_id || poi.id,
+        details,
+        reviews
+      ),
+      new Promise(resolve => {
+        setTimeout(() => {
+          console.debug('[GF Detection] Timeout 2.5s, fallback to unknown');
+          resolve({ status: 'unknown' });
+        }, 2500);
+      })
+    ]);
 
     const fmgfUrl = `https://www.findmeglutenfree.com/search?q=${encodeURIComponent(poi.name || 'restaurant')}`;
 
-    // Salva in cache
+    // Salva in cache (anche 'unknown' per evitare re-fetch)
     localStorage.setItem(cacheKey, JSON.stringify({
       status: result.status,
       fmgfUrl: fmgfUrl,
       timestamp: Date.now()
     }));
 
-    // Renderizza
+    console.debug('[GF Detection] Result:', result.status);
     renderGFStatus(container, result.status, fmgfUrl);
   } catch (err) {
-    console.error('[GF Detection] Errore:', err);
-    container.innerHTML = ''; // Nasconde il loader
+    console.debug('[GF Detection] Error:', err.message);
+    // Fallback: mostra stato "unknown"
+    const fmgfUrl = `https://www.findmeglutenfree.com/search?q=${encodeURIComponent(poi.name || 'restaurant')}`;
+    renderGFStatus(container, 'unknown', fmgfUrl);
   }
 }
 
 function renderGFStatus(container, status, fmgfUrl) {
   if (status === 'confirmed') {
+    // Confermato: link verde a Find Me GF
     container.innerHTML = `
-      <a href="${fmgfUrl}" target="_blank" style="
+      <a href="${fmgfUrl}" target="_blank" rel="noopener noreferrer" class="gf-box gf-confirmed" style="
         display: flex;
-        flex-direction: column;
-        gap: 3px;
-        padding: 10px 12px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px;
         background: rgba(74, 222, 128, 0.12);
         border: 1px solid rgba(74, 222, 128, 0.35);
         border-radius: 8px;
@@ -133,30 +146,56 @@ function renderGFStatus(container, status, fmgfUrl) {
         font-size: 13px;
         transition: all 0.2s;
       " onmouseover="this.style.background='rgba(74, 222, 128, 0.2)'" onmouseout="this.style.background='rgba(74, 222, 128, 0.12)'">
-        <span>🌾 Gluten-Free disponibile</span>
-        <small style="font-size: 11px; color: rgba(74, 222, 128, 0.8);">Confermato · Find Me GF →</small>
+        <div>
+          <strong>🌾 Opzioni gluten-free disponibili</strong>
+          <div style="font-size: 11px; color: rgba(74, 222, 128, 0.8); margin-top: 2px;">Confermato da Find Me Gluten Free</div>
+        </div>
+        <span style="flex-shrink: 0; font-size: 16px;">→</span>
       </a>
     `;
   } else if (status === 'likely') {
+    // Probabile: giallo, no link
     container.innerHTML = `
-      <div style="
+      <div class="gf-box gf-likely" style="
         display: flex;
-        flex-direction: column;
-        gap: 3px;
-        padding: 10px 12px;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
         background: rgba(251, 191, 36, 0.12);
         border: 1px solid rgba(251, 191, 36, 0.35);
         border-radius: 8px;
         color: #fbbf24;
         font-size: 13px;
       ">
-        <span>🌾 Probabilmente disponibile</span>
-        <small style="font-size: 11px; color: rgba(251, 191, 36, 0.8);">Menzionato nelle recensioni · Verifica al locale</small>
+        <div style="flex: 1;">
+          <strong>🌾 Probabilmente gluten-free</strong>
+          <div style="font-size: 11px; color: rgba(251, 191, 36, 0.8); margin-top: 2px;">Menzionato nelle recensioni, verifica al locale</div>
+        </div>
+      </div>
+    `;
+  } else if (status === 'unknown') {
+    // Non verificato: grigio neutro
+    container.innerHTML = `
+      <div class="gf-box gf-unknown" style="
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 13px;
+      ">
+        <div style="flex: 1;">
+          <strong>Gluten-free non verificato</strong>
+          <div style="font-size: 11px; color: rgba(255, 255, 255, 0.4); margin-top: 2px;">Nessuna conferma trovata al momento</div>
+        </div>
       </div>
     `;
   } else {
-    // unknown → rimuovi il container
-    container.remove();
+    // Rimuovi il container se non esiste uno stato valido
+    if (container) container.remove();
   }
 }
 
@@ -184,7 +223,7 @@ document.addEventListener('click', (e) => {
       }
     });
 
-    console.log('[Rating] Voto salvato:', rating);
+    console.debug('[Rating] Voto salvato:', rating);
   }
 });
 
@@ -248,7 +287,7 @@ document.addEventListener('click', (e) => {
         window.state.notes[poiId] = text;
         // Salva in localStorage
         localStorage.setItem(`notes_${poiId}`, text);
-        console.log('[Notes] Salvata:', text);
+        console.debug('[Notes] Salvata:', text);
         // Ricarica la modale (dipende dalla tua implementazione)
       }
     };
@@ -279,19 +318,19 @@ document.addEventListener('click', (e) => {
 document.addEventListener('click', (e) => {
   // Primary CTA: Add to Itinerary
   if (e.target.id === 'add-to-itinerary-btn' || e.target.closest('#add-to-itinerary-btn')) {
-    console.log('[Primary CTA] Aggiungi all\'itinerario');
+    console.debug('[Primary CTA] Aggiungi all\'itinerario');
     // Implementa la tua logica di aggiunta all'itinerario
   }
 
   // Secondary: Save POI
   if (e.target.id === 'save-poi') {
-    console.log('[Secondary] Salva POI');
+    console.debug('[Secondary] Salva POI');
     // La logica è già gestita dall'event click esistente
   }
 
   // Secondary: Add to Calendar
   if (e.target.id === 'add-cal') {
-    console.log('[Secondary] Calendario');
+    console.debug('[Secondary] Calendario');
     // Implementa logica calendario
   }
 });
@@ -308,7 +347,7 @@ window.initPOIDetail = function(poi, details, reviews) {
     detectAndRenderGF(poi, details, reviews);
   }
 
-  console.log('[POI Detail] Inizializzato:', poi.name);
+  console.debug('[POI Detail] Inizializzato:', poi.name);
 };
 
-console.log('[POI Detail Events] Loaded');
+// POI Detail Events loaded
