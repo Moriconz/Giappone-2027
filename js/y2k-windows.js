@@ -391,13 +391,14 @@
       line-height: 1.4 !important;
     }
 
-    /* ══ POI ROWS ════════════════════════════════════ */
-    .y2k-win-body .poi-row { display: flex !important; align-items: stretch !important; gap: 10px !important; backdrop-filter: blur(10px) !important; background: rgba(255, 107, 53, 0.15) !important; border: 1px solid rgba(255, 107, 53, 0.3) !important; color: rgba(255, 255, 255, 0.85) !important; padding: 10px !important; border-radius: 8px !important; min-height: 70px !important; transition: all 0.15s ease !important; }
-    .y2k-win-body .poi-row .icon { flex-shrink: 0; width: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-    .y2k-win-body .poi-row .body { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; overflow: hidden; }
-    .y2k-win-body .poi-row .body .name { color: #fff !important; font-weight: 700 !important; font-size: 13px !important; line-height: 1.2; word-break: break-word; }
-    .y2k-win-body .poi-row .body .sub { color: rgba(255, 255, 255, 0.65) !important; font-size: 11px !important; line-height: 1.3; margin-top: 2px; }
-    .y2k-win-body .poi-row img { flex-shrink: 0; width: 50px; height: 50px; border-radius: 6px; }
+    /* ══ POI ROWS — Material Design Two-Line List ════════ */
+    .y2k-win-body .poi-row { display: flex !important; align-items: center !important; gap: 12px !important; backdrop-filter: blur(10px) !important; background: rgba(255, 107, 53, 0.12) !important; border: 1px solid rgba(255, 107, 53, 0.25) !important; color: rgba(255, 255, 255, 0.9) !important; padding: 10px 12px !important; border-radius: 8px !important; min-height: 64px !important; transition: all 0.15s ease !important; }
+    .y2k-win-body .poi-row:hover { background: rgba(255, 107, 53, 0.18) !important; }
+    .y2k-win-body .poi-row .icon { flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .y2k-win-body .poi-row .body { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; min-width: 0; gap: 4px; }
+    .y2k-win-body .poi-row .body .name { color: #fff !important; font-weight: 600 !important; font-size: 14px !important; line-height: 1.3; word-break: break-word; display: block; }
+    .y2k-win-body .poi-row .body .sub { color: rgba(255, 255, 255, 0.7) !important; font-size: 12px !important; line-height: 1.3; display: block; }
+    .y2k-win-body .poi-row img { flex-shrink: 0; width: 48px; height: 48px; border-radius: 6px; object-fit: cover; }
     .y2k-win-body .poi-row .btn { flex-shrink: 0; }
     .y2k-win-body .btn { backdrop-filter: blur(10px) !important; background: rgba(255, 107, 53, 0.25) !important; border: 1px solid rgba(255, 107, 53, 0.4) !important; color: #fff !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; }
     .y2k-win-body .btn.primary { backdrop-filter: blur(10px) !important; background: rgba(255, 107, 53, 0.35) !important; border-color: rgba(255, 107, 53, 0.6) !important; color: white !important; }
