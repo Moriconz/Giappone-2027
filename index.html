@@ -6516,11 +6516,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. SEZIONI DINAMICHE DA GOOGLE PLACES
     sections.push(SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '');
 
-    // INDIRIZZO — Nessun wrapper, renderizza SOLO il blocco se indirizzo esiste
+    // INDIRIZZO — NON RENDERIZZARE se assente
+    // Se non è una stringa valida con contenuto → non aggiungiamo NIENTE a sections
     const cleanAddress = getCleanAddress(p);
-    const addressIsValid = cleanAddress && typeof cleanAddress === 'string' && cleanAddress.trim().length > 0;
-    console.debug('[poiDetailHTML] Address check:', { value: cleanAddress, isValid: addressIsValid, trimmed: cleanAddress?.trim?.() });
-    if (addressIsValid) {
+    if (cleanAddress && typeof cleanAddress === 'string' && cleanAddress.trim().length > 2) {
+      console.debug('[poiDetailHTML] Rendering address for', p.name, ':', cleanAddress);
       sections.push(`
         <div class="poi-address-row" style="
           display: flex;
@@ -6560,6 +6560,8 @@ document.addEventListener('DOMContentLoaded', () => {
           </button>
         </div>
       `);
+    } else {
+      console.debug('[poiDetailHTML] Address SKIPPED for', p.name, '- value:', cleanAddress);
     }
 
     // NON renderizzare SB.renderAddress (crea duplicazione) — usiamo solo la versione custom sopra
