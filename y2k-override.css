@@ -684,16 +684,17 @@ nav.bottom button.active {
 
 .poi-row {
   display: flex !important;
-  align-items: stretch !important;
+  flex-direction: row !important;
+  align-items: center !important;
   gap: 12px !important;
+  padding: 10px 12px !important;
   background: linear-gradient(135deg, rgba(60, 40, 30, 0.25), rgba(50, 35, 25, 0.15)) !important;
   border: 1px solid rgba(255, 140, 80, 0.2) !important;
   border-radius: 10px !important;
-  padding: 8px !important;
   margin-bottom: 10px !important;
-  min-height: 76px !important;
+  min-height: 64px !important;
   transition: all 0.2s ease !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 .poi-row:hover {
@@ -703,39 +704,37 @@ nav.bottom button.active {
   transform: translateY(-2px) !important;
 }
 
-/* PHOTO/IMAGE — SEMPRE A SINISTRA, 56x56px */
+/* PHOTO/IMAGE — SINISTRA, 56x56px FISSO */
 .poi-row img {
-  flex-shrink: 0 !important;
+  flex: 0 0 56px !important;
   width: 56px !important;
   height: 56px !important;
   border-radius: 8px !important;
   object-fit: cover !important;
-  order: 1 !important;
 }
 
-/* ICON — HIDE (usato in .sub) */
+/* ICON — HIDE */
 .poi-row .icon {
   display: none !important;
 }
 
-/* BODY — CENTRO, EXPANDED, 3 RIGHE DI INFO */
+/* BODY — CENTRO, ESPANDE A TUTTO LO SPAZIO DISPONIBILE */
 .poi-row .body {
   display: flex !important;
   flex-direction: column !important;
-  flex: 1 !important;
+  flex: 1 1 auto !important;
   min-width: 0 !important;
-  gap: 3px !important;
+  gap: 2px !important;
   justify-content: center !important;
-  order: 2 !important;
-  padding: 2px 4px !important;
+  overflow: hidden !important;
 }
 
-/* NOME POI — RIGA 1, BOLD, SINGOLA LINEA CON ELLIPSIS */
+/* NOME POI — RIGA 1, BOLD */
 .poi-row .name {
   color: #ffffff !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   font-weight: 600 !important;
-  font-size: 15px !important;
+  font-size: 14px !important;
   line-height: 1.2 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -743,31 +742,31 @@ nav.bottom button.active {
   display: block !important;
 }
 
-/* SUBTITLE — CATEGORIA, DISTANZA, RATING (TUTTO INSIEME) */
+/* SUBTITLE — CATEGORIA E INFO */
 .poi-row .sub {
-  color: rgba(255, 200, 150, 0.75) !important;
-  font-size: 13px !important;
+  color: rgba(255, 200, 140, 0.7) !important;
+  font-size: 12px !important;
   font-weight: 500 !important;
-  line-height: 1.25 !important;
-  display: block !important;
+  line-height: 1.2 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  display: block !important;
 }
 
-/* BOTTONE — DESTRA, ACCENT COLOR, COMPATTO */
+/* BOTTONE — DESTRA, COMPATTO, NON ESPANDE */
 .poi-row .btn {
-  flex-shrink: 0 !important;
-  order: 3 !important;
-  min-width: 44px !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 80px !important;
   height: 36px !important;
-  padding: 4px 10px !important;
+  padding: 6px 14px !important;
   background: linear-gradient(135deg, #e87c3e, #d96a2e) !important;
   border: 1px solid rgba(232, 124, 62, 0.5) !important;
-  border-radius: 6px !important;
+  border-radius: 20px !important;
   color: #ffffff !important;
   font-weight: 600 !important;
-  font-size: 11px !important;
+  font-size: 13px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
   display: flex !important;
