@@ -3026,13 +3026,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('[ShareItin] ✓ Shared. POIs:', groupItinerary.pois.length);
 
-    // Broadcast to group
-    window.broadcastItinerary?.(itineraryId);
+    // Broadcast to group via peerGPS (MQTT)
+    window.peerGPS?.broadcastItinerary?.(itineraryId);
+    console.log('[ShareItin] ✓ Broadcasted to group');
+
+    // Mark as shared with the group
+    markItinerarySharedWithGroup('personal_itinerary', roomId);
 
     // Emit event for UI refresh
     window.dispatchEvent(new CustomEvent('itinerary_updated', {
       detail: { itineraryId, itinerary: groupItinerary }
     }));
+
+    // Show success message
+    toast('✅ Itinerario condiviso con il gruppo!');
   }
 
   /**
