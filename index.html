@@ -6398,6 +6398,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. HEADER COMPATTO
     sections.push(SB.renderHeaderCompact ? SB.renderHeaderCompact(p, displayName, catColor, catEmoji) : '');
 
+    // 1.5 SUBTITLE (microdescrizione contestuale)
+    const subtypeLabels = {
+      'restaurant': 'Ristorante',
+      'cafe': 'Caffetteria',
+      'bar': 'Bar',
+      'food': 'Ristorante',
+      'izakaya': 'Izakaya',
+      'bakery': 'Panetteria',
+      'meal_takeaway': 'Asporto',
+      'museum': 'Museo',
+      'shrine': 'Santuario',
+      'temple': 'Tempio',
+      'church': 'Chiesa',
+      'landmark': 'Punto di interesse',
+      'tourist_attraction': 'Attrazione turistica',
+      'post_office': 'Ufficio postale',
+      'services': 'Servizi'
+    };
+    const poiSubtypeLabel = subtypeLabels[p.cat] || (p.cat ? p.cat.charAt(0).toUpperCase() + p.cat.slice(1) : '');
+    if (poiSubtypeLabel) {
+      sections.push(`
+        <div style="
+          padding: 0 16px 8px 16px;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.5);
+          font-weight: 500;
+        ">${poiSubtypeLabel}</div>
+        <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 8px 0 12px 0"></div>
+      `);
+    }
+
     // 2. CATEGORIA SELECTOR (hidden)
     sections.push(`
       <div id="cat-selector" style="display:none;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));border:2px solid ${catColor};border-radius:8px;padding:12px;margin-bottom:12px">
@@ -6596,7 +6627,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gap:6px;
             transition:all 0.2s;
           " onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.7)'">
-            🧭 Maps
+            🧭 Apri mappa
           </button>
 
           <!-- Dropdown menu (hidden by default) -->

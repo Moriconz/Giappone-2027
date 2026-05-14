@@ -176,22 +176,22 @@ function renderGFStatus(container, status, fmgfUrl) {
       </div>
     `;
   } else if (status === 'unknown' || status === 'timeout' || status === 'error') {
-    // Non verificato / timeout / errore: grigio neutro
+    // Softer styling: più neutro e informativo, non warning-like
     container.innerHTML = `
       <div class="gf-box gf-unknown" style="
         display: flex;
         align-items: center;
         gap: 12px;
         padding: 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 8px;
-        color: rgba(255, 255, 255, 0.6);
+        color: rgba(255, 255, 255, 0.65);
         font-size: 13px;
       ">
         <div style="flex: 1;">
-          <strong>Gluten-free non verificato</strong>
-          <div style="font-size: 11px; color: rgba(255, 255, 255, 0.4); margin-top: 2px;">Nessuna conferma trovata al momento</div>
+          <strong style="color: rgba(255, 255, 255, 0.75);">Gluten-free non verificato</strong>
+          <div style="font-size: 11px; color: rgba(255, 255, 255, 0.45); margin-top: 2px;">Nessuna conferma trovata al momento</div>
         </div>
       </div>
     `;

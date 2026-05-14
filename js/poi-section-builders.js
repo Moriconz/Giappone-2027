@@ -57,12 +57,12 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
   const catLabel = catLabels[poi.cat] || (poi.cat ? poi.cat.charAt(0).toUpperCase() + poi.cat.slice(1) : 'POI');
 
   return `
-    <!-- Row 1: Category - MINI header, quasi nascosto -->
+    <!-- Row 1: Category - MINI header -->
     <div style="
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 16px 0 16px;
+      padding: 8px 16px 6px 16px;
       margin-bottom: 0;
     ">
       <div style="
@@ -89,8 +89,8 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.5'">✏️</button>
     </div>
 
-    <!-- Row 2: Name - NESSUN spazio prima, MINIMO dopo -->
-    <div style="padding: 2px 16px 2px 16px;">
+    <!-- Row 2: Name - Compact vertical spacing -->
+    <div style="padding: 2px 16px 0 16px;">
       <h2 style="
         margin: 0;
         font-size: 18px;
@@ -101,13 +101,13 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       ">${displayName}</h2>
     </div>
 
-    <!-- Row 3: Metadata - SUBITO DOPO, nessuno spazio -->
+    <!-- Row 3: Metadata -->
     ${metadataRow ? `
       <div style="
         font-size: 12px;
         color: rgba(255, 255, 255, 0.6);
         line-height: 1.3;
-        padding: 1px 16px 6px 16px;
+        padding: 2px 16px 0 16px;
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
@@ -117,8 +117,8 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       </div>
     ` : ''}
 
-    <!-- Divider instead of card border -->
-    <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 12px 0"></div>
+    <!-- Divider -->
+    <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 10px 0 0 0"></div>
   `;
 }
 
