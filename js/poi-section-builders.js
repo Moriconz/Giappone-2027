@@ -18,16 +18,18 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
   if (poi.city) parts.push(`📍 ${poi.city}`);
   if (poi.rating) parts.push(`⭐ ${poi.rating.toFixed(1)} (${poi.ratingCount || 0})`);
 
-  // Status badge con chip colorato
+  // Status badge con chip colorato - MIGLIORE LEGGIBILITÀ
   let statusBadge = '';
   if (poi.openNow !== null) {
     const isOpen = poi.openNow === true;
-    statusBadge = `<span style="
-      display: inline-block;
-      background: ${isOpen ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)'};
-      color: ${isOpen ? '#4ade80' : '#f87171'};
-      border-radius: 4px;
-      padding: 2px 6px;
+    statusBadge = `<span class="status-${isOpen ? 'open' : 'closed'}" style="
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: ${isOpen ? 'rgba(74, 222, 128, 0.14)' : 'rgba(248, 113, 113, 0.14)'};
+      color: ${isOpen ? '#86efac' : '#fca5a5'};
       font-size: 11px;
       font-weight: 600;
     ">${isOpen ? '🟢 Aperto' : '🔴 Chiuso'}</span>`;
@@ -62,7 +64,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 16px 6px 16px;
+      padding: 8px 16px 4px 16px;
       margin-bottom: 0;
     ">
       <div style="
@@ -89,7 +91,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.5'">✏️</button>
     </div>
 
-    <!-- Row 2: Name - Compact vertical spacing -->
+    <!-- Row 2: Name - Ultra-compact -->
     <div style="padding: 2px 16px 0 16px;">
       <h2 style="
         margin: 0;
@@ -101,7 +103,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       ">${displayName}</h2>
     </div>
 
-    <!-- Row 3: Metadata -->
+    <!-- Row 3: Metadata - Tight -->
     ${metadataRow ? `
       <div style="
         font-size: 12px;
@@ -112,13 +114,14 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
         flex-wrap: wrap;
         gap: 8px;
         align-items: center;
+        margin-bottom: 0;
       ">
         ${metadataRow}
       </div>
     ` : ''}
 
-    <!-- Divider -->
-    <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 10px 0 0 0"></div>
+    <!-- Divider - Minimal spacing -->
+    <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 8px 0 0 0"></div>
   `;
 }
 
