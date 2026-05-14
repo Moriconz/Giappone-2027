@@ -129,6 +129,7 @@ async function detectAndRenderGF(poi, details = {}, reviews = []) {
 }
 
 function renderGFStatus(container, status, fmgfUrl) {
+  console.debug('[renderGFStatus] Called with:', { containerExists: !!container, status, containerHTML: container?.innerHTML?.substring(0, 100) });
   if (!container) return;
 
   if (status === 'confirmed') {
@@ -344,8 +345,12 @@ window.initPOIDetail = function(poi, details, reviews) {
   // Load rating salvato
   loadRatingOnInit(poi.id);
 
-  // Lanchia GF detection se ristorante
-  if (poi.isRestaurant || poi.cat === 'restaurant' || poi.cat === 'cafe' || poi.cat === 'food') {
+  // Lanchia GF detection se ristorante — Usa lo STESSO check di poiDetailHTML
+  const FOOD_TYPES = ['restaurant','food','cafe','bar','meal_takeaway','bakery','izakaya'];
+  const isRestaurant = FOOD_TYPES.includes(poi.primaryType || poi.cat);
+
+  if (isRestaurant) {
+    console.debug('[POI Detail] Lanciando GF detection per:', poi.name);
     detectAndRenderGF(poi, details, reviews);
   }
 
