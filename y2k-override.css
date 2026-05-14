@@ -1362,6 +1362,54 @@ nav.bottom button.active {
 .poi-marker { border: 2px solid #fff !important; box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important; }
 .poi-marker.gf { box-shadow: 0 0 0 3px var(--y2k-green), 0 2px 8px rgba(0,0,0,0.4) !important; }
 
+/* ── Indirizzo POI — riga compatta con copy button ────────────── */
+.poi-address-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  margin: 12px 16px !important;
+}
+
+.poi-address-text {
+  flex: 1 !important;
+  font-size: 14px !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  min-width: 0 !important;
+}
+
+.copy-address-btn {
+  width: 32px !important;
+  height: 32px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: none !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s ease !important;
+  padding: 0 !important;
+}
+
+.copy-address-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.copy-address-btn:active {
+  transform: scale(0.95) !important;
+}
+
 /* ══════════════════════════════════════════════════════════════════
    NAV ACTIVE STATE RESET — JS snippet
    Incolla questo <script> in fondo al <body> del tuo index.html

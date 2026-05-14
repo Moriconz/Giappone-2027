@@ -6517,40 +6517,44 @@ document.addEventListener('DOMContentLoaded', () => {
     sections.push(SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '');
 
     // INDIRIZZO — Una sola riga STABILE e ben definita (SOLO se presente e non vuoto)
-    // REGOLA: non mostrare mai solo l'icona copia senza testo — usa helper getCleanAddress()
+    // REGOLA: non mostrare mai solo l'icona copia senza testo
     const cleanAddress = getCleanAddress(p);
-    if (cleanAddress) {
+    if (cleanAddress && cleanAddress.trim()) {
       const addressHtml = `
-        <div class="poi-address-container" style="
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 8px;
-          padding: 12px;
-          margin: 12px 16px;
+        <div class="poi-address-row" style="
           display: flex;
-          justify-content: space-between;
           align-items: center;
+          justify-content: space-between;
           gap: 12px;
+          padding: 10px 12px;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          margin: 12px 16px;
         ">
           <span class="poi-address-text" style="
             flex: 1;
-            font-size: 13px;
-            color: #fff;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.85);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             min-width: 0;
           ">📍 ${cleanAddress}</span>
-          <button class="copy-address-btn" data-address="${cleanAddress}" aria-label="Copia indirizzo" style="
-            background: transparent;
+          <button class="copy-address-btn" data-address="${cleanAddress}" aria-label="Copia indirizzo" title="Copia indirizzo" style="
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             border: none;
+            border-radius: 8px;
+            background: transparent;
             color: rgba(255, 255, 255, 0.5);
             cursor: pointer;
-            font-size: 14px;
-            padding: 4px 8px;
             flex-shrink: 0;
-            transition: color 0.2s;
-          " onmouseover="this.style.color='rgba(255, 255, 255, 0.8)'" onmouseout="this.style.color='rgba(255, 255, 255, 0.5)'">
+            transition: all 0.2s;
+          " onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'; this.style.color='rgba(255, 255, 255, 0.9)';" onmouseout="this.style.background='transparent'; this.style.color='rgba(255, 255, 255, 0.5)';">
             ⧉
           </button>
         </div>
