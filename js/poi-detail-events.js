@@ -92,7 +92,7 @@ async function detectAndRenderGF(poi, details = {}, reviews = []) {
     }
   }
 
-  // Lookup asincrono CON TIMEOUT 2.5s (non blocca UI)
+  // Lookup asincrono CON TIMEOUT FORZATO 2.5s (fallback garantito)
   try {
     const result = await Promise.race([
       GlutenFreeDetector.detectGlutenFree(
@@ -103,8 +103,8 @@ async function detectAndRenderGF(poi, details = {}, reviews = []) {
       ),
       new Promise(resolve => {
         setTimeout(() => {
-          console.debug('[GF Detection] Timeout 2.5s, fallback to unknown');
-          resolve({ status: 'unknown' });
+          console.debug('[GF Detection] TIMEOUT 2.5s - fallback forzato a unknown');
+          resolve({ status: 'unknown', source: 'timeout' });
         }, 2500);
       })
     ]);
@@ -121,14 +121,16 @@ async function detectAndRenderGF(poi, details = {}, reviews = []) {
     console.debug('[GF Detection] Result:', result.status);
     renderGFStatus(container, result.status, fmgfUrl);
   } catch (err) {
-    console.debug('[GF Detection] Error:', err.message);
-    // Fallback: mostra stato "unknown"
+    console.debug('[GF Detection] Exception:', err.message);
+    // Fallback garantito: mostra stato "error"
     const fmgfUrl = `https://www.findmeglutenfree.com/search?q=${encodeURIComponent(poi.name || 'restaurant')}`;
-    renderGFStatus(container, 'unknown', fmgfUrl);
+    renderGFStatus(container, 'error', fmgfUrl);
   }
 }
 
 function renderGFStatus(container, status, fmgfUrl) {
+  if (!container) return;
+
   if (status === 'confirmed') {
     // Confermato: link verde a Find Me GF
     container.innerHTML = `
@@ -173,8 +175,8 @@ function renderGFStatus(container, status, fmgfUrl) {
         </div>
       </div>
     `;
-  } else if (status === 'unknown') {
-    // Non verificato: grigio neutro
+  } else if (status === 'unknown' || status === 'timeout' || status === 'error') {
+    // Non verificato / timeout / errore: grigio neutro
     container.innerHTML = `
       <div class="gf-box gf-unknown" style="
         display: flex;
@@ -194,8 +196,8 @@ function renderGFStatus(container, status, fmgfUrl) {
       </div>
     `;
   } else {
-    // Rimuovi il container se non esiste uno stato valido
-    if (container) container.remove();
+    // Stato sconosciuto: rimuovi il container
+    container.remove();
   }
 }
 

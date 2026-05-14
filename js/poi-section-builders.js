@@ -57,40 +57,40 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
   const catLabel = catLabels[poi.cat] || (poi.cat ? poi.cat.charAt(0).toUpperCase() + poi.cat.slice(1) : 'POI');
 
   return `
-    <!-- Row 1: Category inline (flat, no card) - compatto -->
+    <!-- Row 1: Category - MINI header, quasi nascosto -->
     <div style="
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 16px 2px 16px;
+      padding: 8px 16px 0 16px;
       margin-bottom: 0;
     ">
       <div style="
         display: flex;
         align-items: center;
-        gap: 6px;
-        font-size: 11px;
+        gap: 4px;
+        font-size: 10px;
         font-weight: 500;
-        color: rgba(255, 255, 255, 0.5);
-        letter-spacing: 0.3px;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.2px;
       ">
-        <span style="font-size: 16px;">${catEmoji}</span>
+        <span style="font-size: 14px;">${catEmoji}</span>
         <span>${catLabel}</span>
       </div>
       <button id="edit-cat-btn" style="
         background: transparent;
         border: none;
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.4);
         cursor: pointer;
-        font-size: 14px;
-        padding: 2px 6px;
-        opacity: 0.6;
+        font-size: 12px;
+        padding: 2px 4px;
+        opacity: 0.5;
         transition: opacity 0.2s;
-      " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">✏️</button>
+      " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.5'">✏️</button>
     </div>
 
-    <!-- Row 2: Name - più compatto -->
-    <div style="padding: 0 16px; margin-bottom: 4px;">
+    <!-- Row 2: Name - NESSUN spazio prima, MINIMO dopo -->
+    <div style="padding: 2px 16px 2px 16px;">
       <h2 style="
         margin: 0;
         font-size: 18px;
@@ -101,13 +101,13 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       ">${displayName}</h2>
     </div>
 
-    <!-- Row 3: Metadata compatto -->
+    <!-- Row 3: Metadata - SUBITO DOPO, nessuno spazio -->
     ${metadataRow ? `
       <div style="
         font-size: 12px;
         color: rgba(255, 255, 255, 0.6);
-        line-height: 1.4;
-        padding: 0 16px 8px 16px;
+        line-height: 1.3;
+        padding: 1px 16px 6px 16px;
         display: flex;
         flex-wrap: wrap;
         gap: 8px;

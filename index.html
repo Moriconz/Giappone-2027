@@ -6327,8 +6327,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const catColor = getCategoryColor(p.cat);
     const catEmoji = getCategoryEmoji(p.cat);
 
-    // IMPORTANTE: Determina se è un ristorante basato su primaryType o categoria
-    const isRestaurant = ['restaurant','food','cafe','bar','meal_takeaway','bakery','izakaya'].includes(p.primaryType || p.cat);
+    // IMPORTANTE: Determina SE è un ristorante (UNICA fonte di verità)
+    const FOOD_TYPES = ['restaurant','food','cafe','bar','meal_takeaway','bakery','izakaya'];
+    const isRestaurant = FOOD_TYPES.includes(p.primaryType || p.cat);
+    console.debug('[POI Classification] Name:', p.name, 'Type:', p.primaryType || p.cat, 'IsRestaurant:', isRestaurant);
 
     // Helper: use PoiSectionBuilders if available, otherwise fallback
     const SB = window.PoiSectionBuilders || {};
@@ -6404,36 +6406,37 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `);
 
-    // 3. GF SECTION: Loader immediato SOLO per ristoranti (leggero e temporaneo)
+    // 3. GF SECTION: Loader immediato SOLO per ristoranti (LEGGERO e temporaneo, NON stabile come indirizzo)
     if (isRestaurant) {
       sections.push(`
         <div class="gf-section" id="gf-status-container-${p.id}" data-poi-id="${p.id}" style="
           padding: 0 16px;
-          margin: 8px 0;
+          margin: 6px 0;
         ">
           <div class="gf-box gf-pending" style="
             display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.04);
             border-radius: 6px;
-            padding: 8px 10px;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
+            padding: 6px 10px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            opacity: 0.85;
           ">
             <span class="gf-spinner" style="
-              width: 11px;
-              height: 11px;
-              border: 1.5px solid rgba(255, 255, 255, 0.15);
+              width: 10px;
+              height: 10px;
+              border: 1.5px solid rgba(255, 255, 255, 0.12);
               border-top-color: #4ade80;
               border-radius: 50%;
               display: inline-block;
               flex-shrink: 0;
               animation: spin 0.8s linear infinite;
             "></span>
-            <div style="flex: 1; line-height: 1.3;">
-              <div>Verifica gluten-free in corso…</div>
+            <div style="flex: 1; line-height: 1.2; color: rgba(255, 255, 255, 0.4);">
+              Verifica gluten-free in corso…
             </div>
           </div>
           <style>
@@ -6446,20 +6449,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. SEZIONI DINAMICHE DA GOOGLE PLACES
     sections.push(SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '');
 
-    // INDIRIZZO — Una sola riga compatta senza duplicazione
-    const addressHtml = (p._details?.address || p.address) ? `
+    // INDIRIZZO — Una sola riga STABILE e ben definita (SOLO se presente e non vuoto)
+    const cleanAddress = (p._details?.address || p.address || '').trim();
+    const addressHtml = cleanAddress ? `
       <div style="
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 8px;
-        padding: 10px 12px;
-        margin: 10px 16px;
+        padding: 11px 12px;
+        margin: 12px 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         gap: 12px;
         font-size: 13px;
         color: #fff;
+        opacity: 1;
       ">
         <span style="
           flex: 1;
@@ -6467,8 +6472,8 @@ document.addEventListener('DOMContentLoaded', () => {
           overflow: hidden;
           text-overflow: ellipsis;
           min-width: 0;
-        ">📍 ${p._details?.address || p.address}</span>
-        <button class="copy-address-btn" data-address="${p._details?.address || p.address}" style="
+        ">📍 ${cleanAddress}</span>
+        <button class="copy-address-btn" data-address="${cleanAddress}" style="
           background: transparent;
           border: none;
           color: rgba(255, 255, 255, 0.5);
@@ -6885,6 +6890,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const html = poiDetailHTML(p);
       window.openSheet(displayName, html);
       console.log('[openPOI] ✅ openSheet called');
+
+      // Inizializza logica GF detection (SOLO se ristorante)
+      setTimeout(() => {
+        const FOOD_TYPES = ['restaurant','food','cafe','bar','meal_takeaway','bakery'];
+        const isRestaurant = FOOD_TYPES.includes(p.primaryType || p.cat);
+        if (isRestaurant && window.initPOIDetail) {
+          console.debug('[openPOI] Initializing GF detection');
+          window.initPOIDetail(p, p._details || {}, p._reviews || []);
+        }
+      }, 100);
 
       // Aumenta la larghezza della finestra del POI per mostrare due colonne side-by-side
       setTimeout(() => {
