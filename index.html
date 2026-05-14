@@ -2953,6 +2953,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (goGroupsBtn) {
         goGroupsBtn.addEventListener('click', () => {
           console.log('[NoGroupModal] Navigating to groups tab');
+          console.log('[NoGroupModal] Setting pendingShareItinerary flag');
+          state.pendingShareItinerary = true;
           window.y2kWindows.close('no-group-modal');
 
           // Find and click the groups tab button
@@ -10579,6 +10581,25 @@ document.addEventListener('DOMContentLoaded', () => {
       toast('✅ Connesso a: ' + room);
       closeSheet();
       renderGroupView();
+
+      // Se c'è una condivisione di itinerario in sospeso, condividila automaticamente
+      if (state.pendingShareItinerary) {
+        console.log('[Group] pendingShareItinerary flag detected, sharing itinerary automatically');
+        setTimeout(() => {
+          if (state.itinerary && state.itinerary.length > 0 && state.group?.roomId) {
+            console.log('[Group] Auto-sharing itinerary to group:', state.group.roomId);
+            sharePersonalItineraryToGroup(state.group.roomId);
+            state.pendingShareItinerary = false;
+            saveState();
+            toast('✅ Itinerario condiviso con il gruppo!');
+          } else {
+            console.warn('[Group] Cannot auto-share: missing itinerary or roomId', {
+              hasItinerary: !!(state.itinerary && state.itinerary.length > 0),
+              roomId: state.group?.roomId
+            });
+          }
+        }, 500);
+      }
 
       // Redraw GPS marker with correct name now that group is set
       if (state.gpsCurrentLat && state.gpsCurrentLng) {
