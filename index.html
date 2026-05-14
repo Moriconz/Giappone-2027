@@ -6516,11 +6516,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. SEZIONI DINAMICHE DA GOOGLE PLACES
     sections.push(SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '');
 
-    // INDIRIZZO — Una sola riga STABILE e ben definita (SOLO se presente e non vuoto)
-    // REGOLA: non mostrare mai solo l'icona copia senza testo
+    // INDIRIZZO — Template condizionale: renderizza SOLO se indirizzo presente e non vuoto
+    // REGOLA OBBLIGATORIA: se non c'è indirizzo → nessun blocco, nessun bottone
     const cleanAddress = getCleanAddress(p);
-    if (cleanAddress && cleanAddress.trim()) {
-      const addressHtml = `
+    sections.push(
+      cleanAddress && cleanAddress.trim() ? `
         <div class="poi-address-row" style="
           display: flex;
           align-items: center;
@@ -6558,9 +6558,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ⧉
           </button>
         </div>
-      `;
-      sections.push(addressHtml);
-    }
+      ` : ''
+    );
 
     // NON renderizzare SB.renderAddress (crea duplicazione) — usiamo solo la versione custom sopra
     // sections.push(SB.renderAddress ? (SB.renderAddress(p, p._details || p) || '') : '');
