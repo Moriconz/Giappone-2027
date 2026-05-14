@@ -5129,6 +5129,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const vectorLayer = new ol.layer.Vector({
     source: vectorSource,
     style: (feature) => {
+      // Hide marker if filtered out
+      if (feature.get('hidden') === true) {
+        return null; // Don't render this marker
+      }
+
       const cat = feature.get('cat') || 'all';
       const isGF = feature.get('isGF') || false;
       const key = cat + (isGF ? '_gf' : '');
@@ -12877,6 +12882,8 @@ if ('serviceWorker' in navigator) {
 
 }); // close DOMContentLoaded
 </script>
+<script src="./js/onboarding.js"></script>
+<script src="./js/filter-system.js"></script>
 <script src="./js/y2k-windows.js"></script>
 <script src="./js/gf-places-loader.js"></script>
 <script src="./js/allergy-cards.js"></script>
