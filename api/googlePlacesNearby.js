@@ -37,7 +37,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { lat, lng, radiusM = 1000 } = req.body;
+    const { lat, lng, radiusM = 1000, type = null } = req.body;
 
     if (!lat || !lng || typeof lat !== 'number' || typeof lng !== 'number') {
       return res.status(400).json({ error: 'lat and lng must be numbers' });
@@ -47,13 +47,18 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'radiusM must be between 100 and 50000' });
     }
 
-    console.log(`[googlePlacesNearby] Search: ${lat}, ${lng}, radius ${radiusM}m`);
+    console.log(`[googlePlacesNearby] Search: ${lat}, ${lng}, radius ${radiusM}m${type ? `, type: ${type}` : ''}`);
 
     // Google Places Nearby Search API
     const nearbyUrl = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json');
     nearbyUrl.searchParams.set('location', `${lat},${lng}`);
     nearbyUrl.searchParams.set('radius', String(radiusM));
     nearbyUrl.searchParams.set('key', GOOGLE_API_KEY);
+
+    // Optional: filter by type if provided (supports single type or array)
+    if (type) {
+      nearbyUrl.searchParams.set('type', Array.isArray(type) ? type[0] : type);
+    }
 
     const nearbyRes = await fetch(nearbyUrl.toString());
     const nearbyData = await nearbyRes.json();
