@@ -7128,8 +7128,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmBtn = document.getElementById('itin-confirm');
     const overlayDiv = document.getElementById('add-itin-overlay');
 
+    console.log('[DIALOG] Elements found:', { dayInput, timeInput, costInput, cancelBtn, confirmBtn, overlayDiv });
+
     // Focus sul primo input
-    setTimeout(() => dayInput.focus(), 100);
+    setTimeout(() => dayInput?.focus(), 100);
 
     // Handler chiusura
     const close = () => {
@@ -7137,19 +7139,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Bottone annulla
-    cancelBtn.onclick = () => close();
-    overlayDiv.onclick = (e) => {
+    if (cancelBtn) cancelBtn.onclick = () => close();
+    if (overlayDiv) overlayDiv.onclick = (e) => {
       if (e.target === overlayDiv) close();
     };
 
     // Bottone conferma
-    confirmBtn.onclick = () => {
-      const day = dayInput.value.trim() || '';
-      const time = timeInput.value.trim() || '';
-      const cost = costInput.value.trim() || '';
-      onConfirm({ day, time, cost });
-      close();
-    };
+    if (confirmBtn) {
+      console.log('[DIALOG] Assigning onclick to confirmBtn');
+      confirmBtn.onclick = (e) => {
+        console.log('[DIALOG] Confirm button CLICKED!', e);
+        e.preventDefault();
+        e.stopPropagation();
+        const day = dayInput.value.trim() || '';
+        const time = timeInput.value.trim() || '';
+        const cost = costInput.value.trim() || '';
+        console.log('[DIALOG] Calling onConfirm with:', { day, time, cost });
+        onConfirm({ day, time, cost });
+        close();
+      };
+    } else {
+      console.error('[DIALOG] confirmBtn NOT FOUND! Cannot attach onclick handler');
+    }
 
     // Enter key per muoversi tra campi
     dayInput.onkeydown = (e) => {
