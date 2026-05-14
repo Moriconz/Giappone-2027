@@ -269,8 +269,8 @@ function renderPhone(details) {
  * Description from Places API (with fallback)
  */
 function renderDescription(details) {
-  const text = details?.editorialSummary || null;
-  if (!text) return '';
+  const text = (details?.editorialSummary || '').trim();
+  if (!text) return ''; // Non renderizzare se vuoto o solo spazi
 
   return `
     <div style="
