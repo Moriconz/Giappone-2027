@@ -17,77 +17,88 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
   const parts = [];
   if (poi.city) parts.push(`📍 ${poi.city}`);
   if (poi.rating) parts.push(`⭐ ${poi.rating.toFixed(1)} (${poi.ratingCount || 0})`);
+
+  // Status badge con chip colorato
+  let statusBadge = '';
   if (poi.openNow !== null) {
-    parts.push(poi.openNow ? '🟢 Aperto' : '🔴 Chiuso');
+    const isOpen = poi.openNow === true;
+    statusBadge = `<span style="
+      display: inline-block;
+      background: ${isOpen ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)'};
+      color: ${isOpen ? '#4ade80' : '#f87171'};
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-weight: 600;
+    ">${isOpen ? '🟢 Aperto' : '🔴 Chiuso'}</span>`;
+    parts.push(statusBadge);
   }
 
   const metadataRow = parts.join(' · ');
 
   return `
+    <!-- Row 1: Category inline (flat, no card) -->
     <div style="
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px 4px 16px;
+      margin-bottom: 0;
     ">
-      <!-- Row 1: Category + Edit -->
       <div style="
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        margin-bottom: 8px;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.6);
+        letter-spacing: 0.3px;
       ">
-        <div style="
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 11px;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.6);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        ">
-          <span style="font-size: 16px;">${catEmoji}</span>
-          <span>CIBO</span>
-        </div>
-        <button id="edit-cat-btn" style="
-          background: transparent;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          color: #fff;
-          width: 28px;
-          height: 28px;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0;
-        ">✏️</button>
+        <span style="font-size: 16px;">${catEmoji}</span>
+        <span>${poi.cat ? poi.cat.charAt(0).toUpperCase() + poi.cat.slice(1) : 'POI'}</span>
       </div>
+      <button id="edit-cat-btn" style="
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        font-size: 16px;
+        padding: 4px 8px;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+      " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">✏️</button>
+    </div>
 
-      <!-- Row 2: Name (FIX: flex: 1, minWidth: 0 per evitare rendering verticale) -->
+    <!-- Row 2: Name (FIX: flex: 1, minWidth: 0 per evitare rendering verticale) -->
+    <div style="padding: 0 16px; margin-bottom: 8px;">
       <h2 style="
-        margin: 0 0 6px 0;
+        margin: 0;
         font-size: 18px;
         font-weight: 700;
         color: #fff;
-        flex: 1;
-        min-width: 0;
         word-wrap: break-word;
         line-height: 1.3;
       ">${displayName}</h2>
-
-      <!-- Row 3: Metadata -->
-      ${metadataRow ? `
-        <div style="
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.5);
-          line-height: 1.3;
-        ">
-          ${metadataRow}
-        </div>
-      ` : ''}
     </div>
+
+    <!-- Row 3: Metadata con badge colorati -->
+    ${metadataRow ? `
+      <div style="
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.5;
+        padding: 0 16px 12px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      ">
+        ${metadataRow}
+      </div>
+    ` : ''}
+
+    <!-- Divider instead of card border -->
+    <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 12px 0"></div>
   `;
 }
 
@@ -265,6 +276,21 @@ function renderRestaurantAttributes(poi, details) {
 
   if (!details) return '';
 
+  // Check GF status (from poi._gfStatus if enriched)
+  const gfStatus = poi._gfStatus || 'unknown'; // confirmed, likely, unknown
+  const gfChip = gfStatus !== 'unknown' ? `
+    <span style="
+      display: inline-block;
+      background: ${gfStatus === 'confirmed' ? 'rgba(74,222,128,0.2)' : 'rgba(132,204,22,0.15)'};
+      border: 1px solid ${gfStatus === 'confirmed' ? 'rgba(74,222,128,0.5)' : 'rgba(132,204,22,0.4)'};
+      color: ${gfStatus === 'confirmed' ? '#4ade80' : '#84cc16'};
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 700;
+    ">🌾 ${gfStatus === 'confirmed' ? 'GF Confermato' : 'GF Probabile'}</span>
+  ` : '';
+
   const attributes = [
     { flag: details.servesVegetarianFood, label: '🥗 Vegetariano' },
     { flag: details.servesDinner, label: '🌙 Cena' },
@@ -290,7 +316,7 @@ function renderRestaurantAttributes(poi, details) {
     `)
     .join('');
 
-  if (!activeAttrs) return '';
+  if (!activeAttrs && !gfChip) return '';
 
   return `
     <div style="
@@ -306,12 +332,13 @@ function renderRestaurantAttributes(poi, details) {
         color: rgba(255, 255, 255, 0.5);
         margin-bottom: 8px;
         text-transform: uppercase;
-      ">🍴 ATTRIBUTI</div>
+      ">🍴 CARATTERISTICHE</div>
       <div style="
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
       ">
+        ${gfChip}
         ${activeAttrs}
       </div>
     </div>

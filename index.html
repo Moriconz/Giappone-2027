@@ -6423,59 +6423,62 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- DIVIDER -->
       <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0"></div>
 
-      <!-- NOTE PERSONALI — Minimalista -->
-      <div style="padding:0 16px;margin:16px 0">
-        <label style="display:block;font-size:12px;color:rgba(255,255,255,0.5);font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.4px">📝 Note personali</label>
-        <textarea id="poi-note" placeholder="Es: Prenotare con 2 giorni di anticipo, Portare contanti..." style="
-          width:100%;
-          padding:12px;
-          background:rgba(255,255,255,0.04);
-          border:1px solid rgba(255,255,255,0.1);
-          border-radius:10px;
-          font-size:13px;
-          color:#fff;
-          resize:vertical;
-          min-height:70px;
-          font-family:inherit;
-          box-sizing:border-box;
-          transition:border-color 0.2s;
-        " onmouseover="this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">${note}</textarea>
+      <!-- NOTE PERSONALI — Collapsato di default -->
+      <div style="padding:0 16px;margin:16px 0" id="notes-section-${p.id}">
+        ${note ? `
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <label style="font-size:12px;color:rgba(255,255,255,0.6);font-weight:600;letter-spacing:0.3px">📝 Note</label>
+          </div>
+          <textarea id="poi-note" placeholder="Es: Prenotare con 2 giorni di anticipo..." style="
+            width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+            border-radius:10px;font-size:13px;color:#fff;resize:vertical;min-height:70px;font-family:inherit;
+            box-sizing:border-box;transition:border-color 0.2s;
+          " onmouseover="this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">${note}</textarea>
+        ` : `
+          <button id="add-note-btn-${p.id}" style="
+            display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:36px;
+            background:transparent;border:1px dashed rgba(255,255,255,0.15);border-radius:8px;
+            color:rgba(255,255,255,0.5);font-size:13px;cursor:pointer;transition:all 0.2s;
+          " onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='rgba(255,255,255,0.7)'"
+             onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            📝 Aggiungi una nota
+          </button>
+        `}
       </div>
 
       <!-- DIVIDER -->
       <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0"></div>
 
-      <!-- IL TUO VOTO — Minimalista con stelle grandi -->
-      <div style="padding:0 16px;margin:16px 0">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <label style="font-size:12px;color:rgba(255,255,255,0.5);font-weight:600;text-transform:uppercase;letter-spacing:0.4px">⭐ Il tuo voto</label>
-        </div>
+      <!-- IL TUO VOTO — Semplificato, inline -->
+      <div style="padding:0 16px;margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:16px">
+        <label style="font-size:13px;color:rgba(255,255,255,0.6);font-weight:600;white-space:nowrap">La tua valutazione</label>
         <div class="star-row" id="stars-${p.id}" style="
-          display:flex;
-          gap:12px;
-          justify-content:center;
-          padding:12px;
+          display:flex;gap:8px;
         ">${stars}</div>
       </div>
 
       <!-- DIVIDER -->
       <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0"></div>
 
-      <!-- PRIMARY ACTION: ADD TO ITINERARY -->
+      <!-- PRIMARY ACTION: ADD TO ITINERARY (CTA principale, deve spiccare) -->
       <div style="padding:0 16px;margin:16px 0">
         <button id="add-to-itinerary-btn" class="btn primary" style="
           width:100%;
-          background:linear-gradient(135deg,rgba(255,107,53,0.8),rgba(255,107,53,0.6));
+          background:linear-gradient(135deg,#d97706,#b45309);
           border:none;
           color:white;
-          padding:16px;
+          height:50px;
           border-radius:12px;
           font-weight:700;
           font-size:15px;
           cursor:pointer;
-          transition:background 0.2s;
-          box-shadow:0 4px 12px rgba(255,107,53,0.25);
-        " onmouseover="this.style.background='linear-gradient(135deg,rgba(255,107,53,0.95),rgba(255,107,53,0.75))'" onmouseout="this.style.background='linear-gradient(135deg,rgba(255,107,53,0.8),rgba(255,107,53,0.6))'">📅 Aggiungi all'itinerario</button>
+          transition:all 0.2s;
+          box-shadow:0 6px 20px rgba(217,119,6,0.35);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:8px;
+        " onmouseover="this.style.background='linear-gradient(135deg,#f59e0b,#d97706)';this.style.boxShadow='0 8px 24px rgba(217,119,6,0.45)'" onmouseout="this.style.background='linear-gradient(135deg,#d97706,#b45309)';this.style.boxShadow='0 6px 20px rgba(217,119,6,0.35)'">📅 Aggiungi all'itinerario</button>
       </div>
 
       <!-- SECONDARY ACTIONS (ghost buttons) -->
@@ -8452,6 +8455,34 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     window.openSheet('💡 Tips Giappone 2027', html);
   }
+
+  /* ═══════════════════════════════════════════════════════════════
+     EVENT DELEGATION — Handle dynamic notes button
+  ═══════════════════════════════════════════════════════════════ */
+  document.addEventListener('click', (e) => {
+    if (e.target.id && e.target.id.startsWith('add-note-btn-')) {
+      const poiId = e.target.id.replace('add-note-btn-', '');
+      const notesSection = document.getElementById(`notes-section-${poiId}`);
+      if (notesSection) {
+        // Replace button with textarea
+        notesSection.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <label style="font-size:12px;color:rgba(255,255,255,0.6);font-weight:600;letter-spacing:0.3px">📝 Note</label>
+          </div>
+          <textarea id="poi-note" placeholder="Es: Prenotare con 2 giorni di anticipo..." style="
+            width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+            border-radius:10px;font-size:13px;color:#fff;resize:vertical;min-height:70px;font-family:inherit;
+            box-sizing:border-box;transition:border-color 0.2s;
+          " onmouseover="this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
+        `;
+        // Focus textarea
+        setTimeout(() => {
+          const textarea = notesSection.querySelector('textarea');
+          if (textarea) textarea.focus();
+        }, 0);
+      }
+    }
+  });
 
   /* ═══════════════════════════════════════════════════════════════
      WEATHER VIEW — Previsioni meteo per le tappe
