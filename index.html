@@ -2917,6 +2917,65 @@ document.addEventListener('DOMContentLoaded', () => {
   // ═════════════════════════════════════════════════════════════════
 
   /**
+   * Show modal when user is not in any group
+   */
+  function showNoGroupModal() {
+    console.log('[NoGroupModal] Showing modal for no group');
+
+    const html = `
+      <div style="padding: 0; min-width: 300px;">
+        <div style="background:linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,20,147,.1));border:1px solid #FF6B35;border-radius:10px;padding:16px;margin:12px;">
+          <h3 style="margin:0 0 12px 0;color:#FF6B35;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">⚠️ Non sei in nessun gruppo</h3>
+
+          <p style="margin:0 0 16px 0;color:#fff;font-size:13px;line-height:1.5;">
+            Per condividere il tuo itinerario con altri, devi prima entrare in un gruppo oppure crearne uno nuovo.
+          </p>
+
+          <div style="display:flex;gap:8px">
+            <button id="btn-go-groups" style="flex:1;background:linear-gradient(180deg,#FF6B35,#FF8C42);border:2px solid #FF6B35;color:white;border-radius:8px;padding:11px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive">
+              👥 Gruppami
+            </button>
+            <button id="btn-close-no-group" style="flex:1;background:rgba(255,107,53,.2);border:2px solid rgba(255,107,53,.5);color:#fff;border-radius:8px;padding:11px;font-weight:600;cursor:pointer;">
+              ❌ Chiudi
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    window.y2kWindows.open('no-group-modal', 'Non sei in nessun gruppo', html);
+
+    // Attach event listeners
+    setTimeout(() => {
+      const goGroupsBtn = document.getElementById('btn-go-groups');
+      const closeBtn = document.getElementById('btn-close-no-group');
+
+      if (goGroupsBtn) {
+        goGroupsBtn.addEventListener('click', () => {
+          console.log('[NoGroupModal] Navigating to groups tab');
+          window.y2kWindows.close('no-group-modal');
+
+          // Find and click the groups tab button
+          const groupBtn = document.querySelector('nav.bottom button[data-view="group"]');
+          if (groupBtn) {
+            console.log('[NoGroupModal] Found groups button, clicking it');
+            groupBtn.click();
+          } else {
+            console.error('[NoGroupModal] Groups button not found');
+          }
+        });
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          console.log('[NoGroupModal] Closing modal');
+          window.y2kWindows.close('no-group-modal');
+        });
+      }
+    }, 0);
+  }
+
+  /**
    * Show modal to select which group to share itinerary with
    */
   function showShareItineraryModal() {
@@ -2926,7 +2985,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!state.group || !state.group.roomId) {
       console.error('[ShareItin] ERROR: Non sei in nessun gruppo');
-      toast('⚠️ Non sei in nessun gruppo');
+      showNoGroupModal();
       return;
     }
 
@@ -3336,6 +3395,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─────────────────────────────────────────────────────────────────
   // Export share functions globally
   window.showShareItineraryModal = showShareItineraryModal;
+  window.showNoGroupModal = showNoGroupModal;
 
   // ═════════════════════════════════════════════════════════════════
   // ===== OPENING HOURS FEATURE =====
