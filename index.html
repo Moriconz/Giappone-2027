@@ -1080,6 +1080,9 @@
 <script src="js/google-places-multitype.js"></script>
 <script src="js/google-places-details.js"></script>
 <script src="js/google-places-debug.js"></script>
+<!-- POI Detail UI Components -->
+<script src="js/poi-photo-gallery.js"></script>
+<script src="js/poi-section-builders.js"></script>
 <script src="js/group-chat.js"></script>
 <script src="js/group-panel.js"></script>
 <!-- FASE 2: Aggiunta Tappa — 3-step modal flow -->
@@ -6314,12 +6317,17 @@ document.addEventListener('DOMContentLoaded', () => {
   window.renderEnhancedPoiSections = renderEnhancedPoiSections;
 
   function poiDetailHTML(p){
+    console.log('[poiDetailHTML] Rendering new adaptive layout for:', p.name || p.displayName);
     const displayName = getPoiDisplayName(p);
     const saved = state.savedPOIs.includes(p.id);
     const note = state.notes[p.id] || '';
     const catData = CATS[p.cat] || {label:p.cat, icon:getCategoryEmoji(p.cat)};
     const catColor = getCategoryColor(p.cat);
     const catEmoji = getCategoryEmoji(p.cat);
+
+    // Helper: use PoiSectionBuilders if available, otherwise fallback
+    const SB = window.PoiSectionBuilders || {};
+    const PhotoGal = window.PhotoGallery || null;
 
     const doList = (p.do||[]).map(x=>`<li>${x}</li>`).join('');
     const dontList = (p.dont||[]).map(x=>`<li>${x}</li>`).join('');
@@ -6346,120 +6354,83 @@ document.addEventListener('DOMContentLoaded', () => {
     const rating = state.ratings?.[p.id] || 0;
     const stars = [1,2,3,4,5].map(n => `<span class="star ${n<=rating?'on':''}" data-star="${n}" data-id="${p.id}">★</span>`).join('');
 
-    // Foto
-    const googleImagesUrl = (q, city) => `https://www.google.com/search?tbm=isch&q=${encodeURIComponent([q, city, 'Japan'].filter(Boolean).join(' '))}`;
-    const googleFallbackHtml = (label) => `
-      <div style="margin-bottom:12px;padding:14px;background:linear-gradient(135deg,rgba(74,124,89,.1),rgba(201,76,76,.1));border:2px dashed #00FF88;border-radius:8px;text-align:center">
-        <div style="font-size:13px;color:#666;margin-bottom:8px">📷 ${label}</div>
-        <a href="${googleImagesUrl(displayName, p.city)}" target="_blank" rel="noopener" class="btn" style="font-size:12px;background:linear-gradient(135deg,#FF1493,#FF69B4);color:white;border:none">🔎 Cerca foto</a>
-      </div>
-    `;
-
+    // FOTO: Use new PhotoGallery component
     let photoHtml = '';
-    if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
-      // Mostra solo la prima foto, responsive, no scrolling
-      photoHtml = `
-        <img src="${p.photos[0].url}" alt="${displayName}" style="width:100%;max-width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:12px;display:block;border:3px solid ${catColor};box-shadow:0 4px 12px rgba(0,0,0,0.2)">
-      `;
-    } else if (p.photo) {
-      photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${displayName}" style="width:100%;max-width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:12px;display:block;border:3px solid ${catColor};box-shadow:0 4px 12px rgba(0,0,0,0.2)">`;
-    } else if (typeof window.getPhotosForLocation === 'function') {
-      photoHtml = `<div id="poi-photos-container" style="margin-bottom:12px;min-height:80px;display:flex;align-items:center;justify-content:center;color:#999;font-size:13px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));border-radius:12px;border:2px dashed #00FF88">📷 Caricamento foto...</div>`;
+    if (PhotoGal) {
+      // Priorità: p._photoNames (da Google Places Details) → p.photos → p.photo
+      let photos = [];
+      if (p._photoNames && Array.isArray(p._photoNames) && p._photoNames.length > 0) {
+        photos = p._photoNames;
+      } else if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
+        photos = p.photos;
+      } else if (p.photo) {
+        photos = [{ url: p.photo }];
+      }
+      const gallery = new PhotoGal(photos);
+      photoHtml = gallery.render();
     } else {
-      photoHtml = googleFallbackHtml('Foto non disponibili offline');
+      // Fallback se PhotoGallery non disponibile
+      if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
+        photoHtml = `<img src="${p.photos[0].url}" alt="${displayName}" style="width:100%;height:260px;object-fit:cover;border-radius:12px 12px 0 0;margin-bottom:16px;display:block">`;
+      } else if (p.photo) {
+        photoHtml = `<img src="${p.photo}" alt="${displayName}" style="width:100%;height:260px;object-fit:cover;border-radius:12px 12px 0 0;margin-bottom:16px;display:block">`;
+      } else {
+        photoHtml = `<div style="width:100%;height:260px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));border-radius:12px 12px 0 0;margin-bottom:16px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5)">📷 Foto non disponibili</div>`;
+      }
     }
 
-    // Generate enhanced sections if data is available
-    const enhancedSections = renderEnhancedPoiSections(p);
+    // LAYOUT ADATTIVO — Build dynamic sections based on POI type and data availability
+    const sections = [];
 
-    const html = `
-      ${photoHtml}
-      <!-- HEADER con categoria colorata + BOTTONE MATITA FIANCO A FIANCO -->
-      <div style="display:flex;gap:8px;margin-bottom:12px;align-items:stretch;min-height:56px;position:relative">
-        <!-- BOX CATEGORIA (sinistra) -->
-        <div style="background:linear-gradient(135deg,${catColor},${catColor}dd);padding:10px 14px;border-radius:12px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.15);flex:1;display:flex;flex-direction:column;justify-content:center;min-height:56px">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
-            <span style="font-size:20px">${catEmoji}</span>
-            <div style="font-size:12px;font-weight:600">${catData.label.toUpperCase()}</div>
-          </div>
-          <div style="font-size:10px;opacity:0.85;margin-left:28px">${p.city || 'Posizione'}</div>
-        </div>
+    // 1. HEADER COMPATTO
+    sections.push(SB.renderHeaderCompact ? SB.renderHeaderCompact(p, displayName, catColor, catEmoji) : '');
 
-        <!-- BOTTONE MATITA (destra) -->
-        <button class="btn" id="edit-cat-btn" style="font-size:24px !important;padding:0 !important;height:56px !important;width:48px !important;min-width:48px !important;background:linear-gradient(135deg,${catColor},${catColor}dd) !important;color:white !important;border:1px solid rgba(255,255,255,0.5) !important;border-radius:6px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;appearance:none !important;-webkit-appearance:none !important;font-family:inherit !important;box-shadow:0 2px 8px rgba(0,0,0,0.2) !important;flex-shrink:0 !important">✏️</button>
-      </div>
-
-      <!-- CATEGORIA SELECTOR (si mostra quando clicchi la matita) -->
+    // 2. CATEGORIA SELECTOR (hidden)
+    sections.push(`
       <div id="cat-selector" style="display:none;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));border:2px solid ${catColor};border-radius:8px;padding:12px;margin-bottom:12px">
         <div style="font-size:12px;font-weight:600;color:${catColor};margin-bottom:10px">✏️ Cambia categoria:</div>
-        <div id="cat-options" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px">
-        </div>
+        <div id="cat-options" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px"></div>
       </div>
+    `);
 
-      <!-- ENHANCED SECTIONS FROM GOOGLE PLACES DETAILS API -->
+    // 3. SEZIONI DINAMICHE DA GOOGLE PLACES
+    sections.push(SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '');
+    sections.push(SB.renderAddress ? (SB.renderAddress(p, p._details || p) || '') : '');
+    sections.push(SB.renderWebsite ? (SB.renderWebsite(p._details || p) || '') : '');
+    sections.push(SB.renderPhone ? (SB.renderPhone(p._details || p) || '') : '');
+    sections.push(SB.renderDescription ? (SB.renderDescription(p._details || p) || '') : '');
+
+    // 4. ATTRIBUTI RISTORANTE (per food/drink POIs)
+    sections.push(SB.renderRestaurantAttributes ? (SB.renderRestaurantAttributes(p, p._details || p) || '') : '');
+    sections.push(SB.renderPriceLevel ? (SB.renderPriceLevel(p._details || p) || '') : '');
+
+    // 5. SEZIONI PER MUSEI/ATTRAZIONI
+    sections.push(SB.renderSuggestedDuration ? (SB.renderSuggestedDuration(p) || '') : '');
+    sections.push(SB.renderEntranceFee ? (SB.renderEntranceFee(p) || '') : '');
+
+    const dynamicSections = sections.filter(s => s && s.trim()).join('');
+
+    // Fallback old sections if no new data
+    const enhancedSections = renderEnhancedPoiSections ? renderEnhancedPoiSections(p) : '';
+
+      ${dynamicSections}
+
+      <!-- LEGACY SECTIONS (fallback) -->
       ${enhancedSections}
 
-      <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - RESPONSIVE -->
-      <div style="display:flex !important;gap:12px !important;margin:12px 0 !important;width:100% !important;box-sizing:border-box !important;flex-wrap:wrap !important;">
-        <!-- COLONNA SINISTRA: Informazioni Generali -->
-        <div style="flex:1 1 0 !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important;min-width:0 !important">
-          ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic;word-break:break-word !important">🗣️ ${p.jp}</div>` : ''}
-          <p style="color:#333;line-height:1.6;margin:0 0 12px 0;word-break:break-word !important">${p.desc || ''}</p>
-          ${infoChips.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${infoChips.join('')}</div>` : ''}
-
-          <!-- GF TAG INITIAL (show current status) -->
-          ${p.gf && p.gf.lvl && p.gf.lvl !== 'unknown' ? `<div style="margin-bottom:12px">${gfTag(p.gf)}</div>` : ''}
-
-          <!-- GF Section (sinistra) -->
-          ${(['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) ?
-            `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))" data-gf-section>
-              <h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">🌾 Gluten-Free</h3>
-              <p style="font-size:12px;color:#999;margin-top:8px;margin-bottom:8px">Verifica il menu o contatta il ristorante</p>
-              <a href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent((p.name || displayName) + ' ' + (p.city || '') + ' Japan')}" target="_blank" rel="noopener" style="display:inline-block;padding:8px 12px;background:${catColor};color:white;border-radius:6px;text-decoration:none;font-size:12px;margin-top:4px">🔍 Find Me Gluten Free</a>
-            </div>`
-            : ''}
-
-          ${p.best ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">⏰ Orario migliore</h3><p style="margin-top:8px;margin-bottom:0">${p.best}</p></div>` : ''}
-          ${doList ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">✅ Fare</h3><ul class="do-list" style="margin-top:8px;margin-bottom:0">${doList}</ul></div>` : ''}
-          ${dontList ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">⛔ Evitare</h3><ul class="dont-list" style="margin-top:8px;margin-bottom:0">${dontList}</ul></div>` : ''}
-          ${p.review ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">📝 Recensione</h3><p style="font-style:italic;margin-top:8px;margin-bottom:0">"${p.review}"</p></div>` : ''}
-        </div>
-
-        <!-- COLONNA DESTRA: Google Places Info -->
-        <div style="flex:1 1 0 !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important;min-width:0 !important">
-          ${p.fromGooglePlaces ? `
-          <div style="background:linear-gradient(135deg,rgba(42,63,95,.9),rgba(30,50,80,.9));padding:14px;border-radius:12px;border-left:5px solid #FFD700;box-shadow:0 4px 8px rgba(0,0,0,0.2);margin-bottom:12px;word-break:break-word !important">
-            <div style="font-size:11px;color:#FFD700;margin-bottom:8px;font-weight:700">📍 GOOGLE PLACES</div>
-            ${p.rating ? `<div style="font-weight:700;color:#FFD700;font-size:15px;margin-bottom:4px">⭐ ${p.rating.toFixed(1)} <span style="color:#B0C4DE;font-size:12px;font-weight:normal">(${p.ratingCount} voti)</span></div>` : ''}
-            ${p.address ? `<div style="font-size:12px;color:#E8E8E8;margin-top:6px">📍 ${p.address}</div>` : ''}
-            ${p.openNow !== null ? `<div style="font-size:12px;color:${p.openNow ? '#90EE90' : '#FF6B6B'};margin-top:4px;font-weight:600">⏰ ${p.openNow ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
-          </div>
-          ` : ''}
-
-          ${bookingBtns.length ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))"><h3 style="color:${catColor};margin-bottom:10px;font-weight:700;margin-top:0">🍴 PRENOTAZIONI</h3><div class="action-row">${bookingBtns.join('')}</div></div>` : ''}
-
-          ${['restaurant','cafe','bar','izakaya','shop','market','bakery'].includes(p.cat) ? `
-            <div style="border:2px solid #FFD700;border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(255,215,0,.05),rgba(255,215,0,.05));margin-top:12px">
-              <h3 style="color:#FFD700;margin-bottom:10px;font-weight:700;margin-top:0">🌾 GLUTEN-FREE</h3>
-              <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener" style="background:#FFD700;color:#000;font-weight:600;width:100%;display:block;text-align:center;padding:10px;border-radius:8px;text-decoration:none">🔍 Verifica</a>
-            </div>
-          ` : ''}
-        </div>
+      <!-- NOTE PERSONALI -->
+      <div style="border:2px solid #FF1493;border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(255,20,147,.05),rgba(255,105,180,.05));margin:12px 0">
+        <h3 style="color:#FF1493;border-bottom:2px solid #FF1493;padding-bottom:6px;margin:0 0 10px 0;font-weight:700">📝 NOTE PERSONALI</h3>
+        <textarea id="poi-note" placeholder="Es: Prenotare con 2 giorni di anticipo, Portare contanti..." style="width:100%;padding:10px;border:2px solid #00FF88;border-radius:8px;font-size:12px;resize:vertical;min-height:70px;font-family:inherit;box-sizing:border-box">${note}</textarea>
       </div>
 
       <!-- RATING STARS -->
-      <div class="section" style="background:linear-gradient(135deg,rgba(74,124,89,.05),rgba(201,76,76,.05));padding:12px;border-radius:12px;border:2px solid #00FF88">
-        <h3 style="color:#2D3B7D;margin-bottom:10px;font-weight:700">⭐ IL TUO VOTO</h3>
+      <div class="section" style="background:linear-gradient(135deg,rgba(74,124,89,.05),rgba(201,76,76,.05));padding:12px;border-radius:12px;border:2px solid #00FF88;margin:12px 0">
+        <h3 style="color:#2D3B7D;margin:0 0 10px 0;font-weight:700">⭐ IL TUO VOTO</h3>
         <div class="star-row" id="stars-${p.id}" style="display:flex;gap:8px;justify-content:center">${stars}</div>
       </div>
 
-      <!-- NOTE PERSONALI (FULL WIDTH) -->
-      <div style="border:2px solid #FF1493;border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(255,20,147,.05),rgba(255,105,180,.05));margin-top:12px">
-        <h3 style="color:#FF1493;border-bottom:2px solid #FF1493;padding-bottom:6px;margin-top:0;margin-bottom:10px;font-weight:700">📝 NOTE PERSONALI</h3>
-        <textarea id="poi-note" placeholder="Aggiungi note, orari di arrivo, partecipanti..." style="width:100%;padding:10px;border:2px solid #00FF88;border-radius:8px;font-size:12px;resize:vertical;min-height:80px;font-family:inherit;box-sizing:border-box">${note}</textarea>
-      </div>
-
-      <!-- PRIMARY ACTION: ADD TO ITINERARY -->
+      <!-- PRIMARY ACTION: ADD TO ITINERARY (sticky) -->
       <button id="add-to-itinerary-btn" class="btn primary" style="
         width:100%;
         background:linear-gradient(135deg,rgba(255,107,53,0.6),rgba(255,107,53,0.4));
@@ -6474,26 +6445,19 @@ document.addEventListener('DOMContentLoaded', () => {
         transition:all 0.2s;
       ">📅 Aggiungi all'itinerario</button>
 
-      <!-- ACTION BUTTONS -->
-      <div class="action-row" style="display:flex;gap:6px;margin:12px 0">
-        <button class="btn navigate" id="navigate-poi" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${encodeURIComponent(displayName)}" style="flex:1;background:linear-gradient(135deg,#4A7C59,#3A6C49);color:white;border:none;border-radius:8px;padding:12px;font-weight:600">🧭 Portami lì</button>
-        <button class="btn primary" id="save-poi" style="flex:1;background:linear-gradient(135deg,#FF1493,#FF69B4);color:white;border:none;border-radius:8px;padding:12px;font-weight:600">${saved?'★ Salvato':'☆ Salva'}</button>
-        <button class="btn" id="add-cal" style="flex:1;background:linear-gradient(135deg,#7A8BA5,#5A6A95);color:white;border:none;border-radius:8px;padding:12px;font-weight:600">📅 Cal</button>
+      <!-- SECONDARY ACTIONS (icons + labels) -->
+      <div style="display:flex;gap:8px;margin:12px 0;justify-content:space-around">
+        <button class="btn navigate" id="navigate-poi" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${encodeURIComponent(displayName)}" style="flex:1;background:transparent;border:1px solid rgba(255,255,255,0.2);color:white;border-radius:8px;padding:10px;font-weight:600;font-size:13px;text-align:center">🧭 Naviga</button>
+        <button class="btn primary" id="save-poi" style="flex:1;background:transparent;border:1px solid rgba(255,255,255,0.2);color:white;border-radius:8px;padding:10px;font-weight:600;font-size:13px;text-align:center">${saved?'⭐ Salvato':'☆ Salva'}</button>
+        <button class="btn" id="add-cal" style="flex:1;background:transparent;border:1px solid rgba(255,255,255,0.2);color:white;border-radius:8px;padding:10px;font-weight:600;font-size:13px;text-align:center">📅 Calendario</button>
       </div>
 
-      <div class="action-row" style="display:flex;gap:6px;margin:12px 0">
-        <a class="btn" href="${gmaps}" target="_blank" rel="noopener" style="flex:1;background:#2A6E90;color:white;text-decoration:none;border:none;border-radius:8px;padding:12px;text-align:center;font-weight:600">🗺️ Google Maps</a>
-        <a class="btn" href="${amaps}" target="_blank" rel="noopener" style="flex:1;background:#555;color:white;text-decoration:none;border:none;border-radius:8px;padding:12px;text-align:center;font-weight:600">🍎 Apple Maps</a>
+      <!-- TERTIARY ACTIONS (link style) -->
+      <div style="display:flex;gap:12px;margin:12px 0;justify-content:center;font-size:12px">
+        <a href="${gmaps}" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.6);text-decoration:none">Apri in Google Maps</a>
+        <span style="color:rgba(255,255,255,0.3)">·</span>
+        <a href="${amaps}" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.6);text-decoration:none">Apri in Apple Maps</a>
       </div>
-
-      ${bookingBtns.length ? `<div class="section" style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))"><h3 style="color:${catColor};margin-bottom:10px;font-weight:700">🍴 PRENOTAZIONI</h3><div class="action-row">${bookingBtns.join('')}</div></div>` : ''}
-
-      ${['restaurant','cafe','bar','izakaya','shop','market','bakery'].includes(p.cat) ? `
-        <div class="section" style="border:2px solid #FFD700;border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(255,215,0,.05),rgba(255,215,0,.05))">
-          <h3 style="color:#FFD700;margin-bottom:10px;font-weight:700">🌾 GLUTEN-FREE INFO</h3>
-          <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener" style="background:#FFD700;color:#000;font-weight:600;width:100%">🔍 Verifica su Find Me Gluten Free</a>
-        </div>
-      ` : ''}
     `;
     // DEBUG: Log the HTML to verify grid structure
     const hasGrid = html.includes('display:grid');
