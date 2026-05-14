@@ -2920,17 +2920,23 @@ document.addEventListener('DOMContentLoaded', () => {
    * Show modal to select which group to share itinerary with
    */
   function showShareItineraryModal() {
-    console.log('[ShareItin] Showing group selection modal');
+    console.log('[ShareItin] ========== FUNCTION CALLED ==========');
+    console.log('[ShareItin] state.group:', state.group);
+    console.log('[ShareItin] state.itinerary length:', state.itinerary?.length);
 
     if (!state.group || !state.group.roomId) {
+      console.error('[ShareItin] ERROR: Non sei in nessun gruppo');
       toast('⚠️ Non sei in nessun gruppo');
       return;
     }
 
     if (!state.itinerary || state.itinerary.length === 0) {
+      console.error('[ShareItin] ERROR: L\'itinerario personale è vuoto');
       toast('⚠️ L\'itinerario personale è vuoto');
       return;
     }
+
+    console.log('[ShareItin] Proceeding to show modal...');
 
     // Initialize groupItineraries if needed
     if (!state.groupItineraries) {
@@ -7251,11 +7257,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnShareGroup = document.getElementById('btn-share-group');
     const btnGoogleSearch = document.getElementById('btn-google-search');
 
+    console.log('[renderListView] Buttons found:', { btnExportWhatsapp, btnShareGroup, btnGoogleSearch });
+
     if (btnExportWhatsapp) {
       btnExportWhatsapp.onclick = () => exportItineraryWhatsApp();
     }
     if (btnShareGroup) {
-      btnShareGroup.onclick = () => window.showShareItineraryModal?.();
+      console.log('[renderListView] Attaching onclick to btnShareGroup');
+      btnShareGroup.onclick = () => {
+        console.log('[Share] Share button CLICKED!');
+        console.log('[Share] Calling window.showShareItineraryModal, function exists?', typeof window.showShareItineraryModal);
+        window.showShareItineraryModal?.();
+      };
+    } else {
+      console.error('[renderListView] btnShareGroup NOT FOUND!');
     }
     if (btnGoogleSearch) {
       btnGoogleSearch.onclick = () => {
