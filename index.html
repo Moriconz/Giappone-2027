@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="./y2k-override.css" />
 <link rel="stylesheet" href="./css/glass.css" />
 <link rel="stylesheet" href="./css/safety.css" />
+<link rel="stylesheet" href="./css/components.css" />
 
 <!-- ═══════════════════════════════════════════════════════════════
      GLASSMORPHISM MASTER STYLES — Applied to ALL app surfaces
@@ -6398,13 +6399,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const rating = state.ratings?.[p.id] || 0;
-    const stars = [1,2,3,4,5].map(n => `<span class="star-rating" data-star="${n}" data-id="${p.id}" style="
-      font-size: 28px;
-      color: ${n<=rating ? '#f59e0b' : 'rgba(255, 255, 255, 0.3)'};
-      cursor: pointer;
-      transition: all 0.15s;
-      transform: scale(1);
-    " onmouseover="this.style.color='#f59e0b'; this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'; this.style.color='${n<=rating ? '#f59e0b' : 'rgba(255, 255, 255, 0.3)'}'">★</span>`).join('');
+    const stars = `<div class="rating-stars" id="stars-${p.id}">${[1,2,3,4,5].map(n => `<span class="star ${n <= rating ? 'active' : ''}" data-star="${n}" data-id="${p.id}">★</span>`).join('')}</div>`;
 
     // FOTO: Use new PhotoGallery component
     let photoHtml = '';
@@ -6519,7 +6514,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // INDIRIZZO — Se non esiste, NON renderizza niente. Punto.
     const cleanAddress = getCleanAddress(p);
     if (cleanAddress) {
-      sections.push(`<div class="poi-address-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);margin:12px 16px"><span class="poi-address-text" style="flex:1;font-size:14px;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">📍 ${cleanAddress}</span><button class="copy-address-btn" data-address="${cleanAddress}" aria-label="Copia indirizzo" title="Copia indirizzo" style="width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:8px;background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;flex-shrink:0;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.background='transparent';this.style.color='rgba(255,255,255,0.5)'">⧉</button></div>`);
+      sections.push(`<div class="address-row"><span class="address-text">📍 ${cleanAddress}</span><button class="btn-copy-address" data-address="${cleanAddress}" aria-label="Copia indirizzo" title="Copia indirizzo">⧉</button></div>`);
     }
 
     // NON renderizzare SB.renderAddress (crea duplicazione) — usiamo solo la versione custom sopra
@@ -6552,23 +6547,12 @@ document.addEventListener('DOMContentLoaded', () => {
       <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0"></div>
 
       <!-- NOTE PERSONALI — Collapsato di default -->
-      <div style="padding:0 16px;margin:16px 0" id="notes-section-${p.id}">
+      <div class="notes-section" id="notes-section-${p.id}">
         ${note ? `
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <label style="font-size:12px;color:rgba(255,255,255,0.6);font-weight:600;letter-spacing:0.3px">📝 Note</label>
-          </div>
-          <textarea id="poi-note" placeholder="Es: Prenotare con 2 giorni di anticipo..." style="
-            width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
-            border-radius:10px;font-size:13px;color:#fff;resize:vertical;min-height:70px;font-family:inherit;
-            box-sizing:border-box;transition:border-color 0.2s;
-          " onmouseover="this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">${note}</textarea>
+          <label class="text-sm">📝 Note</label>
+          <textarea id="poi-note" class="form-input form-textarea" placeholder="Es: Prenotare con 2 giorni di anticipo...">${note}</textarea>
         ` : `
-          <button id="add-note-btn-${p.id}" style="
-            display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:36px;
-            background:transparent;border:1px dashed rgba(255,255,255,0.15);border-radius:8px;
-            color:rgba(255,255,255,0.5);font-size:13px;cursor:pointer;transition:all 0.2s;
-          " onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='rgba(255,255,255,0.7)'"
-             onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+          <button id="add-note-btn-${p.id}" class="notes-button">
             📝 Aggiungi una nota
           </button>
         `}
@@ -6580,9 +6564,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- IL TUO VOTO — Semplificato, inline -->
       <div style="padding:0 16px;margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:16px">
         <label style="font-size:13px;color:rgba(255,255,255,0.6);font-weight:600;white-space:nowrap">La tua valutazione</label>
-        <div class="star-row" id="stars-${p.id}" style="
-          display:flex;gap:8px;
-        ">${stars}</div>
+        ${stars}
       </div>
 
       <!-- DIVIDER -->
@@ -6590,23 +6572,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <!-- PRIMARY ACTION: ADD TO ITINERARY (CTA principale, ruggine saturo #b5541e) -->
       <div style="padding:0 16px;margin:16px 0">
-        <button id="add-to-itinerary-btn" class="btn-primary-cta" style="
-          width:100%;
-          background-color:#b5541e;
-          border:none;
-          color:white;
-          height:50px;
-          border-radius:8px;
-          font-weight:700;
-          font-size:15px;
-          cursor:pointer;
-          transition:all 0.2s;
-          box-shadow:0 4px 14px rgba(181,84,30,0.4);
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          gap:8px;
-        " onmouseover="this.style.boxShadow='0 6px 18px rgba(181,84,30,0.5)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(181,84,30,0.4)'; this.style.transform='translateY(0)'">📅 Aggiungi all'itinerario</button>
+        <button id="add-to-itinerary-btn" class="btn-cta">📅 Aggiungi all'itinerario</button>
       </div>
 
       <!-- SECONDARY ACTIONS (ghost buttons) + Maps dropdown -->

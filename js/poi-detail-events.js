@@ -135,64 +135,31 @@ function renderGFStatus(container, status, fmgfUrl) {
   if (status === 'confirmed') {
     // Confermato: link verde a Find Me GF
     container.innerHTML = `
-      <a href="${fmgfUrl}" target="_blank" rel="noopener noreferrer" class="gf-box gf-confirmed" style="
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px;
-        background: rgba(74, 222, 128, 0.12);
-        border: 1px solid rgba(74, 222, 128, 0.35);
-        border-radius: 8px;
-        color: #4ade80;
-        text-decoration: none;
-        font-size: 13px;
-        transition: all 0.2s;
-      " onmouseover="this.style.background='rgba(74, 222, 128, 0.2)'" onmouseout="this.style.background='rgba(74, 222, 128, 0.12)'">
-        <div>
+      <a href="${fmgfUrl}" target="_blank" rel="noopener noreferrer" class="status-badge status-confirmed">
+        <div class="status-content">
           <strong>🌾 Opzioni gluten-free disponibili</strong>
-          <div style="font-size: 11px; color: rgba(74, 222, 128, 0.8); margin-top: 2px;">Confermato da Find Me Gluten Free</div>
+          <small>Confermato da Find Me Gluten Free</small>
         </div>
-        <span style="flex-shrink: 0; font-size: 16px;">→</span>
+        <span class="status-arrow">→</span>
       </a>
     `;
   } else if (status === 'likely') {
     // Probabile: giallo, no link
     container.innerHTML = `
-      <div class="gf-box gf-likely" style="
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
-        background: rgba(251, 191, 36, 0.12);
-        border: 1px solid rgba(251, 191, 36, 0.35);
-        border-radius: 8px;
-        color: #fbbf24;
-        font-size: 13px;
-      ">
-        <div style="flex: 1;">
+      <div class="status-badge status-likely">
+        <div class="status-content">
           <strong>🌾 Probabilmente gluten-free</strong>
-          <div style="font-size: 11px; color: rgba(251, 191, 36, 0.8); margin-top: 2px;">Menzionato nelle recensioni, verifica al locale</div>
+          <small>Menzionato nelle recensioni, verifica al locale</small>
         </div>
       </div>
     `;
   } else if (status === 'unknown' || status === 'timeout' || status === 'error') {
     // Softer styling: più neutro e informativo, non warning-like
     container.innerHTML = `
-      <div class="gf-box gf-unknown" style="
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.025);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 8px;
-        color: rgba(255, 255, 255, 0.65);
-        font-size: 13px;
-      ">
-        <div style="flex: 1;">
-          <strong style="color: rgba(255, 255, 255, 0.75);">Gluten-free non verificato</strong>
-          <div style="font-size: 11px; color: rgba(255, 255, 255, 0.45); margin-top: 2px;">Nessuna conferma trovata al momento</div>
+      <div class="status-badge status-unknown">
+        <div class="status-content">
+          <strong>Gluten-free non verificato</strong>
+          <small>Nessuna conferma trovata al momento</small>
         </div>
       </div>
     `;
@@ -206,7 +173,7 @@ function renderGFStatus(container, status, fmgfUrl) {
  * STAR RATING: Click per selezionare + persistenza localStorage
  */
 document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('star-rating')) {
+  if (e.target.classList.contains('star')) {
     const poiId = e.target.dataset.id;
     const rating = parseInt(e.target.dataset.star, 10);
 
@@ -215,15 +182,11 @@ document.addEventListener('click', (e) => {
     ratings[poiId] = rating;
     localStorage.setItem('ratings', JSON.stringify(ratings));
 
-    // Update UI: colora le stelle da 1 a rating
-    const allStars = document.querySelectorAll(`.star-rating[data-id="${poiId}"]`);
-    allStars.forEach((star, idx) => {
+    // Update UI: aggiungi classe 'active' alle stelle fino al rating
+    const allStars = document.querySelectorAll(`.star[data-id="${poiId}"]`);
+    allStars.forEach((star) => {
       const starNum = parseInt(star.dataset.star, 10);
-      if (starNum <= rating) {
-        star.style.color = '#f59e0b';
-      } else {
-        star.style.color = 'rgba(255, 255, 255, 0.3)';
-      }
+      star.classList.toggle('active', starNum <= rating);
     });
 
     console.debug('[Rating] Voto salvato:', rating);
@@ -238,10 +201,10 @@ function loadRatingOnInit(poiId) {
   const rating = ratings[poiId] || 0;
 
   if (rating > 0) {
-    const allStars = document.querySelectorAll(`.star-rating[data-id="${poiId}"]`);
+    const allStars = document.querySelectorAll(`.star[data-id="${poiId}"]`);
     allStars.forEach((star) => {
       const starNum = parseInt(star.dataset.star, 10);
-      star.style.color = starNum <= rating ? '#f59e0b' : 'rgba(255, 255, 255, 0.3)';
+      star.classList.toggle('active', starNum <= rating);
     });
   }
 }
