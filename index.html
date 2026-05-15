@@ -7148,46 +7148,43 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             /**
-             * Attach event handlers
+             * Attach event handlers using event delegation
              */
             function attachWizardHandlers() {
-              // Day selection
-              document.querySelectorAll('.wizard-day-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                  wizardState.selectedDay = parseInt(btn.dataset.day);
-                  console.log('[WIZARD] Day selected:', wizardState.selectedDay + 1);
+              // Remove old delegated listeners first (prevent duplicates)
+              const sheetBody = document.getElementById('sheet-body');
+              if (!sheetBody) return;
+
+              // Day selection - Using event delegation
+              sheetBody.onclick = function(e) {
+                if (e.target.classList.contains('wizard-day-btn')) {
+                  const dayIndex = parseInt(e.target.dataset.day);
+                  wizardState.selectedDay = dayIndex;
+                  console.log('[WIZARD] Day selected:', dayIndex + 1);
                   wizardState.step = 2;
                   updateWizardUI();
-                });
-              });
+                  return;
+                }
 
-              // Time input
+                // Duration presets
+                if (e.target.classList.contains('duration-preset')) {
+                  const duration = parseInt(e.target.dataset.duration);
+                  wizardState.duration = duration;
+                  console.log('[WIZARD] Duration preset selected:', duration);
+                  updateWizardUI();
+                  return;
+                }
+              };
+
+              // Input fields - Time, Duration, Cost, Notes
               const timeInput = document.getElementById('wizard-time-input');
               if (timeInput) {
                 timeInput.addEventListener('change', (e) => {
                   wizardState.selectedTime = e.target.value;
                   console.log('[WIZARD] Time selected:', wizardState.selectedTime);
                 });
-
-                const nextBtn = document.querySelector('.wizard-next-btn');
-                if (nextBtn) {
-                  nextBtn.addEventListener('click', () => {
-                    wizardState.step = 3;
-                    updateWizardUI();
-                  });
-                }
               }
 
-              // Duration presets
-              document.querySelectorAll('.duration-preset').forEach(btn => {
-                btn.addEventListener('click', () => {
-                  wizardState.duration = parseInt(btn.dataset.duration);
-                  console.log('[WIZARD] Duration preset selected:', wizardState.duration);
-                  updateWizardUI();
-                });
-              });
-
-              // Duration manual input
               const durationInput = document.getElementById('wizard-duration-input');
               if (durationInput) {
                 durationInput.addEventListener('change', (e) => {
@@ -7199,7 +7196,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
               }
 
-              // Cost input
               const costInput = document.getElementById('wizard-cost-input');
               if (costInput) {
                 costInput.addEventListener('change', (e) => {
@@ -7208,7 +7204,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
               }
 
-              // Notes input
               const notesInput = document.getElementById('wizard-notes-input');
               if (notesInput) {
                 notesInput.addEventListener('change', (e) => {
@@ -7217,68 +7212,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
               }
 
-              // Next/Confirm button
-              const nextBtn = document.querySelector('.wizard-next-btn');
-              if (nextBtn && wizardState.step < 4) {
-                nextBtn.addEventListener('click', () => {
-                  if (wizardState.step === 2) {
-                    wizardState.step = 3;
-                  } else if (wizardState.step === 3) {
-                    wizardState.step = 4;
-                  }
-                  updateWizardUI();
-                });
-              }
+              // Control buttons - Using document delegation
+              if (!window._wizardButtonsAttached) {
+                window._wizardButtonsAttached = true;
 
-              // Confirm button (Step 4)
-              const confirmBtn = document.querySelector('.wizard-confirm-btn');
-              if (confirmBtn) {
-                confirmBtn.addEventListener('click', () => {
-                  console.log('[WIZARD] Confirming POI addition:', {
-                    poiId,
-                    poiName,
-                    day: wizardState.selectedDay,
-                    time: wizardState.selectedTime,
-                    duration: wizardState.duration,
-                    notes: wizardState.notes,
-                    cost: wizardState.cost
-                  });
-
-                  // Add POI with all details
-                  window.ITINERARY.addPOIToDay(
-                    poiId,
-                    poiName,
-                    wizardState.selectedDay,
-                    wizardState.selectedTime,
-                    wizardState.duration,
-                    wizardState.notes,
-                    wizardState.cost
-                  );
-
-                  window.saveState?.();
-                  window.closeSheet();
-                  window.toast(`✅ Aggiunto al Day ${wizardState.selectedDay + 1} alle ${wizardState.selectedTime}`);
-                  console.log('[WIZARD] POI successfully added and sheet closed');
-                });
-              }
-
-              // Back button
-              const backBtn = document.querySelector('.wizard-back-btn');
-              if (backBtn) {
-                backBtn.addEventListener('click', () => {
-                  if (wizardState.step > 1) {
-                    wizardState.step--;
+                document.addEventListener('click', (e) => {
+                  // Next button
+                  if (e.target.classList.contains('wizard-next-btn')) {
+                    if (wizardState.step === 1) wizardState.step = 2;
+                    else if (wizardState.step === 2) wizardState.step = 3;
+                    else if (wizardState.step === 3) wizardState.step = 4;
+                    console.log('[WIZARD] Next clicked, now at step:', wizardState.step);
                     updateWizardUI();
                   }
-                });
-              }
 
-              // Cancel button
-              const cancelBtn = document.querySelector('.wizard-cancel-btn');
-              if (cancelBtn) {
-                cancelBtn.addEventListener('click', () => {
-                  console.log('[WIZARD] Wizard cancelled');
-                  window.closeSheet();
+                  // Back button
+                  if (e.target.classList.contains('wizard-back-btn')) {
+                    if (wizardState.step > 1) wizardState.step--;
+                    console.log('[WIZARD] Back clicked, now at step:', wizardState.step);
+                    updateWizardUI();
+                  }
+
+                  // Cancel button
+                  if (e.target.classList.contains('wizard-cancel-btn')) {
+                    console.log('[WIZARD] Wizard cancelled');
+                    window.closeSheet();
+                  }
+
+                  // Confirm button
+                  if (e.target.classList.contains('wizard-confirm-btn')) {
+                    console.log('[WIZARD] Confirming POI addition:', {
+                      poiId,
+                      poiName,
+                      day: wizardState.selectedDay,
+                      time: wizardState.selectedTime,
+                      duration: wizardState.duration,
+                      notes: wizardState.notes,
+                      cost: wizardState.cost
+                    });
+
+                    // Add POI with all details
+                    window.ITINERARY.addPOIToDay(
+                      poiId,
+                      poiName,
+                      wizardState.selectedDay,
+                      wizardState.selectedTime,
+                      wizardState.duration,
+                      wizardState.notes,
+                      wizardState.cost
+                    );
+
+                    window.saveState?.();
+                    window.closeSheet();
+                    window.toast(`✅ Aggiunto al Day ${wizardState.selectedDay + 1} alle ${wizardState.selectedTime}`);
+                    console.log('[WIZARD] POI successfully added and sheet closed');
+                  }
                 });
               }
             }
