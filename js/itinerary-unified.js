@@ -17,22 +17,19 @@ function renderItineraryUnified() {
   ITINERARY.initState();
   const tripProfile = window.state?.tripProfile || {};
   const days = tripProfile.days || 8;
-  const budget = tripProfile.budget_total || 0;
-  const budgetDaily = tripProfile.budget_daily || 0;
 
   // Load shared itinerary from state
   const sharedItinerary = window.state?.itinerary || [];
 
-  // Calculate budget using full breakdown (POI + ticket + transport)
-  let totalPOIs = 0;
-  let budgetBreakdown = ITINERARY.calculateTotalBudget();
-  let totalCostSpent = budgetBreakdown.total;
+  // Get budget widget model (Level 1: manual costs only)
+  const budgetModel = BUDGET_WIDGET_HELPER.getBudgetHeaderModel();
+  let totalPOIs = budgetModel.totalPOICount;
   let costByDay = {};
 
   for (let d = 0; d < days; d++) {
     const dayPOIs = window.state.itineraryByDay[d] || [];
-    totalPOIs += dayPOIs.length;
-    costByDay[d] = budgetBreakdown.by_day[d]?.total || 0;
+    // Only count manual costs (not estimates)
+    costByDay[d] = (dayPOIs || []).reduce((sum, entry) => sum + (entry.cost || 0), 0);
   }
 
   // ===== SECTION 1: PERSONAL ITINERARY (ACCORDION) =====
@@ -226,51 +223,40 @@ function renderItineraryUnified() {
   const html = `
     <div style="padding:0;display:flex;flex-direction:column;gap:24px;">
 
-      <!-- BUDGET SUMMARY -->
+      <!-- BUDGET SUMMARY — Level 1: Manual costs only (current state) -->
       <div class="budget-summary" style="
-        background:linear-gradient(135deg, rgba(74,91,168,0.15), rgba(255,107,53,0.1));
-        border:1px solid rgba(255,255,255,0.15);
+        background:linear-gradient(135deg, rgba(100,150,200,0.1), rgba(255,107,53,0.05));
+        border:1px solid rgba(255,255,255,0.12);
         border-radius:8px;
         padding:12px 14px;
       ">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-weight:600;color:#fff">💰 Budget</span>
-          <span style="font-size:12px;color:rgba(255,255,255,0.7)">${days} giorni</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="font-weight:600;color:#fff;font-size:13px">${budgetModel.title}</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.6)">${days} giorni</span>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px">
-          <div style="flex:1;min-width:0">
-            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px">Pianificato</div>
-            <div style="font-size:16px;color:#FF6B35;font-weight:700">¥${budget}</div>
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px">Speso</div>
-            <div style="font-size:16px;color:${totalCostSpent > budget ? '#ff6b6b' : '#4ade80'};font-weight:700">¥${totalCostSpent}</div>
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px">Rimasto</div>
-            <div style="font-size:16px;color:${budget - totalCostSpent < 0 ? '#ff6b6b' : '#4ade80'};font-weight:700">¥${Math.max(0, budget - totalCostSpent)}</div>
-          </div>
-        </div>
-        ${totalCostSpent > 0 ? `
-          <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;margin-bottom:8px">
-            <div style="height:100%;background:linear-gradient(90deg, #4ade80, #FF6B35);width:${Math.min(100, (totalCostSpent/budget)*100)}%"></div>
-          </div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:8px">${Math.round((totalCostSpent/budget)*100)}% allocato</div>
-        ` : ''}
 
-        <!-- Budget breakdown: POI, tickets, transport -->
-        ${budgetBreakdown.poi_cost > 0 || budgetBreakdown.ticket_cost > 0 || budgetBreakdown.transport_cost > 0 ? `
-          <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-              <span>🏪 POI & Ticket</span>
-              <span style="color:rgba(255,255,255,0.8)">¥${budgetBreakdown.poi_cost + budgetBreakdown.ticket_cost}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between">
-              <span>🚌 Trasporti</span>
-              <span style="color:rgba(255,255,255,0.8)">¥${budgetBreakdown.transport_cost}</span>
-            </div>
-          </div>
-        ` : ''}
+        <!-- Primary metric: Total manual costs -->
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <div style="font-size:11px;color:rgba(255,255,255,0.7)">${budgetModel.primaryLabel}</div>
+          <div style="font-size:18px;color:#4ade80;font-weight:700">${budgetModel.primaryValue}</div>
+        </div>
+
+        <!-- Secondary metric: POI with costs -->
+        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:8px">
+          ${budgetModel.secondaryLabel}
+        </div>
+
+        <!-- Info note: what's NOT yet included -->
+        <div style="
+          font-size:10px;
+          color:rgba(255,255,255,0.5);
+          padding:6px 8px;
+          background:rgba(255,160,0,0.1);
+          border-radius:4px;
+          border-left:2px solid rgba(255,160,0,0.4);
+        ">
+          ⓘ ${budgetModel.infoText}
+        </div>
       </div>
 
       <!-- SECTION 1: YOUR ITINERARY -->
