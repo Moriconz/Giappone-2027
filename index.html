@@ -7362,6 +7362,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   console.log('[WIZARD] ✅ Day selected:', dayIndex + 1);
                   wizardState.selectedDay = dayIndex;
                   wizardState.step = 2;
+                  e.stopImmediatePropagation(); // Prevent other listeners from firing
                   updateWizardUI();
                   return;
                 }
