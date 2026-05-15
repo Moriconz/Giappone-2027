@@ -30,25 +30,30 @@ function monitorPOIDetailModal() {
 
     // Check if sheet is open and contains POI details
     const sheet = document.getElementById('sheet');
-    if (!sheet || !sheet.classList.contains('open')) return;
+    if (!sheet || !sheet.classList.contains('open')) {
+      return;
+    }
 
     // Look for existing add button
     const existingBtn = sheetBody.querySelector('[data-wizard-btn]');
-    if (existingBtn) return; // Already added
-
-    // Look for POI info sections (name, city, etc.)
-    const poiNameEl = sheetBody.querySelector('[data-poi-name]');
-    if (!poiNameEl) return;
+    if (existingBtn) {
+      return; // Already added
+    }
 
     // Get POI data from sheet
     const poiData = extractPOIDataFromSheet();
-    if (!poiData) return;
+    if (!poiData) {
+      // Debug: sheet is open but no POI data found
+      const sheetTitle = document.getElementById('sheet-title');
+      console.log('[WizardIntegration] 🔍 Sheet open but no POI data. Title:', sheetTitle?.textContent);
+      return;
+    }
 
-    console.log('[WizardIntegration] 📍 POI detail detected:', poiData.name);
+    console.log('[WizardIntegration] ✅ POI detail detected:', poiData.name);
 
     // Add wizard button to sheet
     addWizardButtonToSheet(poiData);
-  }, 500);
+  }, 300); // Increased check frequency
 }
 
 /**
@@ -58,25 +63,42 @@ function extractPOIDataFromSheet() {
   const sheetBody = document.getElementById('sheet-body');
   if (!sheetBody) return null;
 
+  console.log('[WizardIntegration] 🔍 Extracting POI data from sheet...');
+
   // Try to extract from data attributes or text content
   const nameEl = sheetBody.querySelector('h2, h3, [data-poi-name]');
   const cityEl = sheetBody.querySelector('[data-poi-city]');
 
-  if (!nameEl) return null;
+  console.log('[WizardIntegration]   - Found nameEl:', !!nameEl, 'text:', nameEl?.textContent?.trim());
+  console.log('[WizardIntegration]   - window.currentGooglePlaceId:', window.currentGooglePlaceId);
+  console.log('[WizardIntegration]   - window.selectedPOIId:', window.selectedPOIId);
+
+  if (!nameEl) {
+    console.log('[WizardIntegration] ⚠️ No name element found in sheet');
+    return null;
+  }
 
   const poiName = nameEl.textContent?.trim() || 'POI';
 
   // Look for googlePlaceId in window.currentGooglePlaceId (set by the app)
   const poiId = window.currentGooglePlaceId || window.selectedPOIId || null;
 
-  if (!poiId) return null;
+  if (!poiId) {
+    console.log('[WizardIntegration] ⚠️ No POI ID found');
+    return null;
+  }
 
   // Get full POI data from window.allPOIs
   if (typeof window.allPOIs === 'function') {
     const allPOIs = window.allPOIs();
     const poiData = allPOIs.find(p => p.googlePlaceId === poiId);
-    if (poiData) return poiData;
+    if (poiData) {
+      console.log('[WizardIntegration] ✅ Found POI in allPOIs:', poiData.name);
+      return poiData;
+    }
   }
+
+  console.log('[WizardIntegration] ℹ️ Using minimal POI data');
 
   // Fallback to minimal data
   return {
@@ -91,8 +113,13 @@ function extractPOIDataFromSheet() {
  * Add wizard button to the POI detail sheet
  */
 function addWizardButtonToSheet(poiData) {
+  console.log('[WizardIntegration] 🔨 Adding wizard button to sheet...');
+
   const sheetBody = document.getElementById('sheet-body');
-  if (!sheetBody) return;
+  if (!sheetBody) {
+    console.error('[WizardIntegration] ❌ Sheet body not found!');
+    return;
+  }
 
   // Find the bottom of the sheet body to append button
   const buttonHTML = `
@@ -122,18 +149,35 @@ function addWizardButtonToSheet(poiData) {
 
   // Append to sheet body
   sheetBody.insertAdjacentHTML('beforeend', buttonHTML);
+  console.log('[WizardIntegration] ✅ Button HTML inserted');
 
   // Attach event listener
   const btn = document.getElementById('btn-open-wizard-from-detail');
   if (btn) {
+    console.log('[WizardIntegration] 🎯 Button found, attaching click handler...');
     btn.addEventListener('click', () => {
+      console.log('[WizardIntegration] 🖱️ Button clicked!');
       console.log('[WizardIntegration] 📌 Opening wizard for:', poiData.name);
+      console.log('[WizardIntegration] 📋 POI Data:', poiData);
+
+      // Close sheet first
+      console.log('[WizardIntegration] Closing sheet...');
       window.closeSheet?.();
+
+      // Then open wizard
       setTimeout(() => {
-        window.openAddToItineraryWizard?.(poiData);
+        console.log('[WizardIntegration] Opening wizard now...');
+        if (typeof window.openAddToItineraryWizard === 'function') {
+          console.log('[WizardIntegration] ✅ Calling openAddToItineraryWizard');
+          window.openAddToItineraryWizard(poiData);
+        } else {
+          console.error('[WizardIntegration] ❌ openAddToItineraryWizard function not found!');
+        }
       }, 200);
     });
-    console.log('[WizardIntegration] ✅ Added wizard button to sheet');
+    console.log('[WizardIntegration] ✅ Click handler attached successfully');
+  } else {
+    console.error('[WizardIntegration] ❌ Button element not found after insertion!');
   }
 }
 

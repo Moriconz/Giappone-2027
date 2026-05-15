@@ -60,19 +60,19 @@ window.groupPanel = (() => {
 
         <!-- STANZA INFO -->
         <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 6px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">🏠 Stanza: <strong>${escapeHtml(group.roomId)}</strong></h3>
+          <h3 style="margin:0 0 6px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🏠 Stanza: <strong>${escapeHtml(group.roomId)}</strong></h3>
           <p style="font-size:12px;color:rgba(255,255,255,0.7);margin:0;">Creata da: <strong style="color:#fff">${escapeHtml(group.createdBy || 'Sconosciuto')}</strong></p>
         </div>
 
         <!-- MEMBRI -->
         <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 12px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">👥 Membri (${members.length})</h3>
+          <h3 style="margin:0 0 12px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">👥 Membri (${members.length})</h3>
           ${membersList ? `<div style="display:flex;flex-direction:column;gap:8px">${membersList}</div>` : '<p style="color:rgba(255,255,255,0.6);font-size:13px;margin:0">Nessun membro.</p>'}
         </div>
 
         <!-- GPS SHARING -->
         <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📍 Condivisione GPS</h3>
+          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📍 Condivisione GPS</h3>
           <div style="display:flex;gap:10px;align-items:center;padding:10px;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:10px">
             <input type="checkbox" id="gps-share-toggle" ${gpsEnabled ? 'checked' : ''}
               style="width:18px;height:18px;cursor:pointer;accent-color:#FF1493">
@@ -90,7 +90,7 @@ window.groupPanel = (() => {
 
         <!-- ITINERARI DI GRUPPO (Phase 3) -->
         <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📋 Itinerari di Gruppo</h3>
+          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📋 Itinerari di Gruppo</h3>
           <div id="group-itineraries-list" style="margin-bottom:10px;max-height:200px;overflow-y:auto">
             <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:0;padding:8px">Nessun itinerario condiviso.</p>
           </div>
@@ -109,8 +109,8 @@ window.groupPanel = (() => {
 
         <!-- CHAT -->
         <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">💬 Chat Gruppo</h3>
-          <button class="btn primary" id="open-group-chat" style="width:100%;margin-bottom:8px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;font-family:'Comic Sans MS',cursive;cursor:pointer;box-shadow:0 0 12px rgba(255,20,147,0.3)">
+          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">💬 Chat Gruppo</h3>
+          <button class="btn primary" id="open-group-chat" style="width:100%;margin-bottom:8px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer;box-shadow:0 0 12px rgba(255,20,147,0.3)">
             💬 Apri chat stanza
           </button>
           <button class="btn" id="clear-group-chat" style="width:100%;margin-bottom:10px;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
@@ -123,7 +123,7 @@ window.groupPanel = (() => {
 
         <!-- GESTIONE STANZA -->
         <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">⚙️ Gestione Stanza</h3>
+          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">⚙️ Gestione Stanza</h3>
           ${isCreator ? `
             <button class="btn" id="delete-room" style="width:100%;margin-bottom:8px;background:#FF6B6B;border:2px solid #FF6B6B;color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer">
               🗑️ Elimina stanza (solo creatore)

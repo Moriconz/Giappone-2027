@@ -5,10 +5,12 @@
  */
 
 function renderItineraryUnified() {
-  console.log('[UnifiedItinerary] Rendering unified itinerary view...');
+  console.log('═══════════════════════════════════════════════════');
+  console.log('[UnifiedItinerary] 🚀 STARTING renderItineraryUnified()');
+  console.log('═══════════════════════════════════════════════════');
 
   if (!window.ITINERARY) {
-    console.warn('[UnifiedItinerary] ITINERARY system not ready');
+    console.warn('[UnifiedItinerary] ❌ ITINERARY system not ready');
     return;
   }
 
@@ -239,36 +241,285 @@ function renderItineraryUnified() {
   console.log('[UnifiedItinerary] Calling window.openSheet...');
   window.openSheet('📅 Itinerario', html);
 
-  // Setup event handlers - CRITICAL: deve essere chiamato DOPO openSheet
-  // Usa requestAnimationFrame per assicurare che il DOM sia renderizzato
-  console.log('[UnifiedItinerary] Scheduling setupUnifiedItineraryHandlers with requestAnimationFrame...');
-  requestAnimationFrame(() => {
-    console.log('[UnifiedItinerary] requestAnimationFrame: DOM should be ready, calling setupUnifiedItineraryHandlers...');
-    setupUnifiedItineraryHandlers();
+  // Setup accordion + drag-drop only (sharing buttons use global event delegation)
+  setTimeout(() => {
+    setupAccordionAndDragDrop();
     console.log('[UnifiedItinerary] ✅ renderItineraryUnified COMPLETE');
-  });
+  }, 500);
 }
 
-function setupUnifiedItineraryHandlers() {
-  console.log('[UnifiedItinerary] ⚙️ Setting up event handlers...');
-  console.log('[UnifiedItinerary] 🔍 Checking DOM ready state:', {
-    documentReady: document.readyState,
-    sheetBody: !!document.getElementById('sheet-body'),
-    sheet: !!document.getElementById('sheet')
+/**
+ * SETUP EVENT DELEGATION ONCE AT LOAD TIME
+ * This is more robust than attaching in setupUnifiedItineraryHandlers
+ * because it works regardless of when/how openSheet() is called
+ */
+function setupGlobalEventDelegation() {
+  const sheetBody = document.getElementById('sheet-body');
+  if (!sheetBody) {
+    console.warn('[ItineraryUnified] ⚠️ sheet-body not found on page load - retrying...');
+    setTimeout(setupGlobalEventDelegation, 500);
+    return;
+  }
+
+  console.log('[ItineraryUnified] 🔧 Setting up GLOBAL EVENT DELEGATION on sheet-body (one-time setup)');
+
+  // TEST: Log ALL clicks on sheet-body to verify delegation works
+  sheetBody.addEventListener('click', (e) => {
+    console.log('[ItineraryUnified] 🎯 CLICK DETECTED on sheet-body:', {
+      targetTag: e.target.tagName,
+      targetId: e.target.id,
+      targetClass: e.target.className,
+      text: e.target.textContent?.substring(0, 30)
+    });
+  }, true); // Capturing phase
+
+  // WhatsApp export button
+  sheetBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('#btn-export-whatsapp-unified');
+    if (!btn) return;
+
+    console.log('[ItineraryUnified] 📤 WhatsApp export clicked (global delegation)');
+
+    let totalPOIs = 0;
+    const tripProfile = window.state?.tripProfile || {};
+    const days = tripProfile.days || 8;
+
+    for (let d = 0; d < days; d++) {
+      totalPOIs += (window.state?.itineraryByDay?.[d] || []).length;
+    }
+
+    if (totalPOIs === 0) {
+      console.log('[ItineraryUnified] ⚠️ Itinerary empty, showing modal');
+      showEmptyItineraryModal();
+      return;
+    }
+
+    if (typeof window.exportItineraryWhatsApp === 'function') {
+      console.log('[ItineraryUnified] ✅ Calling exportItineraryWhatsApp()');
+      try {
+        window.exportItineraryWhatsApp();
+      } catch (err) {
+        console.error('[ItineraryUnified] ❌ Error:', err);
+        if (window.toast) window.toast('❌ Errore: ' + err.message);
+      }
+    }
+  }, false);
+
+  // Share with group button
+  sheetBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('#btn-share-group-unified');
+    if (!btn) return;
+
+    console.log('[ItineraryUnified] 👥 Share group clicked (global delegation)');
+
+    let totalPOIs = 0;
+    const tripProfile = window.state?.tripProfile || {};
+    const days = tripProfile.days || 8;
+
+    for (let d = 0; d < days; d++) {
+      totalPOIs += (window.state?.itineraryByDay?.[d] || []).length;
+    }
+
+    if (totalPOIs === 0) {
+      console.log('[ItineraryUnified] ⚠️ Itinerary empty, showing modal');
+      showEmptyItineraryModal('share');
+      return;
+    }
+
+    if (typeof window.showShareItineraryModal === 'function') {
+      console.log('[ItineraryUnified] ✅ Calling showShareItineraryModal()');
+      try {
+        window.showShareItineraryModal();
+      } catch (err) {
+        console.error('[ItineraryUnified] ❌ Error:', err);
+        if (window.toast) window.toast('❌ Errore: ' + err.message);
+      }
+    }
+  }, false);
+
+  // Menu button (modifica, sposta, cancella)
+  sheetBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('.itinerary-menu-btn');
+    if (!btn) return;
+
+    e.stopPropagation();
+    const poiId = btn.dataset.poiId;
+    if (typeof showItineraryPOIMenu === 'function') {
+      showItineraryPOIMenu(poiId);
+    }
+  }, false);
+
+  // Remove from shared itinerary
+  sheetBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-remove-itinerary]');
+    if (!btn) return;
+
+    const entryId = btn.dataset.removeItinerary;
+    if (confirm('Rimuovere questa tappa dal gruppo?')) {
+      if (window.state?.itinerary) {
+        const idx = window.state.itinerary.findIndex(e => e.id === entryId);
+        if (idx !== -1) {
+          window.state.itinerary.splice(idx, 1);
+          window.saveState?.();
+          renderItineraryUnified();
+          if (window.toast) window.toast('✓ Tappa rimossa');
+        }
+      }
+    }
+  }, false);
+
+  console.log('[ItineraryUnified] ✅ Global event delegation setup complete');
+}
+
+/**
+ * CHECK if itinerary is shareable (has at least one POI)
+ * Returns true only if there's at least one POI across all days
+ */
+function hasShareableItinerary() {
+  const tripProfile = window.state?.tripProfile || {};
+  const days = tripProfile.days || 8;
+  let totalPOIs = 0;
+
+  for (let d = 0; d < days; d++) {
+    const dayPOIs = window.state?.itineraryByDay?.[d] || [];
+    totalPOIs += dayPOIs.length;
+  }
+
+  const isShareable = totalPOIs > 0;
+  console.log('[ItineraryUnified] 🔍 hasShareableItinerary():', {
+    totalPOIs,
+    isShareable,
+    message: isShareable ? '✅ share allowed: itinerary has POIs' : '🚫 share blocked: empty itinerary'
   });
+
+  return isShareable;
+}
+
+/**
+ * ELEGANT EMPTY SHARE MODAL
+ * UX: Explain why share is blocked, offer next useful step
+ * Design: Dark warm, coherent with rest of app
+ */
+function showEmptyItineraryModal() {
+  const html = `
+    <div style="
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      text-align: center;
+      min-height: 400px;
+    ">
+      <!-- Icon -->
+      <div style="
+        font-size: 64px;
+        margin-bottom: 24px;
+        opacity: 0.9;
+      ">📭</div>
+
+      <!-- Heading -->
+      <h2 style="
+        font-size: 20px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.95);
+        margin: 0 0 16px 0;
+        line-height: 1.3;
+      ">Nessun itinerario da condividere</h2>
+
+      <!-- Description -->
+      <p style="
+        font-size: 14px;
+        color: rgba(255,255,255,0.7);
+        margin: 0 0 32px 0;
+        line-height: 1.6;
+        max-width: 320px;
+      ">Non hai ancora aggiunto nessuna tappa al tuo itinerario. Aggiungi almeno un luogo a uno dei giorni prima di esportarlo o condividerlo con il gruppo.</p>
+
+      <!-- CTA Buttons -->
+      <div style="
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        max-width: 280px;
+      ">
+        <!-- Primary button: Ho capito -->
+        <button class="empty-share-close-btn" style="
+          padding: 14px 20px;
+          background: rgba(255,107,53,0.15);
+          border: 1.5px solid rgba(255,107,53,0.4);
+          border-radius: 10px;
+          color: #FF6B35;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        " onmouseover="this.style.background='rgba(255,107,53,0.25)'; this.style.borderColor='rgba(255,107,53,0.6)';" onmouseout="this.style.background='rgba(255,107,53,0.15)'; this.style.borderColor='rgba(255,107,53,0.4)';">
+          Ho capito
+        </button>
+
+        <!-- Secondary button: Aggiungi una tappa -->
+        <button class="empty-share-add-btn" style="
+          padding: 14px 20px;
+          background: linear-gradient(135deg, rgba(76,175,80,0.2), rgba(76,175,80,0.1));
+          border: 1.5px solid rgba(76,175,80,0.4);
+          border-radius: 10px;
+          color: #4ADE80;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        " onmouseover="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.3), rgba(76,175,80,0.15))'; this.style.borderColor='rgba(76,175,80,0.6)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.2), rgba(76,175,80,0.1))'; this.style.borderColor='rgba(76,175,80,0.4)';">
+          ➕ Aggiungi una tappa
+        </button>
+      </div>
+    </div>
+  `;
+
+  window.openSheet('📭 Itinerario vuoto', html);
+  console.log('[ItineraryUnified] 📭 showEmptyShareModal() opened');
+
+  // Setup button handlers via event delegation (will be caught by global handlers)
+  // But also attach direct handlers for robustness
+  setTimeout(() => {
+    const closeBtn = document.querySelector('.empty-share-close-btn');
+    const addBtn = document.querySelector('.empty-share-add-btn');
+
+    if (closeBtn) {
+      closeBtn.onclick = () => {
+        console.log('[ItineraryUnified] ✓ User closed empty share modal');
+        window.closeSheet();
+      };
+    }
+
+    if (addBtn) {
+      addBtn.onclick = () => {
+        console.log('[ItineraryUnified] ✓ User clicked "Aggiungi una tappa"');
+        window.closeSheet();
+        // Go to map tab to start adding POIs
+        const mapBtn = document.querySelector('nav.bottom button[data-view="map"]');
+        if (mapBtn) {
+          mapBtn.click();
+          if (window.toast) window.toast('📍 Clicca un luogo sulla mappa per aggiungerlo');
+        }
+      };
+    }
+  }, 50);
+}
+
+/**
+ * ACCORDION + DRAG-DROP only
+ * Sharing buttons are handled by setupGlobalEventDelegation (one-time setup at load)
+ */
+function setupAccordionAndDragDrop() {
+  console.log('[UnifiedItinerary] ⚙️ Setting up accordion + drag-drop...');
 
   // Accordion toggle
   const headers = document.querySelectorAll('.itinerary-day-header');
-  console.log(`[UnifiedItinerary] Found ${headers.length} day headers for accordion toggle`);
-  if (headers.length === 0) {
-    console.warn('[UnifiedItinerary] ⚠️ No day headers found! Checking sheet-body...');
-    const sheetBody = document.getElementById('sheet-body');
-    if (sheetBody) {
-      const headersInSheet = sheetBody.querySelectorAll('.itinerary-day-header');
-      console.log('[UnifiedItinerary] Found', headersInSheet.length, 'headers in sheet-body');
-    }
-  }
-  headers.forEach((header, idx) => {
+  console.log(`[UnifiedItinerary] Found ${headers.length} day headers`);
+
+  headers.forEach((header) => {
     header.addEventListener('click', (e) => {
       const dayIndex = header.dataset.day;
       const content = document.querySelector(`.itinerary-day-content[data-day="${dayIndex}"]`);
@@ -276,13 +527,9 @@ function setupUnifiedItineraryHandlers() {
         const isOpen = content.style.display === 'block';
         content.style.display = isOpen ? 'none' : 'block';
         header.style.borderBottomColor = isOpen ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)';
-        console.log(`[UnifiedItinerary] ✅ Day ${dayIndex} toggled: ${isOpen ? 'closed' : 'opened'}`);
       }
     });
   });
-  if (headers.length > 0) {
-    console.log('[UnifiedItinerary] ✅ Accordion toggle handlers attached to', headers.length, 'headers');
-  }
 
   // Drag-drop
   document.querySelectorAll('.itinerary-poi').forEach(poi => {
@@ -322,213 +569,28 @@ function setupUnifiedItineraryHandlers() {
 
   // Add POI button
   const addBtns = document.querySelectorAll('.itinerary-add-btn');
-  console.log(`[UnifiedItinerary] Found ${addBtns.length} "Add POI" buttons`);
   addBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       const dayIndex = parseInt(btn.dataset.day);
-      console.log(`[UnifiedItinerary] "Add POI" clicked for day ${dayIndex}`);
       if (window.toast) {
         window.toast('📍 Tap un POI sulla mappa per aggiungerlo a Day ' + (dayIndex + 1));
-      } else {
-        alert('Tap un POI sulla mappa per aggiungerlo');
       }
     });
   });
 
-  // Menu button
-  const menuBtns = document.querySelectorAll('.itinerary-menu-btn');
-  console.log(`[UnifiedItinerary] Found ${menuBtns.length} menu buttons`);
-  menuBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const poiId = btn.dataset.poiId;
-      console.log(`[UnifiedItinerary] Menu button clicked for POI ${poiId}`);
-      if (typeof showItineraryPOIMenu === 'function') {
-        showItineraryPOIMenu(poiId);
-      } else {
-        console.warn('[UnifiedItinerary] showItineraryPOIMenu not found');
-      }
-    });
-  });
-
-  // Sharing buttons - with fallback search
-  let btnExportWhatsapp = document.getElementById('btn-export-whatsapp-unified');
-  let btnShareGroup = document.getElementById('btn-share-group-unified');
-
-  // Fallback: search in sheet-body if not found globally
-  const sheetBody = document.getElementById('sheet-body');
-  if (!btnExportWhatsapp && sheetBody) {
-    console.warn('[UnifiedItinerary] btn-export-whatsapp-unified not found in global DOM, searching in sheet-body...');
-    btnExportWhatsapp = sheetBody.querySelector('#btn-export-whatsapp-unified');
-  }
-  if (!btnShareGroup && sheetBody) {
-    console.warn('[UnifiedItinerary] btn-share-group-unified not found in global DOM, searching in sheet-body...');
-    btnShareGroup = sheetBody.querySelector('#btn-share-group-unified');
-  }
-
-  console.log(`[UnifiedItinerary] 🔍 Searching buttons...`);
-  console.log(`  - WhatsApp button found: ${!!btnExportWhatsapp}`);
-  console.log(`  - Share button found: ${!!btnShareGroup}`);
-  console.log(`  - sheet-body element: ${!!sheetBody}`);
-  console.log(`[UnifiedItinerary] 🔍 Checking global functions...`);
-  console.log(`  - exportItineraryWhatsApp: ${typeof window.exportItineraryWhatsApp === 'function' ? '✓ exists' : '✗ MISSING'}`);
-  console.log(`  - showShareItineraryModal: ${typeof window.showShareItineraryModal === 'function' ? '✓ exists' : '✗ MISSING'}`);
-
-  if (btnExportWhatsapp) {
-    btnExportWhatsapp.onclick = () => {
-      console.log('[UnifiedItinerary] 📤 WhatsApp export clicked');
-
-      // Check if itinerary is empty
-      let totalPOIs = 0;
-      const tripProfile = window.state?.tripProfile || {};
-      const days = tripProfile.days || 8;
-
-      console.log('[UnifiedItinerary] 🔍 Checking itinerary...');
-      console.log('[UnifiedItinerary]   - tripProfile.days:', days);
-      console.log('[UnifiedItinerary]   - window.state.itineraryByDay:', window.state?.itineraryByDay);
-
-      for (let d = 0; d < days; d++) {
-        const dayPOIs = window.state?.itineraryByDay?.[d] || [];
-        totalPOIs += dayPOIs.length;
-        console.log(`[UnifiedItinerary]   - Day ${d}: ${dayPOIs.length} POIs`);
-      }
-
-      console.log('[UnifiedItinerary] 📊 Total POIs:', totalPOIs);
-
-      if (totalPOIs === 0) {
-        console.warn('[UnifiedItinerary] ⚠️ Itinerary is EMPTY - cannot export');
-
-        const message = '📍 Aggiungi almeno un POI all\'itinerario prima di condividere';
-        console.log('[UnifiedItinerary] 🔊 Showing alert:', message);
-        alert(message);
-        return;
-      }
-
-      if (typeof window.exportItineraryWhatsApp === 'function') {
-        console.log('[UnifiedItinerary] ✅ Calling exportItineraryWhatsApp()...');
-        try {
-          window.exportItineraryWhatsApp();
-          console.log('[UnifiedItinerary] ✅ exportItineraryWhatsApp() executed successfully');
-        } catch (err) {
-          console.error('[UnifiedItinerary] ❌ Error in exportItineraryWhatsApp:', err);
-          if (window.toast) {
-            window.toast('❌ Errore nell\'export WhatsApp: ' + err.message);
-          }
-        }
-      } else {
-        console.error('[UnifiedItinerary] ❌ exportItineraryWhatsApp function not found on window');
-        if (window.toast) {
-          window.toast('⚠️ Funzione export non disponibile');
-        }
-      }
-    };
-    console.log('[UnifiedItinerary] ✅ WhatsApp button handler attached successfully');
-  } else {
-    console.error('[UnifiedItinerary] ❌ WhatsApp button (ID: btn-export-whatsapp-unified) NOT FOUND in DOM');
-    if (sheetBody) {
-      const allButtons = sheetBody.querySelectorAll('button');
-      console.error('[UnifiedItinerary] ❌ Found', allButtons.length, 'buttons in sheet-body. IDs:',
-        Array.from(allButtons).map(b => b.id || '(no id)').join(', '));
-    }
-  }
-
-  if (btnShareGroup) {
-    btnShareGroup.onclick = () => {
-      console.log('[UnifiedItinerary] 👥 Share group clicked');
-
-      // Check if itinerary is empty
-      let totalPOIs = 0;
-      const tripProfile = window.state?.tripProfile || {};
-      const days = tripProfile.days || 8;
-
-      console.log('[UnifiedItinerary] 🔍 Checking itinerary...');
-      console.log('[UnifiedItinerary]   - tripProfile.days:', days);
-      console.log('[UnifiedItinerary]   - window.state.itineraryByDay:', window.state?.itineraryByDay);
-
-      for (let d = 0; d < days; d++) {
-        const dayPOIs = window.state?.itineraryByDay?.[d] || [];
-        totalPOIs += dayPOIs.length;
-        console.log(`[UnifiedItinerary]   - Day ${d}: ${dayPOIs.length} POIs`);
-      }
-
-      console.log('[UnifiedItinerary] 📊 Total POIs:', totalPOIs);
-
-      if (totalPOIs === 0) {
-        console.warn('[UnifiedItinerary] ⚠️ Itinerary is EMPTY - cannot share');
-
-        const message = '📍 Aggiungi almeno un POI all\'itinerario prima di condividere';
-        console.log('[UnifiedItinerary] 🔊 Showing alert:', message);
-        alert(message);
-        return;
-      }
-
-      if (typeof window.showShareItineraryModal === 'function') {
-        console.log('[UnifiedItinerary] ✅ Calling showShareItineraryModal()...');
-        try {
-          window.showShareItineraryModal();
-          console.log('[UnifiedItinerary] ✅ showShareItineraryModal() executed successfully');
-        } catch (err) {
-          console.error('[UnifiedItinerary] ❌ Error in showShareItineraryModal:', err);
-          if (window.toast) {
-            window.toast('❌ Errore nella condivisione: ' + err.message);
-          }
-        }
-      } else {
-        console.error('[UnifiedItinerary] ❌ showShareItineraryModal function not found on window');
-        if (window.toast) {
-          window.toast('⚠️ Funzione condivisione non disponibile');
-        }
-      }
-    };
-    console.log('[UnifiedItinerary] ✅ Share button handler attached successfully');
-  } else {
-    console.error('[UnifiedItinerary] ❌ Share button (ID: btn-share-group-unified) NOT FOUND in DOM');
-    if (sheetBody) {
-      const allButtons = sheetBody.querySelectorAll('button');
-      console.error('[UnifiedItinerary] ❌ Found', allButtons.length, 'buttons in sheet-body. IDs:',
-        Array.from(allButtons).map(b => b.id || '(no id)').join(', '));
-    }
-  }
-
-  // Remove from shared itinerary
-  const removeBtns = document.querySelectorAll('[data-remove-itinerary]');
-  console.log(`[UnifiedItinerary] Found ${removeBtns.length} "Remove from shared" buttons`);
-  removeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const entryId = btn.dataset.removeItinerary;
-      console.log(`[UnifiedItinerary] ✅ Remove button clicked for entry ${entryId}`);
-      if (confirm('Rimuovere questa tappa dal gruppo?')) {
-        if (!window.state.itinerary) {
-          console.warn('[UnifiedItinerary] window.state.itinerary not found');
-          return;
-        }
-        const idx = window.state.itinerary.findIndex(e => e.id === entryId);
-        console.log(`[UnifiedItinerary] Found entry at index ${idx}`);
-        if (idx !== -1) {
-          window.state.itinerary.splice(idx, 1);
-          window.saveState?.();
-          renderItineraryUnified();
-          if (window.toast) {
-            window.toast('✓ Tappa rimossa dal gruppo');
-          }
-        }
-      }
-    });
-  });
-  if (removeBtns.length > 0) {
-    console.log('[UnifiedItinerary] ✅ Remove handlers attached to', removeBtns.length, 'buttons');
-  }
-
-  console.log('[UnifiedItinerary] 📋 ═══════════════════════════════════════');
-  console.log('[UnifiedItinerary] ✅ SETUP COMPLETE - Summary:');
-  console.log('[UnifiedItinerary]   • Accordion headers:', headers.length);
-  console.log('[UnifiedItinerary]   • Add POI buttons:', addBtns.length);
-  console.log('[UnifiedItinerary]   • Menu buttons:', menuBtns.length);
-  console.log('[UnifiedItinerary]   • Remove shared buttons:', removeBtns.length);
-  console.log('[UnifiedItinerary]   • WhatsApp export: ' + (!!btnExportWhatsapp ? '✓' : '✗'));
-  console.log('[UnifiedItinerary]   • Share group: ' + (!!btnShareGroup ? '✓' : '✗'));
-  console.log('[UnifiedItinerary] ═══════════════════════════════════════');
+  console.log('[UnifiedItinerary] ✅ Accordion + drag-drop setup complete');
 }
 
 // Expose to window
 window.renderItineraryUnified = renderItineraryUnified;
+window.showEmptyItineraryModal = showEmptyItineraryModal;
+window.setupGlobalEventDelegation = setupGlobalEventDelegation;
+
+// Initialize global event delegation when script loads
+console.log('[ItineraryUnified] Script loaded, waiting for DOM ready...');
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupGlobalEventDelegation);
+} else {
+  // DOM already loaded
+  setupGlobalEventDelegation();
+}

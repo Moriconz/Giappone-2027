@@ -245,24 +245,33 @@ function setupItineraryEventHandlers() {
     });
   });
 
-  // Add POI button
-  document.querySelectorAll('.itinerary-add-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+  // Add POI button - use event delegation for robustness
+  const sheetBody = document.getElementById('sheet-body');
+  if (sheetBody) {
+    sheetBody.addEventListener('click', (e) => {
+      const btn = e.target.closest('.itinerary-add-btn');
+      if (!btn) return;
+
       const dayIndex = parseInt(btn.dataset.day);
       console.log('[ItineraryUI] Open POI picker for day', dayIndex);
       // TODO: Open a POI picker modal/sheet to add POI to this day
       window.toast('Tap un POI sulla mappa o seleziona dalle tappe salvate');
-    });
-  });
+    }, false);
+    console.log('[ItineraryUI] ✅ Add POI button handler attached via event delegation');
+  }
 
-  // Menu button (modifica, sposta, cancella)
-  document.querySelectorAll('.itinerary-menu-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+  // Menu button (modifica, sposta, cancella) - use event delegation
+  if (sheetBody) {
+    sheetBody.addEventListener('click', (e) => {
+      const btn = e.target.closest('.itinerary-menu-btn');
+      if (!btn) return;
+
       e.stopPropagation();
       const poiId = btn.dataset.poiId;
       showItineraryPOIMenu(poiId);
-    });
-  });
+    }, false);
+    console.log('[ItineraryUI] ✅ Menu button handlers attached via event delegation');
+  }
 }
 
 function showItineraryPOIMenu(poiId) {
