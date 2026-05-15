@@ -7155,6 +7155,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
               const sheetBody = document.getElementById('sheet-body');
               console.log('[WIZARD DEBUG] sheetBody found:', !!sheetBody);
+              console.log('[WIZARD DEBUG] sheetBody innerHTML length:', sheetBody?.innerHTML?.length || 0);
 
               if (!sheetBody) {
                 console.error('[WIZARD ERROR] sheetBody not found! Cannot attach handlers.');
@@ -7163,7 +7164,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
               // Count wizard-day-btn elements
               const dayBtns = sheetBody.querySelectorAll('.wizard-day-btn');
-              console.log('[WIZARD DEBUG] wizard-day-btn elements found:', dayBtns.length);
+              console.log('[WIZARD DEBUG] wizard-day-btn elements found in sheetBody:', dayBtns.length);
+
+              // Also check in entire document
+              const allDayBtns = document.querySelectorAll('.wizard-day-btn');
+              console.log('[WIZARD DEBUG] wizard-day-btn elements found in DOCUMENT:', allDayBtns.length);
+
+              // Show first 200 chars of sheetBody content
+              if (sheetBody) {
+                console.log('[WIZARD DEBUG] sheetBody content preview:', sheetBody.innerHTML.substring(0, 200));
+              }
 
               // Day selection - Using event delegation
               sheetBody.onclick = function(e) {
@@ -13598,7 +13608,8 @@ if ('serviceWorker' in navigator) {
 <script src="./js/itinerary-ui.js"></script>
 <script src="./js/itinerary-unified.js"></script>
 <script src="./js/itinerary-add-wizard.js"></script>
-<script src="./js/wizard-integration.js"></script>
+<!-- DISABLED: wizard-integration.js was interfering with new wizard implementation -->
+<!-- <script src="./js/wizard-integration.js"></script> -->
 <script src="./js/onboarding.js"></script>
 <script src="./js/filter-system.js"></script>
 <script src="./js/y2k-windows.js"></script>
