@@ -62,17 +62,17 @@ function renderItineraryUnified() {
           cursor:grab;
           transition:all 0.2s ease;
           box-shadow:0 2px 8px rgba(0,0,0,0.2);
-        " onmouseover="this.style.background='linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))';this.style.borderColor='rgba(255,255,255,0.2)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))';this.style.borderColor='rgba(255,255,255,0.12)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.2)'">
+        " onmouseover="this.style.background='linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))';this.style.borderColor='rgba(255,255,255,0.2)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)';this.querySelector('.itinerary-menu-btn').style.opacity='1'" onmouseout="this.style.background='linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))';this.style.borderColor='rgba(255,255,255,0.12)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.2)';this.querySelector('.itinerary-menu-btn').style.opacity='0'">
 
-          <!-- ROW 1: Number + Name + Menu -->
-          <div style="display:flex;align-items:flex-start;gap:10px;justify-content:space-between">
+          <!-- ROW 1: Number + Name + Menu (hidden on hover) -->
+          <div style="display:flex;align-items:flex-start;gap:10px;justify-content:space-between" class="itinerary-poi-header">
             <div style="display:flex;gap:10px;align-items:flex-start;flex:1">
               <span style="flex-shrink:0;width:24px;height:24px;background:linear-gradient(135deg, #FF6B35, #FF8A5B);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-top:2px">${idx + 1}</span>
               <div style="flex:1;min-width:0">
                 <div style="font-size:14px;color:#fff;font-weight:600;margin-bottom:2px;line-height:1.3">${poiNameDisplay}</div>
               </div>
             </div>
-            <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;width:28px;height:28px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:5px;color:#fff;cursor:pointer;font-size:14px;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">⋮</button>
+            <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;width:24px;height:24px;background:transparent;border:none;border-radius:5px;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;padding:0;transition:all 0.2s;opacity:0;margin-right:0" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'">⋮</button>
           </div>
 
           <!-- ROW 2: Time, Duration, Cost badges -->
@@ -646,10 +646,224 @@ function setupAccordionAndDragDrop() {
   console.log('[UnifiedItinerary] ✅ Accordion + drag-drop setup complete');
 }
 
+/**
+ * MENU FOR POI ACTIONS (Edit, Move, Delete)
+ */
+function showItineraryPOIMenu(poiId) {
+  console.log('[ItineraryMenu] Opening menu for POI:', poiId);
+
+  // Find the POI in itineraryByDay
+  let poiData = null;
+  let dayIndex = null;
+
+  for (const [idx, dayPOIs] of Object.entries(window.state?.itineraryByDay || {})) {
+    const found = dayPOIs.find(p => p.poi_id === poiId);
+    if (found) {
+      poiData = found;
+      dayIndex = parseInt(idx);
+      break;
+    }
+  }
+
+  if (!poiData) {
+    console.error('[ItineraryMenu] POI not found:', poiId);
+    return;
+  }
+
+  const tripProfile = window.state?.tripProfile || {};
+  const totalDays = tripProfile.days || 8;
+  const poiName = poiData.poi_name || `POI #${poiId.substring(0, 8)}`;
+
+  // Build menu HTML
+  const daysOptions = Array.from({ length: totalDays }, (_, i) => {
+    const isCurrentDay = i === dayIndex;
+    return `
+      <button class="itinerary-menu-move-btn" data-target-day="${i}" style="
+        padding:6px 12px;
+        background:${isCurrentDay ? 'rgba(255,107,53,0.3)' : 'rgba(255,255,255,0.08)'};
+        border:1px solid ${isCurrentDay ? 'rgba(255,107,53,0.5)' : 'rgba(255,255,255,0.15)'};
+        border-radius:4px;
+        color:#fff;
+        cursor:pointer;
+        font-size:12px;
+        transition:all 0.2s;
+        font-weight:${isCurrentDay ? '600' : '400'};
+      " onmouseover="this.style.background='rgba(255,107,53,0.4)'" onmouseout="this.style.background='${isCurrentDay ? 'rgba(255,107,53,0.3)' : 'rgba(255,255,255,0.08)'}'">
+        Day ${i + 1} ${isCurrentDay ? '✓' : ''}
+      </button>
+    `;
+  }).join('');
+
+  const html = `
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <h3 style="margin:0 0 12px 0;color:#fff;font-size:15px;font-weight:700">📋 ${poiName}</h3>
+        <p style="margin:0;color:rgba(255,255,255,0.6);font-size:12px">Opzioni disponibili</p>
+      </div>
+
+      <!-- Orario -->
+      <div>
+        <label style="display:block;color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:6px;font-weight:600">⏰ Orario</label>
+        <input type="text" class="itinerary-menu-time" placeholder="HH:MM" value="${poiData.time}" style="
+          width:100%;
+          padding:8px 10px;
+          background:rgba(255,255,255,0.08);
+          border:1px solid rgba(255,255,255,0.15);
+          border-radius:4px;
+          color:#fff;
+          font-size:13px;
+          box-sizing:border-box;
+        " />
+      </div>
+
+      <!-- Durata -->
+      <div>
+        <label style="display:block;color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:6px;font-weight:600">⏱️ Durata (minuti)</label>
+        <input type="number" class="itinerary-menu-duration" placeholder="60" value="${poiData.duration}" style="
+          width:100%;
+          padding:8px 10px;
+          background:rgba(255,255,255,0.08);
+          border:1px solid rgba(255,255,255,0.15);
+          border-radius:4px;
+          color:#fff;
+          font-size:13px;
+          box-sizing:border-box;
+        " />
+      </div>
+
+      <!-- Costo -->
+      <div>
+        <label style="display:block;color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:6px;font-weight:600">💰 Costo (¥)</label>
+        <input type="number" class="itinerary-menu-cost" placeholder="0" value="${poiData.cost || 0}" style="
+          width:100%;
+          padding:8px 10px;
+          background:rgba(255,255,255,0.08);
+          border:1px solid rgba(255,255,255,0.15);
+          border-radius:4px;
+          color:#fff;
+          font-size:13px;
+          box-sizing:border-box;
+        " />
+      </div>
+
+      <!-- Note -->
+      <div>
+        <label style="display:block;color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:6px;font-weight:600">📝 Note</label>
+        <textarea class="itinerary-menu-notes" placeholder="Aggiungi una nota..." style="
+          width:100%;
+          padding:8px 10px;
+          background:rgba(255,255,255,0.08);
+          border:1px solid rgba(255,255,255,0.15);
+          border-radius:4px;
+          color:#fff;
+          font-size:13px;
+          box-sizing:border-box;
+          resize:vertical;
+          min-height:60px;
+          font-family:inherit;
+        ">${poiData.notes || ''}</textarea>
+      </div>
+
+      <!-- Sposta a un altro giorno -->
+      <div>
+        <label style="display:block;color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:8px;font-weight:600">📅 Sposta a</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          ${daysOptions}
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="itinerary-menu-save" style="
+          flex:1;
+          padding:10px 14px;
+          background:rgba(76,175,80,0.3);
+          border:1px solid rgba(76,175,80,0.5);
+          border-radius:6px;
+          color:#4ade80;
+          font-weight:600;
+          font-size:13px;
+          cursor:pointer;
+          transition:all 0.2s;
+        " onmouseover="this.style.background='rgba(76,175,80,0.4)'" onmouseout="this.style.background='rgba(76,175,80,0.3)'">
+          ✓ Salva
+        </button>
+        <button class="itinerary-menu-delete" style="
+          flex:1;
+          padding:10px 14px;
+          background:rgba(255,107,107,0.2);
+          border:1px solid rgba(255,107,107,0.4);
+          border-radius:6px;
+          color:#FF6B6B;
+          font-weight:600;
+          font-size:13px;
+          cursor:pointer;
+          transition:all 0.2s;
+        " onmouseover="this.style.background='rgba(255,107,107,0.3)'" onmouseout="this.style.background='rgba(255,107,107,0.2)'">
+          🗑️ Cancella
+        </button>
+      </div>
+    </div>
+  `;
+
+  window.openSheet(`✏️ Modifica: ${poiName}`, html);
+  console.log('[ItineraryMenu] Menu opened for POI:', poiName);
+
+  // Setup button handlers
+  setTimeout(() => {
+    const saveBtn = document.querySelector('.itinerary-menu-save');
+    const deleteBtn = document.querySelector('.itinerary-menu-delete');
+    const moveButtons = document.querySelectorAll('.itinerary-menu-move-btn');
+
+    if (saveBtn) {
+      saveBtn.onclick = () => {
+        const newTime = document.querySelector('.itinerary-menu-time')?.value || poiData.time;
+        const newDuration = parseInt(document.querySelector('.itinerary-menu-duration')?.value || poiData.duration);
+        const newCost = parseInt(document.querySelector('.itinerary-menu-cost')?.value || 0);
+        const newNotes = document.querySelector('.itinerary-menu-notes')?.value || '';
+
+        window.ITINERARY?.updateTime(poiId, newTime);
+        window.ITINERARY?.updateDuration(poiId, newDuration);
+        window.ITINERARY?.updateCost(poiId, newCost);
+        window.ITINERARY?.updateNotes(poiId, newNotes);
+
+        window.saveState?.();
+        window.renderItineraryUnified?.();
+        window.closeSheet();
+        if (window.toast) window.toast('✓ Modifiche salvate');
+      };
+    }
+
+    if (deleteBtn) {
+      deleteBtn.onclick = () => {
+        if (confirm(`Rimuovere "${poiName}" dall'itinerario?`)) {
+          window.ITINERARY?.removePOI(poiId);
+          window.saveState?.();
+          window.renderItineraryUnified?.();
+          window.closeSheet();
+          if (window.toast) window.toast('✓ POI rimosso');
+        }
+      };
+    }
+
+    moveButtons.forEach(btn => {
+      btn.onclick = (e) => {
+        const targetDay = parseInt(btn.dataset.targetDay);
+        window.ITINERARY?.moveToDay(poiId, targetDay);
+        window.saveState?.();
+        window.renderItineraryUnified?.();
+        window.closeSheet();
+        if (window.toast) window.toast(`✓ Spostato al Day ${targetDay + 1}`);
+      };
+    });
+  }, 50);
+}
+
 // Expose to window
 window.renderItineraryUnified = renderItineraryUnified;
 window.showEmptyItineraryModal = showEmptyItineraryModal;
 window.setupGlobalEventDelegation = setupGlobalEventDelegation;
+window.showItineraryPOIMenu = showItineraryPOIMenu;
 
 // Initialize global event delegation when script loads
 console.log('[ItineraryUnified] Script loaded, waiting for DOM ready...');
