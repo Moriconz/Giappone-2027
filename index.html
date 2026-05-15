@@ -7151,17 +7151,30 @@ document.addEventListener('DOMContentLoaded', () => {
              * Attach event handlers using event delegation
              */
             function attachWizardHandlers() {
-              // Remove old delegated listeners first (prevent duplicates)
+              console.log('[WIZARD DEBUG] attachWizardHandlers() called');
+
               const sheetBody = document.getElementById('sheet-body');
-              if (!sheetBody) return;
+              console.log('[WIZARD DEBUG] sheetBody found:', !!sheetBody);
+
+              if (!sheetBody) {
+                console.error('[WIZARD ERROR] sheetBody not found! Cannot attach handlers.');
+                return;
+              }
+
+              // Count wizard-day-btn elements
+              const dayBtns = sheetBody.querySelectorAll('.wizard-day-btn');
+              console.log('[WIZARD DEBUG] wizard-day-btn elements found:', dayBtns.length);
 
               // Day selection - Using event delegation
               sheetBody.onclick = function(e) {
+                console.log('[WIZARD DEBUG] sheetBody click detected on:', e.target.className, 'target:', e.target.textContent);
+
                 if (e.target.classList.contains('wizard-day-btn')) {
                   const dayIndex = parseInt(e.target.dataset.day);
+                  console.log('[WIZARD] Day selected:', dayIndex + 1, 'dayIndex:', dayIndex);
                   wizardState.selectedDay = dayIndex;
-                  console.log('[WIZARD] Day selected:', dayIndex + 1);
                   wizardState.step = 2;
+                  console.log('[WIZARD DEBUG] wizardState updated - step:', wizardState.step, 'selectedDay:', wizardState.selectedDay);
                   updateWizardUI();
                   return;
                 }
@@ -7169,8 +7182,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Duration presets
                 if (e.target.classList.contains('duration-preset')) {
                   const duration = parseInt(e.target.dataset.duration);
-                  wizardState.duration = duration;
                   console.log('[WIZARD] Duration preset selected:', duration);
+                  wizardState.duration = duration;
                   updateWizardUI();
                   return;
                 }
@@ -7275,42 +7288,46 @@ document.addEventListener('DOMContentLoaded', () => {
              * Create initial wizard content with controls
              */
             const wizardHTML = renderWizardStep() + `
-              <div style="padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; justify-content: space-between;">
+              <div style="padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; align-items: center; justify-content: flex-start;">
+                <!-- LEFT BUTTONS -->
                 <button class="wizard-cancel-btn" style="
-                  flex: 0 0 auto;
                   padding: 8px 12px;
                   background: rgba(255,255,255,0.04);
                   border: 1px solid rgba(255,255,255,0.1);
                   color: rgba(255,255,255,0.6);
                   border-radius: 4px;
                   cursor: pointer;
-                  font-size: 12px;
+                  font-size: 11px;
                   font-weight: 500;
                   transition: all 0.2s;
+                  white-space: nowrap;
                 " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
-                  Annulla
+                  ✕ Annulla
                 </button>
 
                 ${wizardState.step > 1 ? `
                   <button class="wizard-back-btn" style="
-                    flex: 0 0 auto;
                     padding: 8px 12px;
                     background: rgba(255,255,255,0.04);
                     border: 1px solid rgba(255,255,255,0.1);
                     color: rgba(255,255,255,0.6);
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 12px;
+                    font-size: 11px;
                     font-weight: 500;
                     transition: all 0.2s;
+                    white-space: nowrap;
                   " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
                     ← Indietro
                   </button>
-                ` : `<div style="flex: 1;"></div>`}
+                ` : ''}
 
+                <!-- SPACER -->
+                <div style="flex: 1;"></div>
+
+                <!-- RIGHT BUTTON -->
                 ${wizardState.step < 4 ? `
                   <button class="wizard-next-btn" style="
-                    flex: 0 0 auto;
                     padding: 8px 16px;
                     background: rgba(255, 107, 53, 0.3);
                     border: 1px solid rgba(255, 107, 53, 0.5);
@@ -7320,12 +7337,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     font-size: 12px;
                     font-weight: 600;
                     transition: all 0.2s;
+                    white-space: nowrap;
                   " onmouseover="this.style.background='rgba(255, 107, 53, 0.4)'" onmouseout="this.style.background='rgba(255, 107, 53, 0.3)'">
                     Avanti →
                   </button>
                 ` : `
                   <button class="wizard-confirm-btn" style="
-                    flex: 0 0 auto;
                     padding: 8px 16px;
                     background: rgba(74,124,89,0.3);
                     border: 1px solid rgba(74,124,89,0.5);
@@ -7335,6 +7352,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     font-size: 12px;
                     font-weight: 600;
                     transition: all 0.2s;
+                    white-space: nowrap;
                   " onmouseover="this.style.background='rgba(74,124,89,0.4)'" onmouseout="this.style.background='rgba(74,124,89,0.3)'">
                     ✓ Conferma
                   </button>
