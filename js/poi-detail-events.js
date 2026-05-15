@@ -285,7 +285,12 @@ document.addEventListener('click', (e) => {
   // Primary CTA: Add to Itinerary
   if (e.target.id === 'add-to-itinerary-btn' || e.target.closest('#add-to-itinerary-btn')) {
     console.debug('[Primary CTA] Aggiungi all\'itinerario');
-    // Implementa la tua logica di aggiunta all'itinerario
+    // Open the add-to-itinerary wizard
+    if (typeof handleOpenWizardFromDetail === 'function') {
+      handleOpenWizardFromDetail();
+    } else if (typeof window.handleOpenWizardFromDetail === 'function') {
+      window.handleOpenWizardFromDetail();
+    }
   }
 
   // Secondary: Save POI
