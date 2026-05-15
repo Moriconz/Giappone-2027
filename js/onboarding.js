@@ -17,8 +17,166 @@ function initOnboarding() {
     return; // Skip onboarding
   }
 
-  console.log('[Onboarding] First time user, showing onboarding...');
-  showOnboarding();
+  console.log('[Onboarding] First time user, showing choice modal...');
+  showOnboardingChoiceModal();
+}
+
+/**
+ * Show modal asking user: Create trip or Join existing?
+ */
+function showOnboardingChoiceModal() {
+  const html = `
+    <div id="onboarding-choice-overlay" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(10,8,5,0.98), rgba(20,15,10,0.98));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 20px;
+    ">
+      <div style="
+        width: 100%;
+        max-width: 440px;
+        background: linear-gradient(135deg, rgba(35,28,22,0.92), rgba(42,32,25,0.92));
+        border-radius: 20px;
+        border: 1px solid rgba(255,165,100,0.15);
+        padding: 48px 32px;
+        box-shadow:
+          0 30px 80px rgba(0,0,0,0.8),
+          inset 0 1px 1px rgba(255,255,255,0.08);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      ">
+        <!-- ICON -->
+        <div style="
+          font-size: 56px;
+          text-align: center;
+        ">🌏</div>
+
+        <!-- TITLE -->
+        <h1 style="
+          font-size: 28px;
+          font-weight: 700;
+          color: rgba(255,255,255,0.95);
+          margin: 0;
+          text-align: center;
+          letter-spacing: -0.5px;
+        ">Benvenuto!</h1>
+
+        <!-- SUBTITLE -->
+        <p style="
+          font-size: 14px;
+          color: rgba(255,255,255,0.65);
+          text-align: center;
+          margin: 0;
+          line-height: 1.6;
+        ">Che cosa vuoi fare?</p>
+
+        <!-- OPTION 1: CREATE TRIP -->
+        <button id="choice-create" style="
+          padding: 18px 20px;
+          background: linear-gradient(135deg, #FF6B35, #FF5E1F);
+          border: none;
+          border-radius: 12px;
+          color: #fff;
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(255,107,53,0.3)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+          <span style="font-size: 18px">✏️</span>
+          Creare il mio viaggio
+        </button>
+
+        <!-- OPTION 2: JOIN TRIP -->
+        <button id="choice-join" style="
+          padding: 18px 20px;
+          background: rgba(255,255,255,0.05);
+          border: 1.5px solid rgba(255,165,100,0.3);
+          border-radius: 12px;
+          color: rgba(255,255,255,0.8);
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+        " onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,165,100,0.5)';this.style.color='rgba(255,255,255,0.95)'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,165,100,0.3)';this.style.color='rgba(255,255,255,0.8)'">
+          <span style="font-size: 18px">👥</span>
+          Partecipare a un viaggio
+        </button>
+
+        <!-- INFO -->
+        <p style="
+          font-size: 12px;
+          color: rgba(255,255,255,0.5);
+          text-align: center;
+          margin: 0;
+          line-height: 1.5;
+        ">
+          💡 Potrai sempre creare un viaggio dal menù della mappa
+        </p>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+
+  // Attach event listeners
+  const createBtn = document.getElementById('choice-create');
+  const joinBtn = document.getElementById('choice-join');
+
+  if (createBtn) {
+    createBtn.addEventListener('click', () => {
+      console.log('[Onboarding] User chose: CREATE TRIP');
+      closeOnboardingChoiceModal();
+      showOnboarding();
+    });
+  }
+
+  if (joinBtn) {
+    joinBtn.addEventListener('click', () => {
+      console.log('[Onboarding] User chose: JOIN TRIP - skipping onboarding');
+      closeOnboardingChoiceModal();
+      skipOnboarding();
+    });
+  }
+}
+
+/**
+ * Close choice modal
+ */
+function closeOnboardingChoiceModal() {
+  const overlay = document.getElementById('onboarding-choice-overlay');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => overlay.remove(), 300);
+  }
+}
+
+/**
+ * Skip onboarding and go directly to map
+ */
+function skipOnboarding() {
+  console.log('[Onboarding] Skipped - going directly to map');
+  // Just close the choice modal, the app will load the map by default
 }
 
 function showOnboarding() {
