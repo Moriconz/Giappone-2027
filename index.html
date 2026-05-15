@@ -6965,7 +6965,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       ${Array.from({length: days}, (_, i) => {
                         const isSelected = wizardState.selectedDay === i;
                         return `
-                          <button class="wizard-day-btn" data-day="${i}" style="
+                          <button onclick="window._wizardSelectDay?.(${i}); return false;" style="
                             padding: 12px;
                             background: ${isSelected ? 'rgba(255, 107, 53, 0.4)' : 'rgba(255, 107, 53, 0.15)'};
                             border: 2px solid ${isSelected ? 'rgba(255, 107, 53, 0.8)' : 'rgba(255, 107, 53, 0.3)'};
@@ -7015,7 +7015,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">⏱️ Durata (minuti)</label>
                       <div style="display: flex; gap: 6px; margin-bottom: 8px;">
                         ${[30, 60, 90, 120, 180].map(d => `
-                          <button class="duration-preset" data-duration="${d}" style="
+                          <button onclick="window._wizardSelectDuration?.(${d}); return false;" style="
                             flex: 1;
                             padding: 8px;
                             background: ${wizardState.duration === d ? 'rgba(74,124,89,0.4)' : 'rgba(255,255,255,0.04)'};
@@ -7153,7 +7153,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const fullWizardHTML = renderWizardStep() + `
                 <div style="padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; align-items: center; justify-content: flex-start;">
                   <!-- LEFT BUTTONS -->
-                  <button class="wizard-cancel-btn" style="
+                  <button onclick="window._wizardCancel?.(); return false;" style="
                     padding: 8px 12px;
                     background: rgba(255,255,255,0.04);
                     border: 1px solid rgba(255,255,255,0.1);
@@ -7169,7 +7169,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </button>
 
                   ${wizardState.step > 1 ? `
-                    <button class="wizard-back-btn" style="
+                    <button class="wizard-back-btn" onclick="window._wizardGoBack?.(); return false;" style="
                       padding: 8px 12px;
                       background: rgba(255,255,255,0.04);
                       border: 1px solid rgba(255,255,255,0.1);
@@ -7239,6 +7239,85 @@ document.addEventListener('DOMContentLoaded', () => {
 
               console.log('[WIZARD] Step', wizardState.step, 'rendered with buttons');
             }
+
+            /**
+             * Expose wizard functions to global scope for onclick handlers
+             */
+            window._wizardSelectDay = (dayIndex) => {
+              console.log('[WIZARD] ✅ Day selected:', dayIndex + 1);
+              wizardState.selectedDay = dayIndex;
+              wizardState.step = 2;
+              updateWizardUI();
+            };
+
+            window._wizardSelectDuration = (duration) => {
+              console.log('[WIZARD] ✅ Duration preset selected:', duration);
+              wizardState.duration = duration;
+              updateWizardUI();
+            };
+
+            window._wizardGoBack = () => {
+              console.log('[WIZARD] 🔙 Back button clicked (via onclick)');
+              if (wizardState.step > 1) {
+                wizardState.step--;
+                console.log('[WIZARD] ✅ Back clicked, now at step:', wizardState.step);
+                updateWizardUI();
+              }
+            };
+
+            window._wizardGoNext = () => {
+              console.log('[WIZARD] ▶️ Next button clicked (via onclick)');
+              if (wizardState.step === 1) wizardState.step = 2;
+              else if (wizardState.step === 2) wizardState.step = 3;
+              else if (wizardState.step === 3) wizardState.step = 4;
+              console.log('[WIZARD] ✅ Next clicked, now at step:', wizardState.step);
+              updateWizardUI();
+            };
+
+            window._wizardCancel = () => {
+              console.log('[WIZARD] ❌ Wizard cancelled (via onclick)');
+              window.closeSheet();
+            };
+
+            window._wizardConfirm = () => {
+              console.log('[WIZARD] ✅ Confirm clicked (via onclick)');
+              if (wizardState.selectedDay === null) {
+                console.warn('[WIZARD] No day selected');
+                window.toast('⚠️ Seleziona un giorno');
+                return;
+              }
+
+              console.log('[WIZARD] Confirming POI addition:', {
+                poiId, poiName,
+                day: wizardState.selectedDay,
+                time: wizardState.selectedTime,
+                duration: wizardState.duration,
+                notes: wizardState.notes,
+                cost: wizardState.cost
+              });
+
+              const success = window.ITINERARY.addPOIToDay(
+                poiId, poiName, wizardState.selectedDay,
+                wizardState.selectedTime, wizardState.duration,
+                wizardState.notes, wizardState.cost
+              );
+
+              if (success) {
+                window.saveState?.();
+                window.closeSheet();
+                window.toast(`✅ Aggiunto al Day ${wizardState.selectedDay + 1} alle ${wizardState.selectedTime}`);
+
+                // Re-render itinerary to show the new POI
+                setTimeout(() => {
+                  if (window.renderItineraryUnified) {
+                    console.log('[WIZARD] Re-rendering itinerary after POI addition');
+                    window.renderItineraryUnified();
+                  }
+                }, 100);
+              } else {
+                window.toast('❌ Errore nell\'aggiunta del POI');
+              }
+            };
 
             /**
              * Attach event handlers using document-level event delegation
@@ -7421,7 +7500,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <!-- RIGHT BUTTON -->
                 ${wizardState.step < 4 ? `
-                  <button class="wizard-next-btn" style="
+                  <button onclick="window._wizardGoNext?.(); return false;" style="
                     padding: 8px 16px;
                     background: rgba(255, 107, 53, 0.3);
                     border: 1px solid rgba(255, 107, 53, 0.5);
@@ -7436,7 +7515,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     Avanti →
                   </button>
                 ` : `
-                  <button class="wizard-confirm-btn" style="
+                  <button onclick="window._wizardConfirm?.(); return false;" style="
                     padding: 8px 16px;
                     background: rgba(74,124,89,0.3);
                     border: 1px solid rgba(74,124,89,0.5);
