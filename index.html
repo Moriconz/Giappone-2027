@@ -5383,6 +5383,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderMarkers(){
     const t0 = performance.now();
     console.log(`%c[renderMarkers] START - Rendering markers on map`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
+    // CRITICAL FIX: Invalidate cache to ensure openPOI() gets fresh POI list
+    globalPOIsCache = null;
+    console.log('[renderMarkers] 🔄 Cache invalidated for fresh POI lookup');
     vectorSource.clear();
     const zoom = map.getView().getZoom() || 5;
 
@@ -5873,9 +5876,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let featuresFound = 0;
     map.forEachFeatureAtPixel(e.pixel, (feature, layer) => {
       featuresFound++;
-      console.log(`[MAP CLICK] Feature ${featuresFound}:`, {
-        id: feature.get('id'),
-        type: feature.get('type'),
+      const clickedId = feature.get('id');
+      const clickedType = feature.get('type');
+      console.log(`%c[MAP CLICK] Feature ${featuresFound}:`, 'background:#FF9800;color:white;padding:4px 8px;border-radius:3px', {
+        id: clickedId,
+        type: clickedType,
         name: feature.get('name'),
         peerName: feature.get('peerName')
       });
@@ -5902,7 +5907,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.__openShop(id);
         handled = true;
       } else if (id) {
-        console.log('[MAP CLICK] → Opening POI:', id);
+        console.log('%c[MAP CLICK] → Opening POI:', 'background:#FF6B6B;color:white;padding:4px 8px;border-radius:3px', id, 'Type:', type);
+        console.log('[MAP CLICK] Payload:', { name, id, type, lat: feature.get('lat'), lng: feature.get('lng') });
         openPOI(id);
         handled = true;
       }
@@ -6881,10 +6887,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openPOI(id){
     console.log('%c[openPOI] Called with id:', 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold', id);
-    let p = getCachedAllPOIs().find(x => x.id===id);
+    const cached = getCachedAllPOIs();
+    console.log('[openPOI] 🔎 Searching in', cached.length, 'POIs...');
+    console.log('[openPOI] Available IDs (first 5):', cached.slice(0, 5).map(p => p.id).join(', '));
+    console.log('[openPOI] Looking for id:', id);
+    console.log('[openPOI] ID exists in cache:', cached.some(x => x.id === id) ? '✓ YES' : '✗ NO');
+
+    let p = cached.find(x => x.id===id);
     console.log('[openPOI] Found POI:', p ? p.name : 'NOT FOUND');
     if (!p) {
       console.error('[openPOI] ❌ POI not found, returning');
+      console.error('[openPOI] DEBUG: Trying to find matching id with different methods...');
+      console.error('[openPOI] Exact match:', cached.filter(x => x.id === id).length);
+      console.error('[openPOI] Contains match:', cached.filter(x => x.id.toString().includes(id.toString())).length);
       return;
     }
 
@@ -8002,6 +8017,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function getCachedAllPOIs() {
     if (!globalPOIsCache) {
       globalPOIsCache = allPOIs();
+      console.log('[getCachedAllPOIs] 📦 Cache MISS - rebuilt:', globalPOIsCache.length, 'POIs');
+      console.log('[getCachedAllPOIs] Sample IDs:', globalPOIsCache.slice(0, 3).map(p => p.id).join(', '));
+    } else {
+      console.log('[getCachedAllPOIs] ✓ Cache HIT -', globalPOIsCache.length, 'POIs');
     }
     return globalPOIsCache;
   }
