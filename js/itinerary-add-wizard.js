@@ -96,7 +96,9 @@ function renderWizardStep(step, state) {
   }
 
   window.openSheet('➕ Aggiungi all\'Itinerario', html);
-  setupWizardHandlers(step, state);
+  setTimeout(() => {
+    setupWizardHandlers(step, state);
+  }, 100);
 }
 
 /**
@@ -413,11 +415,12 @@ function renderStep3(state) {
         background:rgba(255,255,255,0.03);
         border:1px solid rgba(255,255,255,0.1);
         border-radius:8px;
-        padding:14px;
+        padding:10px 12px;
         font-size:12px;
         color:rgba(255,255,255,0.7);
+        line-height:1.4;
       ">
-        <div style="margin-bottom:8px"><strong>${state.poiName}</strong></div>
+        <div style="font-weight:600;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${state.poiName}</div>
         <div>📅 Day ${state.selectedDay + 1} · ⏰ ${state.selectedTime}</div>
       </div>
 
