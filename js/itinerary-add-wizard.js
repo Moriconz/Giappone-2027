@@ -11,7 +11,7 @@ function openAddToItineraryWizard(poiData) {
   console.log('[AddWizard] Opening wizard for POI:', poiData);
 
   if (!poiData || !poiData.googlePlaceId) {
-    console.error('[AddWizard] Invalid POI data');
+    console.error('[AddWizard] ❌ Invalid POI data - googlePlaceId missing');
     if (window.toast) window.toast('❌ Errore: POI non valido');
     return;
   }
@@ -29,6 +29,7 @@ function openAddToItineraryWizard(poiData) {
     currentStep: 1
   };
 
+  console.log('[AddWizard] ✅ Wizard state initialized with name:', wizardState.poiName);
   window.addWizardState = wizardState;
   renderWizardStep(1, wizardState);
 }
@@ -642,6 +643,7 @@ function finishAddToItinerary(state) {
 
   // Add using ITINERARY system
   if (window.ITINERARY?.addPOIToDay) {
+    console.log('[AddWizard] 📝 Saving POI with name:', state.poiName, 'POI ID:', state.poiId);
     const success = window.ITINERARY.addPOIToDay(
       state.poiId,
       state.poiName,
@@ -649,8 +651,13 @@ function finishAddToItinerary(state) {
       state.selectedTime
     );
 
-    if (success && state.notes) {
-      window.ITINERARY.updateNotes(state.poiId, state.notes);
+    if (success) {
+      console.log('[AddWizard] ✅ POI saved successfully with name:', state.poiName);
+      if (state.notes) {
+        window.ITINERARY.updateNotes(state.poiId, state.notes);
+      }
+    } else {
+      console.error('[AddWizard] ❌ Failed to save POI');
     }
 
     if (success) {
