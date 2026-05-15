@@ -7147,15 +7147,18 @@ document.addEventListener('DOMContentLoaded', () => {
               // Find the Y2K window that contains wizard buttons (search for wizard elements)
               // Use .wizard-cancel-btn instead of .wizard-next-btn because next button doesn't exist on step 4
               let wizardContainer = document.querySelector('[class*="y2k"] .wizard-cancel-btn')?.closest('[class*="y2k"]');
+              let containerSource = 'y2k selector';
 
               // Fallback: try to find by sheet-body
               if (!wizardContainer) {
                 wizardContainer = document.getElementById('sheet-body');
+                containerSource = 'sheet-body fallback';
               }
 
               // If still not found, try finding any container with wizard elements
               if (!wizardContainer) {
                 wizardContainer = document.querySelector('.wizard-cancel-btn')?.closest('div');
+                containerSource = 'closest div fallback';
               }
 
               if (!wizardContainer) {
@@ -7163,7 +7166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
               }
 
-              console.log('[WIZARD] Found container, updating UI');
+              console.log('[WIZARD] Found container via:', containerSource, 'tag:', wizardContainer.tagName, 'id:', wizardContainer.id, 'class:', wizardContainer.className);
 
               // Re-render ENTIRE wizard (content + buttons), not just the content
               const fullWizardHTML = renderWizardStep() + `
