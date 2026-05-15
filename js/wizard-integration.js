@@ -37,8 +37,11 @@ function monitorPOIDetailModal() {
     // Look for the EXISTING add-to-itinerary button
     const existingBtn = sheetBody.querySelector('#add-to-itinerary-btn');
     if (!existingBtn) {
+      console.debug('[WizardIntegration] ⏳ Button not found yet');
       return; // Button not yet in DOM
     }
+
+    console.log('[WizardIntegration] ✅ Button found!');
 
     // Check if we already attached the listener
     if (existingBtn.dataset.wizardAttached) {
@@ -48,6 +51,7 @@ function monitorPOIDetailModal() {
     // Get POI data from sheet
     const poiData = extractPOIDataFromSheet();
     if (!poiData) {
+      console.log('[WizardIntegration] ⚠️ POI data not extracted');
       return;
     }
 
