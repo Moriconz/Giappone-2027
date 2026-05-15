@@ -7124,11 +7124,85 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             /**
-             * Update sheet content
+             * Update sheet content (including buttons)
              */
             function updateWizardUI() {
               const sheetBody = document.getElementById('sheet-body');
               if (!sheetBody) return;
+
+              // Re-render ENTIRE wizard (content + buttons), not just the content
+              const fullWizardHTML = renderWizardStep() + `
+                <div style="padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; align-items: center; justify-content: flex-start;">
+                  <!-- LEFT BUTTONS -->
+                  <button class="wizard-cancel-btn" style="
+                    padding: 8px 12px;
+                    background: rgba(255,255,255,0.04);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    color: rgba(255,255,255,0.6);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 11px;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    white-space: nowrap;
+                  " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                    ✕ Annulla
+                  </button>
+
+                  ${wizardState.step > 1 ? `
+                    <button class="wizard-back-btn" style="
+                      padding: 8px 12px;
+                      background: rgba(255,255,255,0.04);
+                      border: 1px solid rgba(255,255,255,0.1);
+                      color: rgba(255,255,255,0.6);
+                      border-radius: 4px;
+                      cursor: pointer;
+                      font-size: 11px;
+                      font-weight: 500;
+                      transition: all 0.2s;
+                      white-space: nowrap;
+                    " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                      ← Indietro
+                    </button>
+                  ` : ''}
+
+                  <!-- SPACER -->
+                  <div style="flex: 1;"></div>
+
+                  <!-- RIGHT BUTTON -->
+                  ${wizardState.step < 4 ? `
+                    <button class="wizard-next-btn" style="
+                      padding: 8px 16px;
+                      background: rgba(255, 107, 53, 0.3);
+                      border: 1px solid rgba(255, 107, 53, 0.5);
+                      color: #FF6B35;
+                      border-radius: 4px;
+                      cursor: pointer;
+                      font-size: 12px;
+                      font-weight: 600;
+                      transition: all 0.2s;
+                      white-space: nowrap;
+                    " onmouseover="this.style.background='rgba(255, 107, 53, 0.4)'" onmouseout="this.style.background='rgba(255, 107, 53, 0.3)'">
+                      Avanti →
+                    </button>
+                  ` : `
+                    <button class="wizard-confirm-btn" style="
+                      padding: 8px 16px;
+                      background: rgba(74,124,89,0.3);
+                      border: 1px solid rgba(74,124,89,0.5);
+                      color: #4ade80;
+                      border-radius: 4px;
+                      cursor: pointer;
+                      font-size: 12px;
+                      font-weight: 600;
+                      transition: all 0.2s;
+                      white-space: nowrap;
+                    " onmouseover="this.style.background='rgba(74,124,89,0.4)'" onmouseout="this.style.background='rgba(74,124,89,0.3)'">
+                      ✓ Conferma
+                    </button>
+                  `}
+                </div>
+              `;
 
               const headerTitle = ['📅 Scegli il giorno', '🕐 Scegli l\'orario', '📋 Dettagli', '✅ Riepilogo'][wizardState.step - 1];
 
@@ -7138,53 +7212,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 sheetHeader.textContent = headerTitle;
               }
 
-              // Update body
-              sheetBody.innerHTML = renderWizardStep();
+              // Update body with full wizard (content + buttons)
+              sheetBody.innerHTML = fullWizardHTML;
 
               // Re-attach handlers
               attachWizardHandlers();
 
-              console.log('[WIZARD] Step', wizardState.step, 'rendered');
+              console.log('[WIZARD] Step', wizardState.step, 'rendered with buttons');
             }
 
             /**
-             * Attach event handlers using event delegation
+             * Attach event handlers using event delegation on sheet body
              */
             function attachWizardHandlers() {
               console.log('[WIZARD DEBUG] attachWizardHandlers() called');
 
               const sheetBody = document.getElementById('sheet-body');
-              console.log('[WIZARD DEBUG] sheetBody found:', !!sheetBody);
-              console.log('[WIZARD DEBUG] sheetBody innerHTML length:', sheetBody?.innerHTML?.length || 0);
-
               if (!sheetBody) {
-                console.error('[WIZARD ERROR] sheetBody not found! Cannot attach handlers.');
+                console.warn('[WIZARD] sheetBody not found, cannot attach handlers');
                 return;
               }
 
-              // Count wizard-day-btn elements
-              const dayBtns = sheetBody.querySelectorAll('.wizard-day-btn');
-              console.log('[WIZARD DEBUG] wizard-day-btn elements found in sheetBody:', dayBtns.length);
-
-              // Also check in entire document
-              const allDayBtns = document.querySelectorAll('.wizard-day-btn');
-              console.log('[WIZARD DEBUG] wizard-day-btn elements found in DOCUMENT:', allDayBtns.length);
-
-              // Show first 200 chars of sheetBody content
-              if (sheetBody) {
-                console.log('[WIZARD DEBUG] sheetBody content preview:', sheetBody.innerHTML.substring(0, 200));
-              }
-
-              // Day selection - Using event delegation
-              sheetBody.onclick = function(e) {
-                console.log('[WIZARD DEBUG] sheetBody click detected on:', e.target.className, 'target:', e.target.textContent);
-
+              // Use sheetBody as event delegation root
+              sheetBody.addEventListener('click', (e) => {
+                // Day selection
                 if (e.target.classList.contains('wizard-day-btn')) {
                   const dayIndex = parseInt(e.target.dataset.day);
-                  console.log('[WIZARD] Day selected:', dayIndex + 1, 'dayIndex:', dayIndex);
+                  console.log('[WIZARD] Day selected:', dayIndex + 1);
                   wizardState.selectedDay = dayIndex;
                   wizardState.step = 2;
-                  console.log('[WIZARD DEBUG] wizardState updated - step:', wizardState.step, 'selectedDay:', wizardState.selectedDay);
                   updateWizardUI();
                   return;
                 }
@@ -7197,7 +7253,74 @@ document.addEventListener('DOMContentLoaded', () => {
                   updateWizardUI();
                   return;
                 }
-              };
+
+                // Next button
+                if (e.target.classList.contains('wizard-next-btn')) {
+                  if (wizardState.step === 1) wizardState.step = 2;
+                  else if (wizardState.step === 2) wizardState.step = 3;
+                  else if (wizardState.step === 3) wizardState.step = 4;
+                  console.log('[WIZARD] Next clicked, now at step:', wizardState.step);
+                  updateWizardUI();
+                  return;
+                }
+
+                // Back button
+                if (e.target.classList.contains('wizard-back-btn')) {
+                  if (wizardState.step > 1) wizardState.step--;
+                  console.log('[WIZARD] Back clicked, now at step:', wizardState.step);
+                  updateWizardUI();
+                  return;
+                }
+
+                // Cancel button
+                if (e.target.classList.contains('wizard-cancel-btn')) {
+                  console.log('[WIZARD] Wizard cancelled');
+                  window.closeSheet();
+                  return;
+                }
+
+                // Confirm button
+                if (e.target.classList.contains('wizard-confirm-btn')) {
+                  console.log('[WIZARD] Confirming POI addition:', {
+                    poiId,
+                    poiName,
+                    day: wizardState.selectedDay,
+                    time: wizardState.selectedTime,
+                    duration: wizardState.duration,
+                    notes: wizardState.notes,
+                    cost: wizardState.cost
+                  });
+
+                  // Validate that a day was selected
+                  if (wizardState.selectedDay === null) {
+                    console.warn('[WIZARD] No day selected');
+                    window.toast('⚠️ Seleziona un giorno');
+                    return;
+                  }
+
+                  // Add POI with all details
+                  const success = window.ITINERARY.addPOIToDay(
+                    poiId,
+                    poiName,
+                    wizardState.selectedDay,
+                    wizardState.selectedTime,
+                    wizardState.duration,
+                    wizardState.notes,
+                    wizardState.cost
+                  );
+
+                  if (success) {
+                    window.saveState?.();
+                    window.closeSheet();
+                    window.toast(`✅ Aggiunto al Day ${wizardState.selectedDay + 1} alle ${wizardState.selectedTime}`);
+                    console.log('[WIZARD] POI successfully added and sheet closed');
+                  } else {
+                    console.warn('[WIZARD] Failed to add POI');
+                    window.toast('❌ Errore nell\'aggiunta del POI');
+                  }
+                  return;
+                }
+              });
 
               // Input fields - Time, Duration, Cost, Notes
               const timeInput = document.getElementById('wizard-time-input');
@@ -7232,64 +7355,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 notesInput.addEventListener('change', (e) => {
                   wizardState.notes = e.target.value.trim();
                   console.log('[WIZARD] Notes updated');
-                });
-              }
-
-              // Control buttons - Using document delegation
-              if (!window._wizardButtonsAttached) {
-                window._wizardButtonsAttached = true;
-
-                document.addEventListener('click', (e) => {
-                  // Next button
-                  if (e.target.classList.contains('wizard-next-btn')) {
-                    if (wizardState.step === 1) wizardState.step = 2;
-                    else if (wizardState.step === 2) wizardState.step = 3;
-                    else if (wizardState.step === 3) wizardState.step = 4;
-                    console.log('[WIZARD] Next clicked, now at step:', wizardState.step);
-                    updateWizardUI();
-                  }
-
-                  // Back button
-                  if (e.target.classList.contains('wizard-back-btn')) {
-                    if (wizardState.step > 1) wizardState.step--;
-                    console.log('[WIZARD] Back clicked, now at step:', wizardState.step);
-                    updateWizardUI();
-                  }
-
-                  // Cancel button
-                  if (e.target.classList.contains('wizard-cancel-btn')) {
-                    console.log('[WIZARD] Wizard cancelled');
-                    window.closeSheet();
-                  }
-
-                  // Confirm button
-                  if (e.target.classList.contains('wizard-confirm-btn')) {
-                    console.log('[WIZARD] Confirming POI addition:', {
-                      poiId,
-                      poiName,
-                      day: wizardState.selectedDay,
-                      time: wizardState.selectedTime,
-                      duration: wizardState.duration,
-                      notes: wizardState.notes,
-                      cost: wizardState.cost
-                    });
-
-                    // Add POI with all details
-                    window.ITINERARY.addPOIToDay(
-                      poiId,
-                      poiName,
-                      wizardState.selectedDay,
-                      wizardState.selectedTime,
-                      wizardState.duration,
-                      wizardState.notes,
-                      wizardState.cost
-                    );
-
-                    window.saveState?.();
-                    window.closeSheet();
-                    window.toast(`✅ Aggiunto al Day ${wizardState.selectedDay + 1} alle ${wizardState.selectedTime}`);
-                    console.log('[WIZARD] POI successfully added and sheet closed');
-                  }
                 });
               }
             }
