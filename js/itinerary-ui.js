@@ -17,6 +17,59 @@ function renderItineraryViewNew() {
   const budget = tripProfile.budget_total || 0;
   const budgetDaily = tripProfile.budget_daily || 0;
 
+  // Check if itinerary is completely empty
+  let totalPOIs = 0;
+  for (let d = 0; d < days; d++) {
+    const dayPOIs = window.state.itineraryByDay[d] || [];
+    totalPOIs += dayPOIs.length;
+  }
+
+  // Show empty state if no POIs in entire itinerary
+  if (totalPOIs === 0) {
+    const emptyHTML = `
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 24px;
+        text-align: center;
+        min-height: 300px;
+      ">
+        <div style="font-size: 48px; margin-bottom: 16px;">📍</div>
+        <h2 style="
+          font-size: 18px;
+          font-weight: 700;
+          color: rgba(255,255,255,0.95);
+          margin: 0 0 8px 0;
+        ">Itinerario vuoto</h2>
+        <p style="
+          font-size: 14px;
+          color: rgba(255,255,255,0.6);
+          margin: 0 0 24px 0;
+          line-height: 1.5;
+          max-width: 280px;
+        ">Aggiungi dei POI alla tua pianificazione. Tocca un luogo sulla mappa o seleziona dalle tappe suggerite.</p>
+        <button style="
+          padding: 12px 24px;
+          background: linear-gradient(135deg, #FF6B35, #FF5E1F);
+          border: none;
+          border-radius: 10px;
+          color: #fff;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 8px 24px rgba(255,107,53,0.3);
+        " onmouseover="this.style.boxShadow='0 12px 32px rgba(255,107,53,0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 8px 24px rgba(255,107,53,0.3)'; this.style.transform='translateY(0)';">
+          🗺️ Torna alla mappa
+        </button>
+      </div>
+    `;
+    window.openSheet('📅 Itinerario', emptyHTML);
+    return;
+  }
+
   // Calculate total duration and cost
   let totalDuration = 0;
   let totalCost = 0;

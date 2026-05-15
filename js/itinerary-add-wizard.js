@@ -1,0 +1,644 @@
+/**
+ * ITINERARY ADD WIZARD — 3-step flow for adding POI to itinerary
+ *
+ * Flow:
+ * Step 1: Confirm POI (name, city, type)
+ * Step 2: Choose day & time (with smart suggestions)
+ * Step 3: Add notes (optional)
+ */
+
+function openAddToItineraryWizard(poiData) {
+  console.log('[AddWizard] Opening wizard for POI:', poiData);
+
+  if (!poiData || !poiData.googlePlaceId) {
+    console.error('[AddWizard] Invalid POI data');
+    if (window.toast) window.toast('❌ Errore: POI non valido');
+    return;
+  }
+
+  // Initialize wizard state
+  const wizardState = {
+    poiId: poiData.googlePlaceId,
+    poiName: poiData.name || 'POI',
+    poiCity: poiData.city || 'Città sconosciuta',
+    poiType: poiData.type || 'restaurant',
+    poiPhoto: poiData.photo || null,
+    selectedDay: getSuggestedDay(),
+    selectedTime: getSuggestedTime(getSuggestedDay()),
+    notes: '',
+    currentStep: 1
+  };
+
+  window.addWizardState = wizardState;
+  renderWizardStep(1, wizardState);
+}
+
+/**
+ * Get the suggested day (next day or day with fewest POIs)
+ */
+function getSuggestedDay() {
+  const tripProfile = window.state?.tripProfile || {};
+  const days = tripProfile.days || 8;
+
+  let suggestedDay = 0;
+  let minPOIs = Infinity;
+
+  for (let d = 0; d < days; d++) {
+    const dayPOIs = window.state?.itineraryByDay?.[d] || [];
+    if (dayPOIs.length < minPOIs) {
+      minPOIs = dayPOIs.length;
+      suggestedDay = d;
+    }
+  }
+
+  console.log('[AddWizard] Suggested day:', suggestedDay, 'with', minPOIs, 'POIs');
+  return suggestedDay;
+}
+
+/**
+ * Get suggested time based on last POI in the day
+ */
+function getSuggestedTime(dayIndex) {
+  const dayPOIs = window.state?.itineraryByDay?.[dayIndex] || [];
+
+  if (dayPOIs.length === 0) {
+    return '10:00'; // Default morning time
+  }
+
+  // Get last POI time
+  const lastPOI = dayPOIs[dayPOIs.length - 1];
+  const lastTime = lastPOI.time || '10:00';
+  const lastDuration = lastPOI.duration || 60;
+
+  // Calculate suggested time (add 1.5 hours for travel + buffer)
+  const [hours, minutes] = lastTime.split(':').map(Number);
+  const nextMinutes = (hours * 60 + minutes + lastDuration + 90) % 1440;
+  const nextHours = Math.floor(nextMinutes / 60);
+  const nextMins = nextMinutes % 60;
+
+  return `${String(nextHours).padStart(2, '0')}:${String(nextMins).padStart(2, '0')}`;
+}
+
+/**
+ * Render wizard step
+ */
+function renderWizardStep(step, state) {
+  console.log('[AddWizard] Rendering step:', step);
+
+  let html = '';
+
+  if (step === 1) {
+    html = renderStep1(state);
+  } else if (step === 2) {
+    html = renderStep2(state);
+  } else if (step === 3) {
+    html = renderStep3(state);
+  }
+
+  window.openSheet('➕ Aggiungi all\'Itinerario', html);
+  setupWizardHandlers(step, state);
+}
+
+/**
+ * STEP 1: Confirm POI details
+ */
+function renderStep1(state) {
+  return `
+    <div style="display:flex;flex-direction:column;gap:24px;padding:0">
+      <!-- Progress Bar -->
+      <div style="
+        width:100%;
+        height:6px;
+        background:rgba(255,255,255,0.1);
+        border-radius:3px;
+        overflow:hidden;
+      ">
+        <div style="
+          width:33.33%;
+          height:100%;
+          background:linear-gradient(90deg, #FF6B35, #FF5E1F);
+          transition:width 0.3s ease;
+        "></div>
+      </div>
+
+      <!-- Step Indicator -->
+      <div style="
+        font-size:12px;
+        font-weight:600;
+        color:rgba(255,255,255,0.6);
+        text-align:center;
+      ">Passo 1 di 3</div>
+
+      <!-- POI Card -->
+      <div style="
+        background:linear-gradient(135deg, rgba(255,107,53,0.2), rgba(255,165,100,0.1));
+        border:1.5px solid rgba(255,107,53,0.3);
+        border-radius:12px;
+        padding:20px;
+        display:flex;
+        gap:16px;
+      ">
+        ${state.poiPhoto ? `
+          <img src="${state.poiPhoto}" style="
+            width:80px;
+            height:80px;
+            border-radius:8px;
+            object-fit:cover;
+            flex-shrink:0;
+          " />
+        ` : `
+          <div style="
+            width:80px;
+            height:80px;
+            border-radius:8px;
+            background:rgba(255,107,53,0.2);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:32px;
+            flex-shrink:0;
+          ">📍</div>
+        `}
+
+        <div style="flex:1;min-width:0">
+          <div style="
+            font-size:16px;
+            font-weight:700;
+            color:#fff;
+            margin-bottom:6px;
+            word-break:break-word;
+          ">${state.poiName}</div>
+          <div style="
+            font-size:13px;
+            color:rgba(255,255,255,0.7);
+            margin-bottom:8px;
+          ">📍 ${state.poiCity}</div>
+          <div style="
+            font-size:11px;
+            background:rgba(255,107,53,0.3);
+            border-radius:4px;
+            padding:4px 8px;
+            width:fit-content;
+            color:#FF6B35;
+            font-weight:600;
+            text-transform:capitalize;
+          ">${state.poiType}</div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div style="
+        font-size:13px;
+        color:rgba(255,255,255,0.7);
+        line-height:1.6;
+      ">
+        ✓ Stai per aggiungere questo luogo al tuo itinerario. Nei prossimi step sceglierai il giorno e l'orario.
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+        <button id="wizard-next-1" style="
+          width:100%;
+          padding:14px 16px;
+          background:linear-gradient(135deg, #FF6B35, #FF5E1F);
+          border:none;
+          border-radius:10px;
+          color:#fff;
+          font-size:14px;
+          font-weight:700;
+          cursor:pointer;
+          transition:all 0.2s;
+        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(255,107,53,0.3)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+          Continua → Scegli Giorno
+        </button>
+        <button id="wizard-cancel" style="
+          width:100%;
+          padding:14px 16px;
+          background:transparent;
+          border:1.5px solid rgba(255,255,255,0.2);
+          border-radius:10px;
+          color:rgba(255,255,255,0.7);
+          font-size:14px;
+          font-weight:600;
+          cursor:pointer;
+          transition:all 0.2s;
+        " onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.color='rgba(255,255,255,0.95)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.7)'">
+          Annulla
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * STEP 2: Choose day and time
+ */
+function renderStep2(state) {
+  const tripProfile = window.state?.tripProfile || {};
+  const days = tripProfile.days || 8;
+  const startDate = new Date(2027, 3, 10); // April 10, 2027
+
+  const dayOptions = Array.from({ length: days }, (_, d) => {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + d);
+    const dayLabel = date.toLocaleDateString('it-IT', { weekday: 'short', month: 'short', day: 'numeric' });
+    const dayPOIs = window.state?.itineraryByDay?.[d] || [];
+    return { d, dayLabel, poiCount: dayPOIs.length };
+  });
+
+  const times = generateTimeSlots();
+
+  return `
+    <div style="display:flex;flex-direction:column;gap:24px;padding:0">
+      <!-- Progress Bar -->
+      <div style="
+        width:100%;
+        height:6px;
+        background:rgba(255,255,255,0.1);
+        border-radius:3px;
+        overflow:hidden;
+      ">
+        <div style="
+          width:66.66%;
+          height:100%;
+          background:linear-gradient(90deg, #FF6B35, #FF5E1F);
+          transition:width 0.3s ease;
+        "></div>
+      </div>
+
+      <!-- Step Indicator -->
+      <div style="
+        font-size:12px;
+        font-weight:600;
+        color:rgba(255,255,255,0.6);
+        text-align:center;
+      ">Passo 2 di 3</div>
+
+      <!-- Day Selection -->
+      <div>
+        <label style="
+          font-size:12px;
+          font-weight:700;
+          color:rgba(255,255,255,0.8);
+          display:block;
+          margin-bottom:10px;
+        ">📅 Scegli il giorno</label>
+        <select id="wizard-day-select" style="
+          width:100%;
+          padding:12px 14px;
+          background:rgba(255,255,255,0.05);
+          border:1.5px solid rgba(255,255,255,0.15);
+          border-radius:8px;
+          color:#fff;
+          font-size:13px;
+          font-weight:500;
+          cursor:pointer;
+          transition:all 0.2s;
+        " onchange="this.style.borderColor='rgba(255,107,53,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+          ${dayOptions.map(opt => `
+            <option value="${opt.d}" ${opt.d === state.selectedDay ? 'selected' : ''}>
+              Day ${opt.d + 1} — ${opt.dayLabel} (${opt.poiCount} POI)
+            </option>
+          `).join('')}
+        </select>
+      </div>
+
+      <!-- Time Selection -->
+      <div>
+        <label style="
+          font-size:12px;
+          font-weight:700;
+          color:rgba(255,255,255,0.8);
+          display:block;
+          margin-bottom:10px;
+        ">⏰ Scegli l'orario</label>
+        <select id="wizard-time-select" style="
+          width:100%;
+          padding:12px 14px;
+          background:rgba(255,255,255,0.05);
+          border:1.5px solid rgba(255,255,255,0.15);
+          border-radius:8px;
+          color:#fff;
+          font-size:13px;
+          font-weight:500;
+          cursor:pointer;
+          transition:all 0.2s;
+        " onchange="this.style.borderColor='rgba(255,107,53,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+          ${times.map(t => `
+            <option value="${t}" ${t === state.selectedTime ? 'selected' : ''}>${t}</option>
+          `).join('')}
+        </select>
+      </div>
+
+      <!-- Smart Suggestion -->
+      <div style="
+        background:rgba(74,175,80,0.1);
+        border:1px solid rgba(74,175,80,0.3);
+        border-radius:8px;
+        padding:12px 14px;
+        font-size:12px;
+        color:rgba(74,175,80,0.9);
+        line-height:1.5;
+      ">
+        💡 <strong>Suggerimento:</strong> Hai scelto il day ${state.selectedDay + 1} perché ha pochi POI. L'orario suggerito è ${state.selectedTime}.
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button id="wizard-back-2" style="
+          flex:1;
+          padding:14px 16px;
+          background:transparent;
+          border:1.5px solid rgba(255,255,255,0.2);
+          border-radius:10px;
+          color:rgba(255,255,255,0.7);
+          font-size:14px;
+          font-weight:600;
+          cursor:pointer;
+          transition:all 0.2s;
+        " onmouseover="this.style.borderColor='rgba(255,255,255,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)'">
+          ← Indietro
+        </button>
+        <button id="wizard-next-2" style="
+          flex:1;
+          padding:14px 16px;
+          background:linear-gradient(135deg, #FF6B35, #FF5E1F);
+          border:none;
+          border-radius:10px;
+          color:#fff;
+          font-size:14px;
+          font-weight:700;
+          cursor:pointer;
+          transition:all 0.2s;
+        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(255,107,53,0.3)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+          Continua →
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * STEP 3: Add notes (optional)
+ */
+function renderStep3(state) {
+  return `
+    <div style="display:flex;flex-direction:column;gap:24px;padding:0">
+      <!-- Progress Bar -->
+      <div style="
+        width:100%;
+        height:6px;
+        background:rgba(255,255,255,0.1);
+        border-radius:3px;
+        overflow:hidden;
+      ">
+        <div style="
+          width:100%;
+          height:100%;
+          background:linear-gradient(90deg, #FF6B35, #FF5E1F);
+          transition:width 0.3s ease;
+        "></div>
+      </div>
+
+      <!-- Step Indicator -->
+      <div style="
+        font-size:12px;
+        font-weight:600;
+        color:rgba(255,255,255,0.6);
+        text-align:center;
+      ">Passo 3 di 3</div>
+
+      <!-- Summary -->
+      <div style="
+        background:rgba(255,255,255,0.03);
+        border:1px solid rgba(255,255,255,0.1);
+        border-radius:8px;
+        padding:14px;
+        font-size:12px;
+        color:rgba(255,255,255,0.7);
+      ">
+        <div style="margin-bottom:8px"><strong>${state.poiName}</strong></div>
+        <div>📅 Day ${state.selectedDay + 1} · ⏰ ${state.selectedTime}</div>
+      </div>
+
+      <!-- Notes Input -->
+      <div>
+        <label style="
+          font-size:12px;
+          font-weight:700;
+          color:rgba(255,255,255,0.8);
+          display:block;
+          margin-bottom:10px;
+        ">📝 Note (opzionale)</label>
+        <textarea id="wizard-notes-input" placeholder="Es: senza glutine, allergie, preferenze..." style="
+          width:100%;
+          padding:12px 14px;
+          background:rgba(255,255,255,0.05);
+          border:1.5px solid rgba(255,255,255,0.15);
+          border-radius:8px;
+          color:#fff;
+          font-size:13px;
+          font-family:inherit;
+          resize:vertical;
+          min-height:80px;
+          transition:all 0.2s;
+          box-sizing:border-box;
+        " onchange="this.style.borderColor='rgba(255,107,53,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'" onfocus="this.style.borderColor='rgba(255,107,53,0.4)'">${state.notes}</textarea>
+      </div>
+
+      <!-- Info -->
+      <div style="
+        font-size:12px;
+        color:rgba(255,255,255,0.6);
+        line-height:1.5;
+      ">
+        ℹ️ Le note sono utili per ricordare preferenze, allergie o dettagli importanti per questo luogo.
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button id="wizard-back-3" style="
+          flex:1;
+          padding:14px 16px;
+          background:transparent;
+          border:1.5px solid rgba(255,255,255,0.2);
+          border-radius:10px;
+          color:rgba(255,255,255,0.7);
+          font-size:14px;
+          font-weight:600;
+          cursor:pointer;
+          transition:all 0.2s;
+        " onmouseover="this.style.borderColor='rgba(255,255,255,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)'">
+          ← Indietro
+        </button>
+        <button id="wizard-finish" style="
+          flex:1;
+          padding:14px 16px;
+          background:linear-gradient(135deg, #4ADE80, #22C55E);
+          border:none;
+          border-radius:10px;
+          color:#fff;
+          font-size:14px;
+          font-weight:700;
+          cursor:pointer;
+          transition:all 0.2s;
+        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(74,175,80,0.3)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+          ✓ Aggiungi all'Itinerario
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Generate time slots (every 30 minutes from 08:00 to 22:00)
+ */
+function generateTimeSlots() {
+  const slots = [];
+  for (let h = 8; h <= 22; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+    }
+  }
+  return slots;
+}
+
+/**
+ * Setup wizard event handlers
+ */
+function setupWizardHandlers(step, state) {
+  console.log('[AddWizard] Setting up handlers for step', step);
+
+  if (step === 1) {
+    const nextBtn = document.getElementById('wizard-next-1');
+    const cancelBtn = document.getElementById('wizard-cancel');
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        console.log('[AddWizard] Step 1 → Step 2');
+        renderWizardStep(2, state);
+      });
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => {
+        console.log('[AddWizard] Wizard cancelled');
+        window.closeSheet?.();
+      });
+    }
+  } else if (step === 2) {
+    const daySelect = document.getElementById('wizard-day-select');
+    const timeSelect = document.getElementById('wizard-time-select');
+    const backBtn = document.getElementById('wizard-back-2');
+    const nextBtn = document.getElementById('wizard-next-2');
+
+    if (daySelect) {
+      daySelect.addEventListener('change', (e) => {
+        state.selectedDay = parseInt(e.target.value);
+        state.selectedTime = getSuggestedTime(state.selectedDay);
+        console.log('[AddWizard] Updated day to', state.selectedDay);
+        renderWizardStep(2, state); // Refresh to update time suggestion
+      });
+    }
+
+    if (timeSelect) {
+      timeSelect.addEventListener('change', (e) => {
+        state.selectedTime = e.target.value;
+        console.log('[AddWizard] Updated time to', state.selectedTime);
+      });
+    }
+
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        console.log('[AddWizard] Step 2 → Step 1');
+        renderWizardStep(1, state);
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        console.log('[AddWizard] Step 2 → Step 3');
+        renderWizardStep(3, state);
+      });
+    }
+  } else if (step === 3) {
+    const notesInput = document.getElementById('wizard-notes-input');
+    const backBtn = document.getElementById('wizard-back-3');
+    const finishBtn = document.getElementById('wizard-finish');
+
+    if (notesInput) {
+      notesInput.addEventListener('change', (e) => {
+        state.notes = e.target.value;
+        console.log('[AddWizard] Updated notes');
+      });
+    }
+
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        console.log('[AddWizard] Step 3 → Step 2');
+        renderWizardStep(2, state);
+      });
+    }
+
+    if (finishBtn) {
+      finishBtn.addEventListener('click', () => {
+        console.log('[AddWizard] ✅ Finishing wizard...');
+        finishAddToItinerary(state);
+      });
+    }
+  }
+}
+
+/**
+ * Finish and add POI to itinerary
+ */
+function finishAddToItinerary(state) {
+  console.log('[AddWizard] Adding POI to itinerary:', state);
+
+  // Add using ITINERARY system
+  if (window.ITINERARY?.addPOIToDay) {
+    const success = window.ITINERARY.addPOIToDay(
+      state.poiId,
+      state.poiName,
+      state.selectedDay,
+      state.selectedTime
+    );
+
+    if (success && state.notes) {
+      window.ITINERARY.updateNotes(state.poiId, state.notes);
+    }
+
+    if (success) {
+      console.log('[AddWizard] ✅ POI added successfully');
+      window.closeSheet?.();
+
+      // Show success toast
+      if (window.toast) {
+        window.toast(`✅ ${state.poiName} aggiunto al Day ${state.selectedDay + 1} alle ${state.selectedTime}`);
+      }
+
+      // Refresh itinerary view if it's open
+      if (typeof window.renderItineraryUnified === 'function') {
+        setTimeout(() => {
+          window.renderItineraryUnified();
+        }, 500);
+      }
+
+      // Clean up
+      window.addWizardState = null;
+    } else {
+      console.error('[AddWizard] ❌ Failed to add POI');
+      if (window.toast) {
+        window.toast('❌ Errore: impossibile aggiungere il POI');
+      }
+    }
+  } else {
+    console.error('[AddWizard] ITINERARY system not available');
+    if (window.toast) {
+      window.toast('❌ Sistema itinerario non disponibile');
+    }
+  }
+}
+
+// Expose to window
+window.openAddToItineraryWizard = openAddToItineraryWizard;
