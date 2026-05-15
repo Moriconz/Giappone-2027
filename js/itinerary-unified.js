@@ -47,6 +47,7 @@ function renderItineraryUnified() {
     const dayDuration = ITINERARY.getDayDuration(dayIndex);
     const poiListHTML = dayPOIs.length ? dayPOIs.map((entry, idx) => {
       const hasDetails = entry.notes || entry.cost > 0 || entry.duration !== 60;
+      const poiNameDisplay = entry.poi_name || `POI #${entry.poi_id.substring(0, 8)}`;
       return `
         <div class="itinerary-poi" draggable="true" data-poi-id="${entry.poi_id}" data-day="${dayIndex}" style="
           display:flex;
@@ -63,7 +64,7 @@ function renderItineraryUnified() {
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="flex-shrink:0;width:20px;height:20px;background:#FF6B35;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">${idx + 1}</span>
             <div style="flex:1;min-width:0">
-              <div style="font-size:13px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${entry.poi_name}</div>
+              <div style="font-size:13px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${poiNameDisplay}</div>
               <div style="font-size:11px;color:rgba(255,255,255,0.6)">⏰ ${entry.time} · ⏱️ ${entry.duration}m ${entry.cost > 0 ? '· 💰 ¥' + entry.cost : ''}</div>
             </div>
             <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;width:28px;height:28px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;cursor:pointer;font-size:12px">⋮</button>

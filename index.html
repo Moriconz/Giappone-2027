@@ -7326,9 +7326,14 @@ document.addEventListener('DOMContentLoaded', () => {
             function attachWizardHandlers() {
               console.log('[WIZARD DEBUG] attachWizardHandlers() called');
 
-              // Use document-level delegation since wizard is in Y2K window
-              // Use capture phase to ensure we catch events from Y2K windows
-              document.addEventListener('click', (e) => {
+              // Attach click listener ONLY ONCE to avoid duplicate listeners
+              if (!window._wizardClickListenerAttached) {
+                window._wizardClickListenerAttached = true;
+                console.log('[WIZARD] ✅ Attaching click listeners (first time only)');
+
+                // Use document-level delegation since wizard is in Y2K window
+                // Use capture phase to ensure we catch events from Y2K windows
+                document.addEventListener('click', (e) => {
                 const target = e.target;
 
                 // Day selection
@@ -7423,9 +7428,15 @@ document.addEventListener('DOMContentLoaded', () => {
                   return;
                 }
               }, { capture: true }); // Use capture phase for Y2K window compatibility
+              } // End of if (!window._wizardClickListenerAttached)
 
               // Input fields - Time, Duration, Cost, Notes (using change event delegation)
-              document.addEventListener('change', (e) => {
+              // Only attach ONCE
+              if (!window._wizardChangeListenerAttached) {
+                window._wizardChangeListenerAttached = true;
+                console.log('[WIZARD] ✅ Attaching change listeners (first time only)');
+
+                document.addEventListener('change', (e) => {
                 if (e.target.id === 'wizard-time-input') {
                   const timeVal = e.target.value.trim();
                   // Validate HH:MM format
@@ -7455,6 +7466,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   console.log('[WIZARD] Notes updated');
                 }
               }, { capture: true });
+              } // End of if (!window._wizardChangeListenerAttached)
             }
 
             /**
