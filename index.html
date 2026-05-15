@@ -7145,7 +7145,8 @@ document.addEventListener('DOMContentLoaded', () => {
              */
             function updateWizardUI() {
               // Find the Y2K window that contains wizard buttons (search for wizard elements)
-              let wizardContainer = document.querySelector('[class*="y2k"] .wizard-next-btn')?.closest('[class*="y2k"]');
+              // Use .wizard-cancel-btn instead of .wizard-next-btn because next button doesn't exist on step 4
+              let wizardContainer = document.querySelector('[class*="y2k"] .wizard-cancel-btn')?.closest('[class*="y2k"]');
 
               // Fallback: try to find by sheet-body
               if (!wizardContainer) {
