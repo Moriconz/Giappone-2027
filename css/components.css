@@ -725,6 +725,48 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   ITINERARY — Performance optimizations for low-end devices
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Contain layout paint for closed accordion days (huge perf win) */
+.itinerary-day-content[style*="display:none"] {
+  content-visibility: auto;
+  contain: layout style paint;
+}
+
+/* Will-change only on interactive elements */
+.itinerary-poi {
+  will-change: background, border-color;
+}
+
+.itinerary-day-header {
+  will-change: background;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ITINERARY — Touch :active states (no hover on mobile)
+   ═══════════════════════════════════════════════════════════════ */
+
+.itinerary-day-header:active {
+  background: linear-gradient(90deg, rgba(74,124,89,0.35), rgba(255,107,53,0.2)) !important;
+}
+
+.itinerary-poi:active {
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) !important;
+  border-color: rgba(255,255,255,0.2) !important;
+}
+
+.itinerary-add-btn:active {
+  background: linear-gradient(135deg, rgba(76,175,80,0.3), rgba(74,124,89,0.2)) !important;
+  border-color: rgba(76,175,80,0.7) !important;
+}
+
+.itinerary-menu-btn:active {
+  background: rgba(255,255,255,0.15) !important;
+  color: rgba(255,255,255,0.95) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    ACCESSIBILITY
    ═══════════════════════════════════════════════════════════════ */
 
@@ -741,6 +783,22 @@ textarea:focus-visible {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Low power mode / battery saver: disable expensive visual effects */
+@media (prefers-color-scheme: dark) and (prefers-reduced-motion: reduce) {
+  .sheet-inner,
+  .sheet-body,
+  nav.bottom {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(26, 31, 46, 0.25) !important;
+  }
+
+  .itinerary-poi,
+  .itinerary-day-header {
+    box-shadow: none !important;
   }
 }
 

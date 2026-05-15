@@ -595,6 +595,17 @@ function setupWizardHandlers(step, state) {
 function finishAddToItinerary(state) {
   console.log('[AddWizard] Adding POI to itinerary:', state);
 
+  // Check duplicate POI in same day
+  if (window.ITINERARY?.hasDuplicatePOI) {
+    if (window.ITINERARY.hasDuplicatePOI(state.poiId, state.selectedDay)) {
+      console.warn('[AddWizard] ⚠️ Duplicate POI in day');
+      if (window.toast) {
+        window.toast('⚠️ Questo luogo è già stato aggiunto a questo giorno');
+      }
+      return;
+    }
+  }
+
   // Add using ITINERARY system
   if (window.ITINERARY?.addPOIToDay) {
     const success = window.ITINERARY.addPOIToDay(
