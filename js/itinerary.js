@@ -33,8 +33,15 @@ const ITINERARY_SYSTEM = {
 
   /**
    * Add POI to a specific day
+   * @param {string} poiId
+   * @param {string} poiName
+   * @param {number} dayIndex
+   * @param {string} time - Time in HH:MM format (default "10:00")
+   * @param {number} duration - Duration in minutes (default 60)
+   * @param {string} notes - Notes about the POI (default "")
+   * @param {number} cost - Cost in local currency (default 0)
    */
-  addPOIToDay(poiId, poiName, dayIndex, time = "10:00") {
+  addPOIToDay(poiId, poiName, dayIndex, time = "10:00", duration = 60, notes = "", cost = 0) {
     if (!window.state?.itineraryByDay) {
       this.initState();
     }
@@ -55,13 +62,14 @@ const ITINERARY_SYSTEM = {
       poi_id: poiId,
       poi_name: poiName,
       time: time,
-      duration: 60,
-      notes: "",
+      duration: duration,
+      notes: notes,
+      cost: cost,
       status: "proposed"
     };
 
     window.state.itineraryByDay[dayIndex].push(entry);
-    console.log('[Itinerary] Added', poiName, 'to day', dayIndex);
+    console.log('[Itinerary] Added', poiName, 'to day', dayIndex, 'at', time, 'duration:', duration, 'min');
 
     window.saveState?.();
     return true;
@@ -118,6 +126,42 @@ const ITINERARY_SYSTEM = {
       if (entry) {
         entry.notes = notes;
         console.log('[Itinerary] Updated notes for', poiId);
+        window.saveState?.();
+        return true;
+      }
+    }
+    return false;
+  },
+
+  /**
+   * Update duration for a POI
+   */
+  updateDuration(poiId, duration) {
+    if (!window.state?.itineraryByDay) return false;
+
+    for (const day of Object.values(window.state.itineraryByDay)) {
+      const entry = day.find(e => e.poi_id === poiId);
+      if (entry) {
+        entry.duration = duration;
+        console.log('[Itinerary] Updated duration for', poiId, 'to', duration, 'min');
+        window.saveState?.();
+        return true;
+      }
+    }
+    return false;
+  },
+
+  /**
+   * Update cost for a POI
+   */
+  updateCost(poiId, cost) {
+    if (!window.state?.itineraryByDay) return false;
+
+    for (const day of Object.values(window.state.itineraryByDay)) {
+      const entry = day.find(e => e.poi_id === poiId);
+      if (entry) {
+        entry.cost = cost;
+        console.log('[Itinerary] Updated cost for', poiId, 'to', cost);
         window.saveState?.();
         return true;
       }

@@ -25,9 +25,18 @@ function renderItineraryUnified() {
 
   // Check if personal itinerary is completely empty
   let totalPOIs = 0;
+  let totalCostSpent = 0;
+  let costByDay = {};
+
   for (let d = 0; d < days; d++) {
     const dayPOIs = window.state.itineraryByDay[d] || [];
     totalPOIs += dayPOIs.length;
+    costByDay[d] = 0;
+    dayPOIs.forEach(poi => {
+      const poiCost = poi.cost || 0;
+      totalCostSpent += poiCost;
+      costByDay[d] += poiCost;
+    });
   }
 
   // ===== SECTION 1: PERSONAL ITINERARY (ACCORDION) =====
@@ -36,27 +45,37 @@ function renderItineraryUnified() {
     const dayDate = new Date(2027, 3, 10 + dayIndex);
     const dayLabel = `Day ${dayIndex + 1} — ${dayDate.toLocaleDateString('it-IT', { weekday: 'short', month: 'short', day: 'numeric' })}`;
     const dayDuration = ITINERARY.getDayDuration(dayIndex);
-    const poiListHTML = dayPOIs.length ? dayPOIs.map((entry, idx) => `
-      <div class="itinerary-poi" draggable="true" data-poi-id="${entry.poi_id}" data-day="${dayIndex}" style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-        padding:10px 12px;
-        background:rgba(255,255,255,0.04);
-        border:1px solid rgba(255,255,255,0.1);
-        border-radius:6px;
-        margin-bottom:6px;
-        cursor:grab;
-        transition:all 0.2s;
-      " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
-        <span style="flex-shrink:0;width:20px;height:20px;background:#FF6B35;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">${idx + 1}</span>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;color:#fff;font-weight:500">${entry.poi_name}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.6)">⏰ ${entry.time}</div>
+    const poiListHTML = dayPOIs.length ? dayPOIs.map((entry, idx) => {
+      const hasDetails = entry.notes || entry.cost > 0 || entry.duration !== 60;
+      return `
+        <div class="itinerary-poi" draggable="true" data-poi-id="${entry.poi_id}" data-day="${dayIndex}" style="
+          display:flex;
+          flex-direction:column;
+          gap:0;
+          padding:10px 12px;
+          background:rgba(255,255,255,0.04);
+          border:1px solid rgba(255,255,255,0.1);
+          border-radius:6px;
+          margin-bottom:6px;
+          cursor:grab;
+          transition:all 0.2s;
+        " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="flex-shrink:0;width:20px;height:20px;background:#FF6B35;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">${idx + 1}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${entry.poi_name}</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.6)">⏰ ${entry.time} · ⏱️ ${entry.duration}m ${entry.cost > 0 ? '· 💰 ¥' + entry.cost : ''}</div>
+            </div>
+            <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;width:28px;height:28px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;cursor:pointer;font-size:12px">⋮</button>
+          </div>
+          ${entry.notes ? `
+            <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(255,255,255,0.6);line-height:1.3;max-height:40px;overflow:hidden">
+              <strong>📝</strong> ${entry.notes}
+            </div>
+          ` : ''}
         </div>
-        <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;width:28px;height:28px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;cursor:pointer;font-size:12px">⋮</button>
-      </div>
-    `).join('') : '<p style="color:rgba(255,255,255,0.5);font-size:12px;padding:8px">Nessun POI. Tap [+] per aggiungere</p>';
+      `;
+    }).join('') : '<p style="color:rgba(255,255,255,0.5);font-size:12px;padding:8px">Nessun POI. Tap [+] per aggiungere</p>';
 
     return `
       <div class="itinerary-day-accordion" style="margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)">
@@ -149,20 +168,30 @@ function renderItineraryUnified() {
         border-radius:8px;
         padding:12px 14px;
       ">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-weight:600;color:#fff">💰 Budget</span>
-          <span style="font-size:12px;color:rgba(255,255,255,0.7)">${tripProfile.days || 8} giorni</span>
+          <span style="font-size:12px;color:rgba(255,255,255,0.7)">${days} giorni</span>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px">
           <div style="flex:1">
-            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px">Giornaliero</div>
-            <div style="font-size:16px;color:#4ADE80;font-weight:700">€${budgetDaily}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px">Pianificato (totale)</div>
+            <div style="font-size:16px;color:#FF6B35;font-weight:700">¥${budget}</div>
           </div>
           <div style="flex:1">
-            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px">Totale</div>
-            <div style="font-size:16px;color:#FF6B35;font-weight:700">€${budget}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px">Speso (POI)</div>
+            <div style="font-size:16px;color:${totalCostSpent > budget ? '#ff6b6b' : '#4ade80'};font-weight:700">¥${totalCostSpent}</div>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px">Rimasto</div>
+            <div style="font-size:16px;color:${budget - totalCostSpent < 0 ? '#ff6b6b' : '#4ade80'};font-weight:700">¥${Math.max(0, budget - totalCostSpent)}</div>
           </div>
         </div>
+        ${totalCostSpent > 0 ? `
+          <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;margin-bottom:6px">
+            <div style="height:100%;background:linear-gradient(90deg, #4ade80, #FF6B35);width:${Math.min(100, (totalCostSpent/budget)*100)}%"></div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-align:center">${Math.round((totalCostSpent/budget)*100)}% del budget allocato</div>
+        ` : ''}
       </div>
 
       <!-- SECTION 1: YOUR ITINERARY -->

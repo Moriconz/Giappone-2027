@@ -6938,46 +6938,429 @@ document.addEventListener('DOMContentLoaded', () => {
             const poiName = getPoiDisplayName(p);
             const poiId = p.id;
 
-            console.log('[WIZARD] opening day selector for POI:', poiName);
+            console.log('[WIZARD] opening multi-step wizard for POI:', poiName);
 
-            // Create day selector HTML
-            const daySelectorHTML = `
-              <div style="padding: 16px; text-align: center;">
-                <p style="color: #fff; margin-bottom: 16px;">📅 Scegli il giorno per aggiungere <strong>${poiName}</strong></p>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px;">
-                  ${Array.from({length: days}, (_, i) => `
-                    <button class="day-select-btn" data-day="${i}" style="
-                      padding: 12px;
-                      background: rgba(255, 107, 53, 0.15);
-                      border: 1px solid rgba(255, 107, 53, 0.3);
-                      color: #FF6B35;
-                      border-radius: 6px;
-                      font-weight: 600;
-                      cursor: pointer;
-                      transition: all 0.2s;
-                    " onmouseover="this.style.background='rgba(255, 107, 53, 0.25)'" onmouseout="this.style.background='rgba(255, 107, 53, 0.15)'">
-                      Day ${i + 1}
-                    </button>
-                  `).join('')}
-                </div>
+            // Wizard state
+            const wizardState = {
+              step: 1,
+              selectedDay: null,
+              selectedTime: '10:00',
+              duration: 60,
+              notes: '',
+              cost: 0
+            };
+
+            /**
+             * Render wizard step
+             */
+            function renderWizardStep() {
+              let html = '';
+
+              if (wizardState.step === 1) {
+                // STEP 1: Day selection
+                html = `
+                  <div style="padding: 16px;">
+                    <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">📅 STEP 1/4 — Scegli il giorno</p>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                      ${Array.from({length: days}, (_, i) => {
+                        const isSelected = wizardState.selectedDay === i;
+                        return `
+                          <button class="wizard-day-btn" data-day="${i}" style="
+                            padding: 12px;
+                            background: ${isSelected ? 'rgba(255, 107, 53, 0.4)' : 'rgba(255, 107, 53, 0.15)'};
+                            border: 2px solid ${isSelected ? 'rgba(255, 107, 53, 0.8)' : 'rgba(255, 107, 53, 0.3)'};
+                            color: #FF6B35;
+                            border-radius: 6px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                          " onmouseover="this.style.background='rgba(255, 107, 53, 0.3)'" onmouseout="this.style.background='${isSelected ? 'rgba(255, 107, 53, 0.4)' : 'rgba(255, 107, 53, 0.15)'}'">
+                            Day ${i + 1}
+                          </button>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                `;
+              } else if (wizardState.step === 2) {
+                // STEP 2: Time selection
+                html = `
+                  <div style="padding: 16px;">
+                    <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">🕐 STEP 2/4 — Scegli l'orario</p>
+                    <div style="margin-bottom: 16px;">
+                      <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">Orario (HH:MM)</label>
+                      <input type="time" id="wizard-time-input" value="${wizardState.selectedTime}" style="
+                        width: 100%;
+                        padding: 10px;
+                        background: rgba(255,255,255,0.08);
+                        border: 1px solid rgba(255,255,255,0.2);
+                        border-radius: 6px;
+                        color: #fff;
+                        font-size: 16px;
+                        box-sizing: border-box;
+                      ">
+                    </div>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 12px;">Giorno selezionato: <strong style="color: #FF6B35;">Day ${wizardState.selectedDay + 1}</strong></p>
+                  </div>
+                `;
+              } else if (wizardState.step === 3) {
+                // STEP 3: Details (Duration, Notes, Cost)
+                html = `
+                  <div style="padding: 16px; max-height: 400px; overflow-y: auto;">
+                    <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">📋 STEP 3/4 — Dettagli (opzionali)</p>
+
+                    <div style="margin-bottom: 14px;">
+                      <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">⏱️ Durata (minuti)</label>
+                      <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                        ${[30, 60, 90, 120, 180].map(d => `
+                          <button class="duration-preset" data-duration="${d}" style="
+                            flex: 1;
+                            padding: 8px;
+                            background: ${wizardState.duration === d ? 'rgba(74,124,89,0.4)' : 'rgba(255,255,255,0.04)'};
+                            border: 1px solid ${wizardState.duration === d ? 'rgba(74,124,89,0.6)' : 'rgba(255,255,255,0.1)'};
+                            color: ${wizardState.duration === d ? '#4ade80' : 'rgba(255,255,255,0.7)'};
+                            border-radius: 4px;
+                            font-size: 11px;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                          " onmouseover="this.style.background='${wizardState.duration === d ? 'rgba(74,124,89,0.5)' : 'rgba(255,255,255,0.08)'}'" onmouseout="this.style.background='${wizardState.duration === d ? 'rgba(74,124,89,0.4)' : 'rgba(255,255,255,0.04)'}'">
+                            ${d}m
+                          </button>
+                        `).join('')}
+                      </div>
+                      <input type="number" id="wizard-duration-input" value="${wizardState.duration}" min="5" max="480" placeholder="o inserisci manualmente" style="
+                        width: 100%;
+                        padding: 8px;
+                        background: rgba(255,255,255,0.04);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 4px;
+                        color: #fff;
+                        font-size: 12px;
+                        box-sizing: border-box;
+                      ">
+                    </div>
+
+                    <div style="margin-bottom: 14px;">
+                      <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">💰 Costo (opzionale)</label>
+                      <input type="number" id="wizard-cost-input" value="${wizardState.cost}" min="0" placeholder="Es: 15.50" style="
+                        width: 100%;
+                        padding: 8px;
+                        background: rgba(255,255,255,0.04);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 4px;
+                        color: #fff;
+                        font-size: 12px;
+                        box-sizing: border-box;
+                      ">
+                    </div>
+
+                    <div>
+                      <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">📝 Note personalizzate (opzionale)</label>
+                      <textarea id="wizard-notes-input" placeholder="Es: Prenotare in anticipo, glutine-free disponibile..." style="
+                        width: 100%;
+                        padding: 8px;
+                        background: rgba(255,255,255,0.04);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 4px;
+                        color: #fff;
+                        font-size: 12px;
+                        resize: vertical;
+                        min-height: 60px;
+                        box-sizing: border-box;
+                        font-family: inherit;
+                      ">${wizardState.notes}</textarea>
+                    </div>
+                  </div>
+                `;
+              } else if (wizardState.step === 4) {
+                // STEP 4: Summary & Confirm
+                const dayDate = new Date(2027, 3, 10 + wizardState.selectedDay);
+                const dayLabel = dayDate.toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                html = `
+                  <div style="padding: 16px;">
+                    <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">✅ STEP 4/4 — Riepilogo</p>
+
+                    <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+                      <div style="margin-bottom: 10px;">
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📌 Punto di interesse</div>
+                        <div style="font-size: 14px; color: #fff; font-weight: 600;">${poiName}</div>
+                      </div>
+
+                      <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📅 Data e orario</div>
+                        <div style="font-size: 13px; color: rgba(255,255,255,0.9);">
+                          <strong>Day ${wizardState.selectedDay + 1}</strong> · ${dayLabel}<br>
+                          <strong>${wizardState.selectedTime}</strong>
+                        </div>
+                      </div>
+
+                      <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">⏱️ Durata</div>
+                        <div style="font-size: 13px; color: rgba(255,255,255,0.9);"><strong>${wizardState.duration}</strong> minuti</div>
+                      </div>
+
+                      ${wizardState.cost > 0 ? `
+                        <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                          <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">💰 Costo</div>
+                          <div style="font-size: 13px; color: rgba(255,255,255,0.9);"><strong>¥${wizardState.cost}</strong></div>
+                        </div>
+                      ` : ''}
+
+                      ${wizardState.notes ? `
+                        <div style="padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                          <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📝 Note</div>
+                          <div style="font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.4;">${wizardState.notes}</div>
+                        </div>
+                      ` : ''}
+                    </div>
+
+                    <p style="color: rgba(255,255,255,0.6); font-size: 12px; text-align: center;">Conferma per aggiungere alla tappa</p>
+                  </div>
+                `;
+              }
+
+              return html;
+            }
+
+            /**
+             * Update sheet content
+             */
+            function updateWizardUI() {
+              const sheetBody = document.getElementById('sheet-body');
+              if (!sheetBody) return;
+
+              const headerTitle = ['📅 Scegli il giorno', '🕐 Scegli l\'orario', '📋 Dettagli', '✅ Riepilogo'][wizardState.step - 1];
+
+              // Update sheet header
+              const sheetHeader = document.querySelector('.sheet-header') || {};
+              if (sheetHeader.textContent) {
+                sheetHeader.textContent = headerTitle;
+              }
+
+              // Update body
+              sheetBody.innerHTML = renderWizardStep();
+
+              // Re-attach handlers
+              attachWizardHandlers();
+
+              console.log('[WIZARD] Step', wizardState.step, 'rendered');
+            }
+
+            /**
+             * Attach event handlers
+             */
+            function attachWizardHandlers() {
+              // Day selection
+              document.querySelectorAll('.wizard-day-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                  wizardState.selectedDay = parseInt(btn.dataset.day);
+                  console.log('[WIZARD] Day selected:', wizardState.selectedDay + 1);
+                  wizardState.step = 2;
+                  updateWizardUI();
+                });
+              });
+
+              // Time input
+              const timeInput = document.getElementById('wizard-time-input');
+              if (timeInput) {
+                timeInput.addEventListener('change', (e) => {
+                  wizardState.selectedTime = e.target.value;
+                  console.log('[WIZARD] Time selected:', wizardState.selectedTime);
+                });
+
+                const nextBtn = document.querySelector('.wizard-next-btn');
+                if (nextBtn) {
+                  nextBtn.addEventListener('click', () => {
+                    wizardState.step = 3;
+                    updateWizardUI();
+                  });
+                }
+              }
+
+              // Duration presets
+              document.querySelectorAll('.duration-preset').forEach(btn => {
+                btn.addEventListener('click', () => {
+                  wizardState.duration = parseInt(btn.dataset.duration);
+                  console.log('[WIZARD] Duration preset selected:', wizardState.duration);
+                  updateWizardUI();
+                });
+              });
+
+              // Duration manual input
+              const durationInput = document.getElementById('wizard-duration-input');
+              if (durationInput) {
+                durationInput.addEventListener('change', (e) => {
+                  const val = parseInt(e.target.value);
+                  if (val > 0) {
+                    wizardState.duration = val;
+                    console.log('[WIZARD] Duration set to:', wizardState.duration);
+                  }
+                });
+              }
+
+              // Cost input
+              const costInput = document.getElementById('wizard-cost-input');
+              if (costInput) {
+                costInput.addEventListener('change', (e) => {
+                  wizardState.cost = parseFloat(e.target.value) || 0;
+                  console.log('[WIZARD] Cost set to:', wizardState.cost);
+                });
+              }
+
+              // Notes input
+              const notesInput = document.getElementById('wizard-notes-input');
+              if (notesInput) {
+                notesInput.addEventListener('change', (e) => {
+                  wizardState.notes = e.target.value.trim();
+                  console.log('[WIZARD] Notes updated');
+                });
+              }
+
+              // Next/Confirm button
+              const nextBtn = document.querySelector('.wizard-next-btn');
+              if (nextBtn && wizardState.step < 4) {
+                nextBtn.addEventListener('click', () => {
+                  if (wizardState.step === 2) {
+                    wizardState.step = 3;
+                  } else if (wizardState.step === 3) {
+                    wizardState.step = 4;
+                  }
+                  updateWizardUI();
+                });
+              }
+
+              // Confirm button (Step 4)
+              const confirmBtn = document.querySelector('.wizard-confirm-btn');
+              if (confirmBtn) {
+                confirmBtn.addEventListener('click', () => {
+                  console.log('[WIZARD] Confirming POI addition:', {
+                    poiId,
+                    poiName,
+                    day: wizardState.selectedDay,
+                    time: wizardState.selectedTime,
+                    duration: wizardState.duration,
+                    notes: wizardState.notes,
+                    cost: wizardState.cost
+                  });
+
+                  // Add POI with all details
+                  window.ITINERARY.addPOIToDay(
+                    poiId,
+                    poiName,
+                    wizardState.selectedDay,
+                    wizardState.selectedTime,
+                    wizardState.duration,
+                    wizardState.notes,
+                    wizardState.cost
+                  );
+
+                  window.saveState?.();
+                  window.closeSheet();
+                  window.toast(`✅ Aggiunto al Day ${wizardState.selectedDay + 1} alle ${wizardState.selectedTime}`);
+                  console.log('[WIZARD] POI successfully added and sheet closed');
+                });
+              }
+
+              // Back button
+              const backBtn = document.querySelector('.wizard-back-btn');
+              if (backBtn) {
+                backBtn.addEventListener('click', () => {
+                  if (wizardState.step > 1) {
+                    wizardState.step--;
+                    updateWizardUI();
+                  }
+                });
+              }
+
+              // Cancel button
+              const cancelBtn = document.querySelector('.wizard-cancel-btn');
+              if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                  console.log('[WIZARD] Wizard cancelled');
+                  window.closeSheet();
+                });
+              }
+            }
+
+            /**
+             * Create initial wizard content with controls
+             */
+            const wizardHTML = renderWizardStep() + `
+              <div style="padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; justify-content: space-between;">
+                <button class="wizard-cancel-btn" style="
+                  flex: 0 0 auto;
+                  padding: 8px 12px;
+                  background: rgba(255,255,255,0.04);
+                  border: 1px solid rgba(255,255,255,0.1);
+                  color: rgba(255,255,255,0.6);
+                  border-radius: 4px;
+                  cursor: pointer;
+                  font-size: 12px;
+                  font-weight: 500;
+                  transition: all 0.2s;
+                " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                  Annulla
+                </button>
+
+                ${wizardState.step > 1 ? `
+                  <button class="wizard-back-btn" style="
+                    flex: 0 0 auto;
+                    padding: 8px 12px;
+                    background: rgba(255,255,255,0.04);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    color: rgba(255,255,255,0.6);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                  " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                    ← Indietro
+                  </button>
+                ` : `<div style="flex: 1;"></div>`}
+
+                ${wizardState.step < 4 ? `
+                  <button class="wizard-next-btn" style="
+                    flex: 0 0 auto;
+                    padding: 8px 16px;
+                    background: rgba(255, 107, 53, 0.3);
+                    border: 1px solid rgba(255, 107, 53, 0.5);
+                    color: #FF6B35;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-weight: 600;
+                    transition: all 0.2s;
+                  " onmouseover="this.style.background='rgba(255, 107, 53, 0.4)'" onmouseout="this.style.background='rgba(255, 107, 53, 0.3)'">
+                    Avanti →
+                  </button>
+                ` : `
+                  <button class="wizard-confirm-btn" style="
+                    flex: 0 0 auto;
+                    padding: 8px 16px;
+                    background: rgba(74,124,89,0.3);
+                    border: 1px solid rgba(74,124,89,0.5);
+                    color: #4ade80;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-weight: 600;
+                    transition: all 0.2s;
+                  " onmouseover="this.style.background='rgba(74,124,89,0.4)'" onmouseout="this.style.background='rgba(74,124,89,0.3)'">
+                    ✓ Conferma
+                  </button>
+                `}
               </div>
             `;
 
-            window.openSheet('📅 Aggiungi a giorno', daySelectorHTML);
+            window.openSheet('📅 Aggiungi all\'itinerario', wizardHTML);
 
-            // Attach day selector handlers
+            // Attach handlers after sheet is opened
             setTimeout(() => {
-              document.querySelectorAll('.day-select-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                  const dayIndex = parseInt(btn.dataset.day);
-                  console.log('[WIZARD] POI added to day:', dayIndex + 1, 'POI:', poiName);
-                  window.ITINERARY.addPOIToDay(poiId, poiName, dayIndex, '10:00');
-                  window.saveState?.();
-                  window.closeSheet();
-                  window.toast(`✓ Aggiunto al Day ${dayIndex + 1}`);
-                });
-              });
-            }, 10);
+              attachWizardHandlers();
+              console.log('[WIZARD] Multi-step wizard initialized');
+            }, 50);
           };
         }
       }, 20);
