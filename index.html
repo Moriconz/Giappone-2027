@@ -7124,11 +7124,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             /**
-             * Update sheet content (including buttons)
+             * Update Y2K window content (including buttons)
              */
             function updateWizardUI() {
-              const sheetBody = document.getElementById('sheet-body');
-              if (!sheetBody) return;
+              // Find the Y2K window that contains wizard buttons (search for wizard elements)
+              let wizardContainer = document.querySelector('[class*="y2k"] .wizard-next-btn')?.closest('[class*="y2k"]');
+
+              // Fallback: try to find by sheet-body
+              if (!wizardContainer) {
+                wizardContainer = document.getElementById('sheet-body');
+              }
+
+              // If still not found, try finding any container with wizard elements
+              if (!wizardContainer) {
+                wizardContainer = document.querySelector('.wizard-cancel-btn')?.closest('div');
+              }
+
+              if (!wizardContainer) {
+                console.warn('[WIZARD] Could not find wizard container to update');
+                return;
+              }
+
+              console.log('[WIZARD] Found container, updating UI');
 
               // Re-render ENTIRE wizard (content + buttons), not just the content
               const fullWizardHTML = renderWizardStep() + `
@@ -7206,35 +7223,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
               const headerTitle = ['📅 Scegli il giorno', '🕐 Scegli l\'orario', '📋 Dettagli', '✅ Riepilogo'][wizardState.step - 1];
 
-              // Update sheet header
-              const sheetHeader = document.querySelector('.sheet-header') || {};
-              if (sheetHeader.textContent) {
+              // Update sheet header if exists
+              const sheetHeader = document.querySelector('.sheet-header');
+              if (sheetHeader) {
                 sheetHeader.textContent = headerTitle;
               }
 
-              // Update body with full wizard (content + buttons)
-              sheetBody.innerHTML = fullWizardHTML;
+              // Update container with full wizard (content + buttons)
+              wizardContainer.innerHTML = fullWizardHTML;
 
-              // Re-attach handlers
+              // Re-attach handlers (must be done AFTER innerHTML update)
               attachWizardHandlers();
 
               console.log('[WIZARD] Step', wizardState.step, 'rendered with buttons');
             }
 
             /**
-             * Attach event handlers using event delegation on sheet body
+             * Attach event handlers using document-level event delegation
+             * (Wizard opens in Y2K window, not sheetBody)
              */
             function attachWizardHandlers() {
               console.log('[WIZARD DEBUG] attachWizardHandlers() called');
 
-              const sheetBody = document.getElementById('sheet-body');
-              if (!sheetBody) {
-                console.warn('[WIZARD] sheetBody not found, cannot attach handlers');
-                return;
-              }
-
-              // Use sheetBody as event delegation root
-              sheetBody.addEventListener('click', (e) => {
+              // Use document-level delegation since wizard is in Y2K window
+              document.addEventListener('click', (e) => {
                 // Day selection
                 if (e.target.classList.contains('wizard-day-btn')) {
                   const dayIndex = parseInt(e.target.dataset.day);
@@ -7322,41 +7334,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
               });
 
-              // Input fields - Time, Duration, Cost, Notes
-              const timeInput = document.getElementById('wizard-time-input');
-              if (timeInput) {
-                timeInput.addEventListener('change', (e) => {
+              // Input fields - Time, Duration, Cost, Notes (using change event delegation)
+              document.addEventListener('change', (e) => {
+                if (e.target.id === 'wizard-time-input') {
                   wizardState.selectedTime = e.target.value;
                   console.log('[WIZARD] Time selected:', wizardState.selectedTime);
-                });
-              }
-
-              const durationInput = document.getElementById('wizard-duration-input');
-              if (durationInput) {
-                durationInput.addEventListener('change', (e) => {
+                }
+                if (e.target.id === 'wizard-duration-input') {
                   const val = parseInt(e.target.value);
                   if (val > 0) {
                     wizardState.duration = val;
                     console.log('[WIZARD] Duration set to:', wizardState.duration);
                   }
-                });
-              }
-
-              const costInput = document.getElementById('wizard-cost-input');
-              if (costInput) {
-                costInput.addEventListener('change', (e) => {
+                }
+                if (e.target.id === 'wizard-cost-input') {
                   wizardState.cost = parseFloat(e.target.value) || 0;
                   console.log('[WIZARD] Cost set to:', wizardState.cost);
-                });
-              }
-
-              const notesInput = document.getElementById('wizard-notes-input');
-              if (notesInput) {
-                notesInput.addEventListener('change', (e) => {
+                }
+                if (e.target.id === 'wizard-notes-input') {
                   wizardState.notes = e.target.value.trim();
                   console.log('[WIZARD] Notes updated');
-                });
-              }
+                }
+              }, { capture: true });
             }
 
             /**
