@@ -96,9 +96,28 @@ function renderWizardStep(step, state) {
   }
 
   window.openSheet('➕ Aggiungi all\'Itinerario', html);
+
+  // Remove any existing wizard event listeners first (prevents duplicates)
+  removeWizardListeners();
+
+  // Attach handlers after DOM is ready
   setTimeout(() => {
     setupWizardHandlers(step, state);
   }, 100);
+}
+
+/**
+ * Remove existing wizard event listeners to prevent duplicates
+ * Called before attaching new ones
+ */
+function removeWizardListeners() {
+  // Get all wizard buttons currently in DOM
+  const buttons = document.querySelectorAll('[id^="wizard-"]');
+  buttons.forEach(btn => {
+    // Replace with clone to remove all listeners
+    const clone = btn.cloneNode(true);
+    btn.parentNode?.replaceChild(clone, btn);
+  });
 }
 
 /**
@@ -535,6 +554,8 @@ function setupWizardHandlers(step, state) {
     const backBtn = document.getElementById('wizard-back-2');
     const nextBtn = document.getElementById('wizard-next-2');
 
+    console.log('[AddWizard] Step 2 setup - backBtn found:', !!backBtn, 'nextBtn found:', !!nextBtn);
+
     if (daySelect) {
       daySelect.addEventListener('change', (e) => {
         state.selectedDay = parseInt(e.target.value);
@@ -553,21 +574,27 @@ function setupWizardHandlers(step, state) {
 
     if (backBtn) {
       backBtn.addEventListener('click', () => {
-        console.log('[AddWizard] Step 2 → Step 1');
+        console.log('[AddWizard] ✅ Step 2 → Step 1 (back button clicked)');
         renderWizardStep(1, state);
       });
+    } else {
+      console.warn('[AddWizard] ⚠️ wizard-back-2 button NOT FOUND in step 2');
     }
 
     if (nextBtn) {
       nextBtn.addEventListener('click', () => {
-        console.log('[AddWizard] Step 2 → Step 3');
+        console.log('[AddWizard] ✅ Step 2 → Step 3 (next button clicked)');
         renderWizardStep(3, state);
       });
+    } else {
+      console.warn('[AddWizard] ⚠️ wizard-next-2 button NOT FOUND in step 2');
     }
   } else if (step === 3) {
     const notesInput = document.getElementById('wizard-notes-input');
     const backBtn = document.getElementById('wizard-back-3');
     const finishBtn = document.getElementById('wizard-finish');
+
+    console.log('[AddWizard] Step 3 setup - backBtn found:', !!backBtn, 'finishBtn found:', !!finishBtn);
 
     if (notesInput) {
       notesInput.addEventListener('change', (e) => {
@@ -578,9 +605,11 @@ function setupWizardHandlers(step, state) {
 
     if (backBtn) {
       backBtn.addEventListener('click', () => {
-        console.log('[AddWizard] Step 3 → Step 2');
+        console.log('[AddWizard] ✅ Step 3 → Step 2 (back button clicked)');
         renderWizardStep(2, state);
       });
+    } else {
+      console.warn('[AddWizard] ⚠️ wizard-back-3 button NOT FOUND in step 3');
     }
 
     if (finishBtn) {
@@ -588,6 +617,8 @@ function setupWizardHandlers(step, state) {
         console.log('[AddWizard] ✅ Finishing wizard...');
         finishAddToItinerary(state);
       });
+    } else {
+      console.warn('[AddWizard] ⚠️ wizard-finish button NOT FOUND in step 3');
     }
   }
 }
