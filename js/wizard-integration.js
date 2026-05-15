@@ -34,25 +34,28 @@ function monitorPOIDetailModal() {
       return;
     }
 
-    // Look for existing add button
-    const existingBtn = sheetBody.querySelector('[data-wizard-btn]');
-    if (existingBtn) {
-      return; // Already added
+    // Look for the EXISTING add-to-itinerary button
+    const existingBtn = sheetBody.querySelector('#add-to-itinerary-btn');
+    if (!existingBtn) {
+      return; // Button not yet in DOM
+    }
+
+    // Check if we already attached the listener
+    if (existingBtn.dataset.wizardAttached) {
+      return; // Already attached
     }
 
     // Get POI data from sheet
     const poiData = extractPOIDataFromSheet();
     if (!poiData) {
-      // Debug: sheet is open but no POI data found
-      const sheetTitle = document.getElementById('sheet-title');
-      console.log('[WizardIntegration] 🔍 Sheet open but no POI data. Title:', sheetTitle?.textContent);
       return;
     }
 
     console.log('[WizardIntegration] ✅ POI detail detected:', poiData.name);
+    console.log('[WizardIntegration] 🔗 Attaching wizard to existing button...');
 
-    // Add wizard button to sheet
-    addWizardButtonToSheet(poiData);
+    // Attach wizard to EXISTING button
+    attachWizardToExistingButton(existingBtn, poiData);
   }, 300); // Increased check frequency
 }
 
@@ -107,6 +110,28 @@ function extractPOIDataFromSheet() {
     city: cityEl?.textContent?.trim() || 'Città sconosciuta',
     type: 'restaurant'
   };
+}
+
+/**
+ * ATTACH WIZARD TO EXISTING BUTTON
+ * The button already exists in the DOM, just add the handler
+ */
+function attachWizardToExistingButton(btn, poiData) {
+  console.log('[WizardIntegration] 🔨 Attaching wizard handler to existing button...');
+
+  // Mark as attached
+  btn.dataset.wizardAttached = 'true';
+
+  // Store POI data globally
+  window.currentWizardPOI = poiData;
+
+  // Add direct onclick handler
+  btn.onclick = function() {
+    console.log('[WizardIntegration] 🖱️ Add-to-itinerary button clicked!');
+    handleOpenWizardFromDetail();
+  };
+
+  console.log('[WizardIntegration] ✅ Wizard attached to button');
 }
 
 /**
