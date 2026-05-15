@@ -6989,7 +6989,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">🕐 STEP 2/4 — Scegli l'orario</p>
                     <div style="margin-bottom: 16px;">
                       <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">Orario (HH:MM)</label>
-                      <input type="time" id="wizard-time-input" value="${wizardState.selectedTime}" style="
+                      <input type="text" id="wizard-time-input" value="${wizardState.selectedTime}" placeholder="14:30" maxlength="5" style="
                         width: 100%;
                         padding: 10px;
                         background: rgba(255,255,255,0.08);
@@ -6998,9 +6998,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         color: #fff;
                         font-size: 16px;
                         box-sizing: border-box;
+                        font-family: 'Courier New', monospace;
                       ">
+                      <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 6px;">Formato: HH:MM (es: 14:30, 09:45)</p>
                     </div>
-                    <p style="color: rgba(255,255,255,0.5); font-size: 12px;">Giorno selezionato: <strong style="color: #FF6B35;">Day ${wizardState.selectedDay + 1}</strong></p>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 16px;">Giorno selezionato: <strong style="color: #FF6B35;">Day ${wizardState.selectedDay + 1}</strong></p>
                   </div>
                 `;
               } else if (wizardState.step === 3) {
@@ -7246,11 +7248,14 @@ document.addEventListener('DOMContentLoaded', () => {
               console.log('[WIZARD DEBUG] attachWizardHandlers() called');
 
               // Use document-level delegation since wizard is in Y2K window
+              // Use capture phase to ensure we catch events from Y2K windows
               document.addEventListener('click', (e) => {
+                const target = e.target;
+
                 // Day selection
-                if (e.target.classList.contains('wizard-day-btn')) {
-                  const dayIndex = parseInt(e.target.dataset.day);
-                  console.log('[WIZARD] Day selected:', dayIndex + 1);
+                if (target.classList.contains('wizard-day-btn')) {
+                  const dayIndex = parseInt(target.dataset.day);
+                  console.log('[WIZARD] ✅ Day selected:', dayIndex + 1);
                   wizardState.selectedDay = dayIndex;
                   wizardState.step = 2;
                   updateWizardUI();
@@ -7258,41 +7263,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Duration presets
-                if (e.target.classList.contains('duration-preset')) {
-                  const duration = parseInt(e.target.dataset.duration);
-                  console.log('[WIZARD] Duration preset selected:', duration);
+                if (target.classList.contains('duration-preset')) {
+                  const duration = parseInt(target.dataset.duration);
+                  console.log('[WIZARD] ✅ Duration preset selected:', duration);
                   wizardState.duration = duration;
                   updateWizardUI();
                   return;
                 }
 
-                // Next button
-                if (e.target.classList.contains('wizard-next-btn')) {
-                  if (wizardState.step === 1) wizardState.step = 2;
-                  else if (wizardState.step === 2) wizardState.step = 3;
-                  else if (wizardState.step === 3) wizardState.step = 4;
-                  console.log('[WIZARD] Next clicked, now at step:', wizardState.step);
-                  updateWizardUI();
+                // Back button (BEFORE next button for debugging)
+                if (target.classList.contains('wizard-back-btn')) {
+                  console.log('[WIZARD] 🔙 Back button clicked, current step:', wizardState.step);
+                  if (wizardState.step > 1) {
+                    wizardState.step--;
+                    console.log('[WIZARD] ✅ Back clicked, now at step:', wizardState.step);
+                    updateWizardUI();
+                  } else {
+                    console.warn('[WIZARD] ⚠️ Cannot go back from step 1');
+                  }
                   return;
                 }
 
-                // Back button
-                if (e.target.classList.contains('wizard-back-btn')) {
-                  if (wizardState.step > 1) wizardState.step--;
-                  console.log('[WIZARD] Back clicked, now at step:', wizardState.step);
+                // Next button
+                if (target.classList.contains('wizard-next-btn')) {
+                  console.log('[WIZARD] ▶️ Next button clicked, current step:', wizardState.step);
+                  if (wizardState.step === 1) wizardState.step = 2;
+                  else if (wizardState.step === 2) wizardState.step = 3;
+                  else if (wizardState.step === 3) wizardState.step = 4;
+                  console.log('[WIZARD] ✅ Next clicked, now at step:', wizardState.step);
                   updateWizardUI();
                   return;
                 }
 
                 // Cancel button
-                if (e.target.classList.contains('wizard-cancel-btn')) {
-                  console.log('[WIZARD] Wizard cancelled');
+                if (target.classList.contains('wizard-cancel-btn')) {
+                  console.log('[WIZARD] ❌ Wizard cancelled');
                   window.closeSheet();
                   return;
                 }
 
                 // Confirm button
-                if (e.target.classList.contains('wizard-confirm-btn')) {
+                if (target.classList.contains('wizard-confirm-btn')) {
                   console.log('[WIZARD] Confirming POI addition:', {
                     poiId,
                     poiName,
@@ -7332,13 +7343,22 @@ document.addEventListener('DOMContentLoaded', () => {
                   }
                   return;
                 }
-              });
+              }, { capture: true }); // Use capture phase for Y2K window compatibility
 
               // Input fields - Time, Duration, Cost, Notes (using change event delegation)
               document.addEventListener('change', (e) => {
                 if (e.target.id === 'wizard-time-input') {
-                  wizardState.selectedTime = e.target.value;
-                  console.log('[WIZARD] Time selected:', wizardState.selectedTime);
+                  const timeVal = e.target.value.trim();
+                  // Validate HH:MM format
+                  const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+                  if (timeRegex.test(timeVal)) {
+                    wizardState.selectedTime = timeVal;
+                    e.target.style.borderColor = 'rgba(255,255,255,0.2)';
+                    console.log('[WIZARD] Time selected:', wizardState.selectedTime);
+                  } else {
+                    e.target.style.borderColor = 'rgba(255, 107, 53, 0.6)';
+                    console.warn('[WIZARD] Invalid time format:', timeVal);
+                  }
                 }
                 if (e.target.id === 'wizard-duration-input') {
                   const val = parseInt(e.target.value);
