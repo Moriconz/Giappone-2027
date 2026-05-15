@@ -66,10 +66,10 @@ function renderItineraryUnified() {
 
           <!-- ROW 1: Number + Name + Menu (hidden on hover) -->
           <div style="display:flex;align-items:flex-start;gap:10px;justify-content:space-between" class="itinerary-poi-header">
-            <div style="display:flex;gap:10px;align-items:flex-start;flex:1">
+            <div style="display:flex;gap:10px;align-items:flex-start;flex:1;min-width:0">
               <span style="flex-shrink:0;width:24px;height:24px;background:linear-gradient(135deg, #FF6B35, #FF8A5B);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-top:2px">${idx + 1}</span>
-              <div style="flex:1;min-width:0">
-                <div style="font-size:14px;color:#fff;font-weight:600;margin-bottom:2px;line-height:1.3">${poiNameDisplay}</div>
+              <div style="flex:1;min-width:0;overflow:hidden">
+                <div style="font-size:14px;color:#fff;font-weight:600;margin-bottom:2px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${poiNameDisplay}</div>
               </div>
             </div>
             <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;width:24px;height:24px;background:transparent;border:none;border-radius:5px;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;padding:0;transition:all 0.2s;opacity:0;margin-right:0" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'">⋮</button>
