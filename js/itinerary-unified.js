@@ -46,44 +46,62 @@ function renderItineraryUnified() {
     const dayLabel = `Day ${dayIndex + 1} — ${dayDate.toLocaleDateString('it-IT', { weekday: 'short', month: 'short', day: 'numeric' })}`;
     const dayDuration = ITINERARY.getDayDuration(dayIndex);
     const poiListHTML = dayPOIs.length ? dayPOIs.map((entry, idx) => {
-      const hasDetails = entry.notes || entry.cost > 0 || entry.duration !== 60;
       const poiNameDisplay = entry.poi_name || `POI #${entry.poi_id.substring(0, 8)}`;
+      const costBadge = entry.cost > 0 ? `<span style="background:rgba(255,107,53,0.3);color:#FF9966;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">¥${entry.cost}</span>` : '';
+      const durationColor = entry.duration < 30 ? 'rgba(76,175,80,0.7)' : entry.duration < 120 ? 'rgba(255,193,7,0.7)' : 'rgba(255,107,53,0.7)';
       return `
         <div class="itinerary-poi" draggable="true" data-poi-id="${entry.poi_id}" data-day="${dayIndex}" style="
           display:flex;
           flex-direction:column;
-          gap:0;
-          padding:10px 12px;
-          background:rgba(255,255,255,0.04);
-          border:1px solid rgba(255,255,255,0.1);
-          border-radius:6px;
-          margin-bottom:6px;
+          gap:10px;
+          padding:12px 14px;
+          background:linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+          border:1px solid rgba(255,255,255,0.12);
+          border-radius:8px;
+          margin-bottom:8px;
           cursor:grab;
-          transition:all 0.2s;
-        " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="flex-shrink:0;width:20px;height:20px;background:#FF6B35;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">${idx + 1}</span>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:13px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${poiNameDisplay}</div>
-              <div style="font-size:11px;color:rgba(255,255,255,0.6)">⏰ ${entry.time} · ⏱️ ${entry.duration}m ${entry.cost > 0 ? '· 💰 ¥' + entry.cost : ''}</div>
+          transition:all 0.2s ease;
+          box-shadow:0 2px 8px rgba(0,0,0,0.2);
+        " onmouseover="this.style.background='linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))';this.style.borderColor='rgba(255,255,255,0.2)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))';this.style.borderColor='rgba(255,255,255,0.12)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.2)'">
+
+          <!-- ROW 1: Number + Name + Menu -->
+          <div style="display:flex;align-items:flex-start;gap:10px;justify-content:space-between">
+            <div style="display:flex;gap:10px;align-items:flex-start;flex:1">
+              <span style="flex-shrink:0;width:24px;height:24px;background:linear-gradient(135deg, #FF6B35, #FF8A5B);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-top:2px">${idx + 1}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;color:#fff;font-weight:600;margin-bottom:2px;line-height:1.3">${poiNameDisplay}</div>
+              </div>
             </div>
-            <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;width:28px;height:28px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;cursor:pointer;font-size:12px">⋮</button>
+            <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;width:28px;height:28px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:5px;color:#fff;cursor:pointer;font-size:14px;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">⋮</button>
           </div>
+
+          <!-- ROW 2: Time, Duration, Cost badges -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <span style="background:rgba(74,124,89,0.3);color:#4ade80;padding:4px 10px;border-radius:5px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px">
+              ⏰ ${entry.time}
+            </span>
+            <span style="background:${durationColor === 'rgba(76,175,80,0.7)' ? 'rgba(76,175,80,0.25)' : durationColor === 'rgba(255,193,7,0.7)' ? 'rgba(255,193,7,0.25)' : 'rgba(255,107,53,0.25)'};color:${durationColor};padding:4px 10px;border-radius:5px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px">
+              ⏱️ ${entry.duration}m
+            </span>
+            ${costBadge}
+          </div>
+
+          <!-- ROW 3: Notes (if present) -->
           ${entry.notes ? `
-            <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(255,255,255,0.6);line-height:1.3;max-height:40px;overflow:hidden">
-              <strong>📝</strong> ${entry.notes}
+            <div style="padding:8px 10px;background:rgba(255,255,255,0.04);border-left:3px solid rgba(255,193,7,0.4);border-radius:4px;font-size:12px;color:rgba(255,255,255,0.75);line-height:1.4">
+              <strong style="color:rgba(255,193,7,0.8)">📝 Nota:</strong> ${entry.notes}
             </div>
           ` : ''}
         </div>
       `;
-    }).join('') : '<p style="color:rgba(255,255,255,0.5);font-size:12px;padding:8px">Nessun POI. Tap [+] per aggiungere</p>';
+    }).join('') : '<p style="color:rgba(255,255,255,0.5);font-size:12px;padding:12px;text-align:center">📍 Nessun POI aggiunto. Clicca [+] per aggiungerlo</p>';
 
     return `
-      <div class="itinerary-day-accordion" style="margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)">
+      <div class="itinerary-day-accordion" style="margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);box-shadow:0 2px 8px rgba(0,0,0,0.2)">
         <button class="itinerary-day-header" data-day="${dayIndex}" style="
           width:100%;
-          padding:12px 14px;
-          background:linear-gradient(90deg, rgba(74,124,89,0.15), rgba(255,107,53,0.05));
+          padding:14px 16px;
+          background:linear-gradient(90deg, rgba(74,124,89,0.2), rgba(255,107,53,0.08));
           border:none;
           border-bottom:1px solid rgba(255,255,255,0.1);
           color:#fff;
@@ -92,31 +110,43 @@ function renderItineraryUnified() {
           display:flex;
           justify-content:space-between;
           align-items:center;
-          transition:all 0.2s;
-          font-weight:600;
-        " onmouseover="this.style.background='linear-gradient(90deg, rgba(74,124,89,0.25), rgba(255,107,53,0.1))'" onmouseout="this.style.background='linear-gradient(90deg, rgba(74,124,89,0.15), rgba(255,107,53,0.05))'">
-          <span>📅 ${dayLabel}</span>
-          <span style="font-size:12px;color:rgba(255,255,255,0.6)">${dayPOIs.length} POI · ${Math.round(dayDuration / 60)}h</span>
+          transition:all 0.2s ease;
+          font-weight:700;
+          font-size:15px;
+        " onmouseover="this.style.background='linear-gradient(90deg, rgba(74,124,89,0.3), rgba(255,107,53,0.15))';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)'" onmouseout="this.style.background='linear-gradient(90deg, rgba(74,124,89,0.2), rgba(255,107,53,0.08))';this.style.boxShadow='none'" style="box-shadow:0 2px 8px rgba(0,0,0,0.2)">
+          <span style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:18px">📅</span>
+            <span>${dayLabel}</span>
+          </span>
+          <span style="display:flex;align-items:center;gap:12px;font-size:13px;color:rgba(255,255,255,0.7)">
+            <span style="background:rgba(74,124,89,0.3);color:#4ade80;padding:3px 10px;border-radius:4px;font-weight:600">${dayPOIs.length} POI</span>
+            <span style="background:rgba(255,107,53,0.3);color:#FFB88C;padding:3px 10px;border-radius:4px;font-weight:600">${Math.round(dayDuration / 60)}h</span>
+          </span>
         </button>
         <div class="itinerary-day-content" data-day="${dayIndex}" style="
           display:none;
-          padding:12px 14px;
-          background:rgba(255,255,255,0.01);
+          padding:14px 16px;
+          background:rgba(255,255,255,0.02);
+          border-top:1px solid rgba(255,255,255,0.08);
         ">
-          <div class="itinerary-poi-list" style="margin-bottom:10px">${poiListHTML}</div>
+          <div class="itinerary-poi-list" style="margin-bottom:12px">${poiListHTML}</div>
           <button class="itinerary-add-btn" data-day="${dayIndex}" style="
             width:100%;
-            padding:8px 12px;
-            background:rgba(255,107,53,0.2);
-            border:1px dashed rgba(255,107,53,0.4);
-            border-radius:6px;
-            color:#FF6B35;
-            font-weight:600;
-            font-size:12px;
+            padding:10px 14px;
+            background:linear-gradient(135deg, rgba(76,175,80,0.15), rgba(74,124,89,0.1));
+            border:2px dashed rgba(76,175,80,0.4);
+            border-radius:8px;
+            color:#4ade80;
+            font-weight:700;
+            font-size:13px;
             cursor:pointer;
-            transition:all 0.2s;
-          " onmouseover="this.style.background='rgba(255,107,53,0.3)'" onmouseout="this.style.background='rgba(255,107,53,0.2)'">
-            [+] Aggiungi POI a questo giorno
+            transition:all 0.2s ease;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:6px;
+          " onmouseover="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.25), rgba(74,124,89,0.15))';this.style.borderColor='rgba(76,175,80,0.6)';this.style.boxShadow='0 2px 8px rgba(76,175,80,0.2)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.15), rgba(74,124,89,0.1))';this.style.borderColor='rgba(76,175,80,0.4)';this.style.boxShadow='none'">
+            <span style="font-size:16px">➕</span> Aggiungi POI a questo giorno
           </button>
         </div>
       </div>
