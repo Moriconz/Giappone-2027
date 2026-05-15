@@ -6915,6 +6915,72 @@ document.addEventListener('DOMContentLoaded', () => {
       const html = poiDetailHTML(p);
       window.openSheet(displayName, html);
       console.log('[openPOI] ✅ openSheet called');
+      console.log('[WIZARD] sheet opened');
+
+      // ===== SETUP ADD-TO-ITINERARY BUTTON (MOVED INTO ASYNC BLOCK) =====
+      setTimeout(() => {
+        const addToItineraryBtn = document.getElementById('add-to-itinerary-btn');
+        console.log('[WIZARD] add-to-itinerary button found:', !!addToItineraryBtn);
+
+        if (addToItineraryBtn) {
+          addToItineraryBtn.onclick = () => {
+            console.log('[WIZARD] click registered');
+
+            // FASE 1.4: Show day selector for adding POI to itinerary
+            if (!window.ITINERARY) {
+              console.error('[openPOI] ITINERARY system not available');
+              toast('❌ Sistema itinerario non pronto');
+              return;
+            }
+
+            const tripProfile = window.state?.tripProfile || {};
+            const days = tripProfile.days || 8;
+            const poiName = getPoiDisplayName(p);
+            const poiId = p.id;
+
+            console.log('[WIZARD] opening day selector for POI:', poiName);
+
+            // Create day selector HTML
+            const daySelectorHTML = `
+              <div style="padding: 16px; text-align: center;">
+                <p style="color: #fff; margin-bottom: 16px;">📅 Scegli il giorno per aggiungere <strong>${poiName}</strong></p>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px;">
+                  ${Array.from({length: days}, (_, i) => `
+                    <button class="day-select-btn" data-day="${i}" style="
+                      padding: 12px;
+                      background: rgba(255, 107, 53, 0.15);
+                      border: 1px solid rgba(255, 107, 53, 0.3);
+                      color: #FF6B35;
+                      border-radius: 6px;
+                      font-weight: 600;
+                      cursor: pointer;
+                      transition: all 0.2s;
+                    " onmouseover="this.style.background='rgba(255, 107, 53, 0.25)'" onmouseout="this.style.background='rgba(255, 107, 53, 0.15)'">
+                      Day ${i + 1}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+
+            window.openSheet('📅 Aggiungi a giorno', daySelectorHTML);
+
+            // Attach day selector handlers
+            setTimeout(() => {
+              document.querySelectorAll('.day-select-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                  const dayIndex = parseInt(btn.dataset.day);
+                  console.log('[WIZARD] POI added to day:', dayIndex + 1, 'POI:', poiName);
+                  window.ITINERARY.addPOIToDay(poiId, poiName, dayIndex, '10:00');
+                  window.saveState?.();
+                  window.closeSheet();
+                  window.toast(`✓ Aggiunto al Day ${dayIndex + 1}`);
+                });
+              });
+            }, 10);
+          };
+        }
+      }, 20);
 
       // Inizializza logica GF detection (SOLO se ristorante)
       setTimeout(() => {
@@ -7174,60 +7240,6 @@ document.addEventListener('DOMContentLoaded', () => {
       state.notes[id] = e.target.value; saveState();
     });
     document.getElementById('add-cal').onclick = () => promptAddToCalendar(p);
-
-    // FASE 2: Add to Itinerary button
-    const addToItineraryBtn = document.getElementById('add-to-itinerary-btn');
-    if (addToItineraryBtn) {
-      addToItineraryBtn.onclick = () => {
-        // FASE 1.4: Show day selector for adding POI to itinerary
-        if (!window.ITINERARY) {
-          console.error('[openPOI] ITINERARY system not available');
-          toast('❌ Sistema itinerario non pronto');
-          return;
-        }
-
-        const tripProfile = window.state?.tripProfile || {};
-        const days = tripProfile.days || 8;
-        const poiName = getPoiDisplayName(p);
-        const poiId = p.id;
-
-        // Create day selector HTML
-        const daySelectorHTML = `
-          <div style="padding: 16px; text-align: center;">
-            <p style="color: #fff; margin-bottom: 16px;">📅 Scegli il giorno per aggiungere <strong>${poiName}</strong></p>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px;">
-              ${Array.from({length: days}, (_, i) => `
-                <button class="day-select-btn" data-day="${i}" style="
-                  padding: 12px;
-                  background: rgba(255, 107, 53, 0.15);
-                  border: 1px solid rgba(255, 107, 53, 0.3);
-                  color: #FF6B35;
-                  border-radius: 6px;
-                  font-weight: 600;
-                  cursor: pointer;
-                  transition: all 0.2s;
-                " onmouseover="this.style.background='rgba(255, 107, 53, 0.25)'" onmouseout="this.style.background='rgba(255, 107, 53, 0.15)'">
-                  Day ${i + 1}
-                </button>
-              `).join('')}
-            </div>
-          </div>
-        `;
-
-        window.openSheet('📅 Aggiungi a giorno', daySelectorHTML);
-
-        // Attach day selector handlers
-        document.querySelectorAll('.day-select-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const dayIndex = parseInt(btn.dataset.day);
-            window.ITINERARY.addPOIToDay(poiId, poiName, dayIndex, '10:00');
-            window.saveState?.();
-            window.closeSheet();
-            window.toast(`✓ Aggiunto al Day ${dayIndex + 1}`);
-          });
-        });
-      };
-    }
   }
   window.__openPOI = openPOI;
   window.openPOI = openPOI;
