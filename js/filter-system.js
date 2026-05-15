@@ -79,10 +79,22 @@ function initFilterSystem() {
 }
 
 function createFilterChips() {
-  const mapView = document.getElementById('map-view');
-  if (!mapView) {
-    console.warn('[FilterSystem] map-view not found, trying later...');
-    setTimeout(createFilterChips, 500);
+  // Try both 'map-view' (preferred) and 'map' (fallback) as parent container
+  let mapContainer = document.getElementById('map-view');
+  if (!mapContainer) {
+    mapContainer = document.getElementById('map');
+  }
+
+  if (!mapContainer) {
+    console.warn('[FilterSystem] Neither map-view nor map found, retrying...');
+    // Only retry max 10 times to avoid infinite loop
+    const retries = parseInt(window.filterSystemRetries || 0);
+    if (retries < 10) {
+      window.filterSystemRetries = retries + 1;
+      setTimeout(createFilterChips, 500);
+    } else {
+      console.error('[FilterSystem] Max retries reached, giving up');
+    }
     return;
   }
 
