@@ -188,7 +188,7 @@ function renderItineraryUnified() {
           margin: 0 0 12px 0;
         ">📤 Condividi con il Gruppo</h3>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <button id="btn-export-whatsapp-unified" style="
+          <button id="btn-export-whatsapp-unified" onclick="handleExportWhatsApp()" style="
             padding: 12px 16px;
             background: rgba(76,175,80,0.2);
             border: 1.5px solid rgba(76,175,80,0.5);
@@ -201,7 +201,7 @@ function renderItineraryUnified() {
           " onmouseover="this.style.background='rgba(76,175,80,0.3)'" onmouseout="this.style.background='rgba(76,175,80,0.2)'">
             📤 Esporta su WhatsApp
           </button>
-          <button id="btn-share-group-unified" style="
+          <button id="btn-share-group-unified" onclick="handleShareGroup()" style="
             padding: 12px 16px;
             background: rgba(255,107,107,0.2);
             border: 1.5px solid rgba(255,107,107,0.4);
@@ -239,7 +239,18 @@ function renderItineraryUnified() {
   `;
 
   console.log('[UnifiedItinerary] Calling window.openSheet...');
+  console.log('[DEBUG] sheetBody before openSheet:', {
+    exists: !!document.getElementById('sheet-body'),
+    html: document.getElementById('sheet-body')?.innerHTML?.substring(0, 100)
+  });
   window.openSheet('📅 Itinerario', html);
+  setTimeout(() => {
+    console.log('[DEBUG] sheetBody AFTER openSheet:', {
+      exists: !!document.getElementById('sheet-body'),
+      hasButtons: document.getElementById('sheet-body')?.innerHTML?.includes('btn-export-whatsapp-unified'),
+      isVisible: document.getElementById('sheet-body')?.offsetParent !== null
+    });
+  }, 200);
 
   // Setup accordion + drag-drop only (sharing buttons use global event delegation)
   setTimeout(() => {
@@ -247,6 +258,66 @@ function renderItineraryUnified() {
     console.log('[UnifiedItinerary] ✅ renderItineraryUnified COMPLETE');
   }, 500);
 }
+
+/**
+ * DIRECT HANDLERS FOR SHARE BUTTONS
+ * Called via onclick attribute in the HTML for maximum reliability
+ */
+window.handleExportWhatsApp = function() {
+  console.log('[ItineraryUnified] 📤 WhatsApp export button clicked');
+
+  let totalPOIs = 0;
+  const tripProfile = window.state?.tripProfile || {};
+  const days = tripProfile.days || 8;
+
+  for (let d = 0; d < days; d++) {
+    totalPOIs += (window.state?.itineraryByDay?.[d] || []).length;
+  }
+
+  if (totalPOIs === 0) {
+    console.log('[ItineraryUnified] ⚠️ Itinerary empty, showing empty modal');
+    showEmptyItineraryModal();
+    return;
+  }
+
+  if (typeof window.exportItineraryWhatsApp === 'function') {
+    console.log('[ItineraryUnified] ✅ Calling exportItineraryWhatsApp()');
+    try {
+      window.exportItineraryWhatsApp();
+    } catch (err) {
+      console.error('[ItineraryUnified] ❌ Error:', err);
+      if (window.toast) window.toast('❌ Errore: ' + err.message);
+    }
+  }
+};
+
+window.handleShareGroup = function() {
+  console.log('[ItineraryUnified] 👥 Share group button clicked');
+
+  let totalPOIs = 0;
+  const tripProfile = window.state?.tripProfile || {};
+  const days = tripProfile.days || 8;
+
+  for (let d = 0; d < days; d++) {
+    totalPOIs += (window.state?.itineraryByDay?.[d] || []).length;
+  }
+
+  if (totalPOIs === 0) {
+    console.log('[ItineraryUnified] ⚠️ Itinerary empty, showing empty modal');
+    showEmptyItineraryModal();
+    return;
+  }
+
+  if (typeof window.showShareItineraryModal === 'function') {
+    console.log('[ItineraryUnified] ✅ Calling showShareItineraryModal()');
+    try {
+      window.showShareItineraryModal();
+    } catch (err) {
+      console.error('[ItineraryUnified] ❌ Error:', err);
+      if (window.toast) window.toast('❌ Errore: ' + err.message);
+    }
+  }
+};
 
 /**
  * SETUP EVENT DELEGATION ONCE AT LOAD TIME
@@ -263,79 +334,7 @@ function setupGlobalEventDelegation() {
 
   console.log('[ItineraryUnified] 🔧 Setting up GLOBAL EVENT DELEGATION on sheet-body (one-time setup)');
 
-  // TEST: Log ALL clicks on sheet-body to verify delegation works
-  sheetBody.addEventListener('click', (e) => {
-    console.log('[ItineraryUnified] 🎯 CLICK DETECTED on sheet-body:', {
-      targetTag: e.target.tagName,
-      targetId: e.target.id,
-      targetClass: e.target.className,
-      text: e.target.textContent?.substring(0, 30)
-    });
-  }, true); // Capturing phase
-
-  // WhatsApp export button
-  sheetBody.addEventListener('click', (e) => {
-    const btn = e.target.closest('#btn-export-whatsapp-unified');
-    if (!btn) return;
-
-    console.log('[ItineraryUnified] 📤 WhatsApp export clicked (global delegation)');
-
-    let totalPOIs = 0;
-    const tripProfile = window.state?.tripProfile || {};
-    const days = tripProfile.days || 8;
-
-    for (let d = 0; d < days; d++) {
-      totalPOIs += (window.state?.itineraryByDay?.[d] || []).length;
-    }
-
-    if (totalPOIs === 0) {
-      console.log('[ItineraryUnified] ⚠️ Itinerary empty, showing modal');
-      showEmptyItineraryModal();
-      return;
-    }
-
-    if (typeof window.exportItineraryWhatsApp === 'function') {
-      console.log('[ItineraryUnified] ✅ Calling exportItineraryWhatsApp()');
-      try {
-        window.exportItineraryWhatsApp();
-      } catch (err) {
-        console.error('[ItineraryUnified] ❌ Error:', err);
-        if (window.toast) window.toast('❌ Errore: ' + err.message);
-      }
-    }
-  }, false);
-
-  // Share with group button
-  sheetBody.addEventListener('click', (e) => {
-    const btn = e.target.closest('#btn-share-group-unified');
-    if (!btn) return;
-
-    console.log('[ItineraryUnified] 👥 Share group clicked (global delegation)');
-
-    let totalPOIs = 0;
-    const tripProfile = window.state?.tripProfile || {};
-    const days = tripProfile.days || 8;
-
-    for (let d = 0; d < days; d++) {
-      totalPOIs += (window.state?.itineraryByDay?.[d] || []).length;
-    }
-
-    if (totalPOIs === 0) {
-      console.log('[ItineraryUnified] ⚠️ Itinerary empty, showing modal');
-      showEmptyItineraryModal('share');
-      return;
-    }
-
-    if (typeof window.showShareItineraryModal === 'function') {
-      console.log('[ItineraryUnified] ✅ Calling showShareItineraryModal()');
-      try {
-        window.showShareItineraryModal();
-      } catch (err) {
-        console.error('[ItineraryUnified] ❌ Error:', err);
-        if (window.toast) window.toast('❌ Errore: ' + err.message);
-      }
-    }
-  }, false);
+  console.log('[ItineraryUnified] ✅ Global event delegation attached for menu and remove buttons');
 
   // Menu button (modifica, sposta, cancella)
   sheetBody.addEventListener('click', (e) => {
@@ -440,36 +439,42 @@ function showEmptyItineraryModal() {
       <div style="
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
         width: 100%;
-        max-width: 280px;
+        max-width: 220px;
       ">
         <!-- Primary button: Ho capito -->
         <button class="empty-share-close-btn" style="
-          padding: 14px 20px;
-          background: rgba(255,107,53,0.15);
-          border: 1.5px solid rgba(255,107,53,0.4);
-          border-radius: 10px;
-          color: #FF6B35;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
+          padding: 6px 10px !important;
+          background: rgba(255,107,53,0.15) !important;
+          border: 1px solid rgba(255,107,53,0.4) !important;
+          border-radius: 5px !important;
+          color: #FF6B35 !important;
+          font-size: 13px !important;
+          font-weight: 600 !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+          line-height: 1.2 !important;
+          height: auto !important;
+          min-height: auto !important;
         " onmouseover="this.style.background='rgba(255,107,53,0.25)'; this.style.borderColor='rgba(255,107,53,0.6)';" onmouseout="this.style.background='rgba(255,107,53,0.15)'; this.style.borderColor='rgba(255,107,53,0.4)';">
           Ho capito
         </button>
 
         <!-- Secondary button: Aggiungi una tappa -->
         <button class="empty-share-add-btn" style="
-          padding: 14px 20px;
-          background: linear-gradient(135deg, rgba(76,175,80,0.2), rgba(76,175,80,0.1));
-          border: 1.5px solid rgba(76,175,80,0.4);
-          border-radius: 10px;
-          color: #4ADE80;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
+          padding: 6px 10px !important;
+          background: linear-gradient(135deg, rgba(76,175,80,0.2), rgba(76,175,80,0.1)) !important;
+          border: 1px solid rgba(76,175,80,0.4) !important;
+          border-radius: 5px !important;
+          color: #4ADE80 !important;
+          font-size: 13px !important;
+          font-weight: 600 !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+          line-height: 1.2 !important;
+          height: auto !important;
+          min-height: auto !important;
         " onmouseover="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.3), rgba(76,175,80,0.15))'; this.style.borderColor='rgba(76,175,80,0.6)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.2), rgba(76,175,80,0.1))'; this.style.borderColor='rgba(76,175,80,0.4)';">
           ➕ Aggiungi una tappa
         </button>
