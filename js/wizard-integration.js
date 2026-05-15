@@ -121,11 +121,15 @@ function addWizardButtonToSheet(poiData) {
     return;
   }
 
+  // Store POI data globally so onclick handler can access it
+  window.currentWizardPOI = poiData;
+
   // Find the bottom of the sheet body to append button
   const buttonHTML = `
     <button
       data-wizard-btn
       id="btn-open-wizard-from-detail"
+      onclick="handleOpenWizardFromDetail()"
       style="
         display:block;
         width:100%;
@@ -149,36 +153,7 @@ function addWizardButtonToSheet(poiData) {
 
   // Append to sheet body
   sheetBody.insertAdjacentHTML('beforeend', buttonHTML);
-  console.log('[WizardIntegration] ✅ Button HTML inserted');
-
-  // Attach event listener
-  const btn = document.getElementById('btn-open-wizard-from-detail');
-  if (btn) {
-    console.log('[WizardIntegration] 🎯 Button found, attaching click handler...');
-    btn.addEventListener('click', () => {
-      console.log('[WizardIntegration] 🖱️ Button clicked!');
-      console.log('[WizardIntegration] 📌 Opening wizard for:', poiData.name);
-      console.log('[WizardIntegration] 📋 POI Data:', poiData);
-
-      // Close sheet first
-      console.log('[WizardIntegration] Closing sheet...');
-      window.closeSheet?.();
-
-      // Then open wizard
-      setTimeout(() => {
-        console.log('[WizardIntegration] Opening wizard now...');
-        if (typeof window.openAddToItineraryWizard === 'function') {
-          console.log('[WizardIntegration] ✅ Calling openAddToItineraryWizard');
-          window.openAddToItineraryWizard(poiData);
-        } else {
-          console.error('[WizardIntegration] ❌ openAddToItineraryWizard function not found!');
-        }
-      }, 200);
-    });
-    console.log('[WizardIntegration] ✅ Click handler attached successfully');
-  } else {
-    console.error('[WizardIntegration] ❌ Button element not found after insertion!');
-  }
+  console.log('[WizardIntegration] ✅ Button HTML inserted with onclick handler');
 }
 
 /**
@@ -189,6 +164,38 @@ function monitorMapClicks() {
   // For now, we rely on the POI detail modal detection above
   console.log('[WizardIntegration] Map click monitoring ready');
 }
+
+/**
+ * DIRECT HANDLER FOR WIZARD BUTTON
+ * Called via onclick attribute in the HTML for maximum reliability
+ */
+window.handleOpenWizardFromDetail = function() {
+  console.log('[WizardIntegration] 🖱️ Wizard button clicked!');
+
+  const poiData = window.currentWizardPOI;
+  if (!poiData) {
+    console.error('[WizardIntegration] ❌ No POI data found!');
+    return;
+  }
+
+  console.log('[WizardIntegration] 📌 Opening wizard for:', poiData.name);
+  console.log('[WizardIntegration] 📋 POI Data:', poiData);
+
+  // Close sheet first
+  console.log('[WizardIntegration] Closing sheet...');
+  window.closeSheet?.();
+
+  // Then open wizard
+  setTimeout(() => {
+    console.log('[WizardIntegration] Opening wizard now...');
+    if (typeof window.openAddToItineraryWizard === 'function') {
+      console.log('[WizardIntegration] ✅ Calling openAddToItineraryWizard');
+      window.openAddToItineraryWizard(poiData);
+    } else {
+      console.error('[WizardIntegration] ❌ openAddToItineraryWizard function not found!');
+    }
+  }, 200);
+};
 
 /**
  * Expose helper to track current selected POI
