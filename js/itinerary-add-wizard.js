@@ -598,7 +598,7 @@ function setupWizardHandlers(step, state) {
     console.log('[AddWizard] Step 3 setup - backBtn found:', !!backBtn, 'finishBtn found:', !!finishBtn);
 
     if (notesInput) {
-      notesInput.addEventListener('input', (e) => {
+      notesInput.addEventListener('change', (e) => {
         state.notes = e.target.value;
         console.log('[AddWizard] Updated notes');
       });
@@ -648,10 +648,7 @@ function finishAddToItinerary(state) {
       state.poiId,
       state.poiName,
       state.selectedDay,
-      state.selectedTime,
-      60, // Default duration (minutes)
-      state.notes,
-      0 // Default cost (not set in this wizard)
+      state.selectedTime
     );
 
     if (success) {

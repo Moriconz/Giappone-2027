@@ -47,8 +47,7 @@ window.groupChat = (() => {
 
     try {
       const cached = localStorage.getItem(cacheKey);
-      // Don't log sensitive chat data to console in production
-      // console.log('[GroupChat] localStorage data for', cacheKey, ':', cached ? cached.substring(0, 100) + '...' : 'null');
+      console.log('[GroupChat] localStorage data for', cacheKey, ':', cached ? cached.substring(0, 100) + '...' : 'null');
 
       chatHistory = cached ? JSON.parse(cached) : { messages: [], members: [] };
       console.log('[GroupChat] ✓ Parsed chat history:', chatHistory.messages?.length, 'messages');
