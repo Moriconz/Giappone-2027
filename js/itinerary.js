@@ -215,16 +215,27 @@ const ITINERARY_SYSTEM = {
     window.state.itineraryByDay[toDayIndex].push(entry);
     console.log('[Itinerary] Moved', poiId, 'from day', fromDayIndex, 'to', toDayIndex);
 
-    window.saveState?.();
+    window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
     return true;
   },
 
   /**
-   * Get total budget spent in itinerary
+   * Get total budget spent in itinerary (sum of all POI costs)
    */
   calculateBudgetSpent() {
-    // TODO: Implement when POI data includes cost
-    return 0;
+    if (!window.state?.itineraryByDay) return 0;
+
+    let totalSpent = 0;
+    for (const day of Object.values(window.state.itineraryByDay)) {
+      if (Array.isArray(day)) {
+        for (const entry of day) {
+          if (entry && entry.cost && typeof entry.cost === 'number') {
+            totalSpent += entry.cost;
+          }
+        }
+      }
+    }
+    return Math.round(totalSpent);
   },
 
   /**

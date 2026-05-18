@@ -1,0 +1,10 @@
+{
+  "name": "giappone-2027",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Giappone 2027 — travel app (static frontend + Vercel serverless API)",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

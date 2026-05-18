@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m 'Fix wizard container lookup — use direct .y2k-win-body selector instead of element-dependent query *)",
+      "Bash(git commit -m 'Fix duplicate sheet opening when selecting day in wizard step 1 *)",
+      "Bash(sed -i 's/font-size:8px/font-size:11px/g' /Users/riccardomoricone/Desktop/Giappone-2027-main-2/index.html)",
+      "Bash(sed -i 's/font-size:9px/font-size:12px/g' /Users/riccardomoricone/Desktop/Giappone-2027-main-2/index.html)",
+      "Bash(sed -i 's/font-size:9\\\\.5px/font-size:12px/g' /Users/riccardomoricone/Desktop/Giappone-2027-main-2/index.html)",
+      "Bash(sed -i 's/font-size:10px/font-size:12px/g' /Users/riccardomoricone/Desktop/Giappone-2027-main-2/index.html)",
+      "Bash(sed -i '' 's/font-size:8px/font-size:11px/g' /Users/riccardomoricone/Desktop/Giappone-2027-main-2/index.html)",
+      "Bash(sed -i '' 's/font-size:9px/font-size:12px/g' /Users/riccardomoricone/Desktop/Giappone-2027-main-2/index.html)",
+      "Bash(sed -i '' 's/font-size:9\\\\.5px/font-size:12px/g' /Users/riccardomoricone/Desktop/Giappone-2027-main-2/index.html)",
+      "Bash(sed -i '' 's/font-size:10px/font-size:12px/g' /Users/riccardomoricone/Desktop/Giappone-2027-main-2/index.html)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

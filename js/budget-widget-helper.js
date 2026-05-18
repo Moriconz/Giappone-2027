@@ -198,3 +198,6 @@ const BUDGET_WIDGET_HELPER = {
     };
   }
 };
+
+// Export to window for global access
+window.BUDGET_WIDGET_HELPER = BUDGET_WIDGET_HELPER;

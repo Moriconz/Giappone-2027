@@ -190,7 +190,7 @@ function renderItineraryUnified() {
 
   // ===== SECTION 2: SHARED ITINERARY (GROUP) =====
   const sharedItineraryHTML = sharedItinerary.length ? sharedItinerary.map((entry, idx) => {
-    const poi = window.allPOIs?.() ? window.allPOIs().find(p => p.googlePlaceId === entry.id) : null;
+    const poi = window.allPOIs?.()?.find(p => p.googlePlaceId === entry.id) ?? null;
     const dayStr = entry.day ? ` · 📅 G${entry.day}` : '';
     const timeStr = entry.time ? ` · ⏰ ${entry.time}` : '';
     return `

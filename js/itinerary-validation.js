@@ -44,7 +44,7 @@ const ITINERARY_VALIDATION = {
    * Reasonable range: 1-480 minutes (8 hours max per POI)
    */
   validateDuration(duration) {
-    const dur = parseInt(duration);
+    const dur = parseInt(duration, 10);
 
     if (isNaN(dur)) {
       return { valid: false, error: 'Durata deve essere un numero' };

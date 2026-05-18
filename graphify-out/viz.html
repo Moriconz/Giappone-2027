@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SafeEats Graph</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
+  <style>
+    body { font-family: sans-serif; margin: 0; background: #f5f5f5; }
+    #container { width: 100%; height: 100vh; background: white; }
+    .info { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: #0f0; font-family: monospace; font-size: 12px; padding: 10px; border-radius: 4px; z-index: 100; max-width: 300px; }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+  <div class="info">
+    <strong>SafeEats Codebase Graph</strong><br>
+    91 nodes | 3 communities<br>
+    <br>
+    <strong>Legend:</strong><br>
+    🔵 Feature<br>
+    🟡 JS Function<br>
+    🟢 CSS Rule<br>
+    🔷 Document<br>
+  </div>
+
+  <script>
+    var data = {
+      nodes: [
+        // Features (red)
+        {id: 'feature_weather', label: 'Weather\nWidget', color: '#ff6b6b', shape: 'dot', size: 35, title: 'GPS-based weather, redesign needed'},
+        {id: 'feature_pwa', label: 'PWA\nInstall', color: '#ff6b6b', shape: 'dot', size: 35, title: 'beforeinstallprompt, mobile test pending'},
+        {id: 'feature_map', label: 'Map\n(OL)', color: '#ff6b6b', shape: 'dot', size: 35, title: 'OpenLayers, responsive'},
+        {id: 'feature_chat', label: 'Group\nChat', color: '#ff6b6b', shape: 'dot', size: 35, title: '95% complete'},
+        {id: 'feature_budget', label: 'Budget\nTracker', color: '#ff6b6b', shape: 'dot', size: 35, title: '95% complete'},
+        {id: 'feature_gallery', label: 'Photo\nGallery', color: '#ff6b6b', shape: 'dot', size: 35, title: '95% complete'},
+        
+        // JS Functions (blue) - sample
+        {id: 'js_initGpsWeatherWidget', label: 'initGps\nWeatherWidget', color: '#4dabf7', shape: 'dot', size: 20},
+        {id: 'js_updateGpsWeatherWidget', label: 'updateGps\nWeather', color: '#4dabf7', shape: 'dot', size: 20},
+        {id: 'js_UniversalInstaller', label: 'Universal\nInstaller', color: '#4dabf7', shape: 'dot', size: 20},
+        {id: 'js_updateMapPosition', label: 'updateMap\nPosition', color: '#4dabf7', shape: 'dot', size: 20},
+        {id: 'js_GroupChat', label: 'GroupChat', color: '#4dabf7', shape: 'dot', size: 20},
+        
+        // CSS (green)
+        {id: 'css_weather-widget', label: '.weather-\nwidget', color: '#51cf66', shape: 'dot', size: 18},
+        {id: 'css_header', label: '.header', color: '#51cf66', shape: 'dot', size: 18},
+        {id: 'css_map', label: '.map', color: '#51cf66', shape: 'dot', size: 18},
+        
+        // Docs (purple)
+        {id: 'doc_development_status', label: 'Dev Status', color: '#9775fa', shape: 'box', size: 15},
+        {id: 'doc_project_progress', label: 'Progress', color: '#9775fa', shape: 'box', size: 15},
+      ],
+      edges: [
+        {from: 'feature_weather', to: 'js_initGpsWeatherWidget', label: 'impl', arrows: 'to'},
+        {from: 'feature_weather', to: 'js_updateGpsWeatherWidget', label: 'impl', arrows: 'to'},
+        {from: 'feature_pwa', to: 'js_UniversalInstaller', label: 'impl', arrows: 'to'},
+        {from: 'feature_map', to: 'js_updateMapPosition', label: 'impl', arrows: 'to'},
+        {from: 'feature_chat', to: 'js_GroupChat', label: 'impl', arrows: 'to'},
+        {from: 'css_weather-widget', to: 'feature_weather', label: 'style', arrows: 'to', color: {color: '#ccc'}},
+        {from: 'css_header', to: 'feature_pwa', label: 'style', arrows: 'to', color: {color: '#ccc'}},
+        {from: 'feature_pwa', to: 'feature_map', label: 'depend', arrows: 'to'},
+      ]
+    };
+
+    var options = {
+      physics: { enabled: true, stabilization: {iterations: 200}},
+      interaction: { hover: true },
+    };
+
+    var container = document.getElementById('container');
+    new vis.Network(container, data, options);
+  </script>
+</body>
+</html>

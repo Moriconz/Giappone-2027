@@ -1,0 +1,526 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PREMIUM GLASSMORPHISM OVERLAY — Giappone 2027
+
+   Stile: Dark mode luxury con glassmorphism trasparente & sofisticato
+   Ispirato a: Finance dashboards, premium UI design
+
+   Caratteristiche:
+   - Glassmorphism trasparente (background semi-opaco minimo)
+   - Blur effect sofisticato (20-25px)
+   - Border quasi invisibili (rgba sottoili)
+   - Profondità e elevazione naturali
+   - Testo bianco che risalta su scuro blur
+   - Accenti arancioni neon
+
+═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Colori primari neon */
+  --neon-orange: #FF6B35;
+  --neon-pink:   #FF1493;
+  --neon-cyan:   #00D4FF;
+  --neon-green:  #00FF88;
+
+  /* Glassmorphism premium */
+  --glass-blur:        blur(24px);
+  --glass-saturate:    saturate(150%);
+  --backdrop:          var(--glass-blur) var(--glass-saturate);
+
+  /* Background trasparenti minimalisti */
+  --glass-minimal:     rgba(255, 255, 255, 0.03);
+  --glass-light:       rgba(255, 255, 255, 0.05);
+  --glass-mid:         rgba(255, 255, 255, 0.08);
+  --glass-strong:      rgba(255, 255, 255, 0.12);
+
+  --glass-orange-min:  rgba(255, 107, 53, 0.04);
+  --glass-orange-mid:  rgba(255, 107, 53, 0.08);
+  --glass-orange-strong: rgba(255, 107, 53, 0.12);
+
+  /* Border quasi invisibili */
+  --border-hairline:   rgba(255, 255, 255, 0.08);
+  --border-light:      rgba(255, 255, 255, 0.12);
+  --border-mid:        rgba(255, 255, 255, 0.15);
+  --border-glow:       rgba(255, 107, 53, 0.20);
+
+  /* Glow effetti */
+  --glow-orange:  0 0 20px rgba(255, 107, 53, 0.40);
+  --glow-pink:    0 0 16px rgba(255, 20, 147, 0.35);
+  --glow-cyan:    0 0 16px rgba(0, 212, 255, 0.30);
+
+  /* Shadow di elevazione */
+  --shadow-sm:    0 4px 12px rgba(0, 0, 0, 0.20);
+  --shadow-md:    0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-lg:    0 16px 40px rgba(0, 0, 0, 0.30);
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   BODY & BACKGROUND — Sfondo scuro ultra-profondo
+────────────────────────────────────────────────────────────────────── */
+html, body {
+  background: linear-gradient(135deg, #000810 0%, #0a0820 50%, #050510 100%) !important;
+  color: #fff !important;
+  position: relative !important;
+}
+
+/* Decorative blobs subtili */
+html::before {
+  content: '';
+  position: fixed;
+  top: -40%;
+  right: -30%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255, 107, 53, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(60px);
+}
+
+html::after {
+  content: '';
+  position: fixed;
+  bottom: -30%;
+  left: -20%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 20, 147, 0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(60px);
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   HEADER — Premium glassmorphism con glow sottile
+────────────────────────────────────────────────────────────────────── */
+header {
+  backdrop-filter: var(--backdrop) !important;
+  background: linear-gradient(135deg, var(--glass-orange-min) 0%, var(--glass-minimal) 100%) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25),
+              0 0 24px rgba(255, 107, 53, 0.15) !important;
+}
+
+header h1 {
+  text-shadow: 0 0 12px rgba(255, 107, 53, 0.40),
+               0 2px 4px rgba(0, 0, 0, 0.50) !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  color: #fff !important;
+}
+
+header .badge {
+  backdrop-filter: blur(12px) !important;
+  background: var(--glass-orange-mid) !important;
+  border: 1px solid var(--border-glow) !important;
+  text-shadow: 0 0 6px rgba(255, 107, 53, 0.60) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.15) !important;
+}
+
+.icon-btn {
+  backdrop-filter: blur(14px) !important;
+  background: var(--glass-light) !important;
+  border: 1px solid var(--border-hairline) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  color: #fff !important;
+}
+
+.icon-btn:hover {
+  backdrop-filter: blur(16px) !important;
+  background: var(--glass-orange-mid) !important;
+  border-color: var(--border-glow) !important;
+  box-shadow: var(--shadow-md), var(--glow-orange) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   FILTERS PANEL — Glassmorphism trasparente minimalista
+────────────────────────────────────────────────────────────────────── */
+#filters {
+  backdrop-filter: var(--backdrop) !important;
+  background: linear-gradient(135deg, var(--glass-orange-min) 0%, var(--glass-minimal) 100%) !important;
+  border-bottom: 1px solid var(--border-hairline) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+  padding: 12px 16px !important;
+  gap: 10px !important;
+}
+
+.chip {
+  backdrop-filter: blur(12px) !important;
+  background: var(--glass-light) !important;
+  border: 1px solid var(--border-hairline) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  color: #fff !important;
+  padding: 8px 14px !important;
+  font-weight: 600 !important;
+}
+
+.chip.active {
+  backdrop-filter: blur(16px) !important;
+  background: linear-gradient(135deg, var(--glass-orange-strong) 0%, var(--glass-orange-mid) 100%) !important;
+  border-color: var(--border-glow) !important;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.20) !important;
+  text-shadow: 0 0 6px rgba(255, 107, 53, 0.50) !important;
+}
+
+.chip:hover {
+  backdrop-filter: blur(14px) !important;
+  background: var(--glass-mid) !important;
+  border-color: var(--border-glow) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   BOTTOM NAVIGATION — Glassmorphism premium
+────────────────────────────────────────────────────────────────────── */
+nav.bottom {
+  backdrop-filter: var(--backdrop) !important;
+  background: linear-gradient(180deg, var(--glass-orange-min) 0%, var(--glass-minimal) 100%) !important;
+  border-top: 1px solid var(--border-hairline) !important;
+  box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.25) !important;
+  padding: 8px 8px 16px 8px !important;
+  gap: 4px !important;
+}
+
+nav.bottom button {
+  backdrop-filter: blur(8px) !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 3px solid transparent !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 8px 4px !important;
+}
+
+nav.bottom button.active {
+  background: var(--glass-orange-mid) !important;
+  border-bottom-color: var(--neon-orange, #FF6B35) !important;
+  box-shadow: inset 0 0 12px rgba(255, 107, 53, 0.10),
+              0 -2px 8px rgba(255, 107, 53, 0.15) !important;
+  color: #fff !important;
+  text-shadow: 0 0 6px rgba(255, 107, 53, 0.40) !important;
+  font-weight: 700 !important;
+}
+
+nav.bottom button:hover:not(.active) {
+  background: var(--glass-minimal) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   SHEET & PANEL MODALS — Premium glassmorphism
+────────────────────────────────────────────────────────────────────── */
+.sheet-overlay {
+  background: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(4px) !important;
+  z-index: 999 !important;
+}
+
+.sheet,
+.panel,
+.modal-content {
+  backdrop-filter: var(--backdrop) !important;
+  background: linear-gradient(135deg, var(--glass-orange-min) 0%, var(--glass-minimal) 100%) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.40),
+              inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.sheet-header {
+  background: linear-gradient(135deg, var(--glass-orange-strong) 0%, var(--glass-orange-mid) 100%) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  border-radius: 20px 20px 0 0 !important;
+  padding: 16px !important;
+}
+
+.sheet-header h2 {
+  color: var(--neon-orange, #FF6B35) !important;
+  text-shadow: 0 0 10px rgba(255, 107, 53, 0.40) !important;
+  font-weight: 800 !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   FORM ELEMENTS — Glassmorphism interattivo
+────────────────────────────────────────────────────────────────────── */
+input,
+textarea,
+select {
+  backdrop-filter: blur(10px) !important;
+  background: var(--glass-minimal) !important;
+  border: 1px solid var(--border-hairline) !important;
+  border-radius: 10px !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+  color: #fff !important;
+  padding: 10px 12px !important;
+  transition: all 0.25s ease !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.30) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  backdrop-filter: blur(14px) !important;
+  background: var(--glass-light) !important;
+  border-color: var(--border-glow) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15),
+              0 0 12px rgba(255, 107, 53, 0.20) !important;
+  outline: none !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   BUTTONS — Glassmorphism con gradient arancione
+────────────────────────────────────────────────────────────────────── */
+button:not(nav.bottom button):not(.icon-btn) {
+  backdrop-filter: blur(12px) !important;
+  background: linear-gradient(135deg, var(--glass-orange-strong) 0%, var(--glass-orange-mid) 100%) !important;
+  border: 1px solid var(--border-glow) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  padding: 10px 18px !important;
+  cursor: pointer !important;
+}
+
+button:not(nav.bottom button):not(.icon-btn):hover {
+  backdrop-filter: blur(16px) !important;
+  background: linear-gradient(135deg, var(--glass-orange-strong) 0%, var(--glass-orange-strong) 100%) !important;
+  border-color: rgba(255, 107, 53, 0.60) !important;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.25),
+              var(--glow-orange) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   LISTE & LIST ITEMS — Glassmorphism trasparente
+────────────────────────────────────────────────────────────────────── */
+.list-item,
+[data-item],
+li:not(nav li) {
+  backdrop-filter: blur(10px) !important;
+  background: var(--glass-light) !important;
+  border: 1px solid var(--border-hairline) !important;
+  border-radius: 10px !important;
+  margin-bottom: 8px !important;
+  padding: 12px !important;
+  transition: all 0.25s ease !important;
+  color: #fff !important;
+}
+
+.list-item:hover,
+[data-item]:hover {
+  backdrop-filter: blur(14px) !important;
+  background: var(--glass-mid) !important;
+  border-color: var(--border-glow) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   CARD ELEMENTS — Glassmorphism di elevazione
+────────────────────────────────────────────────────────────────────── */
+.card,
+.item-card,
+[data-card],
+.poi-card {
+  backdrop-filter: var(--backdrop) !important;
+  background: linear-gradient(135deg, var(--glass-light) 0%, var(--glass-minimal) 100%) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-md),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  padding: 14px !important;
+  transition: all 0.3s ease !important;
+  color: #fff !important;
+}
+
+.card:hover,
+.item-card:hover,
+[data-card]:hover {
+  backdrop-filter: var(--backdrop) !important;
+  background: linear-gradient(135deg, var(--glass-mid) 0%, var(--glass-light) 100%) !important;
+  border-color: var(--border-glow) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-lg),
+              0 0 16px rgba(255, 107, 53, 0.15) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   MODALS & DIALOGS — Glassmorphism premium
+────────────────────────────────────────────────────────────────────── */
+.modal,
+.dialog,
+[role="dialog"],
+[data-modal],
+#weather-modal {
+  backdrop-filter: blur(8px) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  z-index: 999 !important;
+}
+
+#weather-cards-container > div {
+  backdrop-filter: var(--backdrop) !important;
+  background: linear-gradient(135deg, var(--glass-light) 0%, var(--glass-minimal) 100%) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-md) !important;
+  padding: 14px !important;
+  color: #fff !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   SECTIONS & VIEW CONTAINERS — Glassmorphism coerente
+────────────────────────────────────────────────────────────────────── */
+section,
+[data-view],
+.view,
+.view-content,
+.container {
+  position: relative !important;
+}
+
+section > *,
+[data-view] > *,
+.view-content > * {
+  color: #fff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.30) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   POPUP & TOOLTIP — Glassmorphism sofisticato
+────────────────────────────────────────────────────────────────────── */
+.popup,
+.popover,
+.tooltip,
+[role="tooltip"],
+[role="status"] {
+  backdrop-filter: var(--backdrop) !important;
+  background: linear-gradient(135deg, var(--glass-orange-mid) 0%, var(--glass-orange-min) 100%) !important;
+  border: 1px solid var(--border-glow) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--shadow-md), var(--glow-orange) !important;
+  padding: 10px 14px !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 6px rgba(255, 107, 53, 0.40) !important;
+  font-size: 13px !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   LISTE GENERICHE — Glassmorphism su contenitori liste
+────────────────────────────────────────────────────────────────────── */
+ul:not(nav ul),
+ol,
+.list,
+[data-list],
+#gf-list,
+#list-container {
+  position: relative !important;
+}
+
+ul:not(nav ul) > li,
+ol > li,
+.list > *,
+[data-list] > * {
+  backdrop-filter: blur(10px) !important;
+  background: var(--glass-light) !important;
+  border: 1px solid var(--border-hairline) !important;
+  border-radius: 10px !important;
+  padding: 12px 12px !important;
+  margin-bottom: 8px !important;
+  transition: all 0.25s ease !important;
+  color: #fff !important;
+}
+
+ul:not(nav ul) > li:hover,
+ol > li:hover,
+.list > *:hover,
+[data-list] > *:hover {
+  backdrop-filter: blur(14px) !important;
+  background: var(--glass-mid) !important;
+  border-color: var(--border-glow) !important;
+  transform: translateX(3px) !important;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.10) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   BADGE & TAG — Glassmorphism mini
+────────────────────────────────────────────────────────────────────── */
+.badge,
+.tag,
+.label,
+[data-badge] {
+  backdrop-filter: blur(10px) !important;
+  background: var(--glass-orange-mid) !important;
+  border: 1px solid var(--border-glow) !important;
+  border-radius: 10px !important;
+  padding: 4px 10px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  text-shadow: 0 0 4px rgba(255, 107, 53, 0.40) !important;
+  display: inline-block !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   MAP — PROTETTO (NO CHANGES EVER)
+────────────────────────────────────────────────────────────────────── */
+#map,
+#map canvas,
+#map .ol-viewport,
+#map .ol-layer,
+.ol-canvas {
+  filter: none !important;
+  backdrop-filter: none !important;
+  background: none !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   UTILITY HELPERS — Glassmorphism utilities
+────────────────────────────────────────────────────────────────────── */
+.glass-card {
+  backdrop-filter: var(--backdrop) !important;
+  background: linear-gradient(135deg, var(--glass-light) 0%, var(--glass-minimal) 100%) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-md) !important;
+  padding: 14px !important;
+}
+
+.glass-glow-orange {
+  box-shadow: var(--glow-orange) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   RESPONSIVO
+────────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  header {
+    border-radius: 0 !important;
+  }
+
+  .sheet {
+    border-radius: 20px 20px 0 0 !important;
+  }
+
+  nav.bottom {
+    border-radius: 20px 20px 0 0 !important;
+  }
+}

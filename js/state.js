@@ -14,6 +14,13 @@ window.state = Object.assign({
   notes: {},
   customEvents: [],
   dismissInstall: false,
+  // Personal itinerary (legacy)
+  itinerary: [],
+  // GROUP ITINERARIES (NEW - CRDT based)
+  groupItineraries: {},
+  // UNDO/REDO STACK (NEW)
+  undoRedo: { stack: [], currentIndex: -1, maxSize: 100 },
+  // Collaborative features
   group: { name: 'Giappone 2027', members: [], myAvatar: null, myName: '' },
   // AI Features
   ai: {},
@@ -27,7 +34,25 @@ window.state = Object.assign({
   wakeLockEnabled: false,
   // Group sync
   knownMembers: []
-}, JSON.parse(localStorage.getItem(window.STATE_KEY) || '{}'));
+}, (() => {
+  try {
+    return JSON.parse(localStorage.getItem(window.STATE_KEY) || '{}');
+  } catch (e) {
+    console.warn('[State] localStorage parse error, using empty state:', e.message);
+    return {};
+  }
+})());
+
+// Ensure critical objects are initialized (fallback if localStorage corrupted them)
+if (!window.state.groupItineraries || typeof window.state.groupItineraries !== 'object') {
+  window.state.groupItineraries = {};
+}
+if (!window.state.undoRedo || typeof window.state.undoRedo !== 'object') {
+  window.state.undoRedo = { stack: [], currentIndex: -1, maxSize: 100 };
+}
+if (!window.state.group || typeof window.state.group !== 'object') {
+  window.state.group = { name: 'Giappone 2027', members: [], myAvatar: null, myName: '' };
+}
 
 // Global save function
 window.saveState = function() {

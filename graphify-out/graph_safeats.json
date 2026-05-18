@@ -1,0 +1,560 @@
+{
+  "nodes": [
+    {
+      "id": "js_searchGooglePlaces",
+      "label": "searchGooglePlaces",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_toICSDate",
+      "label": "toICSDate",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_openSheet",
+      "label": "openSheet",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_dontList",
+      "label": "dontList",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_gfTag",
+      "label": "gfTag",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_renderGalleryView",
+      "label": "renderGalleryView",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_describeAction",
+      "label": "describeAction",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_cleanupSoftDeletedPOIs",
+      "label": "cleanupSoftDeletedPOIs",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_updateGPSMarker",
+      "label": "updateGPSMarker",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_getPOIFieldHistory",
+      "label": "getPOIFieldHistory",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_saveState",
+      "label": "saveState",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_normalizePOI",
+      "label": "normalizePOI",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_flyToCity",
+      "label": "flyToCity",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_loadPOIPhotos",
+      "label": "loadPOIPhotos",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_renderBookingsView",
+      "label": "renderBookingsView",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_parseOpeningHoursString",
+      "label": "parseOpeningHoursString",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_haversineKm",
+      "label": "haversineKm",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_setPOIOpeningHours",
+      "label": "setPOIOpeningHours",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_exportAllSaved",
+      "label": "exportAllSaved",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_isPOICurrentlyOpen",
+      "label": "isPOICurrentlyOpen",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_cleanupGPSTraces",
+      "label": "cleanupGPSTraces",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_getTotalSpent",
+      "label": "getTotalSpent",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_createAvatarDataUrl",
+      "label": "createAvatarDataUrl",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_getSpentByCategory",
+      "label": "getSpentByCategory",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_buildGPSPanelHTML",
+      "label": "buildGPSPanelHTML",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_currentCount",
+      "label": "currentCount",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_renderShoppingMarkers",
+      "label": "renderShoppingMarkers",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_removePOIFromGroupItinerary",
+      "label": "removePOIFromGroupItinerary",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_getCachedAllPOIs",
+      "label": "getCachedAllPOIs",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "js_getPOIOpeningHours",
+      "label": "getPOIOpeningHours",
+      "file_type": "code",
+      "source_file": "index.html"
+    },
+    {
+      "id": "css_groq-menu-textarea",
+      "label": "groq-menu-textarea",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_confirmed",
+      "label": "confirmed",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_tag",
+      "label": "tag",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_stat-label",
+      "label": "stat-label",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_ol-error-title",
+      "label": "ol-error-title",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_gf-places-container",
+      "label": "gf-places-container",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_bc-icon",
+      "label": "bc-icon",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_weather-date",
+      "label": "weather-date",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_popup-title",
+      "label": "popup-title",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_placeholder",
+      "label": "placeholder",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_budget-container",
+      "label": "budget-container",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_badge-version",
+      "label": "badge-version",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_gallery-photo-actions",
+      "label": "gallery-photo-actions",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_bc-reminder",
+      "label": "bc-reminder",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_install-btn",
+      "label": "install-btn",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_bottom",
+      "label": "bottom",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_ol-error-message",
+      "label": "ol-error-message",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_booking-date-badge",
+      "label": "booking-date-badge",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_form-actions",
+      "label": "form-actions",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_icon",
+      "label": "icon",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_secondary",
+      "label": "secondary",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_weather-city",
+      "label": "weather-city",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_gallery-header",
+      "label": "gallery-header",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_budget-setup-banner",
+      "label": "budget-setup-banner",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "css_section",
+      "label": "section",
+      "file_type": "design",
+      "source_file": "y2k-override.css"
+    },
+    {
+      "id": "doc_safeeats_app_-_devel",
+      "label": "SafeEats App - Development Status Report",
+      "file_type": "document",
+      "source_file": "DEVELOPMENT_STATUS.md"
+    },
+    {
+      "id": "doc_\ud83c\udfaf_executive_summary",
+      "label": "\ud83c\udfaf Executive Summary",
+      "file_type": "document",
+      "source_file": "DEVELOPMENT_STATUS.md"
+    },
+    {
+      "id": "doc_\u2705_completato_&_testa",
+      "label": "\u2705 COMPLETATO & TESTATO",
+      "file_type": "document",
+      "source_file": "DEVELOPMENT_STATUS.md"
+    },
+    {
+      "id": "doc_1._header_mobile_red",
+      "label": "1. Header Mobile Redesign",
+      "file_type": "document",
+      "source_file": "DEVELOPMENT_STATUS.md"
+    },
+    {
+      "id": "doc_2._filter_bar_positi",
+      "label": "2. Filter Bar Positioning",
+      "file_type": "document",
+      "source_file": "DEVELOPMENT_STATUS.md"
+    },
+    {
+      "id": "doc_3._map_responsive_la",
+      "label": "3. Map Responsive Layout",
+      "file_type": "document",
+      "source_file": "DEVELOPMENT_STATUS.md"
+    },
+    {
+      "id": "doc_4._pwa_installation_",
+      "label": "4. PWA Installation System (tasto \"Aggiungi\")",
+      "file_type": "document",
+      "source_file": "DEVELOPMENT_STATUS.md"
+    },
+    {
+      "id": "doc_5._navigation_bar_(b",
+      "label": "5. Navigation Bar (Bottom Tabs)",
+      "file_type": "document",
+      "source_file": "DEVELOPMENT_STATUS.md"
+    },
+    {
+      "id": "doc_\ud83d\udd04_in_progress_/_parz",
+      "label": "\ud83d\udd04 IN PROGRESS / PARZIALMENTE TESTATO",
+      "file_type": "document",
+      "source_file": "DEVELOPMENT_STATUS.md"
+    },
+    {
+      "id": "doc_6._weather_widget_gp",
+      "label": "6. Weather Widget GPS",
+      "file_type": "document",
+      "source_file": "DEVELOPMENT_STATUS.md"
+    },
+    {
+      "id": "doc_safeeats_project_pro",
+      "label": "SafeEats Project Progress Visualization",
+      "file_type": "document",
+      "source_file": "PROJECT_PROGRESS.md"
+    },
+    {
+      "id": "doc_\ud83d\udcca_component_status_o",
+      "label": "\ud83d\udcca Component Status Overview",
+      "file_type": "document",
+      "source_file": "PROJECT_PROGRESS.md"
+    },
+    {
+      "id": "doc_\ud83c\udfaf_feature_completion",
+      "label": "\ud83c\udfaf Feature Completion Breakdown",
+      "file_type": "document",
+      "source_file": "PROJECT_PROGRESS.md"
+    },
+    {
+      "id": "doc_by_category",
+      "label": "By Category",
+      "file_type": "document",
+      "source_file": "PROJECT_PROGRESS.md"
+    },
+    {
+      "id": "doc_\ud83e\uddea_testing_status_mat",
+      "label": "\ud83e\uddea Testing Status Matrix",
+      "file_type": "document",
+      "source_file": "PROJECT_PROGRESS.md"
+    },
+    {
+      "id": "doc_\ud83d\udccb_task_status_by_pri",
+      "label": "\ud83d\udccb Task Status by Priority",
+      "file_type": "document",
+      "source_file": "PROJECT_PROGRESS.md"
+    },
+    {
+      "id": "doc_\ud83d\udd34_critical_(p0)",
+      "label": "\ud83d\udd34 Critical (P0)",
+      "file_type": "document",
+      "source_file": "PROJECT_PROGRESS.md"
+    },
+    {
+      "id": "doc_\ud83d\udfe0_important_(p1)",
+      "label": "\ud83d\udfe0 Important (P1)",
+      "file_type": "document",
+      "source_file": "PROJECT_PROGRESS.md"
+    },
+    {
+      "id": "doc_\ud83d\udfe1_nice-to-have_(p2)",
+      "label": "\ud83d\udfe1 Nice-to-Have (P2)",
+      "file_type": "document",
+      "source_file": "PROJECT_PROGRESS.md"
+    },
+    {
+      "id": "doc_\ud83d\udc1b_known_issues_log",
+      "label": "\ud83d\udc1b Known Issues Log",
+      "file_type": "document",
+      "source_file": "PROJECT_PROGRESS.md"
+    },
+    {
+      "id": "doc_safeeats_-_travel_co",
+      "label": "SafeEats - Travel Companion App for Japan",
+      "file_type": "document",
+      "source_file": "README_SAFEATS.md"
+    },
+    {
+      "id": "doc_\ud83d\udcf1_overview",
+      "label": "\ud83d\udcf1 Overview",
+      "file_type": "document",
+      "source_file": "README_SAFEATS.md"
+    },
+    {
+      "id": "doc_\u2728_key_features",
+      "label": "\u2728 Key Features",
+      "file_type": "document",
+      "source_file": "README_SAFEATS.md"
+    },
+    {
+      "id": "doc_\ud83d\uddfa\ufe0f_interactive_map",
+      "label": "\ud83d\uddfa\ufe0f Interactive Map",
+      "file_type": "document",
+      "source_file": "README_SAFEATS.md"
+    },
+    {
+      "id": "doc_\ud83c\udf21\ufe0f_weather_widget_(g",
+      "label": "\ud83c\udf21\ufe0f Weather Widget (GPS)",
+      "file_type": "document",
+      "source_file": "README_SAFEATS.md"
+    },
+    {
+      "id": "doc_\ud83d\udcf2_pwa_installation",
+      "label": "\ud83d\udcf2 PWA Installation",
+      "file_type": "document",
+      "source_file": "README_SAFEATS.md"
+    },
+    {
+      "id": "doc_\ud83d\udcac_group_chat",
+      "label": "\ud83d\udcac Group Chat",
+      "file_type": "document",
+      "source_file": "README_SAFEATS.md"
+    },
+    {
+      "id": "doc_\ud83d\udcb0_budget_tracker",
+      "label": "\ud83d\udcb0 Budget Tracker",
+      "file_type": "document",
+      "source_file": "README_SAFEATS.md"
+    },
+    {
+      "id": "doc_\ud83d\uddbc\ufe0f_photo_gallery",
+      "label": "\ud83d\uddbc\ufe0f Photo Gallery",
+      "file_type": "document",
+      "source_file": "README_SAFEATS.md"
+    },
+    {
+      "id": "doc_\ud83d\udccd_navigation",
+      "label": "\ud83d\udccd Navigation",
+      "file_type": "document",
+      "source_file": "README_SAFEATS.md"
+    },
+    {
+      "id": "feature_weather",
+      "label": "Weather Widget",
+      "file_type": "feature",
+      "source_file": "architecture"
+    },
+    {
+      "id": "feature_pwa",
+      "label": "PWA Install",
+      "file_type": "feature",
+      "source_file": "architecture"
+    },
+    {
+      "id": "feature_map",
+      "label": "Map (OpenLayers)",
+      "file_type": "feature",
+      "source_file": "architecture"
+    },
+    {
+      "id": "feature_chat",
+      "label": "Group Chat",
+      "file_type": "feature",
+      "source_file": "architecture"
+    },
+    {
+      "id": "feature_budget",
+      "label": "Budget Tracker",
+      "file_type": "feature",
+      "source_file": "architecture"
+    },
+    {
+      "id": "feature_gallery",
+      "label": "Photo Gallery",
+      "file_type": "feature",
+      "source_file": "architecture"
+    }
+  ],
+  "edges": [
+    {
+      "source": "feature_pwa",
+      "target": "feature_map",
+      "relation": "depends_on",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": []
+}
