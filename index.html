@@ -3051,7 +3051,8 @@ document.addEventListener('DOMContentLoaded', () => {
       version: 1,
       pois: state.itinerary.map(entry => ({
         googlePlaceId: entry.id,
-        name: { value: entry.name, timestamp: Date.now(), peerId: myPeerId },
+        // Use poi_name if available (from itineraryByDay entries), fallback to name
+        name: { value: entry.poi_name || entry.name || 'Luogo', timestamp: Date.now(), peerId: myPeerId },
         category: { value: entry.type || 'poi', timestamp: Date.now(), peerId: myPeerId },
         notes: { value: entry.notes || '', timestamp: Date.now(), peerId: myPeerId },
         lat: entry.lat,
