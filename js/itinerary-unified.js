@@ -26,10 +26,13 @@ function renderItineraryUnified() {
   let totalPOIs = budgetModel.totalPOICount;
   let costByDay = {};
 
+  let distanceByDay = {};
   for (let d = 0; d < days; d++) {
     const dayPOIs = window.state.itineraryByDay[d] || [];
-    // Only count manual costs (not estimates)
     costByDay[d] = (dayPOIs || []).reduce((sum, entry) => sum + (entry.cost || 0), 0);
+    distanceByDay[d] = (dayPOIs || []).reduce((sum, entry) => {
+      return sum + (entry.route_from_prev?.distance_km || 0);
+    }, 0);
   }
 
   // ===== SECTION 1: PERSONAL ITINERARY (ACCORDION) =====
@@ -61,13 +64,18 @@ function renderItineraryUnified() {
           box-shadow:0 2px 8px rgba(0,0,0,0.2);
         " onmouseover="this.style.background='linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))';this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))';this.style.borderColor='rgba(255,255,255,0.12)'">
 
-          <!-- ROW 1: Number + Name + Menu (hidden on hover) -->
-          <div style="display:flex;align-items:center;gap:8px;width:100%;overflow:hidden" class="itinerary-poi-header">
+          <!-- ROW 1: Number + Name + Menu/VisitedStatus -->
+          <div style="display:flex;align-items:center;gap:8px;width:100%;overflow:hidden;opacity:${entry.status === 'visited' ? '0.7' : '1'}" class="itinerary-poi-header">
             <span style="flex-shrink:0;width:24px;height:24px;background:linear-gradient(135deg, #FF6B35, #FF8A5B);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${idx + 1}</span>
             <div style="flex:1;min-width:0;overflow:hidden">
-              <div style="font-size:14px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${poiNameDisplay}</div>
+              <div style="font-size:14px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:${entry.status === 'visited' ? 'line-through' : 'none'}">${poiNameDisplay}</div>
+              ${entry.addedBy ? `<div style="font-size:10px;color:rgba(255,255,255,0.5);white-space:nowrap">da ${entry.addedBy}</div>` : ''}
             </div>
-            <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;min-width:44px;min-height:44px;background:transparent;border:none;border-radius:8px;color:rgba(255,255,255,0.5);cursor:pointer;font-size:18px;padding:0;transition:background 0.15s,color 0.15s;opacity:1;margin-left:auto" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.background='transparent';this.style.color='rgba(255,255,255,0.5)'">⋮</button>
+            ${entry.status === 'visited'
+              ? `<span style="flex-shrink:0;background:rgba(76,175,80,0.3);color:#4ade80;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px">✅ Visitato</span>`
+              : `<button class="mark-visited-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;min-width:auto;height:32px;background:rgba(76,175,80,0.15);border:1px solid rgba(76,175,80,0.3);border-radius:5px;color:#4ade80;cursor:pointer;font-size:12px;padding:0 10px;transition:background 0.15s,border-color 0.15s;margin-left:auto;margin-right:6px" onmouseover="this.style.background='rgba(76,175,80,0.25)';this.style.borderColor='rgba(76,175,80,0.5)'" onmouseout="this.style.background='rgba(76,175,80,0.15)';this.style.borderColor='rgba(76,175,80,0.3)'">✅ Segna visitato</button>`
+            }
+            <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;min-width:44px;min-height:44px;background:transparent;border:none;border-radius:8px;color:rgba(255,255,255,0.5);cursor:pointer;font-size:18px;padding:0;transition:background 0.15s,color 0.15s;opacity:1" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.background='transparent';this.style.color='rgba(255,255,255,0.5)'">⋮</button>
           </div>
 
           <!-- ROW 2: Time, Duration, Cost badges -->
@@ -150,11 +158,14 @@ function renderItineraryUnified() {
             <span style="font-size:18px">📅</span>
             <span>${dayLabel}</span>
           </span>
-          <span style="display:flex;align-items:center;gap:12px;font-size:13px;color:rgba(255,255,255,0.7)">
-            <span style="background:rgba(74,124,89,0.3);color:#4ade80;padding:3px 10px;border-radius:4px;font-weight:600">${dayPOIs.length} POI</span>
-            <span style="background:rgba(255,107,53,0.3);color:#FFB88C;padding:3px 10px;border-radius:4px;font-weight:600">${Math.round(dayDuration / 60)}h</span>
-            ${costByDay[dayIndex] > 0 ? `<span style="background:rgba(100,200,255,0.25);color:#64c8ff;padding:3px 10px;border-radius:4px;font-weight:600">¥${costByDay[dayIndex]}</span>` : ''}
-          </span>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+            <span style="display:flex;align-items:center;gap:12px;font-size:13px;color:rgba(255,255,255,0.7)">
+              <span style="background:rgba(74,124,89,0.3);color:#4ade80;padding:3px 10px;border-radius:4px;font-weight:600">${dayPOIs.length} POI</span>
+              <span style="background:rgba(255,107,53,0.3);color:#FFB88C;padding:3px 10px;border-radius:4px;font-weight:600">⏱ ${(dayDuration / 60).toFixed(1)}h</span>
+              ${costByDay[dayIndex] > 0 ? `<span style="background:rgba(100,200,255,0.25);color:#64c8ff;padding:3px 10px;border-radius:4px;font-weight:600">¥${costByDay[dayIndex]}</span>` : ''}
+              ${distanceByDay[dayIndex] > 0 ? `<span style="background:rgba(100,180,200,0.25);color:#64b4c8;padding:3px 10px;border-radius:4px;font-weight:600">🚶 ${distanceByDay[dayIndex].toFixed(1)}km</span>` : ''}
+            </span>
+          </div>
         </button>
         <div class="itinerary-day-content" data-day="${dayIndex}" style="
           display:none;
@@ -190,7 +201,7 @@ function renderItineraryUnified() {
 
   // ===== SECTION 2: SHARED ITINERARY (GROUP) =====
   const sharedItineraryHTML = sharedItinerary.length ? sharedItinerary.map((entry, idx) => {
-    const poi = window.allPOIs?.() ? window.allPOIs().find(p => p.googlePlaceId === entry.id) : null;
+    const poi = window.allPOIs?.()?.find(p => p.googlePlaceId === entry.id) ?? null;
     const dayStr = entry.day ? ` · 📅 G${entry.day}` : '';
     const timeStr = entry.time ? ` · ⏰ ${entry.time}` : '';
     return `
@@ -223,9 +234,14 @@ function renderItineraryUnified() {
     `;
   }).join('') : '<p style="color:rgba(255,255,255,0.5);font-size:12px;padding:8px">Nessuna tappa condivisa ancora.</p>';
 
+  // Render weather alerts
+  const weatherAlertsHTML = window.WEATHER_FEATURES?.renderWeatherAlerts?.() || '';
+
   // ===== FINAL HTML =====
   const html = `
     <div style="padding:0;display:flex;flex-direction:column;gap:24px;">
+
+      ${weatherAlertsHTML}
 
       <!-- BUDGET SUMMARY — Level 1: Manual costs only (current state) -->
       <div class="budget-summary" style="
@@ -286,6 +302,19 @@ function renderItineraryUnified() {
           margin: 0 0 12px 0;
         ">📤 Condividi con il Gruppo</h3>
         <div style="display:flex;flex-direction:column;gap:8px;">
+          <button id="btn-export-html-unified" onclick="handleExportHTML()" style="
+            padding: 12px 16px;
+            background: rgba(100,150,200,0.2);
+            border: 1.5px solid rgba(100,150,200,0.5);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          " onmouseover="this.style.background='rgba(100,150,200,0.3)'" onmouseout="this.style.background='rgba(100,150,200,0.2)'">
+            📄 Esporta (stampabile)
+          </button>
           <button id="btn-export-whatsapp-unified" onclick="handleExportWhatsApp()" style="
             padding: 12px 16px;
             background: rgba(76,175,80,0.2);
@@ -374,6 +403,100 @@ function renderItineraryUnified() {
  * DIRECT HANDLERS FOR SHARE BUTTONS
  * Called via onclick attribute in the HTML for maximum reliability
  */
+window.handleExportHTML = function() {
+  console.log('[ItineraryUnified] 📄 Export HTML button clicked');
+
+  let totalPOIs = 0;
+  const tripProfile = window.state?.tripProfile || {};
+  const days = tripProfile.days || 8;
+
+  for (let d = 0; d < days; d++) {
+    totalPOIs += (window.state?.itineraryByDay?.[d] || []).length;
+  }
+
+  if (totalPOIs === 0) {
+    console.log('[ItineraryUnified] ⚠️ Itinerary empty');
+    if (window.toast) window.toast('⚠️ Nessun POI aggiunto');
+    return;
+  }
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="it">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Itinerario Giappone 2027</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: sans-serif; background: white; color: #333; line-height: 1.6; padding: 20px; }
+        h1 { font-size: 24px; margin-bottom: 20px; color: #1a1a1a; }
+        h2 { font-size: 16px; margin: 20px 0 10px 0; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+        th { background: #f0f0f0; font-weight: bold; }
+        .summary { background: #f9f9f9; padding: 12px; border-radius: 4px; margin-bottom: 20px; }
+        .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; font-size: 12px; color: #666; }
+        @media print { body { padding: 0; } }
+      </style>
+    </head>
+    <body>
+      <h1>📅 Itinerario Giappone 2027 — ${days} giorni</h1>
+      ${Array.from({ length: days }, (_, d) => {
+        const dayPOIs = window.state?.itineraryByDay?.[d] || [];
+        if (dayPOIs.length === 0) return '';
+        const dayDate = new Date(2027, 3, 10 + d);
+        const dayLabel = dayDate.toLocaleDateString('it-IT', { weekday: 'long', month: 'long', day: 'numeric' });
+        const dayCost = dayPOIs.reduce((sum, e) => sum + (e.cost || 0), 0);
+        return `
+          <h2>Giorno ${d + 1} — ${dayLabel}</h2>
+          <table>
+            <tr>
+              <th>#</th>
+              <th>Luogo</th>
+              <th>Orario</th>
+              <th>Durata</th>
+              <th>Costo</th>
+              <th>Note</th>
+            </tr>
+            ${dayPOIs.map((entry, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td>${entry.poi_name}</td>
+                <td>${entry.time}</td>
+                <td>${entry.duration}m</td>
+                <td>${entry.cost > 0 ? '¥' + entry.cost : '-'}</td>
+                <td style="font-size:11px">${entry.notes || '-'}</td>
+              </tr>
+            `).join('')}
+            <tr style="background:#f0f0f0">
+              <td colspan="4" style="text-align:right"><strong>Subtotale giorno:</strong></td>
+              <td><strong>¥${dayCost}</strong></td>
+              <td></td>
+            </tr>
+          </table>
+        `;
+      }).join('')}
+      <div class="summary">
+        <strong>Budget totale:</strong> ¥${tripProfile.budget_total || 500000}<br>
+        <strong>Speso:</strong> ¥${window.ITINERARY?.calculateBudgetSpent?.() || 0}<br>
+        <strong>Rimasto:</strong> ¥${(tripProfile.budget_total || 500000) - (window.ITINERARY?.calculateBudgetSpent?.() || 0)}
+      </div>
+      <div class="footer">
+        <p>Generato da SafeEats Giappone 2027</p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const newTab = window.open();
+  newTab.document.write(html);
+  newTab.document.close();
+
+  if (window.toast) window.toast('✅ Itinerario esportato');
+  console.log('[ItineraryUnified] ✅ HTML export complete');
+};
+
 window.handleExportWhatsApp = function() {
   console.log('[ItineraryUnified] 📤 WhatsApp export button clicked');
 
@@ -446,6 +569,18 @@ function setupGlobalEventDelegation() {
   console.log('[ItineraryUnified] 🔧 Setting up GLOBAL EVENT DELEGATION on sheet-body (one-time setup)');
 
   console.log('[ItineraryUnified] ✅ Global event delegation attached for menu and remove buttons');
+
+  // Mark visited button
+  sheetBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mark-visited-btn');
+    if (!btn) return;
+
+    e.stopPropagation();
+    const poiId = btn.dataset.poiId;
+    if (window.ITINERARY?.markVisited) {
+      window.ITINERARY.markVisited(poiId);
+    }
+  }, false);
 
   // Menu button (modifica, sposta, cancella)
   sheetBody.addEventListener('click', (e) => {

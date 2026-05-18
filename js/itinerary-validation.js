@@ -26,8 +26,8 @@ const ITINERARY_VALIDATION = {
       return { valid: false, error: 'Formato orario non valido. Usa HH:MM (es: 14:30)' };
     }
 
-    const hours = parseInt(match[1]);
-    const mins = parseInt(match[2]);
+    const hours = parseInt(match[1], 10);
+    const mins = parseInt(match[2], 10);
 
     if (hours < 0 || hours > 23) {
       return { valid: false, error: 'Ore devono essere tra 00 e 23' };
@@ -44,7 +44,7 @@ const ITINERARY_VALIDATION = {
    * Reasonable range: 1-480 minutes (8 hours max per POI)
    */
   validateDuration(duration) {
-    const dur = parseInt(duration);
+    const dur = parseInt(duration, 10);
 
     if (isNaN(dur)) {
       return { valid: false, error: 'Durata deve essere un numero' };
@@ -63,7 +63,7 @@ const ITINERARY_VALIDATION = {
    * Validate cost (non-negative, reasonable max)
    */
   validateCost(cost) {
-    const c = parseInt(cost || 0);
+    const c = parseInt(cost || 0, 10);
 
     if (isNaN(c)) {
       return { valid: false, error: 'Costo deve essere un numero' };
