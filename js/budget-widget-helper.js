@@ -171,6 +171,31 @@ const BUDGET_WIDGET_HELPER = {
   },
 
   /**
+   * Get budget breakdown by category
+   * Returns object with category totals (only includes categories with cost > 0)
+   */
+  getBudgetByCategory() {
+    if (!window.state?.itineraryByDay) {
+      return { cibo: 0, trasporti: 0, ingressi: 0, shopping: 0, altro: 0 };
+    }
+
+    const categories = { cibo: 0, trasporti: 0, ingressi: 0, shopping: 0, altro: 0 };
+    const days = window.state.tripProfile?.days || 8;
+
+    for (let d = 0; d < days; d++) {
+      const dayPOIs = window.state.itineraryByDay[d] || [];
+      dayPOIs.forEach(entry => {
+        const tag = entry.tag || 'altro';
+        if (categories.hasOwnProperty(tag)) {
+          categories[tag] += (entry.cost || 0);
+        }
+      });
+    }
+
+    return categories;
+  },
+
+  /**
    * Prepare for LEVEL 3 (future: full routing + dynamic budget)
    * Will ONLY be used when:
    * - routing between consecutive POI is reliable

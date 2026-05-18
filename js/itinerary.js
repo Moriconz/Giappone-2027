@@ -40,8 +40,9 @@ const ITINERARY_SYSTEM = {
    * @param {number} duration - Duration in minutes (default 60)
    * @param {string} notes - Notes about the POI (default "")
    * @param {number} cost - Cost in local currency (default 0)
+   * @param {string} tag - Budget category: "cibo", "trasporti", "ingressi", "shopping", "altro" (default "altro")
    */
-  addPOIToDay(poiId, poiName, dayIndex, time = "10:00", duration = 60, notes = "", cost = 0) {
+  addPOIToDay(poiId, poiName, dayIndex, time = "10:00", duration = 60, notes = "", cost = 0, tag = "altro") {
     if (!window.state?.itineraryByDay) {
       this.initState();
     }
@@ -65,7 +66,10 @@ const ITINERARY_SYSTEM = {
       duration: duration,
       notes: notes,
       cost: cost,
+      tag: tag,
       status: "proposed",
+      addedBy: window.state?.group?.myName || 'Sconosciuto',
+      lastModified: Date.now(),
       opening_hours: null,
       price_level: null,
       ticket_cost: null,
@@ -88,7 +92,9 @@ const ITINERARY_SYSTEM = {
     window.state.itineraryByDay[dayIndex].push(entry);
     console.log('[Itinerary] Added', poiName, 'to day', dayIndex, 'at', time, 'duration:', duration, 'min');
 
+    ITINERARY_SYSTEM.autoSortDayByTime(dayIndex);
     window.saveState?.();
+    window.GROUP_SYNC?.broadcastItinerary?.();
     return true;
   },
 
@@ -110,6 +116,7 @@ const ITINERARY_SYSTEM = {
     if (removed) {
       console.log('[Itinerary] Removed POI:', poiId);
       window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
+      window.GROUP_SYNC?.broadcastItinerary?.();
     }
     return removed;
   },
@@ -124,8 +131,10 @@ const ITINERARY_SYSTEM = {
       const entry = day.find(e => e.poi_id === poiId);
       if (entry) {
         entry.time = newTime;
+        entry.lastModified = Date.now();
         console.log('[Itinerary] Updated time for', poiId, 'to', newTime);
         window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
+        window.GROUP_SYNC?.broadcastItinerary?.();
         return true;
       }
     }
@@ -142,8 +151,10 @@ const ITINERARY_SYSTEM = {
       const entry = day.find(e => e.poi_id === poiId);
       if (entry) {
         entry.notes = notes;
+        entry.lastModified = Date.now();
         console.log('[Itinerary] Updated notes for', poiId);
         window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
+        window.GROUP_SYNC?.broadcastItinerary?.();
         return true;
       }
     }
@@ -160,8 +171,10 @@ const ITINERARY_SYSTEM = {
       const entry = day.find(e => e.poi_id === poiId);
       if (entry) {
         entry.duration = duration;
+        entry.lastModified = Date.now();
         console.log('[Itinerary] Updated duration for', poiId, 'to', duration, 'min');
         window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
+        window.GROUP_SYNC?.broadcastItinerary?.();
         return true;
       }
     }
@@ -178,8 +191,10 @@ const ITINERARY_SYSTEM = {
       const entry = day.find(e => e.poi_id === poiId);
       if (entry) {
         entry.cost = cost;
+        entry.lastModified = Date.now();
         console.log('[Itinerary] Updated cost for', poiId, 'to', cost);
         window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
+        window.GROUP_SYNC?.broadcastItinerary?.();
         return true;
       }
     }
@@ -212,10 +227,12 @@ const ITINERARY_SYSTEM = {
     }
 
     // Add to new day
+    entry.lastModified = Date.now();
     window.state.itineraryByDay[toDayIndex].push(entry);
     console.log('[Itinerary] Moved', poiId, 'from day', fromDayIndex, 'to', toDayIndex);
 
     window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
+    window.GROUP_SYNC?.broadcastItinerary?.();
     return true;
   },
 
@@ -247,6 +264,37 @@ const ITINERARY_SYSTEM = {
   },
 
   /**
+   * Auto-sort POIs in a day by time if all have time set
+   */
+  autoSortDayByTime(dayIdx) {
+    const entries = window.state.itineraryByDay[dayIdx];
+    if (!entries || entries.length < 2) return;
+    const allHaveTime = entries.every(e => e.time && e.time.length === 5);
+    if (!allHaveTime) return;
+    entries.sort((a, b) => parseInt(a.time.replace(':', ''), 10) - parseInt(b.time.replace(':', ''), 10));
+  },
+
+  /**
+   * Mark POI as visited
+   */
+  markVisited(poiId) {
+    if (!window.state?.itineraryByDay) return false;
+    for (const day of Object.values(window.state.itineraryByDay)) {
+      const entry = day.find(e => e.poi_id === poiId);
+      if (entry) {
+        entry.status = entry.status === 'visited' ? 'proposed' : 'visited';
+        entry.lastModified = Date.now();
+        console.log('[Itinerary] Toggled visited status for', poiId, '→', entry.status);
+        window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
+        window.GROUP_SYNC?.broadcastItinerary?.();
+        if (typeof renderItineraryUnified === 'function') renderItineraryUnified();
+        return true;
+      }
+    }
+    return false;
+  },
+
+  /**
    * Normalize old entries to new schema (backward-compatible migration)
    * Call this when loading state from localStorage to fill in missing fields
    */
@@ -259,7 +307,10 @@ const ITINERARY_SYSTEM = {
       duration: entry.duration || 60,
       notes: entry.notes || '',
       cost: entry.cost || 0,
+      tag: entry.tag || 'altro',
       status: entry.status || 'proposed',
+      addedBy: entry.addedBy || 'Sconosciuto',
+      lastModified: entry.lastModified ?? Date.now(),
       opening_hours: entry.opening_hours ?? null,
       price_level: entry.price_level ?? null,
       ticket_cost: entry.ticket_cost ?? null,

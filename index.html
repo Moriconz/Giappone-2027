@@ -6948,6 +6948,7 @@ document.addEventListener('DOMContentLoaded', () => {
               return;
             }
 
+            window.currentPOI = p;
             const tripProfile = window.state?.tripProfile || {};
             const days = tripProfile.days || 8;
             const poiName = getPoiDisplayName(p);
@@ -6962,7 +6963,8 @@ document.addEventListener('DOMContentLoaded', () => {
               selectedTime: '10:00',
               duration: 60,
               notes: '',
-              cost: 0
+              cost: 0,
+              tag: 'cibo'
             };
 
             /**
@@ -6998,7 +7000,27 @@ document.addEventListener('DOMContentLoaded', () => {
                   </div>
                 `;
               } else if (wizardState.step === 2) {
-                // STEP 2: Time selection
+                // STEP 2: Time selection with hours validation
+                let hoursWarning = '';
+                if (window.currentPOI?.opening_hours) {
+                  const timeMatch = wizardState.selectedTime.match(/^(\d{2}):(\d{2})$/);
+                  if (timeMatch) {
+                    const inputHour = parseInt(timeMatch[1]), inputMin = parseInt(timeMatch[2]);
+                    const inputMinutes = inputHour * 60 + inputMin;
+                    const hoursStr = window.currentPOI.opening_hours;
+                    const hoursRegex = /(\d{2}):(\d{2})–(\d{2}):(\d{2})/;
+                    const match = hoursStr.match(hoursRegex);
+                    if (match) {
+                      const openHour = parseInt(match[1]), openMin = parseInt(match[2]);
+                      const closeHour = parseInt(match[3]), closeMin = parseInt(match[4]);
+                      const openMinutes = openHour * 60 + openMin;
+                      const closeMinutes = closeHour * 60 + closeMin;
+                      if (inputMinutes < openMinutes || inputMinutes >= closeMinutes) {
+                        hoursWarning = `<div style="background:rgba(255,165,0,0.2);border:1px solid rgba(255,165,0,0.4);border-radius:5px;padding:10px;margin-top:10px;font-size:11px;color:rgba(255,200,100,0.9)">⚠️ Questo luogo apre ${hoursStr}. Vuoi continuare?</div>`;
+                      }
+                    }
+                  }
+                }
                 html = `
                   <div style="padding: 16px;">
                     <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">🕐 STEP 2/4 — Scegli l'orario</p>
@@ -7016,6 +7038,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         font-family: 'Courier New', monospace;
                       ">
                       <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 6px;">Formato: HH:MM (es: 14:30, 09:45)</p>
+                      ${hoursWarning}
                     </div>
                     <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 16px;">Giorno selezionato: <strong style="color: #FF6B35;">Day ${wizardState.selectedDay + 1}</strong></p>
                   </div>
@@ -7072,6 +7095,26 @@ document.addEventListener('DOMContentLoaded', () => {
                       ">
                     </div>
 
+                    <div style="margin-bottom: 14px;">
+                      <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">🏷️ Categoria</label>
+                      <select id="wizard-tag-select" style="
+                        width: 100%;
+                        padding: 8px;
+                        background: rgba(255,255,255,0.04);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 4px;
+                        color: #fff;
+                        font-size: 12px;
+                        box-sizing: border-box;
+                      ">
+                        <option value="cibo" ${wizardState.tag === 'cibo' ? 'selected' : ''}>🍽️ Cibo</option>
+                        <option value="trasporti" ${wizardState.tag === 'trasporti' ? 'selected' : ''}>🚌 Trasporti</option>
+                        <option value="ingressi" ${wizardState.tag === 'ingressi' ? 'selected' : ''}>🎫 Ingressi</option>
+                        <option value="shopping" ${wizardState.tag === 'shopping' ? 'selected' : ''}>🛍️ Shopping</option>
+                        <option value="altro" ${wizardState.tag === 'altro' ? 'selected' : ''}>📦 Altro</option>
+                      </select>
+                    </div>
+
                     <div>
                       <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">📝 Note personalizzate (opzionale)</label>
                       <textarea id="wizard-notes-input" placeholder="Es: Prenotare in anticipo, glutine-free disponibile..." style="
@@ -7115,6 +7158,11 @@ document.addEventListener('DOMContentLoaded', () => {
                       <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
                         <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">⏱️ Durata</div>
                         <div style="font-size: 13px; color: rgba(255,255,255,0.9);"><strong>${wizardState.duration}</strong> minuti</div>
+                      </div>
+
+                      <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">🏷️ Categoria</div>
+                        <div style="font-size: 13px; color: rgba(255,255,255,0.9);"><strong>${['cibo', 'trasporti', 'ingressi', 'shopping', 'altro'].includes(wizardState.tag) ? wizardState.tag.charAt(0).toUpperCase() + wizardState.tag.slice(1) : 'Altro'}</strong></div>
                       </div>
 
                       ${wizardState.cost > 0 ? `
@@ -7406,7 +7454,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     time: wizardState.selectedTime,
                     duration: wizardState.duration,
                     notes: wizardState.notes,
-                    cost: wizardState.cost
+                    cost: wizardState.cost,
+                    tag: wizardState.tag
                   });
 
                   // Validate that a day was selected
@@ -7424,7 +7473,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     wizardState.selectedTime,
                     wizardState.duration,
                     wizardState.notes,
-                    wizardState.cost
+                    wizardState.cost,
+                    wizardState.tag
                   );
 
                   if (success) {
@@ -7471,6 +7521,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.target.id === 'wizard-cost-input') {
                   wizardState.cost = parseFloat(e.target.value) || 0;
                   console.log('[WIZARD] Cost set to:', wizardState.cost);
+                }
+                if (e.target.id === 'wizard-tag-select') {
+                  wizardState.tag = e.target.value;
+                  console.log('[WIZARD] Tag set to:', wizardState.tag);
                 }
                 if (e.target.id === 'wizard-notes-input') {
                   wizardState.notes = e.target.value.trim();
@@ -13765,6 +13819,12 @@ navigator.serviceWorker?.addEventListener('message', (event) => {
 console.log('[DeepLink] Checking for deep link parameters...');
 window.handleDeepLink();
 
+// ===== GROUP SYNC INIT =====
+if (window.GROUP_SYNC) {
+  console.log('[App] Initializing group sync...');
+  window.GROUP_SYNC.init();
+}
+
 }); // close DOMContentLoaded
 </script>
 <script src="./js/performance-utils.js"></script>
@@ -13783,6 +13843,8 @@ window.handleDeepLink();
 <script src="./js/filter-system.js"></script>
 <script src="./js/y2k-windows.js"></script>
 <script src="./js/gf-places-loader.js"></script>
+<script src="./js/features-weather.js"></script>
+<script src="./js/group-sync.js"></script>
 <script src="./js/allergy-cards.js"></script>
 <script type="module" src="./js/core-modular.js"></script>
 
