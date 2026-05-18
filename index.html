@@ -2932,14 +2932,9 @@ document.addEventListener('DOMContentLoaded', () => {
           state.pendingShareItinerary = true;
           window.y2kWindows.close('no-group-modal');
 
-          // Find and click the groups tab button
-          const groupBtn = document.querySelector('nav.bottom button[data-view="group"]');
-          if (groupBtn) {
-            console.log('[NoGroupModal] Found groups button, clicking it');
-            groupBtn.click();
-          } else {
-            console.error('[NoGroupModal] Groups button not found');
-          }
+          setTimeout(() => {
+            renderGroupView();
+          }, 200);
         });
       }
 
