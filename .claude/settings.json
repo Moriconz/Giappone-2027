@@ -11,7 +11,16 @@
       "Bash(sed -i '' 's/font-size:9px/font-size:12px/g' /Users/riccardomoricone/Desktop/Giappone-2027-main-2/index.html)",
       "Bash(sed -i '' 's/font-size:9\\\\.5px/font-size:12px/g' /Users/riccardomoricone/Desktop/Giappone-2027-main-2/index.html)",
       "Bash(sed -i '' 's/font-size:10px/font-size:12px/g' /Users/riccardomoricone/Desktop/Giappone-2027-main-2/index.html)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(node -c js/itinerary.js)",
+      "Bash(node -c js/itinerary-unified.js)",
+      "Bash(node -c js/routing.js)",
+      "Bash(node -c js/budget-widget-helper.js)",
+      "Bash(node -c js/state.js)",
+      "Bash(grep -E \"README|QUICKSTART|\\\\.md$\")",
+      "Bash(python3 -m http.server 8000)",
+      "Bash(curl -s http://localhost:8000)",
+      "Bash(node -c /Users/riccardomoricone/Desktop/Giappone-2027-main-2/js/itinerary.js)"
     ]
   }
 }
