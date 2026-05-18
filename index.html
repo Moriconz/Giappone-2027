@@ -7388,19 +7388,16 @@ document.addEventListener('DOMContentLoaded', () => {
             function attachWizardHandlers() {
               console.log('[WIZARD DEBUG] attachWizardHandlers() called');
 
-              // Attach click listener ONLY ONCE to avoid duplicate listeners
-              if (!window._wizardClickListenerAttached) {
-                // Remove old listener if it exists
-                if (window._wizardClickListener) {
-                  document.removeEventListener('click', window._wizardClickListener, { capture: true });
-                  console.log('[WIZARD] ✅ Removed stale click listener');
-                }
+              // Remove old listener if it exists
+              if (window._wizardClickListener) {
+                document.removeEventListener('click', window._wizardClickListener, { capture: true });
+                console.log('[WIZARD] ✅ Removed stale click listener');
+              }
 
-                console.log('[WIZARD] ✅ Attaching click listeners (first time)');
-                window._wizardClickListenerAttached = true;
+              console.log('[WIZARD] ✅ Attaching fresh click listener');
 
-                // Create and save click listener (so it can be removed later)
-                window._wizardClickListener = (e) => {
+              // Create and save click listener (so it can be removed later)
+              window._wizardClickListener = (e) => {
                   const target = e.target;
 
                   // Day selection
@@ -7532,20 +7529,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Attach the saved listener
                 document.addEventListener('click', window._wizardClickListener, { capture: true });
-              } else {
-                console.log('[WIZARD] Click listener already attached, skipping');
-              }
+                console.log('[WIZARD] ✅ Click listener attached');
 
               // Input fields - Time, Duration, Cost, Notes (using change event delegation)
-              // Only attach listener ONCE per wizard session
-              if (!window._wizardChangeListenerAttached) {
-                console.log('[WIZARD] Attaching change listener (first time)');
+              // Remove old listener and attach fresh one
+              if (window._wizardChangeListener) {
+                document.removeEventListener('change', window._wizardChangeListener, { capture: true });
+                console.log('[WIZARD] ✅ Removed stale change listener');
+              }
 
-                // Remove any old listener first
-                if (window._wizardChangeListener) {
-                  document.removeEventListener('change', window._wizardChangeListener, { capture: true });
-                  console.log('[WIZARD] ✅ Removed stale listener');
-                }
+              console.log('[WIZARD] ✅ Attaching fresh change listener');
 
                 // Create fresh listener for this wizard session
                 window._wizardChangeListener = (e) => {
@@ -7584,11 +7577,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 document.addEventListener('change', window._wizardChangeListener, { capture: true });
-                console.log('[WIZARD] ✅ Attached fresh change listener');
-                window._wizardChangeListenerAttached = true;
-              } else {
-                console.log('[WIZARD] Change listener already attached, skipping');
-              }
+                console.log('[WIZARD] ✅ Change listener attached');
             }
 
             /**
