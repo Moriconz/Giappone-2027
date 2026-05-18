@@ -1404,11 +1404,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const origLog = console.log;
   const origError = console.error;
   const origWarn = console.warn;
+  let _debugUpdatePending = false;
 
   function addDebugLog(msg, type = 'log') {
     if (debugLogs.length > 20) debugLogs.shift();
     debugLogs.push({ msg, type, time: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) });
-    updateDebugPanel();
+    // Debounce updateDebugPanel to prevent excessive DOM updates
+    if (!_debugUpdatePending) {
+      _debugUpdatePending = true;
+      requestAnimationFrame(() => {
+        updateDebugPanel();
+        _debugUpdatePending = false;
+      });
+    }
   }
 
   function updateDebugPanel() {
@@ -11983,15 +11991,28 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state.pendingShareItinerary) {
         console.log('[Group] pendingShareItinerary flag detected, sharing itinerary automatically');
         setTimeout(() => {
-          if (state.itinerary && state.itinerary.length > 0 && state.group?.roomId) {
+          // Check if user has any itinerary (either state.itinerary or state.itineraryByDay)
+          const hasItinerary = (state.itinerary && state.itinerary.length > 0) ||
+            (state.itineraryByDay && Object.values(state.itineraryByDay).some(day => day && day.length > 0));
+
+          if (hasItinerary && state.group?.roomId) {
             console.log('[Group] Auto-sharing itinerary to group:', state.group.roomId);
+            // If only itineraryByDay exists, convert to shared format first
+            if (state.itineraryByDay && (!state.itinerary || state.itinerary.length === 0)) {
+              state.itinerary = [];
+              for (const dayPOIs of Object.values(state.itineraryByDay)) {
+                if (Array.isArray(dayPOIs)) {
+                  state.itinerary.push(...dayPOIs);
+                }
+              }
+            }
             sharePersonalItineraryToGroup(state.group.roomId);
             state.pendingShareItinerary = false;
             saveState();
             toast('✅ Itinerario condiviso con il gruppo!');
           } else {
             console.warn('[Group] Cannot auto-share: missing itinerary or roomId', {
-              hasItinerary: !!(state.itinerary && state.itinerary.length > 0),
+              hasItinerary,
               roomId: state.group?.roomId
             });
           }
@@ -13783,7 +13804,7 @@ window._refreshGroupView = function() {
 // ── Polling fallback: se il pannello è aperto, mantienilo sincronizzato ───────
 // Scatta ogni 5s — rete di sicurezza per il pannello gruppo in caso event-bus fallisca
 let _lastMemberCount = 0;
-setInterval(function() {
+let _groupPanelInterval = setInterval(function() {
   try {
     if (!window.state?.group?.roomId || !window.groupPanel) return;
     const groupWin = document.getElementById('y2kwin-gruppo');
@@ -13797,30 +13818,42 @@ setInterval(function() {
       if (body) {
         body.innerHTML = html;
         window.groupPanel.attachEvents();
-        console.log('[Group] polling: panel updated, members:', currentCount);
       }
     }
   } catch(e) {}
 }, 5000);
+// Cancel polling when group panel closes
+document.addEventListener('y2kwin_closed', (e) => {
+  if (e.detail?.id === 'y2kwin-gruppo' && _groupPanelInterval) {
+    clearInterval(_groupPanelInterval);
+    _groupPanelInterval = null;
+  }
+});
 
 // ── Polling fallback per chat: se il pannello è aperto, mantienilo sincronizzato ───────
 // Scatta ogni 5s — rete di sicurezza per la chat in caso event-bus fallisca
 let _lastChatMessageCount = 0;
-setInterval(function() {
+let _chatPanelInterval = setInterval(function() {
   try {
     if (!window.groupChat || !window.state?.group?.roomId) return;
     const chatHist = window.groupChat.getHistory?.();
     if (!chatHist) return;
     const chatWin = document.getElementById('y2kwin-groupchat');
-    if (!chatWin) return; // Panel not open
+    if (!chatWin) return;
     const currentCount = (chatHist.messages || []).length;
     if (currentCount !== _lastChatMessageCount) {
       _lastChatMessageCount = currentCount;
       window.groupChat.renderChatPanel?.();
-      console.log('[GroupChat] polling: chat updated, messages:', currentCount);
     }
   } catch(e) {}
 }, 5000);
+// Cancel polling when chat panel closes
+document.addEventListener('y2kwin_closed', (e) => {
+  if (e.detail?.id === 'y2kwin-groupchat' && _chatPanelInterval) {
+    clearInterval(_chatPanelInterval);
+    _chatPanelInterval = null;
+  }
+});
 
 /* ═══════════════════════════════════════════════════════════════
    PUSH NOTIFICATIONS — Initialize

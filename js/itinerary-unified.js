@@ -42,10 +42,14 @@ function renderItineraryUnified() {
     const dayLabel = `Day ${dayIndex + 1} — ${dayDate.toLocaleDateString('it-IT', { weekday: 'short', month: 'short', day: 'numeric' })}`;
     const dayDuration = ITINERARY.getDayDuration(dayIndex);
     const poiListHTML = dayPOIs.length ? dayPOIs.map((entry, idx) => {
-      // Fallback name display with debugging
-      const poiNameDisplay = entry.poi_name || `POI #${entry.poi_id.substring(0, 8)}`;
-      if (!entry.poi_name) {
-        console.warn('[Itinerary] ⚠️ POI missing poi_name:', { poi_id: entry.poi_id, entry });
+      // Get POI name: first try entry.poi_name, then search allPOIs, fallback to ID
+      let poiNameDisplay = entry.poi_name;
+      if (!poiNameDisplay && typeof allPOIs === 'function') {
+        const poi = allPOIs().find(p => p.id === entry.poi_id);
+        poiNameDisplay = poi ? (poi.name || poi.title || 'Luogo sconosciuto') : `POI #${entry.poi_id.substring(0, 8)}`;
+      }
+      if (!poiNameDisplay) {
+        poiNameDisplay = entry.city ? `Luogo in ${entry.city}` : `POI #${entry.poi_id.substring(0, 8)}`;
       }
       const costBadge = entry.cost > 0 ? `<span style="background:rgba(255,107,53,0.3);color:#FF9966;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">¥${entry.cost}</span>` : '';
       const durationColor = entry.duration < 30 ? 'rgba(76,175,80,0.7)' : entry.duration < 120 ? 'rgba(255,193,7,0.7)' : 'rgba(255,107,53,0.7)';
