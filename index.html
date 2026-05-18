@@ -9110,13 +9110,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== SHARING SECTION SETUP =====
     // Populate groups dropdown
     const groupShareSelect = document.getElementById('group-share-select');
-    if (groupShareSelect && state.group?.roomId) {
-      // Add current group as option (if in a group)
-      const groupId = state.group.roomId;
-      const option = document.createElement('option');
-      option.value = groupId;
-      option.textContent = `${groupId} (Il nostro gruppo)`;
-      groupShareSelect.appendChild(option);
+    if (groupShareSelect) {
+      // Clear existing options (keep only placeholder)
+      groupShareSelect.innerHTML = '<option value="">-- Seleziona gruppo --</option>';
+
+      if (state.group?.roomId) {
+        // Add current group as option (if in a group)
+        const groupId = state.group.roomId;
+        const option = document.createElement('option');
+        option.value = groupId;
+        option.textContent = `${groupId} (Il nostro gruppo)`;
+        option.selected = true;
+        groupShareSelect.appendChild(option);
+      }
     }
 
     // Populate "shared with" list

@@ -296,10 +296,12 @@ window.groupPanel = (() => {
 
       // Build tappe list with member attribution
       const tappeListHTML = (itin.pois || []).slice(0, 3).map((poi, idx) => {
-        const lastMod = poi.audit?.lastModifiedBy || 'Sconosciuto';
+        const lastMod = poi.audit?.lastModifiedBy || poi.addedByPeerId || 'Sconosciuto';
         const modTime = poi.audit?.lastModifiedAt ? window.getTimeAgo?.(poi.audit.lastModifiedAt) : '';
+        // Handle both { value: ... } format and plain string format
+        const poiName = typeof poi.name === 'object' ? (poi.name?.value || '?') : (poi.name || '?');
         return `<div style="font-size:11px;color:rgba(255,255,255,0.7);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.1)">
-          ${idx + 1}. ${escapeHtml(poi.name || '?')} <span style="color:rgba(255,255,255,0.5)">via ${escapeHtml(lastMod)}</span>
+          ${idx + 1}. ${escapeHtml(poiName)} <span style="color:rgba(255,255,255,0.5)">via ${escapeHtml(lastMod)}</span>
         </div>`;
       }).join('');
 
