@@ -11991,15 +11991,28 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state.pendingShareItinerary) {
         console.log('[Group] pendingShareItinerary flag detected, sharing itinerary automatically');
         setTimeout(() => {
-          if (state.itinerary && state.itinerary.length > 0 && state.group?.roomId) {
+          // Check if user has any itinerary (either state.itinerary or state.itineraryByDay)
+          const hasItinerary = (state.itinerary && state.itinerary.length > 0) ||
+            (state.itineraryByDay && Object.values(state.itineraryByDay).some(day => day && day.length > 0));
+
+          if (hasItinerary && state.group?.roomId) {
             console.log('[Group] Auto-sharing itinerary to group:', state.group.roomId);
+            // If only itineraryByDay exists, convert to shared format first
+            if (state.itineraryByDay && (!state.itinerary || state.itinerary.length === 0)) {
+              state.itinerary = [];
+              for (const dayPOIs of Object.values(state.itineraryByDay)) {
+                if (Array.isArray(dayPOIs)) {
+                  state.itinerary.push(...dayPOIs);
+                }
+              }
+            }
             sharePersonalItineraryToGroup(state.group.roomId);
             state.pendingShareItinerary = false;
             saveState();
             toast('✅ Itinerario condiviso con il gruppo!');
           } else {
             console.warn('[Group] Cannot auto-share: missing itinerary or roomId', {
-              hasItinerary: !!(state.itinerary && state.itinerary.length > 0),
+              hasItinerary,
               roomId: state.group?.roomId
             });
           }
