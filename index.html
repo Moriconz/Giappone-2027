@@ -6983,6 +6983,80 @@ document.addEventListener('DOMContentLoaded', () => {
               tag: 'cibo'
             };
 
+            // Save to window for global handlers
+            window._wizardPoiId = poiId;
+            window._wizardPoiName = poiName;
+            window._wizardState = wizardState;
+
+            /**
+             * Global handler for confirm button (called via onclick)
+             */
+            window._handleWizardConfirm = () => {
+              console.log('[WIZARD] Confirm button clicked via onclick');
+              const st = window._wizardState;
+              const pid = window._wizardPoiId;
+              const pname = window._wizardPoiName;
+
+              // Capture notes directly from textarea
+              const notesField = document.getElementById('wizard-notes-input');
+              if (notesField) {
+                st.notes = notesField.value.trim();
+              }
+
+              // Capture duration directly from input field
+              const durationField = document.getElementById('wizard-duration-input');
+              if (durationField) {
+                const durVal = parseInt(durationField.value, 10);
+                if (durVal > 0) st.duration = durVal;
+              }
+
+              // Capture cost directly from input field
+              const costField = document.getElementById('wizard-cost-input');
+              if (costField) {
+                st.cost = parseFloat(costField.value) || 0;
+              }
+
+              console.log('[WIZARD] Confirming POI addition:', {
+                poiId: pid,
+                poiName: pname,
+                day: st.selectedDay,
+                time: st.selectedTime,
+                duration: st.duration,
+                notes: st.notes,
+                cost: st.cost,
+                tag: st.tag
+              });
+
+              // Validate that a day was selected
+              if (st.selectedDay === null) {
+                console.warn('[WIZARD] No day selected');
+                window.toast('⚠️ Seleziona un giorno');
+                return;
+              }
+
+              // Add POI with all details
+              const success = window.ITINERARY.addPOIToDay(
+                pid,
+                pname,
+                st.selectedDay,
+                st.selectedTime,
+                st.duration,
+                st.notes,
+                st.cost,
+                st.tag
+              );
+
+              if (success) {
+                window.saveState?.();
+                window.closeSheet();
+                window.toast(`✅ Aggiunto al Day ${st.selectedDay + 1} alle ${st.selectedTime}`);
+                console.log('[WIZARD] POI successfully added and sheet closed');
+              } else {
+                console.warn('[WIZARD] Failed to add POI');
+                window.toast('❌ Errore nell\'aggiunta del POI');
+              }
+            };
+
             /**
              * Render wizard step
              */
@@ -7463,66 +7537,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                   }
 
-                  // Confirm button
+                  // Confirm button - delegated to onclick handler
                   if (target.classList.contains('wizard-confirm-btn')) {
-                    // Capture notes directly from textarea (change event only fires on blur)
-                    const notesField = document.getElementById('wizard-notes-input');
-                    if (notesField) {
-                      wizardState.notes = notesField.value.trim();
-                    }
-
-                    // Capture duration directly from input field
-                    const durationField = document.getElementById('wizard-duration-input');
-                    if (durationField) {
-                      const durVal = parseInt(durationField.value, 10);
-                      if (durVal > 0) wizardState.duration = durVal;
-                    }
-
-                    // Capture cost directly from input field
-                    const costField = document.getElementById('wizard-cost-input');
-                    if (costField) {
-                      wizardState.cost = parseFloat(costField.value) || 0;
-                    }
-
-                    console.log('[WIZARD] Confirming POI addition:', {
-                      poiId,
-                      poiName,
-                      day: wizardState.selectedDay,
-                      time: wizardState.selectedTime,
-                      duration: wizardState.duration,
-                      notes: wizardState.notes,
-                      cost: wizardState.cost,
-                      tag: wizardState.tag
-                    });
-
-                    // Validate that a day was selected
-                    if (wizardState.selectedDay === null) {
-                      console.warn('[WIZARD] No day selected');
-                      window.toast('⚠️ Seleziona un giorno');
-                      return;
-                    }
-
-                    // Add POI with all details
-                    const success = window.ITINERARY.addPOIToDay(
-                      poiId,
-                      poiName,
-                      wizardState.selectedDay,
-                      wizardState.selectedTime,
-                      wizardState.duration,
-                      wizardState.notes,
-                      wizardState.cost,
-                      wizardState.tag
-                    );
-
-                    if (success) {
-                      window.saveState?.();
-                      window.closeSheet();
-                      window.toast(`✅ Aggiunto al Day ${wizardState.selectedDay + 1} alle ${wizardState.selectedTime}`);
-                      console.log('[WIZARD] POI successfully added and sheet closed');
-                    } else {
-                      console.warn('[WIZARD] Failed to add POI');
-                      window.toast('❌ Errore nell\'aggiunta del POI');
-                    }
+                    console.log('[WIZARD] Confirm button clicked via listener (fallback)');
+                    window._handleWizardConfirm?.();
                     return;
                   }
                 };
@@ -7649,7 +7667,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     font-weight: 600;
                     transition: all 0.2s;
                     white-space: nowrap;
-                  " onmouseover="this.style.background='rgba(74,124,89,0.4)'" onmouseout="this.style.background='rgba(74,124,89,0.3)'">
+                  " onmouseover="this.style.background='rgba(74,124,89,0.4)'" onmouseout="this.style.background='rgba(74,124,89,0.3)'" onclick="window._handleWizardConfirm?.()">
                     ✓ Conferma
                   </button>
                 `}
