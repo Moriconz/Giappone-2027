@@ -282,12 +282,33 @@ const ITINERARY_SYSTEM = {
     for (const day of Object.values(window.state.itineraryByDay)) {
       const entry = day.find(e => e.poi_id === poiId);
       if (entry) {
-        entry.status = entry.status === 'visited' ? 'proposed' : 'visited';
+        const wasVisited = entry.status === 'visited';
+        entry.status = wasVisited ? 'proposed' : 'visited';
         entry.lastModified = Date.now();
         console.log('[Itinerary] Toggled visited status for', poiId, '→', entry.status);
+
+        // When marking as visited without cost, prompt for actual cost
+        if (!wasVisited && entry.status === 'visited' && (!entry.cost || entry.cost === 0)) {
+          const costInput = prompt(`💰 Costo effettivo di "${entry.poi_name}" in ¥\n(Inserisci 0 se gratuito o non ancora pagato)`);
+          if (costInput !== null) {
+            const actualCost = parseFloat(costInput) || 0;
+            if (actualCost >= 0) {
+              entry.cost = actualCost;
+              console.log('[Itinerary] Updated cost for visited POI:', entry.poi_name, '→', actualCost);
+            }
+          }
+        }
+
         window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
         window.GROUP_SYNC?.broadcastItinerary?.();
         if (typeof renderItineraryUnified === 'function') renderItineraryUnified();
+
+        // Update budget tab if POI has cost
+        if (entry.cost > 0 && typeof renderBudgetView === 'function') {
+          console.log('[Itinerary] Auto-updating budget view, cost:', entry.cost);
+          renderBudgetView();
+        }
+
         return true;
       }
     }
