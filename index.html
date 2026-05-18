@@ -7389,7 +7389,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       font-weight: 600;
                       transition: all 0.2s;
                       white-space: nowrap;
-                    " onmouseover="this.style.background='rgba(74,124,89,0.4)'" onmouseout="this.style.background='rgba(74,124,89,0.3)'" onclick="window._handleWizardConfirm?.()">
+                    " onmouseover="this.style.background='rgba(74,124,89,0.4)'" onmouseout="this.style.background='rgba(74,124,89,0.3)'">
                       ✓ Conferma
                     </button>
                   `}
@@ -7537,10 +7537,59 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                   }
 
-                  // Confirm button - delegated to onclick handler
+                  // Confirm button
                   if (target.classList.contains('wizard-confirm-btn')) {
-                    console.log('[WIZARD] Confirm button clicked via listener (fallback)');
-                    window._handleWizardConfirm?.();
+                    console.log('[WIZARD] Confirm button clicked');
+
+                    // Capture notes directly from textarea
+                    const notesField = document.getElementById('wizard-notes-input');
+                    if (notesField) {
+                      wizardState.notes = notesField.value.trim();
+                    }
+
+                    // Capture duration directly from input field
+                    const durationField = document.getElementById('wizard-duration-input');
+                    if (durationField) {
+                      const durVal = parseInt(durationField.value, 10);
+                      if (durVal > 0) wizardState.duration = durVal;
+                    }
+
+                    // Capture cost directly from input field
+                    const costField = document.getElementById('wizard-cost-input');
+                    if (costField) {
+                      wizardState.cost = parseFloat(costField.value) || 0;
+                    }
+
+                    console.log('[WIZARD] Confirming POI:', {poiId, poiName, day: wizardState.selectedDay, time: wizardState.selectedTime});
+
+                    // Validate day selected
+                    if (wizardState.selectedDay === null) {
+                      console.warn('[WIZARD] No day selected');
+                      window.toast('⚠️ Seleziona un giorno');
+                      return;
+                    }
+
+                    // Add POI
+                    const success = window.ITINERARY.addPOIToDay(
+                      poiId,
+                      poiName,
+                      wizardState.selectedDay,
+                      wizardState.selectedTime,
+                      wizardState.duration,
+                      wizardState.notes,
+                      wizardState.cost,
+                      wizardState.tag
+                    );
+
+                    if (success) {
+                      window.saveState?.();
+                      window.closeSheet();
+                      window.toast(`✅ Aggiunto al Day ${wizardState.selectedDay + 1} alle ${wizardState.selectedTime}`);
+                      console.log('[WIZARD] POI added successfully');
+                    } else {
+                      console.warn('[WIZARD] Failed to add POI');
+                      window.toast('❌ Errore');
+                    }
                     return;
                   }
                 };
@@ -7667,7 +7716,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     font-weight: 600;
                     transition: all 0.2s;
                     white-space: nowrap;
-                  " onmouseover="this.style.background='rgba(74,124,89,0.4)'" onmouseout="this.style.background='rgba(74,124,89,0.3)'" onclick="window._handleWizardConfirm?.()">
+                  " onmouseover="this.style.background='rgba(74,124,89,0.4)'" onmouseout="this.style.background='rgba(74,124,89,0.3)'">
                     ✓ Conferma
                   </button>
                 `}
