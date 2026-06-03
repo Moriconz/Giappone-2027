@@ -887,7 +887,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const t0 = performance.now();
     console.log(`%c[renderMarkers] START - Rendering markers on map`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
     // CRITICAL FIX: Invalidate cache to ensure openPOI() gets fresh POI list
-    globalPOIsCache = null;
+    window.invalidatePOIsCache?.();
     console.log('[renderMarkers] 🔄 Cache invalidated for fresh POI lookup');
     vectorSource.clear();
     const zoom = map.getView().getZoom() || 5;
@@ -1115,168 +1115,30 @@ document.addEventListener('DOMContentLoaded', () => {
     visible: !!state.showShoppingLayer
   });
   map.addLayer(shoppingLayer);
-  function renderShoppingMarkers(){
-    shoppingSource.clear();
-    SHOPPING_DB.forEach(s => {
-      const feature = new ol.Feature({
-        geometry: new ol.geom.Point(ol.proj.fromLonLat([s.coords[1], s.coords[0]])),
-        name: s.name,
-        id: s.id,
-        type: 'shopping'
-      });
-      shoppingSource.addFeature(feature);
-    });
-  }
-  function toggleShoppingLayer(){
-    state.showShoppingLayer = !state.showShoppingLayer;
-    saveState();
-    const btn = document.querySelector('button[data-toggle-shopping]');
-    if (btn) btn.classList.toggle('active', state.showShoppingLayer);
-    shoppingLayer.setVisible(state.showShoppingLayer);
-    if (state.showShoppingLayer) renderShoppingMarkers();
-  }
-  function updateLayerToggle(){
-    const btn = document.querySelector('[data-toggle-shopping]');
-    if (btn) btn.classList.toggle('active', !!state.showShoppingLayer);
-  }
-  function flyToCity(c){
-    const [lat,lng] = CITY_COORDS[c];
-    map.getView().animate({
-      center: ol.proj.fromLonLat([lng, lat]),
-      zoom: 10,
-      duration: 500
-    });
-  }
-  // ---- GPS TRACKING (integrato con Agenda) ----
-  let gpsWatchId = null;
+  window.shoppingSource = shoppingSource;
+  window.shoppingLayer = shoppingLayer;
+  // renderShoppingMarkers, toggleShoppingLayer, updateLayerToggle, flyToCity → js/views/shopping-layer.js
+  function renderShoppingMarkers() { window.renderShoppingMarkers?.(); }
+  function toggleShoppingLayer() { window.toggleShoppingLayer?.(); }
+  function updateLayerToggle() { window.updateLayerToggle?.(); }
+  function flyToCity(c) { window.flyToCity?.(c); }
+  // ---- GPS TRACKING (integrato con Agenda) — estratto in js/gps-tracker.js ----
+  window.gpsWatchId = null;
   function haversineKm(lat1,lng1,lat2,lng2){
     const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
     const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
     return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
   }
   function fmtDist(km){ return km<1 ? Math.round(km*1000)+'m' : km.toFixed(1)+'km'; }
-  window.haversineKm = haversineKm; // esposto per js/views/
+  window.haversineKm = haversineKm;
   window.fmtDist = fmtDist;
-  function startGPS(){
-    // === FAKE GPS A TOKYO (per testing) ===
-    const USE_FAKE_GPS = false;
-    let geolocationToUse = navigator.geolocation;
-
-    // Se in un gruppo, manda il GPS subito (non aspetta il primo update)
-    if (state.group?.myName && state.gpsCurrentLat && state.gpsCurrentLng && peerGPS.getStatus() !== 'disconnected') {
-      console.log(`%c[GPS] 📍 START: Broadcasting GPS istantaneo all'accensione`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
-      const payload = {
-        type: 'gps',
-        lat: state.gpsCurrentLat,
-        lng: state.gpsCurrentLng,
-        name: state.group.myName,
-        avatar: state.group?.myAvatar || null
-      };
-      window.rtdbBroadcast(payload);
-    }
-
-    if (USE_FAKE_GPS) {
-      // Mock geolocation (non assegnare a navigator.geolocation che è readonly)
-      geolocationToUse = {
-        watchPosition: (successCallback, errorCallback, options) => {
-          // Simula Tokyo coordinates con piccolo jitter per realismo
-          const interval = setInterval(() => {
-            successCallback({
-              coords: {
-                latitude: 35.6762 + (Math.random() - 0.5) * 0.001,
-                longitude: 139.6503 + (Math.random() - 0.5) * 0.001,
-                accuracy: 10
-              }
-            });
-          }, 1000);
-          return interval;
-        },
-        clearWatch: (id) => {
-          clearInterval(id);
-        }
-      };
-      console.log('[GPS] Using FAKE GPS at Tokyo');
-    }
-    // === FINE FAKE GPS ===
-    
-    if (!geolocationToUse) { toast(T('toast.gpsNA', 'GPS non disponibile')); return; }
-    state.gpsEnabled=true; state.gpsPermissionAsked=true; saveState();
-    if (gpsWatchId!==null) return;
-    gpsWatchId=geolocationToUse.watchPosition(pos=>{
-      const pt={lat:pos.coords.latitude,lng:pos.coords.longitude};
-      if(!state.gpsTrack) state.gpsTrack=[];
-      const last=state.gpsTrack[state.gpsTrack.length-1];
-      if(!last||haversineKm(last.lat,last.lng,pt.lat,pt.lng)*1000>5){
-        if(state.gpsTrack.length>=500) state.gpsTrack.shift();
-        state.gpsTrack.push(pt);
-      }
-      state.gpsCurrentLat=pt.lat; state.gpsCurrentLng=pt.lng;
-      updateGPSMarker(pt.lat, pt.lng);
-      // Invia posizione ai peer connessi (se GPS live attivo)
-      if (peerGPS.getStatus() !== 'disconnected') {
-        try {
-          const payload = { type:'gps', lat:pt.lat, lng:pt.lng,
-            name: state.group?.myName||'?', avatar: state.group?.myAvatar||null };
-          console.log(`%c[GPS] 📍 Trasmettendo posizione: (${pt.lat.toFixed(4)}, ${pt.lng.toFixed(4)}) - ${state.group?.myName}`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px;font-size:11px');
-          window.rtdbBroadcast(payload);
-        } catch(e) {}
-      }
-      saveState(); updateAgendaDistances(); updateGPSStatusPanel();
-    },err=>{
-      toast('GPS: '+err.message); state.gpsEnabled=false; saveState();
-      if(gpsWatchId!==null){geolocationToUse.clearWatch(gpsWatchId);gpsWatchId=null;}
-      updateGPSStatusPanel();
-    },{enableHighAccuracy:true,maximumAge:5000,timeout:30000});
-  }
-  function stopGPS(){
-    state.gpsEnabled=false; saveState();
-    if(gpsWatchId!==null){navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;}
-    updateGPSMarker(null, null);
-    updateGPSStatusPanel(); toast(T('toast.gpsOff', 'GPS disattivato'));
-  }
-  function toggleGPS(){ if(state.gpsEnabled&&gpsWatchId!==null) stopGPS(); else startGPS(); }
-  function updateAgendaDistances(){
-    if(!state.gpsCurrentLat) return;
-    document.querySelectorAll('[data-gps-dist]').forEach(el=>{
-      const lat=parseFloat(el.dataset.lat), lng=parseFloat(el.dataset.lng);
-      if(!isNaN(lat)&&!isNaN(lng)){
-        const km=haversineKm(state.gpsCurrentLat,state.gpsCurrentLng,lat,lng);
-        el.textContent='Posizione rilevata '+fmtDist(km);
-        el.style.color=km<1?'var(--success)':km<5?'var(--warning)':'var(--muted)';
-      }
-    });
-  }
-  function buildGPSPanelHTML(active,pts,lat,lng){
-    return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px">
-          <span style="width:8px;height:8px;border-radius:50%;background:${active?'var(--success)':'var(--muted)'};display:inline-block;${active?'box-shadow:0 0 0 3px rgba(74,124,89,.25)':''}"></span>
-          GPS ${active?'attivo':'inattivo'}
-        </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:3px">${active?lat+', '+lng:'Nessuna posizione'} · ${pts} punti</div>
-      </div>
-      <button id="gps-toggle-btn" class="btn ${active?'success':''}" style="font-size:12px;padding:6px 10px">
-        ${active?'⏹ Stop':'▶ Start GPS'}
-      </button>
-      ${pts>0?`<button id="gps-clear-btn" class="btn" aria-label="Cancella traccia GPS" style="font-size:12px;padding:6px 10px">🗑️</button>`:''}
-    </div>`;
-  }
-  function updateGPSStatusPanel(){
-    const panel=document.getElementById('gps-status-panel'); if(!panel) return;
-    const active=state.gpsEnabled&&gpsWatchId!==null;
-    const pts=state.gpsTrack?.length||0;
-    const lat=state.gpsCurrentLat?state.gpsCurrentLat.toFixed(5):'—';
-    const lng=state.gpsCurrentLng?state.gpsCurrentLng.toFixed(5):'—';
-    panel.innerHTML=buildGPSPanelHTML(active,pts,lat,lng);
-    const btn=document.getElementById('gps-toggle-btn'); if(btn) btn.onclick=toggleGPS;
-    const clrBtn=document.getElementById('gps-clear-btn');
-    if(clrBtn) clrBtn.onclick=()=>{
-      state.gpsTrack=[]; state.gpsCurrentLat=null; state.gpsCurrentLng=null;
-      updateGPSMarker(null, null);
-      saveState(); updateAgendaDistances(); updateGPSStatusPanel(); toast(T('toast.trackCleared', 'Traccia cancellata'));
-    };
-  }
-  if(state.gpsEnabled&&!gpsWatchId) startGPS();
+  function startGPS(...args) { window.startGPS?.(...args); }
+  function stopGPS() { window.stopGPS?.(); }
+  function toggleGPS() { window.toggleGPS?.(); }
+  function updateAgendaDistances() { window.updateAgendaDistances?.(); }
+  function buildGPSPanelHTML(...args) { return window.buildGPSPanelHTML?.(...args) ?? ''; }
+  function updateGPSStatusPanel() { window.updateGPSStatusPanel?.(); }
+  if(state.gpsEnabled&&!window.gpsWatchId) window.startGPS?.();
   // Restore last known GPS position on map immediately
   if(state.gpsCurrentLat && state.gpsCurrentLng) updateGPSMarker(state.gpsCurrentLat, state.gpsCurrentLng);
 
@@ -1362,90 +1224,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     console.log('[MAP CLICK] Features found:', featuresFound, 'Handled:', handled);
   });
-  // ---- Filter bar UI ----
-  const filtersEl = document.getElementById('filters');
-  function renderFilters(){
-    // Remove orphaned panel before re-render
-    const oldPanel = document.getElementById('adv-filters-panel');
-    if (oldPanel) oldPanel.remove();
-    const chips = [];
-    chips.push(`<button class="chip local ${state.onlyLocal?'active':''}" data-local="1">🏮 Local</button>`);
-    chips.push(`<button class="chip gf-places ${state.showGFPlaces?'active':''}" data-gf-places="1">🟢 GF Places</button>`);
-    // Categorie effettivamente presenti tra i POI caricati (per nascondere chip vuote)
-    const presentCats = new Set();
-    try { (window.allPOIs ? window.allPOIs() : []).forEach(p => p && p.cat && presentCats.add(p.cat)); } catch (e) {}
-    Object.keys(CATS).forEach(k => {
-      // Mostra "Tutti" sempre + la categoria attiva + solo le categorie effettivamente
-      // presenti tra i POI caricati (riduce la barra da ~80 chip a poche pertinenti).
-      if (k !== 'all' && k !== state.activeCat && !presentCats.has(k)) return;
-      chips.push(`<button class="chip ${state.activeCat===k?'active':''}" data-cat="${k}">${CATS[k].icon} ${CATS[k].label}</button>`);
-    });
-    chips.push(`<button class="chip ${state.showAdvFilters?'active':''}" id="adv-filter-toggle" data-adv="1">⚙️ Avanzati</button>`);
-    filtersEl.innerHTML = chips.join('');
-    
-    // Advanced filters panel
-    if (state.showAdvFilters) {
-      const minRating = state.minRating || 0;
-      const maxBudget = state.maxBudget || 100000;
-      const advPanel = document.createElement('div');
-      advPanel.id = 'adv-filters-panel';
-      advPanel.style.cssText = 'position:absolute;top:50px;left:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;z-index:499;min-width:280px;box-shadow:0 4px 12px rgba(0,0,0,.3)';
-      advPanel.innerHTML = `
-        <div style="font-weight:700;margin-bottom:10px">🔧 Filtri avanzati</div>
-        <div style="margin-bottom:10px">
-          <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">⭐ Voto minimo: <strong id="rating-val">${minRating}</strong></label>
-          <input type="range" id="adv-rating" min="0" max="5" step="1" value="${minRating}" style="width:100%;cursor:pointer" />
-        </div>
-        <div style="margin-bottom:10px">
-          <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">💰 Budget massimo: <strong id="budget-val">¥${maxBudget}</strong></label>
-          <input type="range" id="adv-budget" min="0" max="100000" step="5000" value="${maxBudget}" style="width:100%;cursor:pointer" />
-        </div>
-        <button id="adv-reset" class="btn" style="width:100%;font-size:12px;padding:6px">Reset filtri</button>
-      `;
-      filtersEl.parentElement.style.position = 'relative';
-      filtersEl.parentElement.appendChild(advPanel);
-      
-      // Bind advanced filter controls (with throttle to prevent excessive rendering)
-      document.getElementById('adv-rating').oninput = throttle((e) => {
-        state.minRating = parseInt(e.target.value, 10);
-        document.getElementById('rating-val').textContent = state.minRating;
-        saveState(); renderMarkers();
-      }, 200);
-      document.getElementById('adv-budget').oninput = throttle((e) => {
-        state.maxBudget = parseInt(e.target.value, 10);
-        document.getElementById('budget-val').textContent = '¥'+state.maxBudget;
-        saveState(); renderMarkers();
-      }, 200);
-      document.getElementById('adv-reset').onclick = () => {
-        state.minRating = 0;
-        state.maxBudget = 100000;
-        saveState();
-        renderFilters(); renderMarkers();
-      };
-    }
-  }
-  filtersEl.addEventListener('click', e => {
-    const btn = e.target.closest('.chip'); if (!btn) return;
-    if (btn.dataset.gf) state.onlyGF = !state.onlyGF;
-    else if (btn.dataset.local) state.onlyLocal = !state.onlyLocal;
-    else if (btn.dataset.gfPlaces) {
-      state.showGFPlaces = !state.showGFPlaces;
-      // Toggle GF Places layer visibility
-      if (window.gfPlacesLayer) {
-        window.gfPlacesLayer.setVisible(state.showGFPlaces);
-        console.log('[Filter] GF Places layer visibility:', state.showGFPlaces);
-      }
-    }
-    else if (btn.dataset.cat) state.activeCat = btn.dataset.cat;
-    else if (btn.dataset.adv) state.showAdvFilters = !state.showAdvFilters;
-    saveState(); renderFilters(); renderMarkers();
-    const activeNav = document.querySelector('nav.bottom button.active');
-    if (activeNav?.dataset.view === 'list') renderListView();
-    if (activeNav?.dataset.view === 'shopping') renderShoppingView();
-  });
-  // ---- Sheet ----
-  const sheet = document.getElementById('sheet');
-  const sheetTitle = document.getElementById('sheet-title');
+  // ---- Filter bar UI — renderFilters + listener → js/views/filter-bar.js ----
+  function renderFilters() { window.renderFilters?.(); }
+  // ---- Sheet — openSheet/closeSheet → js/sheet-manager.js ----
   // ============================================================================
   // PERFORMANCE UTILITIES - Debounce, Throttle, Lazy Loading
   // ============================================================================
@@ -1468,6 +1249,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
   }
+  window.throttle = throttle; // esposto per js/views/
 
   // Lazy load images with IntersectionObserver
   function setupLazyLoadImages() {
@@ -1492,111 +1274,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Call lazy load setup periodically
   setInterval(setupLazyLoadImages, 2000);
 
-  const sheetBody = document.getElementById('sheet-body');
-  window.sheetBody = sheetBody; // esposto per le views estratte (vedi js/views/)
-  document.getElementById('sheet-close').onclick = closeSheet;
-  sheet.addEventListener('click', e => { if (e.target === sheet) closeSheet(); });
-  let _sheetPrevFocus = null;
-  let _sheetTrapHandler = null;
-
-  function openSheet(title, html){
-    console.log('[openSheet] Starting, title:', title);
-    console.log('[openSheet] sheetTitle:', sheetTitle, 'sheetBody:', sheetBody, 'sheet:', sheet);
-    if (!sheetTitle || !sheetBody || !sheet) {
-      console.error('[openSheet] ❌ Elements not found!', {sheetTitle: !!sheetTitle, sheetBody: !!sheetBody, sheet: !!sheet});
-      return;
-    }
-    sheetTitle.textContent = title;
-    sheetBody.innerHTML = html;
-    sheet.classList.add('open');
-    // Hide weather widget when sheet opens
-    const weatherWidget = document.getElementById('weather-floating');
-    if (weatherWidget) weatherWidget.classList.remove('show');
-    console.log('[openSheet] ✅ Sheet opened, class added');
-
-    // Focus trap: save previous focus, move focus into sheet
-    _sheetPrevFocus = document.activeElement;
-    const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
-    if (_sheetTrapHandler) document.removeEventListener('keydown', _sheetTrapHandler);
-    _sheetTrapHandler = (ev) => {
-      if (ev.key !== 'Tab') return;
-      const els = Array.from(sheet.querySelectorAll(FOCUSABLE)).filter(el => el.offsetParent !== null);
-      if (!els.length) return;
-      const first = els[0], last = els[els.length - 1];
-      if (ev.shiftKey) { if (document.activeElement === first) { ev.preventDefault(); last.focus(); } }
-      else            { if (document.activeElement === last)  { ev.preventDefault(); first.focus(); } }
-    };
-    document.addEventListener('keydown', _sheetTrapHandler);
-    requestAnimationFrame(() => {
-      const closeBtn = document.getElementById('sheet-close');
-      const firstEl = sheet.querySelector(FOCUSABLE);
-      (closeBtn || firstEl)?.focus();
-    });
-  }
-  function closeSheet(){
-    console.log('[closeSheet] 🔴 closeSheet called');
-    sheet.classList.remove('open');
-    // Release focus trap and restore prior focus
-    if (_sheetTrapHandler) { document.removeEventListener('keydown', _sheetTrapHandler); _sheetTrapHandler = null; }
-    if (_sheetPrevFocus && typeof _sheetPrevFocus.focus === 'function') { try { _sheetPrevFocus.focus(); } catch (_) {} }
-    _sheetPrevFocus = null;
-
-    // Remove wizard listeners when sheet closes
-    if (window._wizardClickListener) {
-      document.removeEventListener('click', window._wizardClickListener, { capture: true });
-      window._wizardClickListener = null;
-      window._wizardClickListenerAttached = false;
-      console.log('[closeSheet] ✅ Removed wizard click listener');
-    }
-
-    if (window._wizardChangeListener) {
-      document.removeEventListener('change', window._wizardChangeListener, { capture: true });
-      window._wizardChangeListener = null;
-      window._wizardChangeListenerAttached = false;
-      console.log('[closeSheet] ✅ Removed wizard change listener');
-    }
-
-    // Show weather widget again when sheet closes
-    const weatherWidget = document.getElementById('weather-floating');
-    if (weatherWidget) {
-      weatherWidget.classList.add('show');
-      console.log('[closeSheet] ✅ Added .show to weather widget');
-    } else {
-      console.error('[closeSheet] ❌ Weather widget element not found!');
-    }
-    // Always reset tab buttons to "Mappa" when closing any sheet
-    const bottomNav = document.querySelector('nav.bottom');
-    if (bottomNav) {
-      console.log('[closeSheet] Resetting all buttons to blue, activating map button');
-      bottomNav.querySelectorAll('button').forEach(b => {
-        const wasActive = b.classList.contains('active');
-        b.classList.remove('active');
-        // Force color reset by explicitly setting style if CSS isn't applying
-        if (wasActive) {
-          console.log('[closeSheet] Removed .active from button:', b.dataset.view);
-        }
-      });
-      const mapBtn = bottomNav.querySelector('button[data-view="map"]');
-      if (mapBtn) {
-        mapBtn.classList.add('active');
-        console.log('[closeSheet] ✅ Added .active to map button');
-      }
-    } else {
-      console.warn('[closeSheet] bottomNav element not found');
-    }
-    // Double-check: wait a frame and verify state
-    requestAnimationFrame(() => {
-      const bottomNav = document.querySelector('nav.bottom');
-      if (bottomNav) {
-        const activeButtons = Array.from(bottomNav.querySelectorAll('button.active'));
-        console.log('[closeSheet] Verification: active buttons count:', activeButtons.length,
-          'Map button active?', activeButtons.some(b => b.dataset.view === 'map'));
-      }
-    });
-  }
-  // Rendi globali per poi-handlers.js
-  window.openSheet = openSheet;
-  window.closeSheet = closeSheet;
+  // openSheet/closeSheet are set by sheet-manager.js (loaded before DOMContentLoaded)
+  function openSheet(title, html) { window.openSheet?.(title, html); }
+  function closeSheet() { window.closeSheet?.(); }
 
   // Initialize weather widget as visible on page load
   const initWeatherWidget = document.getElementById('weather-floating');
@@ -1942,18 +1622,10 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', updateMapPosition);
   window.addEventListener('orientationchange', updateMapPosition);
 
-  // Also update when filters change
-  const originalRenderFilters = renderFilters;
-  window.renderFilters = function() {
-    originalRenderFilters.call(this);
-    setTimeout(updateMapPosition, 100);
-  };
+  // filter-bar.js calls updateMapPosition internally after each renderFilters
 
   // Export globali per group-panel e group-chat
-  window.startGPS = startGPS;
-  window.stopGPS = stopGPS;
-  window.openSheet = openSheet;
-  window.closeSheet = closeSheet;
+  // startGPS/stopGPS → gps-tracker.js sets them; openSheet/closeSheet already set above
   window.toast = toast;
 
   // GF Groq panel, GFPlacesDB, GFSuggestionsDB, GroqMenuAnalyzer → js/gf-places-panel.js

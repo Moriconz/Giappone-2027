@@ -200,6 +200,7 @@ function getCachedAllPOIs() {
   return globalPOIsCache;
 }
 window.getCachedAllPOIs = getCachedAllPOIs; // esposto per js/views/poi-detail-view.js
+window.invalidatePOIsCache = function() { globalPOIsCache = null; }; // usato da renderMarkers
 // Invalida cache quando state cambia (custom events, category overrides)
 const origSaveState = saveState;
 let lastItineraryLength = 0;
