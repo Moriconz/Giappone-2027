@@ -103,7 +103,10 @@
       'cpoi.deleted': 'Posto eliminato',
       'cpoi.intro': "Crea un posto personalizzato in questa posizione. Apparirà sulla mappa e potrai aggiungerlo all'itinerario.",
       'sos.clipboardNA': '❌ Clipboard non supportata', 'sos.copied': '✅ Copiato negli appunti',
-      'sos.copyError': '❌ Errore nella copia', 'sos.cardDownloaded': '✅ Tessera medica scaricata'
+      'sos.copyError': '❌ Errore nella copia', 'sos.cardDownloaded': '✅ Tessera medica scaricata',
+      'onboard.tip1': "📅 Tocca un luogo sulla mappa per aggiungerlo all'itinerario",
+      'onboard.tip2': '💰 Apri Menu → Budget per impostare le spese del viaggio',
+      'onboard.tip3': '👥 Crea un gruppo per pianificare insieme agli altri'
     },
     en: {
       'header.brand': '🌸 SafeEats',
@@ -201,7 +204,10 @@
       'cpoi.deleted': 'Place deleted',
       'cpoi.intro': 'Create a custom place at this location. It will appear on the map and you can add it to your itinerary.',
       'sos.clipboardNA': '❌ Clipboard not supported', 'sos.copied': '✅ Copied to clipboard',
-      'sos.copyError': '❌ Copy failed', 'sos.cardDownloaded': '✅ Medical card downloaded'
+      'sos.copyError': '❌ Copy failed', 'sos.cardDownloaded': '✅ Medical card downloaded',
+      'onboard.tip1': '📅 Tap a place on the map to add it to your itinerary',
+      'onboard.tip2': '💰 Open Menu → Budget to set your trip expenses',
+      'onboard.tip3': '👥 Create a group to plan together with others'
     },
     ja: {
       'header.brand': '🌸 SafeEats',
@@ -299,7 +305,10 @@
       'cpoi.deleted': '場所を削除しました',
       'cpoi.intro': 'この場所にカスタムスポットを作成します。地図に表示され、旅程に追加できます。',
       'sos.clipboardNA': '❌ クリップボードが使えません', 'sos.copied': '✅ クリップボードにコピーしました',
-      'sos.copyError': '❌ コピーに失敗しました', 'sos.cardDownloaded': '✅ 医療カードをダウンロードしました'
+      'sos.copyError': '❌ コピーに失敗しました', 'sos.cardDownloaded': '✅ 医療カードをダウンロードしました',
+      'onboard.tip1': '📅 地図の場所をタップして旅程に追加できます',
+      'onboard.tip2': '💰 メニュー → 予算 で旅行の費用を設定しましょう',
+      'onboard.tip3': '👥 グループを作成して一緒に旅行を計画しましょう'
     }
   };
 

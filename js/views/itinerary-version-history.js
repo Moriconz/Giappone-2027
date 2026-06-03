@@ -156,7 +156,7 @@
               ${desc}
               &nbsp;·&nbsp;${pois} ${T('vh.pois', 'tappe')}
             </div>
-            <div style="color:rgba(255,255,255,0.4);font-size:11px;">${when}</div>
+            <div style="color:rgba(255,255,255,0.55);font-size:11px;">${when}</div>
           </div>
 
           <!-- Ripristina -->

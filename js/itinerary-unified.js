@@ -307,6 +307,7 @@ function renderItineraryUnified() {
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="padding:5px 10px;background:rgba(255,107,53,0.15);border:1.5px solid rgba(255,107,53,0.5);border-radius:20px;color:#FF8A5B;font-size:11px;font-weight:600;cursor:pointer;" title="Riorganizza per zone geografiche">🧭 Ottimizza</button>` : ''}
             <button onclick="window.openItinerarySuggest?.()" style="padding:5px 10px;background:rgba(100,150,255,0.12);border:1.5px solid rgba(100,150,255,0.4);border-radius:20px;color:rgba(150,180,255,1);font-size:11px;font-weight:600;cursor:pointer;" title="Suggerimenti POI da aggiungere">✨ Suggerimenti</button>
+            <button onclick="window.loadScript('./js/views/itinerary-version-history.js').then(()=>window.openItineraryVersionHistory?.())" style="padding:5px 10px;background:rgba(180,120,255,0.1);border:1.5px solid rgba(180,120,255,0.35);border-radius:20px;color:rgba(200,160,255,1);font-size:11px;font-weight:600;cursor:pointer;" title="Storico versioni itinerario">⏮ Storico</button>
             <button onclick="window.openItineraryReminders?.()" style="padding:5px 10px;background:rgba(255,200,50,0.1);border:1.5px solid rgba(255,200,50,0.35);border-radius:20px;color:rgba(255,210,80,1);font-size:11px;font-weight:600;cursor:pointer;" title="Promemoria tappe">🔔 Promemoria</button>
           </div>
         </div>

@@ -271,7 +271,7 @@
               ${_fmtDateRange(h.actualStart, h.actualEnd)}
             </span>
           </span>
-          <span style="flex:0 0 auto;color:rgba(255,255,255,0.4);font-size:14px;">→</span>
+          <span style="flex:0 0 auto;color:rgba(255,255,255,0.55);font-size:14px;">→</span>
         </button>
       `;
     }).join('');

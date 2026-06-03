@@ -6118,7 +6118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         box-sizing: border-box;
                         font-family: 'Courier New', monospace;
                       ">
-                      <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 6px;">Formato: HH:MM (es: 14:30, 09:45)</p>
+                      <p style="color: rgba(255,255,255,0.55); font-size: 11px; margin-top: 6px;">Formato: HH:MM (es: 14:30, 09:45)</p>
                       ${hoursWarning}
                     </div>
                     <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 16px;">Giorno selezionato: <strong style="color: #FF6B35;">Day ${wizardState.selectedDay + 1}</strong></p>
@@ -8685,7 +8685,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div id="gf-list-sheet" style="position: relative; min-height: 200px; display: flex; flex-direction: column; gap: 8px;">
           <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
             ${Array.from({length:5}).map(() => '<div class="skeleton skeleton-card"></div>').join('')}
-            <p style="color: rgba(255,255,255,0.4); text-align: center; padding: 6px; margin: 0; font-size: 12px;">${window.t ? window.t('gf.loadingRestaurants') : '⏳ Caricamento ristoranti...'}</p>
+            <p style="color: rgba(255,255,255,0.55); text-align: center; padding: 6px; margin: 0; font-size: 12px;">${window.t ? window.t('gf.loadingRestaurants') : '⏳ Caricamento ristoranti...'}</p>
           </div>
         </div>
       </div>

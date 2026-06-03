@@ -194,7 +194,7 @@ function openBackupPanel() {
         <span style="font-size:20px">📂</span>
         <div>
           <div>Ripristina backup</div>
-          <div style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.4);margin-top:2px">Carica un file .json precedentemente esportato</div>
+          <div style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:2px">Carica un file .json precedentemente esportato</div>
         </div>
       </button>
 
