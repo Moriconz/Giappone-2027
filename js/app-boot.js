@@ -256,6 +256,101 @@
   new UniversalInstaller();
   console.log('[Install] ✓ System initialized');
 
+  // ════════════════════════════════════════════════════════════════════
+  // SW UPDATE BANNER — shown when a new Service Worker version is waiting
+  // ════════════════════════════════════════════════════════════════════
+
+  function showUpdateBanner() {
+    if (document.getElementById('sw-update-banner')) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'sw-update-banner';
+    banner.style.cssText = `
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 9998;
+      background: linear-gradient(135deg, rgba(15,23,42,0.97) 0%, rgba(30,41,59,0.97) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(99,102,241,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.4);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    `;
+
+    const text = document.createElement('span');
+    text.style.cssText = `font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 500; flex: 1;`;
+    text.textContent = 'Nuova versione disponibile';
+
+    const btnGroup = document.createElement('div');
+    btnGroup.style.cssText = `display: flex; gap: 8px; flex-shrink: 0;`;
+
+    const updateBtn = document.createElement('button');
+    updateBtn.textContent = 'Aggiorna';
+    updateBtn.style.cssText = `
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    `;
+    updateBtn.onclick = () => {
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+      }
+      banner.remove();
+    };
+
+    const dismissBtn = document.createElement('button');
+    dismissBtn.textContent = '×';
+    dismissBtn.style.cssText = `
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.5);
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    `;
+    dismissBtn.onclick = () => banner.remove();
+
+    btnGroup.appendChild(updateBtn);
+    btnGroup.appendChild(dismissBtn);
+    banner.appendChild(text);
+    banner.appendChild(btnGroup);
+    document.body.appendChild(banner);
+    console.log('[SW] Update banner shown');
+  }
+
+  if ('serviceWorker' in navigator) {
+    // Listen for messages from any SW (waiting or active)
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data?.type === 'SW_UPDATE_AVAILABLE') {
+        console.log('[SW] Update available — showing banner');
+        showUpdateBanner();
+      }
+    });
+
+    // Auto-reload when the controlling SW changes (after skipWaiting + controllerchange)
+    let reloadPending = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloadPending) return;
+      reloadPending = true;
+      console.log('[SW] Controller changed — reloading for new version');
+      window.location.reload();
+    });
+  }
+
   // Show to Waiter Card - Comprehensive celiac disease information
   window.showWaiterCard = function(jp) {
     const overlay = document.createElement('div');

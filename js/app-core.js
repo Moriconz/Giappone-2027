@@ -697,7 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
    * Delete personal itinerary with confirmation if it's shared (Option C)
    * If shared: asks "Itinerario condiviso con N gruppi. Eliminare ovunque?"
    */
-  function deletePersonalItinerary() {
+  async function deletePersonalItinerary() {
     const sharedGroups = getSharedGroups('personal_itinerary') || [];
 
     if (sharedGroups.length > 0) {
@@ -706,7 +706,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ? `⚠️ Itinerario condiviso con 1 gruppo (${sharedGroups[0].groupId}). Eliminare ovunque?`
         : `⚠️ Itinerario condiviso con ${sharedGroups.length} gruppi. Eliminare ovunque?`;
 
-      if (!confirm(message)) {
+      const confirmed = await (window.modalConfirm || confirm)(message, { danger: true, confirmText: 'Elimina' });
+      if (!confirmed) {
         return false; // User cancelled
       }
 
@@ -2100,8 +2101,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add POI button
     const addPoiBtn = document.getElementById('add-poi-to-itin');
     if (addPoiBtn) {
-      addPoiBtn.addEventListener('click', () => {
-        const query = prompt('Scrivi il nome del luogo (es: "Senso-ji Temple Tokyo"):');
+      addPoiBtn.addEventListener('click', async () => {
+        const query = await (window.modalPrompt || ((msg, o) => Promise.resolve(prompt(msg))))(
+          'Scrivi il nome del luogo:', { placeholder: 'Es: Senso-ji Temple Tokyo' }
+        );
         if (!query) return;
 
         window.searchGooglePlaces?.(query, (results) => {
@@ -7437,8 +7440,10 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('[renderListView] btnShareGroup NOT FOUND!');
     }
     if (btnGoogleSearch) {
-      btnGoogleSearch.onclick = () => {
-        const searchQuery = prompt('🌍 Cerca su Google Places (es: "Senso-ji Temple Tokyo"):');
+      btnGoogleSearch.onclick = async () => {
+        const searchQuery = await (window.modalPrompt || ((msg, o) => Promise.resolve(prompt(msg))))(
+          '🌍 Cerca su Google Places:', { placeholder: 'Es: Senso-ji Temple Tokyo' }
+        );
         if (searchQuery) {
           searchGooglePlaces(searchQuery, (results) => {
             if (results.length === 0) return;
@@ -9195,10 +9200,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show loading if no Google Places data yet
     if (googlePOIs.length === 0) {
       const loadingHtml = `
-        <div style="padding:20px;text-align:center;color:var(--muted)">
-          <div style="font-size:14px;margin-bottom:10px">⏳ Caricamento negozi in corso...</div>
-          <p style="font-size:12px;margin:0">Caricando negozi entro 20km (50km per vintage) dalla tua posizione...</p>
-          <p style="font-size:11px;color:var(--warning);margin-top:8px">Se persiste, controlla: (1) Google Maps API key in Vercel, (2) Posizione GPS attiva</p>
+        <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
+          ${Array.from({length: 6}).map(() => `
+            <div class="skeleton" style="height:68px;border-radius:12px;"></div>
+          `).join('')}
+          <p style="color:rgba(255,255,255,0.35);text-align:center;font-size:12px;margin:4px 0 0;">⏳ Caricamento negozi in corso…</p>
         </div>
       `;
       window.openSheet('🛍️ Shopping', loadingHtml);
@@ -9550,8 +9556,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Exit group
-  window.exitGroup = function() {
-    if (!confirm('Sei sicuro di voler uscire dalla stanza?')) {
+  window.exitGroup = async function() {
+    const ok = await (window.modalConfirm || confirm)('Sei sicuro di voler uscire dalla stanza?', { danger: true, confirmText: 'Esci' });
+    if (!ok) {
       return;
     }
     console.log('[exitGroup] Exiting group...');
@@ -9569,8 +9576,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Delete group (creator only)
-  window.deleteGroup = function() {
-    if (!confirm('Sei sicuro di voler eliminare la stanza? Tutti i membri verranno disconnessi.')) {
+  window.deleteGroup = async function() {
+    const ok = await (window.modalConfirm || confirm)('Sei sicuro di voler eliminare la stanza? Tutti i membri verranno disconnessi.', { danger: true, confirmText: 'Elimina stanza' });
+    if (!ok) {
       return;
     }
     const room = state.group?.roomId;
@@ -10750,7 +10758,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
           ${p.note ? `<div style="margin:8px 0;font-size:12px;color:var(--muted);line-height:1.4;">${p.note}</div>` : ''}
           <div class="gpc-actions" style="display:flex;gap:6px;margin-top:10px;">
             <button onclick="window.startEditGFPlace('${p.id}')" style="flex:1;padding:6px;background:rgba(100,149,237,0.2);border:1px solid rgba(100,149,237,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">✏️ Modifica</button>
-            <button onclick="if(confirm('Elimina?')) { window.deleteGFPlace('${p.id}'); window.openGFPlacesPanel(); }" style="flex:1;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">🗑️ Elimina</button>
+            <button onclick="(window.modalConfirm||((m)=>Promise.resolve(confirm(m))))('Eliminare questo posto?',{danger:true,confirmText:'Elimina'}).then(ok=>{ if(ok){ window.deleteGFPlace('${p.id}'); window.openGFPlacesPanel(); } })" style="flex:1;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">🗑️ Elimina</button>
           </div>
         </div>
       `).join('');
@@ -11234,7 +11242,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
             };">${s.status === 'approved' ? '✅ Approvato' : s.status === 'rejected' ? '❌ Rifiutato' : '⏳ In attesa'}</div>
           </div>
           <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Inviato: ${new Date(s.submittedAt).toLocaleDateString('it-IT')}</div>
-          <button onclick="if(confirm('Elimina questo suggerimento?')) { GFSuggestionsDB.delete('${s.id}'); window.openGFSuggestionPanel(); }" style="width:100%;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">🗑️ Elimina</button>
+          <button onclick="(window.modalConfirm||((m)=>Promise.resolve(confirm(m))))('Eliminare questo suggerimento?',{danger:true,confirmText:'Elimina'}).then(ok=>{ if(ok){ GFSuggestionsDB.delete('${s.id}'); window.openGFSuggestionPanel(); } })" style="width:100%;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">🗑️ Elimina</button>
         </div>
       `).join('');
     }

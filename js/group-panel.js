@@ -246,8 +246,9 @@ window.groupPanel = (() => {
     // Delete room (solo creator)
     const deleteBtn = document.getElementById('delete-room');
     if (deleteBtn) {
-      deleteBtn.addEventListener('click', () => {
-        if (confirm('Sei sicuro di voler eliminare la stanza? Tutti i membri verranno disconnessi.')) {
+      deleteBtn.addEventListener('click', async () => {
+        const ok = await (window.modalConfirm || confirm)('Sei sicuro di voler eliminare la stanza? Tutti i membri verranno disconnessi.', { danger: true, confirmText: 'Elimina stanza' });
+        if (ok) {
           window.deleteGroup?.();
         }
       });
@@ -365,9 +366,10 @@ window.groupPanel = (() => {
 
     // Attach delete handlers
     listDiv.querySelectorAll('[data-delete-itinerary]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const itinId = btn.getAttribute('data-delete-itinerary');
-        if (confirm('Eliminare questo itinerario?')) {
+        const ok = await (window.modalConfirm || confirm)('Eliminare questo itinerario?', { danger: true, confirmText: 'Elimina' });
+        if (ok) {
           if (window.state.groupItineraries[itinId]) {
             delete window.state.groupItineraries[itinId];
             window.saveState();

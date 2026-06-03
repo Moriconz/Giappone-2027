@@ -155,7 +155,7 @@ class TappaFlowModal {
 
     document.getElementById('tappa-flow-next').addEventListener('click', () => {
       if (!this.data.day) {
-        alert('Seleziona un giorno');
+        (window.modalAlert || alert)('Seleziona un giorno');
         return;
       }
       this.showStep2(poi);
@@ -277,7 +277,7 @@ class TappaFlowModal {
     document.getElementById('tappa-back-2').addEventListener('click', () => this.showStep1(poi));
     document.getElementById('tappa-flow-next-2').addEventListener('click', () => {
       if (!this.data.time) {
-        alert('Seleziona un orario');
+        (window.modalAlert || alert)('Seleziona un orario');
         return;
       }
       this.showStep3(poi);

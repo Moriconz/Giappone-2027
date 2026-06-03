@@ -16,7 +16,9 @@ const CRITICAL_RESOURCES = [
   '../',
   '../index.html',
   '../manifest.webmanifest',
-  '../y2k-override.css',
+  '../css/legacy-skin.css',
+  '../css/modern-2026.css',
+  '../css/base.css',
 ];
 
 // Resources to predictively prefetch
@@ -54,7 +56,12 @@ self.addEventListener('install', (event) => {
           }
         }
 
-        self.skipWaiting();
+        // Notify existing clients that a new version is waiting (don't skipWaiting automatically)
+        const clients = await self.clients.matchAll({ type: 'window' });
+        if (clients.length > 0) {
+          console.log('[SW] 📢 Notifying', clients.length, 'client(s) of pending update');
+          clients.forEach(client => client.postMessage({ type: 'SW_UPDATE_AVAILABLE' }));
+        }
       } catch (err) {
         console.error('[SW] Install error:', err);
       }
@@ -251,6 +258,14 @@ self.addEventListener('notificationclick', (event) => {
 // Notification close
 self.addEventListener('notificationclose', (event) => {
   console.log('[SW] Notification closed');
+});
+
+// Page-triggered update: apply waiting SW immediately
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    console.log('[SW] Applying update (skipWaiting)');
+    self.skipWaiting();
+  }
 });
 
 console.log('[SW] Service worker script loaded');
