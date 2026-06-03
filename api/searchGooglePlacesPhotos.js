@@ -4,6 +4,8 @@
  * URL: /api/searchGooglePlacesPhotos?query=...&lat=...&lng=...&city=...
  */
 
+import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -23,6 +25,10 @@ export default async function handler(req, res) {
   if (!query || !query.trim()) {
     return res.status(400).json({ error: 'Missing query parameter', photos: [] });
   }
+
+  const cacheParams = { q: query.trim().toLowerCase(), city: city?.toLowerCase() || null };
+  const cached = await cacheGet('placesPhotos', cacheParams);
+  if (cached) return res.status(200).json(cached);
 
   const searchQuery = city ? `${query} ${city} Japan` : `${query} Japan`;
   const placeQuery = query.trim();
@@ -203,17 +209,23 @@ export default async function handler(req, res) {
   try {
     const placeResult = await searchGooglePlacesPhotos();
     if (placeResult.photos.length) {
-      return res.status(200).json({ place: placeResult.place, photos: placeResult.photos });
+      const rb = { place: placeResult.place, photos: placeResult.photos };
+      await cacheSet('placesPhotos', cacheParams, rb, TTL.SEVEN_DAYS);
+      return res.status(200).json(rb);
     }
 
     const customPhotos = await searchGoogleCustomSearchImages();
     if (customPhotos.length) {
-      return res.status(200).json({ place: null, photos: customPhotos });
+      const rb = { place: null, photos: customPhotos };
+      await cacheSet('placesPhotos', cacheParams, rb, TTL.SEVEN_DAYS);
+      return res.status(200).json(rb);
     }
 
     const wikiPhotos = await searchWikimediaImages();
     if (wikiPhotos.length) {
-      return res.status(200).json({ place: null, photos: wikiPhotos });
+      const rb = { place: null, photos: wikiPhotos };
+      await cacheSet('placesPhotos', cacheParams, rb, TTL.SEVEN_DAYS);
+      return res.status(200).json(rb);
     }
 
     const streetPhotos = await searchGoogleStreetView();

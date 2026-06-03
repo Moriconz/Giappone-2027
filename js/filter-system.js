@@ -161,11 +161,11 @@ function createFilterChips() {
   });
 
   // Insert after search input or at start of map-view
-  const searchInput = mapView.querySelector('input[type="search"]');
+  const searchInput = mapContainer.querySelector('input[type="search"]');
   if (searchInput) {
     searchInput.parentNode.insertAdjacentElement('afterend', container);
   } else {
-    mapView.insertBefore(container, mapView.firstChild);
+    mapContainer.insertBefore(container, mapContainer.firstChild);
   }
 
   console.log('[FilterSystem] Filter chips created');

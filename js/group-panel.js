@@ -28,6 +28,15 @@ window.groupPanel = (() => {
     }
     
     const now = Date.now();
+    const T = window.t || ((k, f) => f || k);
+    // Stato connessione realtime (MQTT) — mostrato nel box stanza, aggiornato dal refresh live
+    const connStatus = (() => {
+      const st = window.peerGPS?.getStatus?.() || 'disconnected';
+      const peers = window.peerGPS?.getPeerCount?.() ?? 0;
+      if (st === 'connected') return `<span style="color:#7FFF7F;font-weight:700">🟢 Connesso</span> <span style="color:rgba(255,255,255,0.7)">· ${peers} ${peers === 1 ? 'membro' : 'membri'} online</span>`;
+      if (st === 'connecting') return `<span style="color:#FFD700;font-weight:700">🟡 Connessione in corso…</span>`;
+      return `<span style="color:#FF6B6B;font-weight:700">🔴 Non connesso</span>`;
+    })();
     const membersList = members.map(m => {
       const avatarHtml = m.avatar ? `
         <img src="${m.avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--primary);" />
@@ -49,7 +58,7 @@ window.groupPanel = (() => {
         ${avatarHtml}
         <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <div style="font-weight:700;font-size:14px;color:#fff">${escapeHtml(m.name || 'Unnamed')}${isSelf ? ' <span style="font-size:10px;color:rgba(255,255,255,0.5)">(tu)</span>' : ''}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.7)">${isOnline ? '🟢 Online' : '🔴 Offline'}${hasGPS && !isSelf ? ' 📍 GPS' : ''}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.7)">${isOnline ? '🟢 ' + T('common.online', 'Online') : '🔴 ' + T('common.offline', 'Offline')}${hasGPS && !isSelf ? ' 📍 GPS' : ''}</div>
         </div>
       </div>
     `;
@@ -60,19 +69,20 @@ window.groupPanel = (() => {
 
         <!-- STANZA INFO -->
         <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 6px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🏠 Stanza: <strong>${escapeHtml(group.roomId)}</strong></h3>
-          <p style="font-size:12px;color:rgba(255,255,255,0.7);margin:0;">Creata da: <strong style="color:#fff">${escapeHtml(group.createdBy || 'Sconosciuto')}</strong></p>
+          <h3 style="margin:0 0 6px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🏠 ${T('group.room', 'Stanza')}: <strong>${escapeHtml(group.roomId)}</strong></h3>
+          <p style="font-size:12px;color:rgba(255,255,255,0.7);margin:0 0 6px 0;">Creata da: <strong style="color:#fff">${escapeHtml(group.createdBy || 'Sconosciuto')}</strong></p>
+          <p id="group-conn-status" style="font-size:12px;margin:0;">${connStatus}</p>
         </div>
 
         <!-- MEMBRI -->
         <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 12px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">👥 Membri (${members.length})</h3>
+          <h3 style="margin:0 0 12px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">👥 ${T('group.members', 'Membri')} (${members.length})</h3>
           ${membersList ? `<div style="display:flex;flex-direction:column;gap:8px">${membersList}</div>` : '<p style="color:rgba(255,255,255,0.6);font-size:13px;margin:0">Nessun membro.</p>'}
         </div>
 
         <!-- GPS SHARING -->
         <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📍 Condivisione GPS</h3>
+          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📍 ${T('group.gpsSharing', 'Condivisione GPS')}</h3>
           <div style="display:flex;gap:10px;align-items:center;padding:10px;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:10px">
             <input type="checkbox" id="gps-share-toggle" ${gpsEnabled ? 'checked' : ''}
               style="width:18px;height:18px;cursor:pointer;accent-color:#FF1493">

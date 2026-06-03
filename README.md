@@ -20,35 +20,35 @@
 
 ---
 
-## 🏗️ Architettura v3.2
+## 🏗️ Architettura (rinnovata 2026)
 
-**Modular structure** diviso in moduli indipendenti:
+`index.html` è ora una **shell sottile (~205 righe)**: tutto il CSS e il JS inline
+è stato estratto in file dedicati. Vedi [ANALISI_2026.md](ANALISI_2026.md) per il dettaglio.
 
 ```
-index.html (3581 linee)
+index.html (~205 righe)          shell: meta, link CSS, tag <script>
+├─ css/
+│  ├─ legacy-skin.css            struttura componenti (ex y2k-override.css)
+│  ├─ base.css                   stili estratti dai <style> inline
+│  ├─ glass.css / safety.css     utility + UI gluten-free
+│  ├─ components.css             design tokens + componenti
+│  └─ modern-2026.css            ⭐ tema moderno (caricato per ultimo, vince)
 ├─ js/
-│  ├─ state.js                    (Global state, localStorage)
-│  ├─ features-gps.js             (GPS P2P, WakeLock, Heartbeat)
-│  ├─ ui-helpers.js               (Helper UI)
-│  ├─ chunk-parts-loader.js       (Chunk loader da GitHub Releases)
-│  ├─ group-panel.js              (Pannello gruppo: membri, GPS, exit)
-│  └─ group-chat.js               (Chat P2P con notifiche push)
-├─ manifest.webmanifest           (PWA config)
-├─ icon-192.png, icon-512.png     (App icons)
-└─ pois-osm.json.gz               (POI fallback offline)
+│  ├─ app-boot.js                bootstrap PWA/install (ex 1° <script> inline)
+│  ├─ app-core.js                applicazione principale (ex <script> inline ~12.8k righe)
+│  ├─ state.js                   stato globale (localStorage, single source)
+│  ├─ y2k-windows.js             panel manager moderno (API window.y2kWindows)
+│  ├─ features-ai.js             AI + vision (TF.js/MobileNet lazy-loaded)
+│  ├─ itinerary*.js, routing.js  itinerario, budget, routing
+│  ├─ group-*.js                 gruppi realtime (MQTT) + chat
+│  └─ google-places-*.js         POI da Google Places
+├─ api/                          funzioni serverless Vercel (chiavi via process.env)
+├─ manifest.webmanifest          PWA config
+└─ sw.js                         service worker (offline)
 ```
 
-### Caricamento Script (Ordine Critico)
-
-```html
-<script src="./js/state.js"></script>
-<script src="./js/features-gps.js"></script>
-<script src="./js/ui-helpers.js"></script>
-<script src="https://cdnjs.../jszip.min.js"></script>
-<script src="./js/chunk-parts-loader.js"></script>
-<script src="./js/group-panel.js"></script>
-<script src="./js/group-chat.js"></script>
-```
+> ⚠️ `app-core.js` (~12.800 righe) è il prossimo candidato a essere spezzato
+> in moduli di feature: refactor incrementale documentato in ANALISI_2026.md.
 
 ---
 
@@ -225,10 +225,10 @@ window.state.group                   // Gruppo info
 
 ## 📚 Documentazione
 
-- **MODULAR_STRUCTURE.md** — Architettura dettagliata
-- **CHANGELOG.md** — Release notes
-- **CHUNK_INTEGRATION_GUIDE.md** — Setup chunk loader
-- **test-modular.html** — Test moduli
+- **[ANALISI_2026.md](ANALISI_2026.md)** — Analisi completa, criticità e piano (documento canonico)
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** — Architettura dettagliata
+- **[CHANGELOG.md](CHANGELOG.md)** — Release notes
+- **docs/archive/** — Documentazione storica (sprint, fix, analisi precedenti)
 
 ---
 
@@ -296,8 +296,8 @@ MIT — Libero per uso personale/commerciale
 
 ---
 
-**Versione:** v3.2  
+**Versione:** v3.3 (modernizzazione 2026)  
 **Status:** ✅ Produzione  
-**Ultima modifica:** 25 Aprile 2026  
+**Ultima modifica:** 25 Maggio 2026  
 
 Made with ❤️ for gluten-free travellers in Japan 🇯🇵

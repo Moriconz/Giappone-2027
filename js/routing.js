@@ -53,6 +53,22 @@ const ROUTING = {
   },
 
   /**
+   * Stima il costo del biglietto (¥) per una tratta.
+   * walking: gratis · transit urbano: base ~¥180 + ¥30/km · lunga percorrenza (treno): ~¥25/km
+   * Valori arrotondati a 10¥ (indicativi, stile tariffe giapponesi).
+   */
+  estimateFare(distanceKm, mode) {
+    if (mode === 'walking' || distanceKm < 0.3) return 0;
+    let yen;
+    if (mode === 'driving' || distanceKm >= 50) {
+      yen = distanceKm * 25; // intercity / treno veloce
+    } else {
+      yen = 180 + distanceKm * 30; // metro/treno urbano
+    }
+    return Math.round(yen / 10) * 10;
+  },
+
+  /**
    * Suggest transport mode based on distance
    * < 2km: walking, 2-50km: transit, > 50km: driving
    */

@@ -8,6 +8,25 @@ window.groupChat = (() => {
   let chatHistory = {};
   let chatPanelOpen = false;
   let chatNeedsRender = false;
+  let unreadCount = 0;
+
+  // Badge "messaggi non letti" sul tasto Menu (percorso verso Gruppo → Chat)
+  function updateChatBadge() {
+    const btn = document.querySelector('nav.bottom button[data-view="menu"]');
+    if (!btn) return;
+    let badge = btn.querySelector('.chat-unread-badge');
+    if (unreadCount > 0) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'chat-unread-badge';
+        btn.style.position = 'relative';
+        btn.appendChild(badge);
+      }
+      badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
+    } else if (badge) {
+      badge.remove();
+    }
+  }
 
   function isValidAvatarString(value) {
     return typeof value === 'string' && (
@@ -178,6 +197,8 @@ window.groupChat = (() => {
       console.log('[GroupChat] Panel closed - sending push notification');
       notifyNewMessage(normalizedMessage);
       chatNeedsRender = true; // Mark that panel needs refresh when opened
+      unreadCount++;
+      updateChatBadge();
     }
 
     // Rirenderizza se pannello aperto
@@ -412,6 +433,8 @@ window.groupChat = (() => {
     initChat(group.roomId);
 
     chatPanelOpen = true;
+    unreadCount = 0;
+    updateChatBadge();
 
     console.log('[GroupChat] openChatPanel: opening sheet for room', group.roomId);
     console.log('[GroupChat] Current chat history:', chatHistory.messages.length, 'messages');

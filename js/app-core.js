@@ -1,354 +1,4 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5, user-scalable=yes" />
-<meta name="viewport-fit" content="cover" />
-<!-- 2026 Core Web Vitals Optimization -->
-<meta name="supported-color-schemes" content="light dark" />
-<meta name="color-scheme" content="light" />
-<meta name="theme-color" content="#1A3C5E" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Giappone 2027" />
-<meta name="description" content="Travel companion Giappone 2027 — mappa interattiva, gluten-free, itinerario, offline." />
-<link rel="manifest" href="./manifest.webmanifest" />
-<link rel="apple-touch-icon" href="./icon-192.png" />
-<link rel="icon" type="image/png" href="./icon-192.png" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css" />
-<link rel="stylesheet" href="./y2k-override.css" />
-<!-- 2026 Performance Optimization -->
-<link rel="preconnect" href="https://api.open-meteo.com" />
-<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-<link rel="prefetch" href="./manifest.webmanifest" />
-<title>Giappone 2027 · Travel Companion v3</title>
-<!-- ============================================================================ -->
-<!-- EARLY INITIALIZATION — PWA Install (supports all browsers) -->
-<!-- ============================================================================ -->
-<script>
-(function() {
-  'use strict';
-  console.log('[Install] Initializing PWA install system...');
-
-  window.__deferredPrompt = null;
-
-  // Detect browser and OS
-  const ua = navigator.userAgent.toLowerCase();
-  const isIOS = /iphone|ipad|ipod|macintosh|mac os/.test(ua);
-  const isAndroid = /android|aarch64|arm64/.test(ua);
-  // Fallback: if we have touch points and not iOS/Mac, it's likely Android or mobile
-  const isMobile = (navigator.maxTouchPoints > 1 || /mobile|android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(ua)) && !isIOS;
-  const isChrome = /chrome|crios/.test(ua) && !/edg/.test(ua);
-  const isEdge = /edg/.test(ua);
-  const isFirefox = /firefox|fxios/.test(ua);
-  const isSafari = /safari|version.*mobile/.test(ua) && !/chrome/.test(ua) && !/edg/.test(ua);
-
-  // Listen for beforeinstallprompt (Chrome/Edge)
-  // NON mostrare il modal - il UniversalInstaller gestirà tutto
-  window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('[Install] 🎯 beforeinstallprompt FIRED');
-    e.preventDefault();
-    window.__deferredPrompt = e;
-    // RIMOSSO: showPrompt() — il modal non serve più
-    console.log('[Install] deferredPrompt saved, waiting for button click');
-  });
-
-  // Log if beforeinstallprompt never fires
-  setTimeout(() => {
-    if (!window.__deferredPrompt) {
-      console.warn('[Install] ⚠️ beforeinstallprompt NEVER FIRED');
-      console.warn('[Install] Browser non supporta PWA install prompt');
-      console.warn('[Install] UA:', ua);
-      console.warn('[Install] Fallback a istruzioni manuali');
-    }
-  }, 3000);
-
-  // ✅ OLD MODAL SYSTEM COMPLETELY REMOVED
-  // The UniversalInstaller class (below) handles all browser/device scenarios
-  // No modal, just a clean button in the header
-
-  // ════════════════════════════════════════════════════════════════════
-  // UNIVERSAL INSTALLER 2026 — Works on ALL browsers & devices
-  // ════════════════════════════════════════════════════════════════════
-
-  class UniversalInstaller {
-    constructor() {
-      this.ua = navigator.userAgent.toLowerCase();
-      this.isIOS = /iphone|ipad|ipod/.test(this.ua);
-      this.isAndroid = /android/.test(this.ua);
-      this.isMobile = (navigator.maxTouchPoints > 1 || /mobile|android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(this.ua)) && !this.isIOS;
-      this.isChrome = /chrome/.test(this.ua) && !/edg/.test(this.ua);
-      this.isEdge = /edg/.test(this.ua);
-      this.isFirefox = /firefox/.test(this.ua);
-      this.isSafari = /safari/.test(this.ua) && !/chrome/.test(this.ua) && !/edg/.test(this.ua);
-      this.isBrave = /brave/.test(this.ua);
-      this.isDesktop = !this.isAndroid && !this.isIOS && !this.isMobile;
-      this.deferredPrompt = null;
-      this.init();
-    }
-
-    init() {
-      console.log('[UniversalInstaller] ✅ Initializing on all browsers');
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        this.deferredPrompt = e;
-        console.log('[UniversalInstaller] 🎯 PWA installable (beforeinstallprompt)');
-        this.addButtonToHeader();
-      });
-
-      setTimeout(() => {
-        if (!this.deferredPrompt) {
-          console.log('[UniversalInstaller] No beforeinstallprompt, showing button anyway');
-          this.addButtonToHeader();
-        }
-      }, 1000);
-    }
-
-    addButtonToHeader() {
-      const header = document.querySelector('header');
-      if (!header) {
-        setTimeout(() => this.addButtonToHeader(), 100);
-        return;
-      }
-
-      if (document.getElementById('universal-install-btn')) return;
-
-      const btn = document.createElement('button');
-      btn.id = 'universal-install-btn';
-      btn.textContent = '📱 Aggiungi';
-      btn.style.cssText = `
-        background: linear-gradient(135deg, #00FF88, #00CC66) !important;
-        color: #1A2560 !important;
-        border: none !important;
-        padding: 10px 16px !important;
-        border-radius: 8px !important;
-        font-weight: 700 !important;
-        font-size: 13px !important;
-        cursor: pointer !important;
-        flex-shrink: 0 !important;
-        white-space: nowrap !important;
-        box-shadow: 0 2px 8px rgba(0,255,136,0.3) !important;
-        transition: all 0.2s ease !important;
-        font-family: 'Segoe UI', sans-serif !important;
-      `;
-
-      btn.onmouseenter = () => {
-        btn.style.transform = 'scale(1.05)';
-        btn.style.boxShadow = '0 4px 12px rgba(0,255,136,0.5)';
-      };
-      btn.onmouseleave = () => {
-        btn.style.transform = 'scale(1)';
-        btn.style.boxShadow = '0 2px 8px rgba(0,255,136,0.3)';
-      };
-
-      btn.onclick = () => this.handleInstall();
-      header.appendChild(btn);
-      console.log('[UniversalInstaller] ✅ Button added to header');
-    }
-
-    async handleInstall() {
-      console.log('[UniversalInstaller] 👉 Install clicked', { hasPrompt: !!this.deferredPrompt, isAndroid: this.isAndroid, isIOS: this.isIOS });
-
-      // Native beforeinstallprompt (Chrome/Edge/Brave Android/Desktop)
-      if (this.deferredPrompt) {
-        console.log('[UniversalInstaller] ✅ Using native beforeinstallprompt');
-        this.deferredPrompt.prompt();
-        const choice = await this.deferredPrompt.userChoice;
-        console.log('[UniversalInstaller] User choice:', choice.outcome);
-        this.deferredPrompt = null;
-        return;
-      }
-
-      // Fallback for browsers without beforeinstallprompt
-      let msg = '📲 Apri il menu del browser e seleziona "Installa"';
-      if (this.isIOS) {
-        msg = '📱 Tocca Condividi → "Aggiungi a Schermata Iniziale"';
-      } else if (this.isAndroid || this.isMobile) {
-        msg = '📲 Apri il menu del browser (⋮) e seleziona "Installa" o "Aggiungi a schermata iniziale"';
-      } else if (this.isDesktop) {
-        msg = '🖥️ Guarda in alto a destra della barra indirizzi';
-      }
-
-      // Try toast first, then alert as fallback
-      console.log('[UniversalInstaller] Showing message:', msg, { hasToast: !!window.toast });
-      if (window.toast && typeof window.toast === 'function') {
-        try {
-          window.toast(msg);
-          console.log('[UniversalInstaller] Toast called successfully');
-        } catch(e) {
-          console.error('[UniversalInstaller] Toast error:', e);
-          alert(msg);
-        }
-      } else {
-        console.log('[UniversalInstaller] No toast function, using alert');
-        alert(msg);
-      }
-    }
-  }
-
-  new UniversalInstaller();
-  console.log('[Install] ✓ System initialized');
-})();
-</script>
-<!-- ============================================================================ -->
-<!-- CDN DEPENDENCIES — All external scripts -->
-<!-- ============================================================================ -->
-<script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<!-- P2P via MQTT (broker.emqx.io) — zero config, nessun limite di messaggi -->
-<script src="https://unpkg.com/mqtt@5.3.4/dist/mqtt.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.12.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
-
-<!-- ============================================================================ -->
-<!-- APP MODULES — Phase 1: load order: encryption → config → state → features    -->
-<!-- ============================================================================ -->
-<script src="js/encryption.js"></script>
-<script src="js/config.js"></script>
-<!-- REMOVED: poi-loader.js, pois_dataset.js (using Google Places instead) -->
-<script src="js/state.js"></script>
-<script src="js/ui-helpers.js"></script>
-<script src="js/features-ai.js"></script>
-<script src="js/features-gps.js"></script>
-<!-- ntfy.sh P2P transport: sync GPS, chat, itinerari — zero config -->
-<script src="js/firebase-rtdb.js"></script>
-<script src="js/features-photos.js"></script>
-<!-- DISABLED: Old verification system -->
-<!-- <script src="js/poi-verified-db.js"></script> -->
-<!-- <script src="js/poi-sync.js"></script> -->
-<!-- <script src="js/poi-viewport-sync.js"></script> -->
-<!-- <script src="js/test-poi-sync.js"></script> -->
-
-<!-- NEW: Google Places direct loading -->
-<script src="js/google-places-cache.js"></script>
-<script src="js/google-places-loader.js"></script>
-<script src="js/google-places-debug.js"></script>
-<script src="js/group-chat.js"></script>
-<script src="js/group-panel.js"></script>
-</head>
-<body>
-<div id="app">
-  <!-- ✅ INSTALL MODAL REMOVED - UniversalInstaller handles all browsers -->
-  <div id="offline-banner">📶 Offline — dati in cache</div>
-  <header>
-    <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px;">🌸 SafeEats</h1>
-    <!-- Install button added by UniversalInstaller class -->
-  </header>
-  <!-- Filters Tab Bar — FIXED below header -->
-  <div id="filters" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 100; display: flex; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; gap: 8px; padding: 8px 14px; background: linear-gradient(180deg, rgba(45, 59, 125, 0.98) 0%, rgba(45, 59, 125, 0.95) 100%); border-bottom: 2px solid rgba(255, 20, 147, 0.3); height: 56px; align-items: center; scrollbar-width: none;"></div>
-
-    <!-- WEATHER MODAL — Full forecast detail (opens on "Dettagli" click) -->
-    <div id="weather-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; padding: 20px; font-family: 'Segoe UI', sans-serif;">
-      <div style="max-width: 100%; margin: 0 auto;">
-        <!-- Close button -->
-        <button id="weather-modal-close" onclick="closeWeatherModal()" style="position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; font-size: 20px; cursor: pointer; z-index: 1001;">✕</button>
-
-        <!-- Title -->
-        <h2 style="color: #fff; margin-bottom: 20px; text-align: center; font-size: 24px;">Previsioni Meteo</h2>
-
-        <!-- Cards container -->
-        <div id="weather-cards-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-          <!-- Cards will be populated by JS -->
-        </div>
-      </div>
-    </div>
-
-    <div id="map"></div>
-  </main>
-
-
-    <!-- DEBUG PANEL: Mostra errori e log PeerGPS sul telefono -->
-    <div id="debug-panel" style="position:fixed;bottom:80px;right:10px;width:280px;max-height:200px;background:rgba(0,0,0,0.9);color:#00FF88;font-size:10px;padding:8px;border-radius:6px;overflow-y:auto;font-family:monospace;z-index:9999;border:1px solid #FF1493;display:none">
-      <div style="margin-bottom:4px;font-weight:bold;color:#FF1493">🔍 Debug Log:</div>
-      <div id="debug-content"></div>
-    </div>
-    <section id="view-gf">
-  <div id="gf-list"></div>
-</section>
-  </main>
-  <nav class="bottom">
-    <button class="active" data-view="map">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2 3 5v17l6-3 6 3 6-3V2l-6 3-6-3z"/><path d="M9 2v17M15 5v17"/></svg>
-      Mappa
-    </button>
-    <button data-view="list">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-      Tappe
-    </button>
-    <button data-view="bookings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"/><path d="m16 19 2 2 4-4"/><path d="M3 10h18"/></svg>
-      Prenota
-    </button>
-    <button data-view="shopping">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      Shopping
-    </button>
-    <button data-view="group">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Gruppo
-    </button>
-    <button data-view="gf">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
-        <circle cx="12" cy="12" r="9"/>
-        <line x1="5" y1="19" x2="19" y2="5" stroke-width="2.5"/>
-      </svg>
-      GF
-    </button>
-    <button data-view="groq-menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8m3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5m-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11m3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
-      Groq
-    </button>
-    <button data-view="gf-places">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      Posti GF
-    </button>
-    <button data-view="budget">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20m10-10H2"/><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
-      Budget
-    </button>
-    <button data-view="gallery">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-      Galleria
-    </button>
-
-  </nav>
-</div>
-<div class="sheet" id="sheet">
-  <div class="sheet-inner">
-    <div class="sheet-handle"></div>
-    <div class="sheet-header">
-      <h2 id="sheet-title">Dettagli</h2>
-      <button class="icon-btn" id="sheet-close">✕</button>
-    </div>
-    <div class="sheet-body" id="sheet-body"></div>
-  </div>
-</div>
-<div id="toast-container"></div>
-<div id="ol-error" class="ol-error">
-  <div class="ol-error-emoji">🗾</div>
-  <div class="ol-error-title">Impossibile caricare la mappa</div>
-  <div class="ol-error-message">
-    Lo script della mappa non si è caricato.<br>
-    Controlla la connessione internet e ricarica la pagina.<br><br>
-    Se usi un <strong>ad-blocker</strong> (uBlock, Brave Shield, ecc.),
-    disabilitalo per questa pagina e ricarica.
-  </div>
-  <button onclick="location.reload()" class="ol-error-btn">🔄 Ricarica</button>
-</div>
-
-<!-- WEATHER WIDGET — FLOATING bottom-left (TRULY OUTSIDE app) -->
-<div id="weather-floating" style="cursor: pointer; user-select: none;">
-  <div id="weather-card" style="background: rgba(74, 91, 168, 0.15); border-radius: 24px; border: 1.5px solid rgba(255, 255, 255, 0.25); box-shadow: 0 8px 32px rgba(31, 38, 135, 0.25); padding: 16px 14px; width: 120px; height: 180px; backdrop-filter: blur(15px); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;">
-    <div id="weather-date" style="font-size: 8px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.2px; font-weight: 600; line-height: 1;">Sun, 15</div>
-    <div id="weather-icon" style="font-size: 36px; line-height: 1; text-align: center; margin: 4px 0;">☀️</div>
-    <div id="weather-condition" style="font-size: 9px; color: rgba(255,255,255,0.9); text-align: center; font-weight: 500;">Sereno</div>
-    <div id="weather-temp" style="font-size: 26px; font-weight: 900; color: #fff; line-height: 1; text-align: center;">15°</div>
-    <button id="weather-more-btn" onclick="openWeatherModal()" style="width: 100%; padding: 4px; background: rgba(255,20,147,0.2); border: 1px solid rgba(255,20,147,0.5); color: #fff; border-radius: 5px; font-size: 8px; cursor: pointer; font-weight: 600; margin-top: 4px;">more</button>
-  </div>
-</div>
-
-<script>
+// app-core.js — applicazione principale, estratta dal blocco <script> inline di index.html
 console.log('[Giappone2027] App loading...');
 
 // Initialize when DOM is ready
@@ -530,6 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
     establishment:{label:'Strutture',icon:'🏢'},
     place_of_worship:{label:'Luoghi di culto',icon:'⛩️'}
   };
+  window.CATS = CATS; // esposto per le views estratte (vedi js/views/)
   const CITIES = ['Sapporo','Nikko','Tokyo','Kamakura','Shirakawa-go','Kyoto','Osaka','Tottori','Beppu','Okinawa','Hiroshima','Nara','Hakone','Kanazawa','Nagasaki','Fukuoka','Matsuyama','Naoshima','Yakushima','Takayama','Kumamoto','Kagoshima','Sendai','Aomori','Toyama','Tokushima','Yamaguchi','Shimane','Ise','Gifu','Nagano','Fuji','Izu','Nagoya','Takamatsu','Kobe','Yokohama'];
   const CITY_COORDS = {
     Sapporo:[43.06,141.35],Nikko:[36.75,139.60],Tokyo:[35.68,139.76],
@@ -544,13 +195,20 @@ document.addEventListener('DOMContentLoaded', () => {
     Izu:[34.97,138.95],Nagoya:[35.18,136.91],Takamatsu:[34.34,134.04],
     Kobe:[34.69,135.19],Yokohama:[35.45,139.64],Akita:[39.72,140.10]
   };
+  window.CITY_COORDS = CITY_COORDS; // esposto per js/views/
   // ---- State (persisted) ----
   const STATE_KEY = 'giappone2027_state_v1';
   const state = Object.assign({
-    activeCat:'all', onlyGF:false, onlyLocal:false, savedPOIs:[], notes:{}, customEvents:[], dismissInstall:false,
+    activeCat:'all', onlyGF:false, onlyLocal:false, showGFPlaces:false, savedPOIs:[], notes:{}, customEvents:[], customPOIs:[], gfReports:{}, dismissInstall:false,
     itinerary:[], // Collaborative itinerary shared across group members
     userCategoryOverrides:{}, // {poiId: 'newCategory'}
-    group:{ name:'Giappone 2027', members:[], myAvatar:null, myName:'', createdBy:null, createdByName:null, isCreator:false }
+    group:{ name:'Giappone 2027', members:[], myAvatar:null, myName:'', createdBy:null, createdByName:null, isCreator:false },
+    // NEW: Itinerary sharing & sync metadata
+    itinerarySharing:{}, // {itineraryId: {owner, sharedWith: [{groupId, sharedAt, sharedBy}]}}
+    groupItineraries:{}, // {groupId: {id, owner, originItineraryId, pois[], syncStatus, vectorClock}}
+    // TEMPORARY: Default GPS for testing (Tokyo center)
+    gpsCurrentLat: 35.6762,
+    gpsCurrentLng: 139.6503
   }, JSON.parse(localStorage.getItem(STATE_KEY) || '{}'));
   window.state = state;
   window.saveState = saveState;
@@ -561,11 +219,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const origLog = console.log;
   const origError = console.error;
   const origWarn = console.warn;
+  let _debugUpdatePending = false;
 
   function addDebugLog(msg, type = 'log') {
     if (debugLogs.length > 20) debugLogs.shift();
     debugLogs.push({ msg, type, time: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) });
-    updateDebugPanel();
+    // Debounce updateDebugPanel to prevent excessive DOM updates
+    if (!_debugUpdatePending) {
+      _debugUpdatePending = true;
+      requestAnimationFrame(() => {
+        updateDebugPanel();
+        _debugUpdatePending = false;
+      });
+    }
   }
 
   function updateDebugPanel() {
@@ -625,6 +291,290 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ═════════════════════════════════════════════════════════════════════════
+  // ITINERARY SHARING & AUDIT TRAIL HELPERS — Phase 1
+  // ═════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Add audit entry to a tappa in the itinerary
+   * @param {object} tappa - The tappa object to modify
+   * @param {string} action - 'added', 'removed', 'reordered', 'note_updated', etc.
+   * @param {string} memberName - Who performed the action
+   * @param {object} extra - Optional extra data (e.g., note content, new position)
+   */
+  function addTappaAuditEntry(tappa, action, memberName, extra = {}) {
+    if (!tappa) return;
+    const now = Date.now();
+
+    // Initialize audit trail if needed
+    if (!tappa.audit) {
+      tappa.audit = {
+        createdAt: now,
+        createdBy: memberName || state.group?.myName || 'Unknown',
+        lastModifiedAt: now,
+        lastModifiedBy: memberName || state.group?.myName || 'Unknown',
+        modificationHistory: []
+      };
+    }
+
+    // Update modification timestamps
+    tappa.audit.lastModifiedAt = now;
+    tappa.audit.lastModifiedBy = memberName || state.group?.myName || 'Unknown';
+
+    // Add to history (full history, no pruning per user request)
+    tappa.audit.modificationHistory.push({
+      action,
+      by: memberName || state.group?.myName || 'Unknown',
+      at: now,
+      ...extra
+    });
+
+    console.log('[Audit] Added entry to tappa:', { id: tappa.id, action, by: memberName, at: new Date(now).toISOString() });
+  }
+
+  /**
+   * Get all groups that an itinerary is shared with
+   */
+  function getSharedGroups(itineraryId) {
+    if (!state.itinerarySharing || !state.itinerarySharing[itineraryId]) {
+      return [];
+    }
+    return state.itinerarySharing[itineraryId].sharedWith || [];
+  }
+
+  /**
+   * Check if itinerary is shared with a specific group
+   */
+  function isItinerarySharedWithGroup(itineraryId, groupId) {
+    const shared = getSharedGroups(itineraryId);
+    return shared.some(s => s.groupId === groupId);
+  }
+
+  /**
+   * Mark itinerary as shared with a group (call before sharing)
+   */
+  function markItinerarySharedWithGroup(itineraryId, groupId) {
+    if (!state.itinerarySharing) state.itinerarySharing = {};
+    if (!state.itinerarySharing[itineraryId]) {
+      state.itinerarySharing[itineraryId] = {
+        owner: state.group?.myName || 'Unknown',
+        sharedWith: []
+      };
+    }
+
+    // Check if already shared
+    const alreadyShared = state.itinerarySharing[itineraryId].sharedWith.some(s => s.groupId === groupId);
+    if (!alreadyShared) {
+      state.itinerarySharing[itineraryId].sharedWith.push({
+        groupId: groupId,
+        sharedAt: Date.now(),
+        sharedBy: state.group?.myName || 'Unknown'
+      });
+      console.log('[Sharing] Marked itinerary shared:', { itineraryId, groupId });
+    }
+  }
+
+  /**
+   * Unmark itinerary as shared with a group
+   */
+  function unmarkItinerarySharedWithGroup(itineraryId, groupId) {
+    if (!state.itinerarySharing || !state.itinerarySharing[itineraryId]) return;
+
+    const idx = state.itinerarySharing[itineraryId].sharedWith.findIndex(s => s.groupId === groupId);
+    if (idx !== -1) {
+      state.itinerarySharing[itineraryId].sharedWith.splice(idx, 1);
+      console.log('[Sharing] Unmarked itinerary shared:', { itineraryId, groupId });
+    }
+  }
+
+  /**
+   * Get formatted audit log for a tappa (for UI display)
+   */
+  function formatAuditLog(tappa) {
+    if (!tappa?.audit?.modificationHistory) return [];
+
+    return tappa.audit.modificationHistory.map(entry => {
+      const date = new Date(entry.at);
+      const timeAgo = getTimeAgo(entry.at);
+
+      let action_text = '';
+      switch(entry.action) {
+        case 'added': action_text = `Aggiunto da ${entry.by} ${timeAgo}`; break;
+        case 'removed': action_text = `Rimosso da ${entry.by} ${timeAgo}`; break;
+        case 'reordered': action_text = `Riordinato da ${entry.by} ${timeAgo}`; break;
+        case 'note_updated': action_text = `Nota aggiornata da ${entry.by} ${timeAgo}`; break;
+        default: action_text = `${entry.action} da ${entry.by} ${timeAgo}`;
+      }
+
+      return {
+        action: entry.action,
+        by: entry.by,
+        at: entry.at,
+        text: action_text,
+        extra: entry
+      };
+    });
+  }
+
+  /**
+   * Get human-readable time ago string
+   */
+  function getTimeAgo(timestamp) {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}g fa`;
+    if (hours > 0) return `${hours}h fa`;
+    if (minutes > 0) return `${minutes}m fa`;
+    if (seconds > 0) return `${seconds}s fa`;
+    return 'proprio adesso';
+  }
+
+  /**
+   * Get the most recent edit information for a tappa
+   */
+  function getLastModifiedInfo(tappa) {
+    if (!tappa?.audit) return null;
+    return {
+      by: tappa.audit.lastModifiedBy,
+      at: tappa.audit.lastModifiedAt,
+      text: `Modificato da ${tappa.audit.lastModifiedBy} ${getTimeAgo(tappa.audit.lastModifiedAt)}`
+    };
+  }
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // BIDIRECTIONAL SYNC LOGIC — Phase 5
+  // ═════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Sync personal itinerary to all shared groups
+   * Call this after editing personal itinerary
+   */
+  function syncPersonalToSharedGroups() {
+    if (!state.itinerary || state.itinerary.length === 0) return;
+
+    const sharedGroups = getSharedGroups('personal_itinerary') || [];
+    if (sharedGroups.length === 0) return;
+
+    console.log('[Sync] Syncing personal itinerary to', sharedGroups.length, 'groups');
+
+    sharedGroups.forEach(share => {
+      const groupId = share.groupId;
+      const groupItinId = `group_${groupId}_shared`;
+
+      // Update the group's itinerary
+      if (!state.groupItineraries) state.groupItineraries = {};
+      state.groupItineraries[groupItinId] = {
+        id: groupItinId,
+        groupId: groupId,
+        owner: state.group?.myName || 'Unknown',
+        originItineraryId: 'personal_itinerary',
+        pois: JSON.parse(JSON.stringify(state.itinerary)), // Deep copy
+        syncStatus: 'syncing',
+        lastSyncAt: Date.now(),
+        lastSyncedBy: state.group?.myName || 'Unknown',
+        vectorClock: { [state.group?.myName || 'Unknown']: (Date.now() % 10000) }
+      };
+
+      // Broadcast to MQTT
+      if (window.peerGPS?.broadcastItineraryShare) {
+        window.peerGPS.broadcastItineraryShare('personal_itinerary', groupId);
+      }
+
+      console.log('[Sync] ✅ Synced personal itinerary to group:', groupId);
+    });
+
+    saveState();
+  }
+
+  /**
+   * Sync group itinerary back to personal (call this when group members edit)
+   */
+  function syncGroupToPersonal(originItineraryId, groupId) {
+    if (originItineraryId !== 'personal_itinerary') return; // Only sync if origin is personal
+
+    const groupItinId = `group_${groupId}_shared`;
+    const groupItin = state.groupItineraries?.[groupItinId];
+    if (!groupItin || !groupItin.pois) return;
+
+    console.log('[Sync] Syncing group itinerary back to personal from group:', groupId);
+
+    // Merge group changes into personal itinerary using CRDT
+    if (window.mergeGroupItinerary) {
+      const merged = window.mergeGroupItinerary(state.itinerary, groupItin);
+      state.itinerary = merged;
+    } else {
+      state.itinerary = JSON.parse(JSON.stringify(groupItin.pois));
+    }
+
+    saveState();
+    console.log('[Sync] ✅ Synced group changes back to personal itinerary');
+
+    // Notify UI
+    window.dispatchEvent(new CustomEvent('personal_itinerary_updated', {
+      detail: { source: 'group', groupId: groupId }
+    }));
+  }
+
+  /**
+   * Handle document events for itinerary edits and broadcast
+   */
+  function setupSyncEventListeners() {
+    // When group itinerary is edited
+    document.addEventListener('itinerary_edited', (e) => {
+      const { groupId, itineraryId, from } = e.detail;
+      console.log('[Sync Event] Itinerary edited by', from, 'in group', groupId);
+
+      // If this is a shared itinerary, sync back to personal
+      const groupItin = state.groupItineraries?.[itineraryId];
+      if (groupItin?.originItineraryId === 'personal_itinerary' && state.group?.myName === groupItin.owner) {
+        syncGroupToPersonal('personal_itinerary', groupId);
+      }
+    });
+
+    // When personal itinerary is shared (broadcasts to group)
+    document.addEventListener('itinerary_shared', (e) => {
+      const { itineraryId, groupId } = e.detail;
+      console.log('[Sync Event] Itinerary shared:', itineraryId, '→', groupId);
+      syncPersonalToSharedGroups();
+    });
+
+    // When sync back happens (owner receives group updates)
+    document.addEventListener('sync_group_to_personal', (e) => {
+      const { originItineraryId, groupId } = e.detail;
+      console.log('[Sync Event] Syncing group back to personal');
+      syncGroupToPersonal(originItineraryId, groupId);
+    });
+
+    // When personal itinerary changes
+    document.addEventListener('personal_itinerary_changed', (e) => {
+      console.log('[Sync Event] Personal itinerary changed');
+      // Debounce the sync
+      clearTimeout(window._syncDebounceTimer);
+      window._syncDebounceTimer = setTimeout(() => {
+        syncPersonalToSharedGroups();
+      }, 500);
+    });
+  }
+
+  // Initialize sync listeners
+  setupSyncEventListeners();
+
+  // Make helpers globally accessible
+  window.addTappaAuditEntry = addTappaAuditEntry;
+  window.getSharedGroups = getSharedGroups;
+  window.isItinerarySharedWithGroup = isItinerarySharedWithGroup;
+  window.markItinerarySharedWithGroup = markItinerarySharedWithGroup;
+  window.unmarkItinerarySharedWithGroup = unmarkItinerarySharedWithGroup;
+  window.formatAuditLog = formatAuditLog;
+  window.getLastModifiedInfo = getLastModifiedInfo;
+  window.syncPersonalToSharedGroups = syncPersonalToSharedGroups;
+  window.syncGroupToPersonal = syncGroupToPersonal;
+
   // ── Genera un codice stanza univoco (6 char, nessun carattere ambiguo) ────
   function generateRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -669,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const maxBudget = state.maxBudget || 999999;
       if (p.ticket) {
         const match = p.ticket.match(/(\d+)/);
-        if (match && parseInt(match[1]) > maxBudget) return false;
+        if (match && parseInt(match[1], 10) > maxBudget) return false;
       }
       // Group accommodation filter
       const accomFilter = state.groupAccomFilter;
@@ -703,6 +653,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return false; // Already in itinerary
     }
     state.itinerary.push(entry);
+    // NEW: Add audit trail entry
+    const newEntry = state.itinerary[state.itinerary.length - 1];
+    addTappaAuditEntry(newEntry, 'added', state.group?.myName || 'Unknown');
     console.log('[addToItinerary] ✓ ADDED to state.itinerary. New length:', state.itinerary.length);
     saveState();
     // ✅ Sincronizza con il gruppo via WebRTC
@@ -715,6 +668,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!state.itinerary) state.itinerary = [];
     const idx = state.itinerary.findIndex(e => e.id === id);
     if (idx === -1) return false;
+    // NEW: Log removal in audit before removing
+    const removedEntry = state.itinerary[idx];
+    addTappaAuditEntry(removedEntry, 'removed', state.group?.myName || 'Unknown');
     state.itinerary.splice(idx, 1);
     saveState();
     // ✅ Sincronizza con il gruppo via WebRTC
@@ -732,6 +688,122 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!state.itinerary) return false;
     return state.itinerary.some(e => e.id === id);
   }
+
+  // ═════════════════════════════════════════════════════════════════
+  // PHASE 6: DELETE & UNSHARE FUNCTIONALITY
+  // ═════════════════════════════════════════════════════════════════
+
+  /**
+   * Delete personal itinerary with confirmation if it's shared (Option C)
+   * If shared: asks "Itinerario condiviso con N gruppi. Eliminare ovunque?"
+   */
+  function deletePersonalItinerary() {
+    const sharedGroups = getSharedGroups('personal_itinerary') || [];
+
+    if (sharedGroups.length > 0) {
+      // Shared itinerary: ask for confirmation
+      const message = sharedGroups.length === 1
+        ? `⚠️ Itinerario condiviso con 1 gruppo (${sharedGroups[0].groupId}). Eliminare ovunque?`
+        : `⚠️ Itinerario condiviso con ${sharedGroups.length} gruppi. Eliminare ovunque?`;
+
+      if (!confirm(message)) {
+        return false; // User cancelled
+      }
+
+      // Delete from all shared groups
+      sharedGroups.forEach(share => {
+        const groupItinId = `group_${share.groupId}_shared`;
+        if (state.groupItineraries?.[groupItinId]) {
+          delete state.groupItineraries[groupItinId];
+        }
+        unmarkItinerarySharedWithGroup('personal_itinerary', share.groupId);
+
+        // Broadcast deletion to group
+        if (window.peerGPS && window.rtdbBroadcast) {
+          window.rtdbBroadcast({
+            type: 'itinerary_deleted',
+            payload: {
+              itineraryId: groupItinId,
+              groupId: share.groupId,
+              deletedBy: state.group?.myName || 'Unknown'
+            }
+          });
+        }
+      });
+
+      console.log('[Delete] Deleted shared itinerary from all groups');
+    }
+
+    // Delete personal itinerary
+    state.itinerary = [];
+    saveState();
+    console.log('[Delete] Deleted personal itinerary');
+    toast('🗑️ Itinerario eliminato');
+    return true;
+  }
+
+  /**
+   * Request unshare of itinerary from a specific group (for non-owners)
+   * Owner receives: "Marco ha richiesto di smettere di condividere l'itinerario"
+   */
+  function requestUnshare(itineraryId, groupId) {
+    const myName = state.group?.myName || 'Unknown';
+    const owner = state.groupItineraries?.[`group_${groupId}_shared`]?.owner;
+
+    if (!owner) {
+      toast('⚠️ Impossibile trovare il proprietario dell\'itinerario');
+      return;
+    }
+
+    // Send request to owner
+    if (window.rtdbBroadcast) {
+      window.rtdbBroadcast({
+        type: 'itinerary_unshare_request',
+        payload: {
+          itineraryId: itineraryId,
+          groupId: groupId,
+          requestedBy: myName,
+          requestedAt: Date.now()
+        }
+      });
+    }
+
+    toast(`📨 Richiesta inviata a ${owner} per smettere di condividere`);
+    console.log('[Unshare] Requested unshare from', owner);
+  }
+
+  /**
+   * Accept unshare request and remove itinerary from group
+   */
+  function acceptUnshareRequest(groupId, requestedBy) {
+    unmarkItinerarySharedWithGroup('personal_itinerary', groupId);
+    const groupItinId = `group_${groupId}_shared`;
+    if (state.groupItineraries?.[groupItinId]) {
+      delete state.groupItineraries[groupItinId];
+    }
+
+    saveState();
+
+    // Notify group
+    if (window.rtdbBroadcast) {
+      window.rtdbBroadcast({
+        type: 'itinerary_unshared',
+        payload: {
+          groupId: groupId,
+          unsharedBy: state.group?.myName || 'Unknown',
+          unsharedAt: Date.now()
+        }
+      });
+    }
+
+    toast(`✅ Non più condiviso con ${groupId}`);
+    console.log('[Unshare] Accepted unshare request from', requestedBy);
+  }
+
+  // Make delete/unshare functions globally accessible
+  window.deletePersonalItinerary = deletePersonalItinerary;
+  window.requestUnshare = requestUnshare;
+  window.acceptUnshareRequest = acceptUnshareRequest;
 
   // ═════════════════════════════════════════════════════════════════
   // ===== CRDT MERGE FUNCTIONS (Phase 1: Foundation) =====
@@ -808,8 +880,12 @@ document.addEventListener('DOMContentLoaded', () => {
       Object.keys(poi).forEach(key => {
         if (key === 'googlePlaceId' || key === 'fields') return;
         const val = poi[key];
+        // Special handling: preserve audit trail as-is
+        if (key === 'audit') {
+          normalized[key] = val;
+        }
         // If value is a field metadata object, extract the value
-        if (val && typeof val === 'object' && 'value' in val && 'timestamp' in val) {
+        else if (val && typeof val === 'object' && 'value' in val && 'timestamp' in val) {
           normalized[key] = val.value;
         } else {
           normalized[key] = val;
@@ -840,7 +916,8 @@ document.addEventListener('DOMContentLoaded', () => {
       ]);
 
       fieldNames.forEach(fieldName => {
-        if (fieldName === 'googlePlaceId' || fieldName === 'fields' || fieldName === 'deleted' || fieldName === 'deletionTimestamp') return;
+        if (fieldName === 'googlePlaceId' || fieldName === 'fields' || fieldName === 'deleted' || fieldName === 'deletionTimestamp' || fieldName === 'audit') return;
+        // Note: 'audit' is handled separately below to preserve full history
 
         // Get local field metadata
         let localFieldMeta = local.fields?.[fieldName];
@@ -893,6 +970,41 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       mergedPoi.timestamp = Math.max(local.timestamp || 0, remote.timestamp || 0);
+
+      // PRESERVE AUDIT TRAIL: Merge audit information from both sides
+      if (local.audit || remote.audit) {
+        const localAudit = local.audit || { modificationHistory: [] };
+        const remoteAudit = remote.audit || { modificationHistory: [] };
+
+        // Merge modification histories (deduplicate by timestamp + action + by)
+        const mergedHistory = [];
+        const seen = new Set();
+
+        const combinedHistory = [
+          ...(localAudit.modificationHistory || []),
+          ...(remoteAudit.modificationHistory || [])
+        ];
+
+        // Sort by timestamp and deduplicate
+        combinedHistory.sort((a, b) => a.at - b.at);
+        combinedHistory.forEach(entry => {
+          const key = `${entry.at}|${entry.action}|${entry.by}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            mergedHistory.push(entry);
+          }
+        });
+
+        mergedPoi.audit = {
+          createdAt: Math.min(localAudit.createdAt || Date.now(), remoteAudit.createdAt || Date.now()),
+          createdBy: localAudit.createdBy || remoteAudit.createdBy || 'Unknown',
+          lastModifiedAt: Math.max(localAudit.lastModifiedAt || 0, remoteAudit.lastModifiedAt || 0),
+          lastModifiedBy: (localAudit.lastModifiedAt || 0) > (remoteAudit.lastModifiedAt || 0)
+            ? localAudit.lastModifiedBy
+            : remoteAudit.lastModifiedBy,
+          modificationHistory: mergedHistory
+        };
+      }
 
       return mergedPoi;
     }).filter(poi => !poi.deleted);  // Hide soft-deleted items
@@ -1108,7 +1220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const html = `
       <div style="padding: 0; min-width: 300px;">
         <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;">
-          <h3 style="margin:0 0 12px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📍 Aggiungi a Itinerario di Gruppo</h3>
+          <h3 style="margin:0 0 12px 0;color:#FF1493;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📍 Aggiungi a Itinerario di Gruppo</h3>
 
           <div style="background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;padding:12px;margin-bottom:12px;">
             <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:14px">Stanza: ${escapeHtml(roomId)}</p>
@@ -1116,7 +1228,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <div style="display:flex;gap:8px">
-            <button id="confirm-add-poi" style="flex:1;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive">
+            <button id="confirm-add-poi" style="flex:1;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
               ✅ Aggiungi
             </button>
             <button id="cancel-add-poi" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
@@ -1603,20 +1715,82 @@ document.addEventListener('DOMContentLoaded', () => {
   // ═════════════════════════════════════════════════════════════════
 
   /**
+   * Show modal when user is not in any group
+   */
+  function showNoGroupModal() {
+    console.log('[NoGroupModal] Showing modal for no group');
+
+    const html = `
+      <div style="padding: 0; min-width: 300px;">
+        <div style="background:linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,20,147,.1));border:1px solid #FF6B35;border-radius:10px;padding:16px;margin:12px;">
+          <h3 style="margin:0 0 12px 0;color:#FF6B35;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">⚠️ Non sei in nessun gruppo</h3>
+
+          <p style="margin:0 0 16px 0;color:#fff;font-size:13px;line-height:1.5;">
+            Per condividere il tuo itinerario con altri, devi prima entrare in un gruppo oppure crearne uno nuovo.
+          </p>
+
+          <div style="display:flex;gap:8px">
+            <button id="btn-go-groups" style="flex:1;background:linear-gradient(180deg,#FF6B35,#FF8C42);border:2px solid #FF6B35;color:white;border-radius:8px;padding:11px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
+              👥 Gruppami
+            </button>
+            <button id="btn-close-no-group" style="flex:1;background:rgba(255,107,53,.2);border:2px solid rgba(255,107,53,.5);color:#fff;border-radius:8px;padding:11px;font-weight:600;cursor:pointer;">
+              ❌ Chiudi
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    window.y2kWindows.open('no-group-modal', 'Non sei in nessun gruppo', html);
+
+    // Attach event listeners
+    setTimeout(() => {
+      const goGroupsBtn = document.getElementById('btn-go-groups');
+      const closeBtn = document.getElementById('btn-close-no-group');
+
+      if (goGroupsBtn) {
+        goGroupsBtn.addEventListener('click', () => {
+          console.log('[NoGroupModal] Navigating to groups tab');
+          console.log('[NoGroupModal] Setting pendingShareItinerary flag');
+          state.pendingShareItinerary = true;
+          window.y2kWindows.close('no-group-modal');
+
+          setTimeout(() => {
+            renderGroupView();
+          }, 200);
+        });
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          console.log('[NoGroupModal] Closing modal');
+          window.y2kWindows.close('no-group-modal');
+        });
+      }
+    }, 0);
+  }
+
+  /**
    * Show modal to select which group to share itinerary with
    */
   function showShareItineraryModal() {
-    console.log('[ShareItin] Showing group selection modal');
+    console.log('[ShareItin] ========== FUNCTION CALLED ==========');
+    console.log('[ShareItin] state.group:', state.group);
+    console.log('[ShareItin] state.itinerary length:', state.itinerary?.length);
 
     if (!state.group || !state.group.roomId) {
-      toast('⚠️ Non sei in nessun gruppo');
+      console.error('[ShareItin] ERROR: Non sei in nessun gruppo');
+      showNoGroupModal();
       return;
     }
 
     if (!state.itinerary || state.itinerary.length === 0) {
+      console.error('[ShareItin] ERROR: L\'itinerario personale è vuoto');
       toast('⚠️ L\'itinerario personale è vuoto');
       return;
     }
+
+    console.log('[ShareItin] Proceeding to show modal...');
 
     // Initialize groupItineraries if needed
     if (!state.groupItineraries) {
@@ -1627,7 +1801,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const html = `
       <div style="padding: 0; min-width: 300px;">
         <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;">
-          <h3 style="margin:0 0 12px 0;color:#FF1493;font-family:'Comic Sans MS',cursive;font-size:16px;font-weight:700">📤 Condividi Itinerario</h3>
+          <h3 style="margin:0 0 12px 0;color:#FF1493;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📤 Condividi Itinerario</h3>
 
           <div style="background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;padding:12px;margin-bottom:12px;">
             <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:14px">Stanza: ${escapeHtml(roomId)}</p>
@@ -1635,7 +1809,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <div style="display:flex;gap:8px">
-            <button id="confirm-share-itin" style="flex:1;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive">
+            <button id="confirm-share-itin" style="flex:1;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
               ✅ Condividi
             </button>
             <button id="cancel-share-itin" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
@@ -1692,7 +1866,8 @@ document.addEventListener('DOMContentLoaded', () => {
       version: 1,
       pois: state.itinerary.map(entry => ({
         googlePlaceId: entry.id,
-        name: { value: entry.name, timestamp: Date.now(), peerId: myPeerId },
+        // Use poi_name if available (from itineraryByDay entries), fallback to name
+        name: { value: entry.poi_name || entry.name || 'Luogo', timestamp: Date.now(), peerId: myPeerId },
         category: { value: entry.type || 'poi', timestamp: Date.now(), peerId: myPeerId },
         notes: { value: entry.notes || '', timestamp: Date.now(), peerId: myPeerId },
         lat: entry.lat,
@@ -1712,13 +1887,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('[ShareItin] ✓ Shared. POIs:', groupItinerary.pois.length);
 
-    // Broadcast to group
-    window.broadcastItinerary?.(itineraryId);
+    // Broadcast to group via peerGPS (MQTT)
+    window.peerGPS?.broadcastItinerary?.(itineraryId);
+    console.log('[ShareItin] ✓ Broadcasted to group');
+
+    // Mark as shared with the group
+    markItinerarySharedWithGroup('personal_itinerary', roomId);
 
     // Emit event for UI refresh
     window.dispatchEvent(new CustomEvent('itinerary_updated', {
       detail: { itineraryId, itinerary: groupItinerary }
     }));
+
+    // Show success message
+    toast('✅ Itinerario condiviso con il gruppo!');
   }
 
   /**
@@ -1783,7 +1965,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <textarea class="poi-notes-edit" data-poi-idx="${idx}" placeholder="Note..."
           style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:11px;resize:vertical;min-height:40px">${escapeHtml(poi.notes?.value || poi.notes || '')}</textarea>
-        <div style="font-size:10px;color:#999;margin-top:4px">📍 ${poi.lat?.toFixed(4)}, ${poi.lng?.toFixed(4)}</div>
+        <div style="font-size:12px;color:#999;margin-top:4px">📍 ${poi.lat?.toFixed(4)}, ${poi.lng?.toFixed(4)}</div>
       </div>
     `).join('');
 
@@ -1812,7 +1994,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <!-- Save Button -->
         <div style="padding:0 12px 12px;display:flex;gap:8px;margin:0">
-          <button id="save-itin-changes" style="flex:1;padding:10px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive">
+          <button id="save-itin-changes" style="flex:1;padding:10px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
             💾 Salva Modifiche
           </button>
           <button id="cancel-itin-edit" style="flex:1;padding:10px;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;font-weight:600;cursor:pointer;">
@@ -1837,7 +2019,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Delete POI
     document.querySelectorAll('.poi-delete-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const idx = parseInt(btn.getAttribute('data-poi-idx'));
+        const idx = parseInt(btn.getAttribute('data-poi-idx'), 10);
         const container = btn.closest('#pois-editor-list') || document.getElementById('pois-editor-list');
         if (container) {
           container.querySelectorAll('[data-poi-idx]').forEach((el, i) => {
@@ -1861,7 +2043,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const poiRows = poisContainer?.querySelectorAll('[data-poi-idx]') || [];
 
         poiRows.forEach((row) => {
-          const idx = parseInt(row.getAttribute('data-poi-idx'));
+          const idx = parseInt(row.getAttribute('data-poi-idx'), 10);
           const originalPoi = originalItinerary.pois[idx];
           if (!originalPoi) return;
 
@@ -1986,7 +2168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <textarea class="poi-notes-edit" data-poi-idx="${newIdx}" placeholder="Note..."
           style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:11px;resize:vertical;min-height:40px"></textarea>
-        <div style="font-size:10px;color:#999;margin-top:4px">📍 ${newPoi.lat.toFixed(4)}, ${newPoi.lng.toFixed(4)}</div>
+        <div style="font-size:12px;color:#999;margin-top:4px">📍 ${newPoi.lat.toFixed(4)}, ${newPoi.lng.toFixed(4)}</div>
       `;
 
       poisList.appendChild(newRow);
@@ -2009,6 +2191,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─────────────────────────────────────────────────────────────────
   // Export share functions globally
   window.showShareItineraryModal = showShareItineraryModal;
+  window.showNoGroupModal = showNoGroupModal;
 
   // ═════════════════════════════════════════════════════════════════
   // ===== OPENING HOURS FEATURE =====
@@ -3730,6 +3913,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const vectorLayer = new ol.layer.Vector({
     source: vectorSource,
     style: (feature) => {
+      // Hide marker if filtered out
+      if (feature.get('hidden') === true) {
+        return null; // Don't render this marker
+      }
+
       const cat = feature.get('cat') || 'all';
       const isGF = feature.get('isGF') || false;
       const key = cat + (isGF ? '_gf' : '');
@@ -3755,6 +3943,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   map.addLayer(vectorLayer);
+
+  // Expose vectorSource and vectorLayer to window for filter-system.js
+  window.vectorSource = vectorSource;
+  window.vectorLayer = vectorLayer;
+
   // GPS marker layer — nessuno style di default: ogni feature porta il proprio (iniziali o avatar)
   const gpsSource = new ol.source.Vector();
   const gpsLayer = new ol.layer.Vector({
@@ -3769,6 +3962,131 @@ document.addEventListener('DOMContentLoaded', () => {
     zIndex: 998
   });
   map.addLayer(remotePeersLayer);
+
+  // ===== GLUTEN-FREE PLACES LAYER =====
+  const gfPlacesSource = new ol.source.Vector();
+  const gfPlacesLayer = new ol.layer.Vector({
+    source: gfPlacesSource,
+    style: function(feature) {
+      const safetyLevel = feature.get('safety_level') || 'YELLOW';
+      let color = '#FFD700'; // Default yellow
+      let icon = '🟡';
+
+      if (safetyLevel === 'GREEN') {
+        color = '#7FFF7F';
+        icon = '🟢';
+      } else if (safetyLevel === 'RED') {
+        color = '#FF6B6B';
+        icon = '🔴';
+      }
+
+      return new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 10,
+          fill: new ol.style.Fill({ color: color }),
+          stroke: new ol.style.Stroke({ color: '#ffffff', width: 2.5 })
+        }),
+        text: new ol.style.Text({
+          text: icon,
+          font: '14px Arial',
+          offsetY: -12
+        })
+      });
+    },
+    zIndex: 500
+  });
+  map.addLayer(gfPlacesLayer);
+
+  // Expose GF Places layer to window
+  window.gfPlacesLayer = gfPlacesLayer;
+  window.gfPlacesSource = gfPlacesSource;
+
+  // ===== ROUTE LAYER: visualizza il giro di un giorno sulla mappa =====
+  const routeSource = new ol.source.Vector();
+  const routeLayer = new ol.layer.Vector({
+    source: routeSource,
+    zIndex: 400,
+    style: (feature) => {
+      const mode = feature.get('mode') || 'transit';
+      const color = mode === 'walking' ? '#7FFF7F' : mode === 'driving' ? '#64c8ff' : '#FFB88C';
+      return new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color, width: 5,
+          lineDash: mode === 'walking' ? [6, 6] : undefined
+        })
+      });
+    }
+  });
+  map.addLayer(routeLayer);
+  window.routeSource = routeSource;
+  window.routeLayer = routeLayer;
+
+  // Mostra il giro del giorno (polyline colorate per mezzo) e centra la mappa
+  window.showDayRoute = function (dayIdx) {
+    routeSource.clear();
+    const day = window.state?.itineraryByDay?.[dayIdx] || [];
+    if (day.length < 2) return false;
+    window.ITINERARY?.computeDayRouting?.(dayIdx);
+    const pois = (typeof window.allPOIs === 'function') ? window.allPOIs() : [];
+    const coordOf = (e) => {
+      if (typeof e.lat === 'number' && typeof e.lng === 'number') return [e.lng, e.lat];
+      const p = pois.find(x => x.id === e.poi_id);
+      return (p && typeof p.lat === 'number' && typeof p.lng === 'number') ? [p.lng, p.lat] : null;
+    };
+    for (let i = 1; i < day.length; i++) {
+      const a = coordOf(day[i - 1]); const b = coordOf(day[i]);
+      if (!a || !b) continue;
+      const line = new ol.geom.LineString([ol.proj.fromLonLat(a), ol.proj.fromLonLat(b)]);
+      const feat = new ol.Feature({ geometry: line });
+      feat.set('mode', day[i].route_from_prev?.mode || 'transit');
+      routeSource.addFeature(feat);
+    }
+    if (routeSource.getFeatures().length > 0) {
+      try {
+        map.getView().fit(routeSource.getExtent(), { padding: [120, 40, 120, 40], duration: 500, maxZoom: 14 });
+      } catch (e) {}
+      return true;
+    }
+    return false;
+  };
+  window.clearDayRoute = function () { routeSource.clear(); };
+
+  // Function to refresh GF places on map
+  window.refreshGFPlacesLayer = function() {
+    if (!window.GFPlacesDB) return;
+
+    const places = window.GFPlacesDB.getAll();
+    const features = [];
+
+    for (const place of places) {
+      // Use saved coordinates or default to Tokyo if not geo-located
+      let lng = 139.6917; // Tokyo default
+      let lat = 35.6895;
+
+      if (place.lng && place.lat) {
+        lng = parseFloat(place.lng);
+        lat = parseFloat(place.lat);
+      }
+
+      const feature = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat])),
+        name: place.name,
+        city: place.city,
+        safety_level: place.safety_level || 'YELLOW',
+        rating: place.rating,
+        note: place.note,
+        lat: lat,
+        lng: lng
+      });
+
+      features.push(feature);
+    }
+
+    gfPlacesSource.clear();
+    gfPlacesSource.addFeatures(features);
+
+    console.log('[GFPlaces] Layer refreshed with', features.length, 'places');
+  };
 
   // Expose map to window so other modules can access it
   window.map = map;
@@ -3934,6 +4252,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderMarkers(){
     const t0 = performance.now();
     console.log(`%c[renderMarkers] START - Rendering markers on map`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
+    // CRITICAL FIX: Invalidate cache to ensure openPOI() gets fresh POI list
+    globalPOIsCache = null;
+    console.log('[renderMarkers] 🔄 Cache invalidated for fresh POI lookup');
     vectorSource.clear();
     const zoom = map.getView().getZoom() || 5;
 
@@ -3998,7 +4319,13 @@ document.addEventListener('DOMContentLoaded', () => {
           name: getPoiDisplayName(p),
           id: p.id,
           cat: p.cat || 'poi',
-          isGF: p.gf?.lvl === 'full'
+          lat: p.lat,
+          lng: p.lng,
+          isGF: p.gf?.lvl === 'full',
+          gf: p.gf || {},
+          paid: p.paid === true ? true : false, // paid=false means free/gratis
+          indoor: p.indoor === true,
+          family_friendly: p.family_friendly === true
         });
         vectorSource.addFeature(feature);
         added++;
@@ -4013,6 +4340,57 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const t1 = performance.now();
     console.log(`%c[renderMarkers] ✅ DONE: added ${added} markers in ${(t1-t0).toFixed(1)}ms | total on map: ${vectorSource.getFeatures().length}`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
+
+    // Show/hide empty state overlay
+    const emptyStateOverlay = document.getElementById('map-empty-state');
+    if (added === 0) {
+      if (emptyStateOverlay) {
+        emptyStateOverlay.style.display = 'flex';
+      } else {
+        // Create overlay if doesn't exist
+        const overlay = document.createElement('div');
+        overlay.id = 'map-empty-state';
+        overlay.style.cssText = `
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(180deg, rgba(10,8,5,0.85), rgba(15,12,8,0.85));
+          backdrop-filter: blur(3px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          z-index: 100;
+          padding: 20px;
+          border-radius: 12px;
+          pointer-events: none;
+        `;
+        overlay.innerHTML = `
+          <div style="text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
+            <h2 style="
+              font-size: 18px;
+              font-weight: 700;
+              color: rgba(255,255,255,0.95);
+              margin: 0 0 8px 0;
+            ">Nessun POI trovato</h2>
+            <p style="
+              font-size: 14px;
+              color: rgba(255,255,255,0.6);
+              margin: 0;
+              line-height: 1.5;
+              max-width: 240px;
+            ">Prova a cambiare i filtri o a zoomare fuori per vedere più posti.</p>
+          </div>
+        `;
+        const mapHost = document.getElementById('view-map') || document.getElementById('map');
+        if (mapHost) mapHost.appendChild(overlay);
+      }
+    } else if (emptyStateOverlay) {
+      emptyStateOverlay.style.display = 'none';
+    }
   }
 
   function getPoiDisplayName(p){
@@ -4209,6 +4587,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
   }
   function fmtDist(km){ return km<1 ? Math.round(km*1000)+'m' : km.toFixed(1)+'km'; }
+  window.haversineKm = haversineKm; // esposto per js/views/
+  window.fmtDist = fmtDist;
   function startGPS(){
     // === FAKE GPS A TOKYO (per testing) ===
     const USE_FAKE_GPS = false;
@@ -4368,9 +4748,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let featuresFound = 0;
     map.forEachFeatureAtPixel(e.pixel, (feature, layer) => {
       featuresFound++;
-      console.log(`[MAP CLICK] Feature ${featuresFound}:`, {
-        id: feature.get('id'),
-        type: feature.get('type'),
+      const clickedId = feature.get('id');
+      const clickedType = feature.get('type');
+      console.log(`%c[MAP CLICK] Feature ${featuresFound}:`, 'background:#FF9800;color:white;padding:4px 8px;border-radius:3px', {
+        id: clickedId,
+        type: clickedType,
         name: feature.get('name'),
         peerName: feature.get('peerName')
       });
@@ -4379,16 +4761,26 @@ document.addEventListener('DOMContentLoaded', () => {
       const id = feature.get('id');
       const type = feature.get('type');
       const peerName = feature.get('peerName');
+      const name = feature.get('name');
+      const safetyLevel = feature.get('safety_level');
+
       if (peerName) {
         console.log('[MAP CLICK] → Peer location');
         toast('Posizione rilevata ' + peerName);
+        handled = true;
+      } else if (safetyLevel) {
+        // GF Place clicked
+        console.log('[MAP CLICK] → Opening GF Place:', name, safetyLevel);
+        const safetyIcon = safetyLevel === 'GREEN' ? '🟢' : safetyLevel === 'RED' ? '🔴' : '🟡';
+        toast(`${safetyIcon} ${name} (${feature.get('city')})`);
         handled = true;
       } else if (type === 'shopping') {
         console.log('[MAP CLICK] → Opening shop:', id);
         window.__openShop(id);
         handled = true;
       } else if (id) {
-        console.log('[MAP CLICK] → Opening POI:', id);
+        console.log('%c[MAP CLICK] → Opening POI:', 'background:#FF6B6B;color:white;padding:4px 8px;border-radius:3px', id, 'Type:', type);
+        console.log('[MAP CLICK] Payload:', { name, id, type, lat: feature.get('lat'), lng: feature.get('lng') });
         openPOI(id);
         handled = true;
       }
@@ -4403,7 +4795,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (oldPanel) oldPanel.remove();
     const chips = [];
     chips.push(`<button class="chip local ${state.onlyLocal?'active':''}" data-local="1">🏮 Local</button>`);
+    chips.push(`<button class="chip gf-places ${state.showGFPlaces?'active':''}" data-gf-places="1">🟢 GF Places</button>`);
+    // Categorie effettivamente presenti tra i POI caricati (per nascondere chip vuote)
+    const presentCats = new Set();
+    try { (window.allPOIs ? window.allPOIs() : []).forEach(p => p && p.cat && presentCats.add(p.cat)); } catch (e) {}
     Object.keys(CATS).forEach(k => {
+      // Mostra "Tutti" sempre + la categoria attiva + solo le categorie effettivamente
+      // presenti tra i POI caricati (riduce la barra da ~80 chip a poche pertinenti).
+      if (k !== 'all' && k !== state.activeCat && !presentCats.has(k)) return;
       chips.push(`<button class="chip ${state.activeCat===k?'active':''}" data-cat="${k}">${CATS[k].icon} ${CATS[k].label}</button>`);
     });
     chips.push(`<button class="chip ${state.showAdvFilters?'active':''}" id="adv-filter-toggle" data-adv="1">⚙️ Avanzati</button>`);
@@ -4433,12 +4832,12 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Bind advanced filter controls (with throttle to prevent excessive rendering)
       document.getElementById('adv-rating').oninput = throttle((e) => {
-        state.minRating = parseInt(e.target.value);
+        state.minRating = parseInt(e.target.value, 10);
         document.getElementById('rating-val').textContent = state.minRating;
         saveState(); renderMarkers();
       }, 200);
       document.getElementById('adv-budget').oninput = throttle((e) => {
-        state.maxBudget = parseInt(e.target.value);
+        state.maxBudget = parseInt(e.target.value, 10);
         document.getElementById('budget-val').textContent = '¥'+state.maxBudget;
         saveState(); renderMarkers();
       }, 200);
@@ -4454,6 +4853,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = e.target.closest('.chip'); if (!btn) return;
     if (btn.dataset.gf) state.onlyGF = !state.onlyGF;
     else if (btn.dataset.local) state.onlyLocal = !state.onlyLocal;
+    else if (btn.dataset.gfPlaces) {
+      state.showGFPlaces = !state.showGFPlaces;
+      // Toggle GF Places layer visibility
+      if (window.gfPlacesLayer) {
+        window.gfPlacesLayer.setVisible(state.showGFPlaces);
+        console.log('[Filter] GF Places layer visibility:', state.showGFPlaces);
+      }
+    }
     else if (btn.dataset.cat) state.activeCat = btn.dataset.cat;
     else if (btn.dataset.adv) state.showAdvFilters = !state.showAdvFilters;
     saveState(); renderFilters(); renderMarkers();
@@ -4474,6 +4881,7 @@ document.addEventListener('DOMContentLoaded', () => {
       timeoutId = setTimeout(() => fn(...args), delay);
     };
   }
+  window.debounce = debounce; // esposto per js/views/
 
   function throttle(fn, limit) {
     let inThrottle;
@@ -4510,6 +4918,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(setupLazyLoadImages, 2000);
 
   const sheetBody = document.getElementById('sheet-body');
+  window.sheetBody = sheetBody; // esposto per le views estratte (vedi js/views/)
   document.getElementById('sheet-close').onclick = closeSheet;
   sheet.addEventListener('click', e => { if (e.target === sheet) closeSheet(); });
   function openSheet(title, html){
@@ -4530,6 +4939,22 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeSheet(){
     console.log('[closeSheet] 🔴 closeSheet called');
     sheet.classList.remove('open');
+
+    // Remove wizard listeners when sheet closes
+    if (window._wizardClickListener) {
+      document.removeEventListener('click', window._wizardClickListener, { capture: true });
+      window._wizardClickListener = null;
+      window._wizardClickListenerAttached = false;
+      console.log('[closeSheet] ✅ Removed wizard click listener');
+    }
+
+    if (window._wizardChangeListener) {
+      document.removeEventListener('change', window._wizardChangeListener, { capture: true });
+      window._wizardChangeListener = null;
+      window._wizardChangeListenerAttached = false;
+      console.log('[closeSheet] ✅ Removed wizard change listener');
+    }
+
     // Show weather widget again when sheet closes
     const weatherWidget = document.getElementById('weather-floating');
     if (weatherWidget) {
@@ -4630,17 +5055,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
         return;
       }
-      if (view === 'list') { renderListView(); return; }
+      if (view === 'itinerary') { renderItineraryUnified(); return; }
+      if (view === 'gf') { renderGFView(); return; }
+      if (view === 'menu') { showMenuDrawer(); return; }
+
+      // Fallback for views accessed from menu drawer
+      if (view === 'list') { renderItineraryUnified(); return; }
       if (view === 'weather') { renderWeatherView(); return; }
-      if (view === 'itinerary') { renderItineraryView(); return; }
-      if (view === 'bookings') { renderBookingsView(); return; }
+      if (view === 'bookings') { window.renderBookingsView?.(); return; }
       if (view === 'shopping') { renderShoppingView(); return; }
       if (view === 'group') { renderGroupView(); return; }
-      if (view === 'gf') { renderGFView(); return; }
       if (view === 'budget') { renderBudgetView(); return; }
-      if (view === 'gallery') { renderGalleryView(); return; }
+      if (view === 'gallery') { window.renderGalleryView?.(); return; }
+      if (view === 'sos') { window.renderSOSPanel?.(); return; }
       if (view === 'groq-menu') { window.openGroqPanel(); return; }
       if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
+      if (view === 'gf-suggest') { window.openGFSuggestionPanel(); return; }
     });
   }
 
@@ -4682,13 +5112,205 @@ document.addEventListener('DOMContentLoaded', () => {
     const [t,c] = map[gf.lvl] || map.none;
     return `<span class="tag ${c}">${t}</span>`;
   }
+  /**
+   * Generate enhanced sections (photos, reviews, hours, attributes)
+   * for POI detail card with glassmorphism styling
+   */
+  function renderEnhancedPoiSections(p) {
+    const details = p._details;
+    if (!details) return ''; // No enhanced data available
+
+    const sections = [];
+
+    // ===== PHOTO GALLERY =====
+    if (p._photoNames && p._photoNames.length > 0) {
+      const slides = p._photoNames.slice(0, 6).map((photo, idx) => {
+        return `
+          <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,rgba(74,91,168,0.2),rgba(255,107,53,0.2));display:flex;align-items:center;justify-content:center;color:#999;font-size:12px">
+              📷 Foto ${idx + 1}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      sections.push(`
+        <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+          <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">📸 Galleria Foto</h3>
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%">
+            ${slides}
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);text-align:center;margin-top:8px">${p._photoNames.length} foto disponibili</div>
+        </div>
+      `);
+    }
+
+    // ===== REVIEWS =====
+    if (details.reviews && details.reviews.length > 0) {
+      const reviewCards = details.reviews.slice(0, 3).map(review => {
+        const stars = Array(review.rating).fill('⭐').join('');
+        return `
+          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
+              <div style="font-weight:600;color:#fff;font-size:13px">${review.author}</div>
+              <div style="color:#FFD700;font-size:12px">${stars}</div>
+            </div>
+            <div style="color:rgba(255,255,255,0.8);font-size:12px;line-height:1.5;margin-bottom:4px">"${review.text.substring(0, 120)}${review.text.length > 120 ? '...' : ''}"</div>
+            <div style="color:rgba(255,255,255,0.5);font-size:12px">${review.relativePublishTimeDescription}</div>
+          </div>
+        `;
+      }).join('');
+
+      sections.push(`
+        <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+          <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">⭐ Recensioni (${details.reviews.length} totali)</h3>
+          ${reviewCards}
+        </div>
+      `);
+    }
+
+    // ===== OPENING HOURS =====
+    if (details.currentOpeningHours) {
+      const periods = details.currentOpeningHours.periods || [];
+      const weekdayText = details.currentOpeningHours.weekdayDescriptions || [];
+
+      let hoursHtml = '';
+      if (weekdayText.length > 0) {
+        hoursHtml = weekdayText.map((day, idx) => {
+          return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);font-size:12px">
+            <span>${day.split(':')[0]}</span>
+            <span style="font-weight:600;color:#FFD700">${day.includes(':') ? day.split(': ')[1] : 'Chiuso'}</span>
+          </div>`;
+        }).join('');
+      }
+
+      if (hoursHtml) {
+        sections.push(`
+          <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+            <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">⏰ Orari (Prossimi 7 giorni)</h3>
+            ${hoursHtml}
+          </div>
+        `);
+      }
+    }
+
+    // ===== RESTAURANT ATTRIBUTES =====
+    const attrs = [
+      { key: 'servesLunch', label: '🍽️ Pranzo', icon: '🍽️' },
+      { key: 'servesDinner', label: '🍴 Cena', icon: '🍴' },
+      { key: 'reservable', label: '📅 Prenotabile', icon: '📅' },
+      { key: 'takeout', label: '📦 Asporto', icon: '📦' },
+      { key: 'servesBeer', label: '🍺 Birra', icon: '🍺' },
+      { key: 'servesVegetarianFood', label: '🥗 Vegetariano', icon: '🥗' }
+    ];
+
+    const activeAttrs = attrs.filter(a => details[a.key] === true);
+
+    if (activeAttrs.length > 0) {
+      const chips = activeAttrs.map(attr => `
+        <span style="background:linear-gradient(135deg,rgba(255,107,53,0.3),rgba(255,20,147,0.3));border:1px solid rgba(255,107,53,0.6);color:#fff;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block">
+          ${attr.label}
+        </span>
+      `).join('');
+
+      sections.push(`
+        <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+          <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">🏷️ Caratteristiche</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${chips}
+          </div>
+        </div>
+      `);
+    }
+
+    // ===== ACCESSIBILITY =====
+    if (details.accessibilityOptions && Object.keys(details.accessibilityOptions).length > 0) {
+      const accOptions = details.accessibilityOptions;
+      const accessibilityItems = [];
+
+      if (accOptions.wheelchairAccessibleEntrance) accessibilityItems.push('♿ Ingresso accessibile');
+      if (accOptions.wheelchairAccessibleParking) accessibilityItems.push('♿ Parcheggio accessibile');
+      if (accOptions.wheelchairAccessibleRestroom) accessibilityItems.push('♿ Bagno accessibile');
+      if (accOptions.wheelchairAccessibleSeating) accessibilityItems.push('♿ Posti a sedere accessibili');
+
+      if (accessibilityItems.length > 0) {
+        const items = accessibilityItems.map(item => `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 0;color:rgba(255,255,255,0.8);font-size:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+            <span style="font-size:14px">✓</span>
+            <span>${item}</span>
+          </div>
+        `).join('');
+
+        sections.push(`
+          <div style="background:linear-gradient(135deg,rgba(74,124,89,0.12),rgba(100,150,110,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(100,200,150,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+            <h3 style="margin:0 0 12px 0;color:#90EE90;font-size:14px;font-weight:700">♿ Accessibilità</h3>
+            ${items}
+          </div>
+        `);
+      }
+    }
+
+    return sections.join('');
+  }
+  // Rendi globale
+  window.renderEnhancedPoiSections = renderEnhancedPoiSections;
+
+  // ═══════════════════════════════════════════════════════════════════
+  // HELPER FUNCTIONS — Logica unificata per POI detail
+  // ═══════════════════════════════════════════════════════════════════
+
+  // FOOD_TYPES — Unica fonte di verità per classificazione ristorante
+  const FOOD_TYPES = ['restaurant','food','cafe','bar','meal_takeaway','bakery','izakaya'];
+
+  function isRestaurantPOI(poi) {
+    return FOOD_TYPES.includes(poi.primaryType || poi.cat);
+  }
+
+  function getCleanAddress(poi) {
+    const addr = (poi._details?.address || poi.address || '').trim();
+    return addr && addr.length > 0 ? addr : null;
+  }
+
+  function getReadableSubtypeLabel(poi) {
+    const subtypeMap = {
+      // Food & Drink
+      'restaurant': 'Ristorante',
+      'cafe': 'Caffetteria',
+      'bar': 'Bar',
+      'food': 'Ristorante',
+      'izakaya': 'Izakaya',
+      'bakery': 'Panetteria',
+      'meal_takeaway': 'Asporto',
+      // Culture & History
+      'museum': 'Museo',
+      'shrine': 'Santuario',
+      'temple': 'Tempio',
+      'church': 'Chiesa',
+      'landmark': 'Landmark',
+      'tourist_attraction': 'Attrazione turistica',
+      // Services & Admin
+      'post_office': 'Ufficio postale',
+      'services': 'Servizi'
+    };
+    return subtypeMap[poi.cat] || (poi.cat ? poi.cat.charAt(0).toUpperCase() + poi.cat.slice(1) : 'Luogo');
+  }
+
   function poiDetailHTML(p){
+    console.log('[poiDetailHTML] Rendering new adaptive layout for:', p.name || p.displayName);
     const displayName = getPoiDisplayName(p);
     const saved = state.savedPOIs.includes(p.id);
     const note = state.notes[p.id] || '';
     const catData = CATS[p.cat] || {label:p.cat, icon:getCategoryEmoji(p.cat)};
     const catColor = getCategoryColor(p.cat);
     const catEmoji = getCategoryEmoji(p.cat);
+
+    // IMPORTANTE: Determina SE è un ristorante (UNICA fonte di verità = helper isRestaurantPOI)
+    const isRestaurant = isRestaurantPOI(p);
+    console.debug('[POI Classification] Name:', p.name, 'Type:', p.primaryType || p.cat, 'IsRestaurant:', isRestaurant);
+
+    // Helper: use PoiSectionBuilders if available, otherwise fallback
+    const SB = window.PoiSectionBuilders || {};
+    const PhotoGal = window.PhotoGallery || null;
 
     const doList = (p.do||[]).map(x=>`<li>${x}</li>`).join('');
     const dontList = (p.dont||[]).map(x=>`<li>${x}</li>`).join('');
@@ -4713,137 +5335,283 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const rating = state.ratings?.[p.id] || 0;
-    const stars = [1,2,3,4,5].map(n => `<span class="star ${n<=rating?'on':''}" data-star="${n}" data-id="${p.id}">★</span>`).join('');
+    const stars = `<div class="rating-stars" id="stars-${p.id}">${[1,2,3,4,5].map(n => `<span class="star ${n <= rating ? 'active' : ''}" data-star="${n}" data-id="${p.id}">★</span>`).join('')}</div>`;
 
-    // Foto
-    const googleImagesUrl = (q, city) => `https://www.google.com/search?tbm=isch&q=${encodeURIComponent([q, city, 'Japan'].filter(Boolean).join(' '))}`;
-    const googleFallbackHtml = (label) => `
-      <div style="margin-bottom:12px;padding:14px;background:linear-gradient(135deg,rgba(74,124,89,.1),rgba(201,76,76,.1));border:2px dashed #00FF88;border-radius:8px;text-align:center">
-        <div style="font-size:13px;color:#666;margin-bottom:8px">📷 ${label}</div>
-        <a href="${googleImagesUrl(displayName, p.city)}" target="_blank" rel="noopener" class="btn" style="font-size:12px;background:linear-gradient(135deg,#FF1493,#FF69B4);color:white;border:none">🔎 Cerca foto</a>
-      </div>
-    `;
-
+    // FOTO: Use new PhotoGallery component
     let photoHtml = '';
-    if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
-      const slides = p.photos.map((photo, idx) => `
-        <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:12px;flex:none;border:3px solid ${catColor};box-shadow:0 4px 12px rgba(0,0,0,0.2)">
-          <img src="${photo.url}" alt="${displayName} ${idx+1}" style="width:100%;height:100%;object-fit:cover;display:block">
-        </div>
-      `).join('');
-      const scrollHint = p.photos.length > 1 ? `<div style="font-size:11px;color:#666;margin-bottom:8px;text-align:center;font-weight:600">👈 Scorri per altre foto →</div>` : '';
-      photoHtml = `
-        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;margin-bottom:12px;scroll-behavior:smooth;width:100%;max-width:100%;position:relative">
-          ${slides}
-        </div>
-        ${scrollHint}
-      `;
-    } else if (p.photo) {
-      photoHtml = `<img class="poi-photo" src="${p.photo}" alt="${displayName}" style="width:100%;height:280px;object-fit:cover;border-radius:12px;margin-bottom:12px;display:block;border:3px solid ${catColor}">`;
-    } else if (typeof window.getPhotosForLocation === 'function') {
-      photoHtml = `<div id="poi-photos-container" style="margin-bottom:12px;min-height:80px;display:flex;align-items:center;justify-content:center;color:#999;font-size:13px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));border-radius:12px;border:2px dashed #00FF88">📷 Caricamento foto...</div>`;
+    if (PhotoGal) {
+      // Priorità: p._photoNames (da Google Places Details) → p.photos → p.photo
+      let photos = [];
+      if (p._photoNames && Array.isArray(p._photoNames) && p._photoNames.length > 0) {
+        photos = p._photoNames;
+      } else if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
+        photos = p.photos;
+      } else if (p.photo) {
+        photos = [{ url: p.photo }];
+      }
+      const gallery = new PhotoGal(photos);
+      photoHtml = gallery.render();
     } else {
-      photoHtml = googleFallbackHtml('Foto non disponibili offline');
+      // Fallback se PhotoGallery non disponibile
+      if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
+        photoHtml = `<img src="${p.photos[0].url}" alt="${displayName}" loading="lazy" style="width:100%;height:260px;object-fit:cover;border-radius:12px 12px 0 0;margin-bottom:16px;display:block">`;
+      } else if (p.photo) {
+        photoHtml = `<img src="${p.photo}" alt="${displayName}" loading="lazy" style="width:100%;height:260px;object-fit:cover;border-radius:12px 12px 0 0;margin-bottom:16px;display:block">`;
+      } else {
+        photoHtml = `<div style="width:100%;height:260px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));border-radius:12px 12px 0 0;margin-bottom:16px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5)">📷 Foto non disponibili</div>`;
+      }
     }
 
-    const html = `
-      ${photoHtml}
-      <!-- HEADER con categoria colorata -->
-      <div style="background:linear-gradient(135deg,${catColor},${catColor}dd);padding:16px;border-radius:12px;margin-bottom:12px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.15)">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <span style="font-size:28px">${catEmoji}</span>
-          <div style="flex:1">
-            <div style="font-size:13px;opacity:0.9;font-weight:600">${catData.label.toUpperCase()}</div>
-            <div style="font-size:11px;opacity:0.8">Selezionato</div>
-          </div>
-          <button class="btn" id="edit-cat-btn" style="font-size:12px;padding:6px 12px;height:auto;background:rgba(255,255,255,0.2);color:white;border:1px solid white;border-radius:6px;cursor:pointer;font-weight:600">✏️</button>
-        </div>
-        <div style="font-size:12px;opacity:0.95">📍 ${p.city || 'Posizione'}</div>
-      </div>
+    // ═════════════════════════════════════════════════════════════════
+    // REORDERED LAYOUT FOR RAPID DECISION-MAKING (FASE 1.3)
+    // Extract sections in new order for better UX
+    // ═════════════════════════════════════════════════════════════════
 
-      <!-- CATEGORIA SELECTOR (nascosto per default) -->
-      <div id="cat-selector" style="display:none;margin:12px 0;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.1),rgba(255,20,147,.1));border:2px solid #00FF88;border-radius:12px">
-        <div style="font-size:12px;color:#666;margin-bottom:8px;font-weight:600">📂 CAMBIA CATEGORIA:</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="cat-options"></div>
-      </div>
+    // Get readable subtype label (category/subcategory)
+    const poiSubtypeLabel = getReadableSubtypeLabel(p);
 
-      <!-- TWO COLUMN LAYOUT: Luoghi (sinistra) | Google Places (destra) - ALWAYS SIDE-BY-SIDE -->
-      <div style="display:flex !important;gap:12px !important;margin:12px 0 !important;width:100% !important;box-sizing:border-box !important;flex-wrap:wrap !important;">
-        <!-- COLONNA SINISTRA: Informazioni Generali -->
-        <div style="flex:1 !important;min-width:0 !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
-          ${p.jp ? `<div style="color:#666;font-size:12px;margin-bottom:8px;font-style:italic;word-break:break-word !important">🗣️ ${p.jp}</div>` : ''}
-          <p style="color:#333;line-height:1.6;margin:0 0 12px 0;word-break:break-word !important">${p.desc || ''}</p>
-          ${infoChips.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${infoChips.join('')}</div>` : ''}
+    // Extract specific sections we need to reorder
+    const openingHoursHtml = SB.renderOpeningHours ? (SB.renderOpeningHours(p._details || p) || '') : '';
+    const websiteHtml = SB.renderWebsite ? (SB.renderWebsite(p._details || p) || '') : '';
+    const phoneHtml = SB.renderPhone ? (SB.renderPhone(p._details || p) || '') : '';
+    const descriptionHtml = SB.renderDescription ? (SB.renderDescription(p._details || p) || '') : '';
+    const restaurantAttrHtml = SB.renderRestaurantAttributes ? (SB.renderRestaurantAttributes(p, p._details || p) || '') : '';
+    const priceLevelHtml = SB.renderPriceLevel ? (SB.renderPriceLevel(p._details || p) || '') : '';
+    const durationHtml = SB.renderSuggestedDuration ? (SB.renderSuggestedDuration(p) || '') : '';
+    const entranceFeeHtml = SB.renderEntranceFee ? (SB.renderEntranceFee(p) || '') : '';
 
-          <!-- GF Section (sinistra) -->
-          ${(p.gf && p.gf.notes) || (['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) ?
-            `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))">
-              <h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">🌾 Gluten-Free</h3>
-              <p style="font-size:12px;${p.gf && p.gf.notes ? 'color:#333;margin-top:8px' : 'color:#999;margin-top:8px'}margin-bottom:0">${p.gf && p.gf.notes ? p.gf.notes : '⏳ Analisi in corso...'}</p>
-            </div>`
-            : ''}
-
-          ${p.best ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">⏰ Orario migliore</h3><p style="margin-top:8px;margin-bottom:0">${p.best}</p></div>` : ''}
-          ${doList ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">✅ Fare</h3><ul class="do-list" style="margin-top:8px;margin-bottom:0">${doList}</ul></div>` : ''}
-          ${dontList ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">⛔ Evitare</h3><ul class="dont-list" style="margin-top:8px;margin-bottom:0">${dontList}</ul></div>` : ''}
-          ${p.review ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));margin-top:12px"><h3 style="color:${catColor};border-bottom:2px solid ${catColor};padding-bottom:6px;margin-top:0">📝 Recensione</h3><p style="font-style:italic;margin-top:8px;margin-bottom:0">"${p.review}"</p></div>` : ''}
-        </div>
-
-        <!-- COLONNA DESTRA: Google Places Info -->
-        <div style="flex:1 !important;min-width:0 !important;box-sizing:border-box !important;font-size:13px !important;overflow:hidden !important;word-break:break-word !important">
-          ${p.fromGooglePlaces ? `
-          <div style="background:linear-gradient(135deg,rgba(42,63,95,.9),rgba(30,50,80,.9));padding:14px;border-radius:12px;border-left:5px solid #FFD700;box-shadow:0 4px 8px rgba(0,0,0,0.2);margin-bottom:12px;word-break:break-word !important">
-            <div style="font-size:11px;color:#FFD700;margin-bottom:8px;font-weight:700">📍 GOOGLE PLACES</div>
-            ${p.rating ? `<div style="font-weight:700;color:#FFD700;font-size:15px;margin-bottom:4px">⭐ ${p.rating.toFixed(1)} <span style="color:#B0C4DE;font-size:12px;font-weight:normal">(${p.ratingCount} voti)</span></div>` : ''}
-            ${p.address ? `<div style="font-size:12px;color:#E8E8E8;margin-top:6px">📍 ${p.address}</div>` : ''}
-            ${p.businessStatus === 'OPERATIONAL' ? `<div style="font-size:12px;color:#90EE90;margin-top:4px;font-weight:600">✅ Aperto</div>` : p.businessStatus ? `<div style="font-size:12px;color:#FF6B6B;margin-top:4px">❌ ${p.businessStatus}</div>` : ''}
-            ${p.openNow !== null ? `<div style="font-size:12px;color:${p.openNow ? '#90EE90' : '#FF6B6B'};margin-top:4px;font-weight:600">⏰ ${p.openNow ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
-          </div>
-          ` : ''}
-
-          ${bookingBtns.length ? `<div style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))"><h3 style="color:${catColor};margin-bottom:10px;font-weight:700;margin-top:0">🍴 PRENOTAZIONI</h3><div class="action-row">${bookingBtns.join('')}</div></div>` : ''}
-
-          ${['restaurant','cafe','bar','izakaya','shop','market','bakery'].includes(p.cat) ? `
-            <div style="border:2px solid #FFD700;border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(255,215,0,.05),rgba(255,215,0,.05));margin-top:12px">
-              <h3 style="color:#FFD700;margin-bottom:10px;font-weight:700;margin-top:0">🌾 GLUTEN-FREE</h3>
-              <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener" style="background:#FFD700;color:#000;font-weight:600;width:100%;display:block;text-align:center;padding:10px;border-radius:8px;text-decoration:none">🔍 Verifica</a>
+    // Build GF status HTML (only for restaurants, but prominent)
+    let gfStatusHtml = '';
+    if (isRestaurant) {
+      gfStatusHtml = `
+        <div class="gf-section" id="gf-status-container-${p.id}" data-poi-id="${p.id}" style="
+          padding: 0 16px;
+          margin: 6px 0 12px 0;
+        ">
+          <div class="gf-box gf-pending" style="
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            opacity: 0.85;
+          ">
+            <span class="gf-spinner" style="
+              width: 10px;
+              height: 10px;
+              border: 1.5px solid rgba(255, 255, 255, 0.12);
+              border-top-color: #4ade80;
+              border-radius: 50%;
+              display: inline-block;
+              flex-shrink: 0;
+              animation: spin 0.8s linear infinite;
+            "></span>
+            <div style="flex: 1; line-height: 1.3; color: rgba(255, 255, 255, 0.4);">
+              Verifica gluten-free in corso…
             </div>
-          ` : ''}
+          </div>
+          <style>
+            @keyframes spin { to { transform: rotate(360deg); } }
+            .gf-box.gf-unknown {
+              background: rgba(255, 255, 255, 0.03) !important;
+              border: 1px solid rgba(255, 255, 255, 0.08) !important;
+              color: rgba(255, 255, 255, 0.65) !important;
+            }
+            .gf-box.gf-unknown strong {
+              color: rgba(255, 255, 255, 0.75) !important;
+            }
+            .gf-box.gf-unknown small {
+              color: rgba(255, 255, 255, 0.45) !important;
+            }
+          </style>
         </div>
-      </div>
+      `;
+    }
 
-      <!-- RATING STARS -->
-      <div class="section" style="background:linear-gradient(135deg,rgba(74,124,89,.05),rgba(201,76,76,.05));padding:12px;border-radius:12px;border:2px solid #00FF88">
-        <h3 style="color:#2D3B7D;margin-bottom:10px;font-weight:700">⭐ IL TUO VOTO</h3>
-        <div class="star-row" id="stars-${p.id}" style="display:flex;gap:8px;justify-content:center">${stars}</div>
-      </div>
+    // Fallback old sections if needed
+    const enhancedSections = renderEnhancedPoiSections ? renderEnhancedPoiSections(p) : '';
 
-      <!-- NOTE PERSONALI (FULL WIDTH) -->
-      <div style="border:2px solid #FF1493;border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(255,20,147,.05),rgba(255,105,180,.05));margin-top:12px">
-        <h3 style="color:#FF1493;border-bottom:2px solid #FF1493;padding-bottom:6px;margin-top:0;margin-bottom:10px;font-weight:700">📝 NOTE PERSONALI</h3>
-        <textarea id="poi-note" placeholder="Aggiungi note, orari di arrivo, partecipanti..." style="width:100%;padding:10px;border:2px solid #00FF88;border-radius:8px;font-size:12px;resize:vertical;min-height:80px;font-family:inherit;box-sizing:border-box">${note}</textarea>
-      </div>
+    const html = `
+      <!-- 1. PHOTO GALLERY (large, immediately visible) -->
+      ${photoHtml}
 
-      <!-- ACTION BUTTONS -->
-      <div class="action-row" style="display:flex;gap:6px;margin:12px 0">
-        <button class="btn navigate" id="navigate-poi" data-lat="${p.lat}" data-lng="${p.lng}" data-name="${encodeURIComponent(displayName)}" style="flex:1;background:linear-gradient(135deg,#4A7C59,#3A6C49);color:white;border:none;border-radius:8px;padding:12px;font-weight:600">🧭 Portami lì</button>
-        <button class="btn primary" id="save-poi" style="flex:1;background:linear-gradient(135deg,#FF1493,#FF69B4);color:white;border:none;border-radius:8px;padding:12px;font-weight:600">${saved?'★ Salvato':'☆ Salva'}</button>
-        <button class="btn" id="add-cal" style="flex:1;background:linear-gradient(135deg,#7A8BA5,#5A6A95);color:white;border:none;border-radius:8px;padding:12px;font-weight:600">📅 Cal</button>
-      </div>
+      <!-- 2. COMPACT HEADER (name + metadata) -->
+      ${SB.renderHeaderCompact ? SB.renderHeaderCompact(p, displayName, catColor, catEmoji) : ''}
 
-      <div class="action-row" style="display:flex;gap:6px;margin:12px 0">
-        <a class="btn" href="${gmaps}" target="_blank" rel="noopener" style="flex:1;background:#2A6E90;color:white;text-decoration:none;border:none;border-radius:8px;padding:12px;text-align:center;font-weight:600">🗺️ Google Maps</a>
-        <a class="btn" href="${amaps}" target="_blank" rel="noopener" style="flex:1;background:#555;color:white;text-decoration:none;border:none;border-radius:8px;padding:12px;text-align:center;font-weight:600">🍎 Apple Maps</a>
-      </div>
-
-      ${bookingBtns.length ? `<div class="section" style="border:2px solid ${catColor};border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05))"><h3 style="color:${catColor};margin-bottom:10px;font-weight:700">🍴 PRENOTAZIONI</h3><div class="action-row">${bookingBtns.join('')}</div></div>` : ''}
-
-      ${['restaurant','cafe','bar','izakaya','shop','market','bakery'].includes(p.cat) ? `
-        <div class="section" style="border:2px solid #FFD700;border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(255,215,0,.05),rgba(255,215,0,.05))">
-          <h3 style="color:#FFD700;margin-bottom:10px;font-weight:700">🌾 GLUTEN-FREE INFO</h3>
-          <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent(displayName + ' ' + p.city + ' Japan')}" target="_blank" rel="noopener" style="background:#FFD700;color:#000;font-weight:600;width:100%">🔍 Verifica su Find Me Gluten Free</a>
-        </div>
+      <!-- 3. CATEGORY/SUBTYPE (readable label) -->
+      ${poiSubtypeLabel ? `
+        <div style="
+          padding: 0 16px;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.5);
+          font-weight: 500;
+          margin-bottom: 0;
+        ">${poiSubtypeLabel}</div>
+        <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 6px 0 12px 0"></div>
       ` : ''}
+
+      <!-- 4. BRIEF DESCRIPTION (earlier for context) -->
+      ${descriptionHtml}
+
+      <!-- 5. GF STATUS (prominent, only for restaurants) -->
+      ${gfStatusHtml}
+
+      <!-- 5b. GF CROWDSOURCE (riscontri del gruppo, auto-iniettato da gf-crowdsource.js) -->
+      <div data-gf-crowd="${p.id}" data-gf-crowd-name="${(displayName||'').replace(/"/g,'&quot;')}"></div>
+
+      <!-- 6. PRACTICAL INFO (hours, entry fee, duration, info chips) -->
+      ${openingHoursHtml}
+      ${infoChips.length > 0 ? `<div style="padding:0 16px;margin:8px 0;display:flex;flex-wrap:wrap;gap:6px">${infoChips.join('')}</div>` : ''}
+      ${entranceFeeHtml}
+      ${durationHtml}
+
+      <!-- 7. RESTAURANT ATTRIBUTES & PRICE (if available) -->
+      ${restaurantAttrHtml}
+      ${priceLevelHtml}
+
+      <!-- 8. CONTACTS (website, phone) -->
+      ${websiteHtml}
+      ${phoneHtml}
+
+      <!-- 9. RATING (stars) -->
+      <div style="padding:0 16px;margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:16px">
+        <label style="font-size:13px;color:rgba(255,255,255,0.6);font-weight:600;white-space:nowrap">La tua valutazione</label>
+        ${stars}
+      </div>
+
+      <!-- LEGACY SECTIONS (fallback) -->
+      ${enhancedSections}
+
+      <!-- DIVIDER — separates from main action -->
+      <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0"></div>
+
+      <!-- 10. MAIN CTA: ADD TO ITINERARY (prominent, ruggine saturo) -->
+      <div style="padding:0 16px;margin:16px 0">
+        <button id="add-to-itinerary-btn" class="btn-cta">${window.t ? window.t('poi.addToItinerary') : "📅 Aggiungi all'itinerario"}</button>
+      </div>
+
+      <!-- 11. PERSONAL NOTES (collapsible by default) -->
+      <div class="notes-section" id="notes-section-${p.id}">
+        ${note ? `
+          <label class="text-sm">📝 Note</label>
+          <textarea id="poi-note" class="form-input form-textarea" placeholder="Es: Prenotare con 2 giorni di anticipo...">${note}</textarea>
+        ` : `
+          <button id="add-note-btn-${p.id}" class="notes-button">
+            📝 Aggiungi una nota
+          </button>
+        `}
+      </div>
+
+      <!-- 12. SECONDARY ACTIONS (save, calendar, maps) -->
+      <div style="display:flex;gap:8px;margin:12px 16px;justify-content:space-between;position:relative">
+        <!-- Maps dropdown -->
+        <div style="flex:1;position:relative">
+          <button class="btn-maps-dropdown" data-poi-id="${p.id}" style="
+            width:100%;
+            height:36px;
+            background:transparent;
+            border:1px solid rgba(255,255,255,0.15);
+            color:rgba(255,255,255,0.7);
+            border-radius:8px;
+            cursor:pointer;
+            font-weight:600;
+            font-size:12px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:6px;
+            transition:all 0.2s;
+          " onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.7)'">
+            🧭 Apri mappa
+          </button>
+
+          <!-- Dropdown menu (hidden by default) -->
+          <div class="maps-dropdown-menu" data-poi-id="${p.id}" style="
+            display:none;
+            position:absolute;
+            top:100%;
+            left:0;
+            background:rgba(30,30,35,0.95);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:8px;
+            box-shadow:0 4px 16px rgba(0,0,0,0.3);
+            z-index:1000;
+            min-width:180px;
+            margin-top:4px;
+            overflow:hidden;
+            animation:slideDown 0.2s ease-out;
+          ">
+            <style>
+              @keyframes slideDown {
+                from { opacity:0; transform:translateY(-8px); }
+                to { opacity:1; transform:translateY(0); }
+              }
+            </style>
+            <a href="https://maps.google.com/?q=${p.lat},${p.lon}&z=17" target="_blank" style="
+              display:block;
+              padding:12px 16px;
+              color:#fff;
+              text-decoration:none;
+              font-size:13px;
+              border-bottom:1px solid rgba(255,255,255,0.05);
+              transition:background 0.2s;
+            " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
+              🗺️ Google Maps
+            </a>
+            <a href="https://maps.apple.com/?ll=${p.lat},${p.lon}" target="_blank" style="
+              display:block;
+              padding:12px 16px;
+              color:#fff;
+              text-decoration:none;
+              font-size:13px;
+              transition:background 0.2s;
+            " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
+              🍎 Apple Maps
+            </a>
+          </div>
+        </div>
+
+        <button class="btn-secondary" id="save-poi" style="
+          flex:1;
+          height:36px;
+          background:transparent;
+          border:1px solid rgba(255,255,255,0.1);
+          color:rgba(255,255,255,0.6);
+          border-radius:8px;
+          cursor:pointer;
+          font-weight:500;
+          font-size:12px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:6px;
+          transition:all 0.2s;
+        " onmouseover="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.6)'">${saved?'⭐ Salvato':'☆ Salva'}</button>
+
+        <button class="btn-secondary" id="add-cal" style="
+          flex:1;
+          height:36px;
+          background:transparent;
+          border:1px solid rgba(255,255,255,0.1);
+          color:rgba(255,255,255,0.6);
+          border-radius:8px;
+          cursor:pointer;
+          font-weight:500;
+          font-size:12px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:6px;
+          transition:all 0.2s;
+        " onmouseover="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.6)'">📅 Calendario</button>
+      </div>
+
+      <!-- Bottom spacing -->
+      <div style="height:20px"></div>
     `;
     // DEBUG: Log the HTML to verify grid structure
     const hasGrid = html.includes('display:grid');
@@ -4904,7 +5672,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const slides = photos.slice(0, 5).map((photo, idx) => `
             <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
               <a href="${photo.link || googleImagesUrl(getPoiDisplayName(p), p.city)}" target="_blank" rel="noopener" title="${photo.author || ''}" style="display:block;width:100%;height:100%;text-decoration:none">
-                <img src="${photo.url}" alt="${getPoiDisplayName(p)}" style="width:100%;height:100%;object-fit:cover;transition:transform .2s">
+                <img src="${photo.url}" alt="${getPoiDisplayName(p)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;transition:transform .2s">
               </a>
             </div>
           `).join('');
@@ -5018,10 +5786,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openPOI(id){
     console.log('%c[openPOI] Called with id:', 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold', id);
-    let p = getCachedAllPOIs().find(x => x.id===id);
+    const cached = getCachedAllPOIs();
+    console.log('[openPOI] 🔎 Searching in', cached.length, 'POIs...');
+    console.log('[openPOI] Available IDs (first 5):', cached.slice(0, 5).map(p => p.id).join(', '));
+    console.log('[openPOI] Looking for id:', id);
+    console.log('[openPOI] ID exists in cache:', cached.some(x => x.id === id) ? '✓ YES' : '✗ NO');
+
+    let p = cached.find(x => x.id===id);
     console.log('[openPOI] Found POI:', p ? p.name : 'NOT FOUND');
     if (!p) {
       console.error('[openPOI] ❌ POI not found, returning');
+      console.error('[openPOI] DEBUG: Trying to find matching id with different methods...');
+      console.error('[openPOI] Exact match:', cached.filter(x => x.id === id).length);
+      console.error('[openPOI] Contains match:', cached.filter(x => x?.id != null && id != null && String(x.id).includes(String(id))).length);
       return;
     }
 
@@ -5038,10 +5815,825 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('[openPOI] ⚠️ POI verification failed, using local data');
       }
 
+      // NEW: Enrich con Google Places Details API
+      if (window.GooglePlacesDetailsClient && p.googlePlaceId) {
+        console.log('[openPOI] Enriching with Places Details API...');
+        const enriched = await window.GooglePlacesDetailsClient.enrichPOI(p);
+        if (enriched._details) {
+          p = enriched;
+          console.log('[openPOI] ✅ POI enriched with full details');
+        }
+      }
+
       console.log('[openPOI] Calling openSheet with:', displayName);
       const html = poiDetailHTML(p);
       window.openSheet(displayName, html);
       console.log('[openPOI] ✅ openSheet called');
+      console.log('[WIZARD] sheet opened');
+
+      // ===== SETUP ADD-TO-ITINERARY BUTTON (MOVED INTO ASYNC BLOCK) =====
+      setTimeout(() => {
+        const addToItineraryBtn = document.getElementById('add-to-itinerary-btn');
+        console.log('[WIZARD] add-to-itinerary button found:', !!addToItineraryBtn);
+
+        if (addToItineraryBtn) {
+          addToItineraryBtn.onclick = () => {
+            console.log('[WIZARD] click registered');
+
+            // FASE 1.4: Show day selector for adding POI to itinerary
+            if (!window.ITINERARY) {
+              console.error('[openPOI] ITINERARY system not available');
+              toast('❌ Sistema itinerario non pronto');
+              return;
+            }
+
+            window.currentPOI = p;
+            const tripProfile = window.state?.tripProfile || {};
+            const days = tripProfile.days || 8;
+            const poiName = getPoiDisplayName(p);
+            const poiId = p.id;
+
+            console.log('[WIZARD] opening multi-step wizard for POI:', poiName);
+
+            // Wizard state
+            const wizardState = {
+              step: 1,
+              selectedDay: null,
+              selectedTime: '10:00',
+              duration: 60,
+              notes: '',
+              cost: 0,
+              tag: 'cibo'
+            };
+
+            // Save to window for global handlers
+            window._wizardPoiId = poiId;
+            window._wizardPoiName = poiName;
+            window._wizardState = wizardState;
+
+            /**
+             * Global handler for confirm button (called via onclick)
+             */
+            window._handleWizardConfirm = () => {
+              console.log('[WIZARD] Confirm button clicked via onclick');
+              const st = window._wizardState;
+              const pid = window._wizardPoiId;
+              const pname = window._wizardPoiName;
+
+              // Capture notes directly from textarea
+              const notesField = document.getElementById('wizard-notes-input');
+              if (notesField) {
+                st.notes = notesField.value.trim();
+              }
+
+              // Capture duration directly from input field
+              const durationField = document.getElementById('wizard-duration-input');
+              if (durationField) {
+                const durVal = parseInt(durationField.value, 10);
+                if (durVal > 0) st.duration = durVal;
+              }
+
+              // Capture cost directly from input field
+              const costField = document.getElementById('wizard-cost-input');
+              if (costField) {
+                st.cost = parseFloat(costField.value) || 0;
+              }
+
+              console.log('[WIZARD] Confirming POI addition:', {
+                poiId: pid,
+                poiName: pname,
+                day: st.selectedDay,
+                time: st.selectedTime,
+                duration: st.duration,
+                notes: st.notes,
+                cost: st.cost,
+                tag: st.tag
+              });
+
+              // Validate that a day was selected
+              if (st.selectedDay === null) {
+                console.warn('[WIZARD] No day selected');
+                window.toast('⚠️ Seleziona un giorno');
+                return;
+              }
+
+              // Add POI with all details (lat/lng for optimizer + route map)
+              const _pLat = (window.currentPOI && typeof window.currentPOI.lat === 'number') ? window.currentPOI.lat : (typeof p?.lat === 'number' ? p.lat : null);
+              const _pLng = (window.currentPOI && typeof window.currentPOI.lng === 'number') ? window.currentPOI.lng : (typeof p?.lng === 'number' ? p.lng : null);
+              const success = window.ITINERARY.addPOIToDay(
+                pid,
+                pname,
+                st.selectedDay,
+                st.selectedTime,
+                st.duration,
+                st.notes,
+                st.cost,
+                st.tag,
+                _pLat,
+                _pLng
+              );
+
+              if (success) {
+                window.saveState?.();
+                window.closeSheet();
+                window.toast(`✅ Aggiunto al Day ${st.selectedDay + 1} alle ${st.selectedTime}`);
+                console.log('[WIZARD] POI successfully added and sheet closed');
+              } else {
+                console.warn('[WIZARD] Failed to add POI');
+                window.toast('❌ Errore nell\'aggiunta del POI');
+              }
+            };
+
+            /**
+             * Render wizard step
+             */
+            function renderWizardStep() {
+              let html = '';
+
+              if (wizardState.step === 1) {
+                // STEP 1: Day selection
+                html = `
+                  <div style="padding: 16px;">
+                    <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step1') : '📅 STEP 1/4 — Scegli il giorno'}</p>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                      ${Array.from({length: days}, (_, i) => {
+                        const isSelected = wizardState.selectedDay === i;
+                        return `
+                          <button class="wizard-day-btn" data-day="${i}" style="
+                            padding: 12px;
+                            background: ${isSelected ? 'rgba(255, 107, 53, 0.4)' : 'rgba(255, 107, 53, 0.15)'};
+                            border: 2px solid ${isSelected ? 'rgba(255, 107, 53, 0.8)' : 'rgba(255, 107, 53, 0.3)'};
+                            color: #FF6B35;
+                            border-radius: 6px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                          " onmouseover="this.style.background='rgba(255, 107, 53, 0.3)'" onmouseout="this.style.background='${isSelected ? 'rgba(255, 107, 53, 0.4)' : 'rgba(255, 107, 53, 0.15)'}'">
+                            Day ${i + 1}
+                          </button>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                `;
+              } else if (wizardState.step === 2) {
+                // STEP 2: Time selection with hours validation
+                let hoursWarning = '';
+                if (window.currentPOI?.opening_hours) {
+                  const timeMatch = wizardState.selectedTime.match(/^(\d{2}):(\d{2})$/);
+                  if (timeMatch) {
+                    const inputHour = parseInt(timeMatch[1], 10), inputMin = parseInt(timeMatch[2], 10);
+                    const inputMinutes = inputHour * 60 + inputMin;
+                    const hoursStr = window.currentPOI.opening_hours;
+                    const hoursRegex = /(\d{2}):(\d{2})–(\d{2}):(\d{2})/;
+                    const match = hoursStr.match(hoursRegex);
+                    if (match) {
+                      const openHour = parseInt(match[1], 10), openMin = parseInt(match[2], 10);
+                      const closeHour = parseInt(match[3], 10), closeMin = parseInt(match[4], 10);
+                      const openMinutes = openHour * 60 + openMin;
+                      const closeMinutes = closeHour * 60 + closeMin;
+                      if (inputMinutes < openMinutes || inputMinutes >= closeMinutes) {
+                        hoursWarning = `<div style="background:rgba(255,165,0,0.2);border:1px solid rgba(255,165,0,0.4);border-radius:5px;padding:10px;margin-top:10px;font-size:11px;color:rgba(255,200,100,0.9)">⚠️ Questo luogo apre ${hoursStr}. Vuoi continuare?</div>`;
+                      }
+                    }
+                  }
+                }
+                html = `
+                  <div style="padding: 16px;">
+                    <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step2') : "🕐 STEP 2/4 — Scegli l'orario"}</p>
+                    <div style="margin-bottom: 16px;">
+                      <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">Orario (HH:MM)</label>
+                      <input type="text" id="wizard-time-input" value="${wizardState.selectedTime}" placeholder="14:30" maxlength="5" style="
+                        width: 100%;
+                        padding: 10px;
+                        background: rgba(255,255,255,0.08);
+                        border: 1px solid rgba(255,255,255,0.2);
+                        border-radius: 6px;
+                        color: #fff;
+                        font-size: 16px;
+                        box-sizing: border-box;
+                        font-family: 'Courier New', monospace;
+                      ">
+                      <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 6px;">Formato: HH:MM (es: 14:30, 09:45)</p>
+                      ${hoursWarning}
+                    </div>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 16px;">Giorno selezionato: <strong style="color: #FF6B35;">Day ${wizardState.selectedDay + 1}</strong></p>
+                  </div>
+                `;
+              } else if (wizardState.step === 3) {
+                // STEP 3: Details (Duration, Notes, Cost)
+                html = `
+                  <div style="padding: 16px; max-height: 400px; overflow-y: auto;">
+                    <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step3') : '📋 STEP 3/4 — Dettagli (opzionali)'}</p>
+
+                    <div style="margin-bottom: 14px;">
+                      <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">${window.t ? window.t('wizard.duration') : '⏱️ Durata (minuti)'}</label>
+                      <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                        ${[30, 60, 90, 120, 180].map(d => `
+                          <button class="duration-preset" data-duration="${d}" style="
+                            flex: 1;
+                            padding: 8px;
+                            background: ${wizardState.duration === d ? 'rgba(74,124,89,0.4)' : 'rgba(255,255,255,0.04)'};
+                            border: 1px solid ${wizardState.duration === d ? 'rgba(74,124,89,0.6)' : 'rgba(255,255,255,0.1)'};
+                            color: ${wizardState.duration === d ? '#4ade80' : 'rgba(255,255,255,0.7)'};
+                            border-radius: 4px;
+                            font-size: 11px;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                          " onmouseover="this.style.background='${wizardState.duration === d ? 'rgba(74,124,89,0.5)' : 'rgba(255,255,255,0.08)'}'" onmouseout="this.style.background='${wizardState.duration === d ? 'rgba(74,124,89,0.4)' : 'rgba(255,255,255,0.04)'}'">
+                            ${d}m
+                          </button>
+                        `).join('')}
+                      </div>
+                      <input type="number" id="wizard-duration-input" value="${wizardState.duration}" min="5" max="480" placeholder="o inserisci manualmente" style="
+                        width: 100%;
+                        padding: 8px;
+                        background: rgba(255,255,255,0.04);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 4px;
+                        color: #fff;
+                        font-size: 12px;
+                        box-sizing: border-box;
+                      ">
+                    </div>
+
+                    <div style="margin-bottom: 14px;">
+                      <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">💰 Costo (opzionale)</label>
+                      <input type="number" id="wizard-cost-input" value="${wizardState.cost}" min="0" placeholder="Es: 15.50" style="
+                        width: 100%;
+                        padding: 8px;
+                        background: rgba(255,255,255,0.04);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 4px;
+                        color: #fff;
+                        font-size: 12px;
+                        box-sizing: border-box;
+                      ">
+                    </div>
+
+                    <div style="margin-bottom: 14px;">
+                      <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">🏷️ Categoria</label>
+                      <select id="wizard-tag-select" style="
+                        width: 100%;
+                        padding: 8px;
+                        background: rgba(255,255,255,0.04);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 4px;
+                        color: #fff;
+                        font-size: 12px;
+                        box-sizing: border-box;
+                      ">
+                        <option value="cibo" ${wizardState.tag === 'cibo' ? 'selected' : ''}>🍽️ Cibo</option>
+                        <option value="trasporti" ${wizardState.tag === 'trasporti' ? 'selected' : ''}>🚌 Trasporti</option>
+                        <option value="ingressi" ${wizardState.tag === 'ingressi' ? 'selected' : ''}>🎫 Ingressi</option>
+                        <option value="shopping" ${wizardState.tag === 'shopping' ? 'selected' : ''}>🛍️ Shopping</option>
+                        <option value="altro" ${wizardState.tag === 'altro' ? 'selected' : ''}>📦 Altro</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">📝 Note personalizzate (opzionale)</label>
+                      <textarea id="wizard-notes-input" placeholder="Es: Prenotare in anticipo, glutine-free disponibile..." style="
+                        width: 100%;
+                        padding: 8px;
+                        background: rgba(255,255,255,0.04);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 4px;
+                        color: #fff;
+                        font-size: 12px;
+                        resize: vertical;
+                        min-height: 60px;
+                        box-sizing: border-box;
+                        font-family: inherit;
+                      ">${wizardState.notes}</textarea>
+                    </div>
+                  </div>
+                `;
+              } else if (wizardState.step === 4) {
+                // STEP 4: Summary & Confirm
+                const dayDate = new Date(2027, 3, 10 + wizardState.selectedDay);
+                const dayLabel = dayDate.toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                html = `
+                  <div style="padding: 16px;">
+                    <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step4') : '✅ STEP 4/4 — Riepilogo'}</p>
+
+                    <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+                      <div style="margin-bottom: 10px;">
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📌 Punto di interesse</div>
+                        <div style="font-size: 14px; color: #fff; font-weight: 600;">${poiName}</div>
+                      </div>
+
+                      <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📅 Data e orario</div>
+                        <div style="font-size: 13px; color: rgba(255,255,255,0.9);">
+                          <strong>Day ${wizardState.selectedDay + 1}</strong> · ${dayLabel}<br>
+                          <strong>${wizardState.selectedTime}</strong>
+                        </div>
+                      </div>
+
+                      <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">⏱️ Durata</div>
+                        <div style="font-size: 13px; color: rgba(255,255,255,0.9);"><strong>${wizardState.duration}</strong> minuti</div>
+                      </div>
+
+                      <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">🏷️ Categoria</div>
+                        <div style="font-size: 13px; color: rgba(255,255,255,0.9);"><strong>${['cibo', 'trasporti', 'ingressi', 'shopping', 'altro'].includes(wizardState.tag) ? wizardState.tag.charAt(0).toUpperCase() + wizardState.tag.slice(1) : 'Altro'}</strong></div>
+                      </div>
+
+                      ${wizardState.cost > 0 ? `
+                        <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                          <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">💰 Costo</div>
+                          <div style="font-size: 13px; color: rgba(255,255,255,0.9);"><strong>¥${wizardState.cost}</strong></div>
+                        </div>
+                      ` : ''}
+
+                      ${wizardState.notes ? `
+                        <div style="padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                          <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📝 Note</div>
+                          <div style="font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.4;">${wizardState.notes}</div>
+                        </div>
+                      ` : ''}
+                    </div>
+
+                    <p style="color: rgba(255,255,255,0.6); font-size: 12px; text-align: center;">Conferma per aggiungere alla tappa</p>
+                  </div>
+                `;
+              }
+
+              return html;
+            }
+
+            /**
+             * Update Y2K window content (including buttons)
+             */
+            function updateWizardUI() {
+              // Find the Y2K window that contains wizard
+              // Use robust method: find the correct Y2K window by searching from wizard elements
+              let wizardContainer = null;
+              let containerSource = '';
+
+              // Method 1: Try to find from any wizard button (most reliable when multiple Y2K windows open)
+              const wizardBtn = document.querySelector('.wizard-day-btn, .wizard-next-btn, .wizard-back-btn, .wizard-confirm-btn');
+              if (wizardBtn) {
+                const y2kWin = wizardBtn.closest('.y2k-win');
+                if (y2kWin) {
+                  wizardContainer = y2kWin.querySelector('.y2k-win-body');
+                  containerSource = 'found via closest .y2k-win from wizard button';
+                }
+              }
+
+              // Fallback 1: Direct selector (works when only one Y2K window open)
+              if (!wizardContainer) {
+                wizardContainer = document.querySelector('.y2k-win-body');
+                containerSource = 'y2k-win-body direct selector';
+              }
+
+              // Fallback 2: Try sheet-body (legacy support)
+              if (!wizardContainer) {
+                wizardContainer = document.getElementById('sheet-body');
+                containerSource = 'sheet-body fallback';
+              }
+
+              // Fallback 3: Find by wizard elements in DOM
+              if (!wizardContainer) {
+                wizardContainer = document.querySelector('.wizard-cancel-btn')?.closest('div');
+                containerSource = 'closest div fallback';
+              }
+
+              if (!wizardContainer) {
+                console.warn('[WIZARD] Could not find wizard container to update');
+                return;
+              }
+
+              console.log('[WIZARD] Found container via:', containerSource, 'tag:', wizardContainer.tagName, 'id:', wizardContainer.id, 'class:', wizardContainer.className);
+
+              // Re-render ENTIRE wizard (content + buttons), not just the content
+              const fullWizardHTML = renderWizardStep() + `
+                <div style="padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; align-items: center; justify-content: flex-start;">
+                  <!-- LEFT BUTTONS -->
+                  <button class="wizard-cancel-btn" style="
+                    padding: 8px 12px;
+                    background: rgba(255,255,255,0.04);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    color: rgba(255,255,255,0.6);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 11px;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    white-space: nowrap;
+                  " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                    ✕ Annulla
+                  </button>
+
+                  ${wizardState.step > 1 ? `
+                    <button class="wizard-back-btn" style="
+                      padding: 8px 12px;
+                      background: rgba(255,255,255,0.04);
+                      border: 1px solid rgba(255,255,255,0.1);
+                      color: rgba(255,255,255,0.6);
+                      border-radius: 4px;
+                      cursor: pointer;
+                      font-size: 11px;
+                      font-weight: 500;
+                      transition: all 0.2s;
+                      white-space: nowrap;
+                    " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                      ${window.t ? window.t('common.back') : '← Indietro'}
+                    </button>
+                  ` : ''}
+
+                  <!-- SPACER -->
+                  <div style="flex: 1;"></div>
+
+                  <!-- RIGHT BUTTON -->
+                  ${wizardState.step < 4 ? `
+                    <button class="wizard-next-btn" style="
+                      padding: 8px 16px;
+                      background: rgba(255, 107, 53, 0.3);
+                      border: 1px solid rgba(255, 107, 53, 0.5);
+                      color: #FF6B35;
+                      border-radius: 4px;
+                      cursor: pointer;
+                      font-size: 12px;
+                      font-weight: 600;
+                      transition: all 0.2s;
+                      white-space: nowrap;
+                    " onmouseover="this.style.background='rgba(255, 107, 53, 0.4)'" onmouseout="this.style.background='rgba(255, 107, 53, 0.3)'">
+                      ${window.t ? window.t('common.next') : 'Avanti →'}
+                    </button>
+                  ` : `
+                    <button class="wizard-confirm-btn" style="
+                      padding: 8px 16px;
+                      background: rgba(74,124,89,0.3);
+                      border: 1px solid rgba(74,124,89,0.5);
+                      color: #4ade80;
+                      border-radius: 4px;
+                      cursor: pointer;
+                      font-size: 12px;
+                      font-weight: 600;
+                      transition: all 0.2s;
+                      white-space: nowrap;
+                    " onmouseover="this.style.background='rgba(74,124,89,0.4)'" onmouseout="this.style.background='rgba(74,124,89,0.3)'">
+                      ✓ Conferma
+                    </button>
+                  `}
+                </div>
+              `;
+
+              const headerTitle = (window.t ? [window.t('wizard.day'), window.t('wizard.time'), window.t('wizard.details'), window.t('wizard.summary')] : ['📅 Scegli il giorno', "🕐 Scegli l'orario", '📋 Dettagli', '✅ Riepilogo'])[wizardState.step - 1];
+
+              // Update sheet header if exists
+              const sheetHeader = document.querySelector('.sheet-header');
+              if (sheetHeader) {
+                sheetHeader.textContent = headerTitle;
+              }
+
+              // Update container with full wizard (content + buttons)
+              wizardContainer.innerHTML = fullWizardHTML;
+
+              // Re-attach handlers (must be done AFTER innerHTML update)
+              attachWizardHandlers();
+
+              console.log('[WIZARD] Step', wizardState.step, 'rendered with buttons');
+            }
+
+            /**
+             * Expose wizard functions to global scope for onclick handlers
+             */
+            window._wizardSelectDay = (dayIndex) => {
+              console.log('[WIZARD] ✅ Day selected:', dayIndex + 1);
+              wizardState.selectedDay = dayIndex;
+              wizardState.step = 2;
+              updateWizardUI();
+            };
+
+            window._wizardSelectDuration = (duration) => {
+              console.log('[WIZARD] ✅ Duration preset selected:', duration);
+              wizardState.duration = duration;
+              updateWizardUI();
+            };
+
+            window._wizardGoBack = () => {
+              console.log('[WIZARD] 🔙 Back button clicked (via onclick)');
+              if (wizardState.step > 1) {
+                wizardState.step--;
+                console.log('[WIZARD] ✅ Back clicked, now at step:', wizardState.step);
+                updateWizardUI();
+              }
+            };
+
+            window._wizardGoNext = () => {
+              console.log('[WIZARD] ▶️ Next button clicked (via onclick)');
+              if (wizardState.step === 1) wizardState.step = 2;
+              else if (wizardState.step === 2) wizardState.step = 3;
+              else if (wizardState.step === 3) wizardState.step = 4;
+              console.log('[WIZARD] ✅ Next clicked, now at step:', wizardState.step);
+              updateWizardUI();
+            };
+
+            window._wizardCancel = () => {
+              console.log('[WIZARD] ❌ Wizard cancelled (via onclick)');
+              // Reset global flags so next wizard opens fresh
+              window._wizardClickListenerAttached = false;
+              window._wizardChangeListenerAttached = false;
+              window.closeSheet();
+            };
+
+            /**
+             * Attach event handlers using document-level event delegation
+             * (Wizard opens in Y2K window, not sheetBody)
+             */
+            function attachWizardHandlers() {
+              console.log('[WIZARD DEBUG] attachWizardHandlers() called');
+
+              // Remove old listener if it exists
+              if (window._wizardClickListener) {
+                document.removeEventListener('click', window._wizardClickListener, { capture: true });
+                console.log('[WIZARD] ✅ Removed stale click listener');
+              }
+
+              console.log('[WIZARD] ✅ Attaching fresh click listener');
+
+              // Create and save click listener (so it can be removed later)
+              window._wizardClickListener = (e) => {
+                  const target = e.target;
+
+                  // Day selection
+                  if (target.classList.contains('wizard-day-btn')) {
+                    const dayIndex = parseInt(target.dataset.day, 10);
+                    console.log('[WIZARD] ✅ Day selected:', dayIndex + 1);
+                    wizardState.selectedDay = dayIndex;
+                    wizardState.step = 2;
+                    e.stopImmediatePropagation(); // Prevent other listeners from firing
+                    updateWizardUI();
+                    return;
+                  }
+
+                  // Duration presets
+                  if (target.classList.contains('duration-preset')) {
+                    const duration = parseInt(target.dataset.duration, 10);
+                    console.log('[WIZARD] ✅ Duration preset selected:', duration);
+                    wizardState.duration = duration;
+                    updateWizardUI();
+                    return;
+                  }
+
+                  // Back button (BEFORE next button for debugging)
+                  if (target.classList.contains('wizard-back-btn')) {
+                    console.log('[WIZARD] 🔙 Back button clicked, current step:', wizardState.step);
+                    if (wizardState.step > 1) {
+                      wizardState.step--;
+                      console.log('[WIZARD] ✅ Back clicked, now at step:', wizardState.step);
+                      updateWizardUI();
+                    } else {
+                      console.warn('[WIZARD] ⚠️ Cannot go back from step 1');
+                    }
+                    return;
+                  }
+
+                  // Next button
+                  if (target.classList.contains('wizard-next-btn')) {
+                    console.log('[WIZARD] ▶️ Next button clicked, current step:', wizardState.step);
+                    if (wizardState.step === 1) wizardState.step = 2;
+                    else if (wizardState.step === 2) {
+                      // Capture time input value before advancing (change event only fires on blur)
+                      const timeInput = document.getElementById('wizard-time-input');
+                      if (timeInput) {
+                        const timeVal = timeInput.value.trim();
+                        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+                        if (timeRegex.test(timeVal)) {
+                          wizardState.selectedTime = timeVal;
+                          console.log('[WIZARD] Time captured from input on next:', wizardState.selectedTime);
+                        }
+                      }
+                      wizardState.step = 3;
+                    }
+                    else if (wizardState.step === 3) wizardState.step = 4;
+                    console.log('[WIZARD] ✅ Next clicked, now at step:', wizardState.step);
+                    updateWizardUI();
+                    return;
+                  }
+
+                  // Cancel button
+                  if (target.classList.contains('wizard-cancel-btn')) {
+                    console.log('[WIZARD] ❌ Wizard cancelled');
+                    window.closeSheet();
+                    return;
+                  }
+
+                  // Confirm button
+                  if (target.classList.contains('wizard-confirm-btn')) {
+                    console.log('[WIZARD] Confirm button clicked');
+
+                    // Capture notes directly from textarea
+                    const notesField = document.getElementById('wizard-notes-input');
+                    if (notesField) {
+                      wizardState.notes = notesField.value.trim();
+                    }
+
+                    // Capture duration directly from input field
+                    const durationField = document.getElementById('wizard-duration-input');
+                    if (durationField) {
+                      const durVal = parseInt(durationField.value, 10);
+                      if (durVal > 0) wizardState.duration = durVal;
+                    }
+
+                    // Capture cost directly from input field
+                    const costField = document.getElementById('wizard-cost-input');
+                    if (costField) {
+                      wizardState.cost = parseFloat(costField.value) || 0;
+                    }
+
+                    console.log('[WIZARD] Confirming POI:', {poiId, poiName, day: wizardState.selectedDay, time: wizardState.selectedTime});
+
+                    // Validate day selected
+                    if (wizardState.selectedDay === null) {
+                      console.warn('[WIZARD] No day selected');
+                      window.toast('⚠️ Seleziona un giorno');
+                      return;
+                    }
+
+                    // Add POI (lat/lng for optimizer + route map)
+                    const _pLat = (window.currentPOI && typeof window.currentPOI.lat === 'number') ? window.currentPOI.lat : (typeof p?.lat === 'number' ? p.lat : null);
+                    const _pLng = (window.currentPOI && typeof window.currentPOI.lng === 'number') ? window.currentPOI.lng : (typeof p?.lng === 'number' ? p.lng : null);
+                    const success = window.ITINERARY.addPOIToDay(
+                      poiId,
+                      poiName,
+                      wizardState.selectedDay,
+                      wizardState.selectedTime,
+                      wizardState.duration,
+                      wizardState.notes,
+                      wizardState.cost,
+                      wizardState.tag,
+                      _pLat,
+                      _pLng
+                    );
+
+                    if (success) {
+                      window.saveState?.();
+                      window.closeSheet();
+                      window.toast(`✅ Aggiunto al Day ${wizardState.selectedDay + 1} alle ${wizardState.selectedTime}`);
+                      console.log('[WIZARD] POI added successfully');
+                    } else {
+                      console.warn('[WIZARD] Failed to add POI');
+                      window.toast('❌ Errore');
+                    }
+                    return;
+                  }
+                };
+
+                // Attach the saved listener
+                document.addEventListener('click', window._wizardClickListener, { capture: true });
+                console.log('[WIZARD] ✅ Click listener attached');
+
+              // Input fields - Time, Duration, Cost, Notes (using change event delegation)
+              // Remove old listener and attach fresh one
+              if (window._wizardChangeListener) {
+                document.removeEventListener('change', window._wizardChangeListener, { capture: true });
+                console.log('[WIZARD] ✅ Removed stale change listener');
+              }
+
+              console.log('[WIZARD] ✅ Attaching fresh change listener');
+
+                // Create fresh listener for this wizard session
+                window._wizardChangeListener = (e) => {
+                  if (e.target.id === 'wizard-time-input') {
+                    const timeVal = e.target.value.trim();
+                    // Validate HH:MM format
+                    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+                    if (timeRegex.test(timeVal)) {
+                      wizardState.selectedTime = timeVal;
+                      e.target.style.borderColor = 'rgba(255,255,255,0.2)';
+                      console.log('[WIZARD] Time selected:', wizardState.selectedTime);
+                    } else {
+                      e.target.style.borderColor = 'rgba(255, 107, 53, 0.6)';
+                      console.warn('[WIZARD] Invalid time format:', timeVal);
+                    }
+                  }
+                  if (e.target.id === 'wizard-duration-input') {
+                    const val = parseInt(e.target.value, 10);
+                    if (val > 0) {
+                      wizardState.duration = val;
+                      console.log('[WIZARD] Duration set to:', wizardState.duration);
+                    }
+                  }
+                  if (e.target.id === 'wizard-cost-input') {
+                    wizardState.cost = parseFloat(e.target.value) || 0;
+                    console.log('[WIZARD] Cost set to:', wizardState.cost);
+                  }
+                  if (e.target.id === 'wizard-tag-select') {
+                    wizardState.tag = e.target.value;
+                    console.log('[WIZARD] Tag set to:', wizardState.tag);
+                  }
+                  if (e.target.id === 'wizard-notes-input') {
+                    wizardState.notes = e.target.value.trim();
+                    console.log('[WIZARD] Notes updated');
+                  }
+                };
+
+                document.addEventListener('change', window._wizardChangeListener, { capture: true });
+                console.log('[WIZARD] ✅ Change listener attached');
+            }
+
+            /**
+             * Create initial wizard content with controls
+             */
+            const wizardHTML = renderWizardStep() + `
+              <div style="padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; align-items: center; justify-content: flex-start;">
+                <!-- LEFT BUTTONS -->
+                <button class="wizard-cancel-btn" style="
+                  padding: 8px 12px;
+                  background: rgba(255,255,255,0.04);
+                  border: 1px solid rgba(255,255,255,0.1);
+                  color: rgba(255,255,255,0.6);
+                  border-radius: 4px;
+                  cursor: pointer;
+                  font-size: 11px;
+                  font-weight: 500;
+                  transition: all 0.2s;
+                  white-space: nowrap;
+                " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                  ✕ Annulla
+                </button>
+
+                ${wizardState.step > 1 ? `
+                  <button class="wizard-back-btn" style="
+                    padding: 8px 12px;
+                    background: rgba(255,255,255,0.04);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    color: rgba(255,255,255,0.6);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 11px;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    white-space: nowrap;
+                  " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                    ${window.t ? window.t('common.back') : '← Indietro'}
+                  </button>
+                ` : ''}
+
+                <!-- SPACER -->
+                <div style="flex: 1;"></div>
+
+                <!-- RIGHT BUTTON -->
+                ${wizardState.step < 4 ? `
+                  <button class="wizard-next-btn" style="
+                    padding: 8px 16px;
+                    background: rgba(255, 107, 53, 0.3);
+                    border: 1px solid rgba(255, 107, 53, 0.5);
+                    color: #FF6B35;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-weight: 600;
+                    transition: all 0.2s;
+                    white-space: nowrap;
+                  " onmouseover="this.style.background='rgba(255, 107, 53, 0.4)'" onmouseout="this.style.background='rgba(255, 107, 53, 0.3)'">
+                    ${window.t ? window.t('common.next') : 'Avanti →'}
+                  </button>
+                ` : `
+                  <button class="wizard-confirm-btn" style="
+                    padding: 8px 16px;
+                    background: rgba(74,124,89,0.3);
+                    border: 1px solid rgba(74,124,89,0.5);
+                    color: #4ade80;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    font-weight: 600;
+                    transition: all 0.2s;
+                    white-space: nowrap;
+                  " onmouseover="this.style.background='rgba(74,124,89,0.4)'" onmouseout="this.style.background='rgba(74,124,89,0.3)'">
+                    ✓ Conferma
+                  </button>
+                `}
+              </div>
+            `;
+
+            window.openSheet('📅 Aggiungi all\'itinerario', wizardHTML);
+
+            // Attach handlers after sheet is opened
+            setTimeout(() => {
+              attachWizardHandlers();
+              console.log('[WIZARD] Multi-step wizard initialized');
+            }, 50);
+          };
+        }
+      }, 20);
+
+      // Inizializza logica GF detection (SOLO se ristorante)
+      setTimeout(() => {
+        const FOOD_TYPES = ['restaurant','food','cafe','bar','meal_takeaway','bakery'];
+        const isRestaurant = FOOD_TYPES.includes(p.primaryType || p.cat);
+        if (isRestaurant && window.initPOIDetail) {
+          console.debug('[openPOI] Initializing GF detection');
+          window.initPOIDetail(p, p._details || {}, p._reviews || []);
+        }
+      }, 100);
 
       // Aumenta la larghezza della finestra del POI per mostrare due colonne side-by-side
       setTimeout(() => {
@@ -5052,6 +6644,48 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log('[openPOI] ✅ Window width set to 680px for two-column layout');
         }
       }, 50);
+
+      // Category editor - DOPO openSheet
+      setTimeout(() => {
+        const editCatBtn = document.getElementById('edit-cat-btn');
+        const catSelector = document.getElementById('cat-selector');
+        const catOptions = document.getElementById('cat-options');
+
+        if (editCatBtn && catSelector && catOptions) {
+          // Popola categorie
+          catOptions.innerHTML = Object.entries(CATS)
+            .filter(([k]) => k !== 'all')
+            .map(([k, v]) => {
+              const isSelected = (state.userCategoryOverrides?.[id] || p.cat) === k;
+              return `<button class="btn" data-cat="${k}" style="font-size:11px;padding:8px;text-align:center;background:${isSelected ? '#FF1493' : '#f0f0f0'};color:${isSelected ? 'white' : '#333'};border:none;border-radius:4px;cursor:pointer">
+                ${v.icon}<br>${v.label}
+              </button>`;
+            })
+            .join('');
+
+          // Click matita = toggle
+          editCatBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            catSelector.style.display = catSelector.style.display === 'none' ? 'block' : 'none';
+          };
+
+          // Click categoria = salva
+          catOptions.querySelectorAll('button[data-cat]').forEach(btn => {
+            btn.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const newCat = btn.dataset.cat;
+              if (!state.userCategoryOverrides) state.userCategoryOverrides = {};
+              state.userCategoryOverrides[id] = newCat;
+              saveState();
+              toast(`✏️ Categoria cambiata a ${CATS[newCat]?.label || newCat}`);
+              catSelector.style.display = 'none';
+              openPOI(id);
+            };
+          });
+        }
+      }, 10);
     })();
 
     // Enrichisci il POI in background (non blocca UI)
@@ -5209,25 +6843,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!p.photos && !p.photo && typeof window.getPhotosForLocation === 'function') {
       loadPOIPhotos(p);
     }
-    // Navigate btn — geo: with fallbacks
-    const navigateBtn = document.getElementById('navigate-poi');
-    if (navigateBtn) {
-      navigateBtn.onclick = () => {
-        const lat = p.lat, lng = p.lng, name = getPoiDisplayName(p);
-        const isIOS2 = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        if (isIOS2) {
-          window.open(`https://maps.apple.com/?daddr=${lat},${lng}&dirflg=w`, '_blank');
-        } else {
-          // Try geo: first (Android opens with preferred nav app)
-          const geo = `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(name)})`;
-          window.location.href = geo;
-          // Fallback to Google Maps after 600ms if geo didn't open
-          setTimeout(() => {
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`, '_blank');
-          }, 600);
-        }
-      };
-    }
     // Star rating
     const starsEl = document.getElementById(`stars-${id}`);
     if (starsEl) starsEl.querySelectorAll('.star').forEach(s => {
@@ -5240,51 +6855,20 @@ document.addEventListener('DOMContentLoaded', () => {
         toast('Voto salvato ⭐');
       };
     });
-    document.getElementById('save-poi').onclick = () => {
+    const savePoiBtn = document.getElementById('save-poi');
+    if (savePoiBtn) savePoiBtn.onclick = () => {
       const i = state.savedPOIs.indexOf(id);
       if (i>=0) state.savedPOIs.splice(i,1); else state.savedPOIs.push(id);
       saveState(); openPOI(id); toast(i>=0?'Rimosso':'Salvato ★');
     };
-    document.getElementById('poi-note').addEventListener('input', e => {
-      state.notes[id] = e.target.value; saveState();
-    });
-    document.getElementById('add-cal').onclick = () => promptAddToCalendar(p);
-
-    // Category editor
-    const editCatBtn = document.getElementById('edit-cat-btn');
-    const catSelector = document.getElementById('cat-selector');
-    const catOptions = document.getElementById('cat-options');
-
-    if (editCatBtn && catSelector && catOptions) {
-      // Populate category options
-      catOptions.innerHTML = Object.entries(CATS)
-        .filter(([k]) => k !== 'all')
-        .map(([k, v]) => {
-          const isSelected = (state.userCategoryOverrides?.[id] || p.cat) === k;
-          return `<button class="btn ${isSelected?'primary':''}" data-cat="${k}" style="font-size:11px;padding:6px 8px;text-align:center">
-            ${v.icon} ${v.label}
-          </button>`;
-        })
-        .join('');
-
-      // Toggle selector
-      editCatBtn.onclick = e => {
-        e.preventDefault();
-        catSelector.style.display = catSelector.style.display === 'none' ? 'block' : 'none';
-      };
-
-      // Save category change
-      catOptions.querySelectorAll('button[data-cat]').forEach(btn => {
-        btn.onclick = () => {
-          const newCat = btn.dataset.cat;
-          if (!state.userCategoryOverrides) state.userCategoryOverrides = {};
-          state.userCategoryOverrides[id] = newCat;
-          saveState();
-          toast(`✏️ Categoria cambiata a ${CATS[newCat]?.label || newCat}`);
-          openPOI(id); // Re-render
-        };
+    const noteEl = document.getElementById('poi-note');
+    if (noteEl) {
+      noteEl.addEventListener('input', e => {
+        state.notes[id] = e.target.value; saveState();
       });
     }
+    const addCalBtn = document.getElementById('add-cal');
+    if (addCalBtn) addCalBtn.onclick = () => promptAddToCalendar(p);
   }
   window.__openPOI = openPOI;
   window.openPOI = openPOI;
@@ -5473,6 +7057,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function getCachedAllPOIs() {
     if (!globalPOIsCache) {
       globalPOIsCache = allPOIs();
+      console.log('[getCachedAllPOIs] 📦 Cache MISS - rebuilt:', globalPOIsCache.length, 'POIs');
+      console.log('[getCachedAllPOIs] Sample IDs:', globalPOIsCache.slice(0, 3).map(p => p.id).join(', '));
+    } else {
+      console.log('[getCachedAllPOIs] ✓ Cache HIT -', globalPOIsCache.length, 'POIs');
     }
     return globalPOIsCache;
   }
@@ -5558,6 +7146,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Expose to window for unified itinerary
+  window.exportItineraryWhatsApp = exportItineraryWhatsApp;
+
   function showExportModal(text) {
     const modal = document.createElement('div');
     modal.innerHTML = `
@@ -5636,7 +7227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lat: place.lat,
         lng: place.lng,
         address: place.address,
-        day: day ? parseInt(day) : null,
+        day: day ? parseInt(day, 10) : null,
         time: time || '',
         cost: cost || '',
         fromGoogle: true
@@ -5674,7 +7265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const html = `
       <div style="position:fixed;inset:0;z-index:3000;background:rgba(20,30,80,.85);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto" id="add-itin-overlay">
         <div style="background:linear-gradient(170deg,#FFFDF0 0%,#FFF8DC 100%);border-top:3px solid #FF1493;border-radius:12px;padding:24px;max-width:380px;width:100%;margin:auto 0;box-shadow:0 -8px 40px rgba(255,20,147,.3)">
-          <h3 style="margin:0 0 16px;font-size:18px;color:#1A2560;font-weight:700;font-family:'Comic Sans MS',cursive">${poi.name || poi.bestname || 'Aggiungi tappa'}</h3>
+          <h3 style="margin:0 0 16px;font-size:18px;color:#1A2560;font-weight:700;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">${poi.name || poi.bestname || 'Aggiungi tappa'}</h3>
           <div class="form-row">
             <label style="color:#6B5EA8;font-weight:700;font-size:12px;display:block;margin-bottom:6px">📅 Giorno del viaggio (1, 2, 3...)</label>
             <input id="itin-day" type="number" placeholder="1" min="1" max="30" style="font-size:14px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
@@ -5688,8 +7279,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <input id="itin-cost" type="text" placeholder="Gratis" style="font-size:14px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
           </div>
           <div style="display:flex;gap:8px;margin-top:18px">
-            <button id="itin-cancel" style="flex:1;padding:11px;background:linear-gradient(135deg,#E8E0FF,#D8CCFF);border:2px solid #C8BDFF;border-radius:8px;color:#1A2560;cursor:pointer;font-weight:600;font-family:'Comic Sans MS',cursive;transition:all 0.18s ease">Annulla</button>
-            <button id="itin-confirm" style="flex:1;padding:11px;background:linear-gradient(135deg,#FF1493,#FF69B4);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;font-family:'Comic Sans MS',cursive;box-shadow:0 0 16px rgba(255,20,147,.45);transition:all 0.18s ease">✓ Aggiungi</button>
+            <button id="itin-cancel" style="flex:1;padding:11px;background:linear-gradient(135deg,#E8E0FF,#D8CCFF);border:2px solid #C8BDFF;border-radius:8px;color:#1A2560;cursor:pointer;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;transition:all 0.18s ease">Annulla</button>
+            <button id="itin-confirm" style="flex:1;padding:11px;background:linear-gradient(135deg,#FF1493,#FF69B4);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 0 16px rgba(255,20,147,.45);transition:all 0.18s ease">✓ Aggiungi</button>
           </div>
         </div>
       </div>
@@ -5707,8 +7298,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmBtn = document.getElementById('itin-confirm');
     const overlayDiv = document.getElementById('add-itin-overlay');
 
+    console.log('[DIALOG] Elements found:', { dayInput, timeInput, costInput, cancelBtn, confirmBtn, overlayDiv });
+
     // Focus sul primo input
-    setTimeout(() => dayInput.focus(), 100);
+    setTimeout(() => dayInput?.focus(), 100);
 
     // Handler chiusura
     const close = () => {
@@ -5716,19 +7309,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Bottone annulla
-    cancelBtn.onclick = () => close();
-    overlayDiv.onclick = (e) => {
+    if (cancelBtn) cancelBtn.onclick = () => close();
+    if (overlayDiv) overlayDiv.onclick = (e) => {
       if (e.target === overlayDiv) close();
     };
 
     // Bottone conferma
-    confirmBtn.onclick = () => {
-      const day = dayInput.value.trim() || '';
-      const time = timeInput.value.trim() || '';
-      const cost = costInput.value.trim() || '';
-      onConfirm({ day, time, cost });
-      close();
-    };
+    if (confirmBtn) {
+      console.log('[DIALOG] Assigning onclick to confirmBtn');
+      confirmBtn.onclick = (e) => {
+        console.log('[DIALOG] Confirm button CLICKED!', e);
+        e.preventDefault();
+        e.stopPropagation();
+        const day = dayInput.value.trim() || '';
+        const time = timeInput.value.trim() || '';
+        const cost = costInput.value.trim() || '';
+        console.log('[DIALOG] Calling onConfirm with:', { day, time, cost });
+        onConfirm({ day, time, cost });
+        close();
+      };
+    } else {
+      console.error('[DIALOG] confirmBtn NOT FOUND! Cannot attach onclick handler');
+    }
 
     // Enter key per muoversi tra campi
     dayInput.onkeydown = (e) => {
@@ -5776,36 +7378,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // HTML PRINCIPALE
     const searchHtml = `
-      <div style="position:sticky;top:0;background:var(--surface) !important;padding:12px 0;margin-bottom:12px;z-index:200;border-bottom:1px solid var(--border)">
+      <div style="position:sticky;top:0;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);padding:12px;margin-bottom:12px;z-index:200;border-radius:14px">
         <!-- Ricerca per città (searchCity) -->
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <input id="list-search" type="text" placeholder="🔍 Scrivi una città (Tokyo, Osaka, Kyoto...)"
-            style="flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit">
-          <button id="btn-google-search" style="padding:8px 12px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;white-space:nowrap">🌍 Google</button>
+            style="flex:1;padding:8px 10px;background:rgba(74,91,168,0.12);backdrop-filter:blur(10px);color:#fff;border:1.5px solid rgba(255,255,255,0.25);border-radius:8px;font:inherit;font-size:13px;placeholder-color:rgba(255,255,255,0.6)">
+          <button id="btn-google-search" style="padding:8px 12px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;white-space:nowrap;font-size:12px;box-shadow:0 0 12px rgba(255,20,147,0.3)">🌍 Google</button>
         </div>
 
         <!-- Pulsanti esporta/condividi -->
         <div style="display:flex;gap:6px;font-size:12px">
-          <button id="btn-export-whatsapp" style="flex:1;padding:6px;background:rgba(76,175,80,.2);border:1px solid #4CAF50;border-radius:6px;color:var(--text);cursor:pointer;font-size:11px;font-weight:600">📤 WhatsApp</button>
-          <button id="btn-share-group" style="flex:1;padding:6px;background:rgba(255,20,147,.2);border:1px solid var(--accent);border-radius:6px;color:var(--text);cursor:pointer;font-size:11px;font-weight:600">👥 Condividi</button>
+          <button id="btn-export-whatsapp" style="flex:1;padding:6px;background:rgba(76,175,80,.2);border:1.5px solid rgba(76,175,80,.5);border-radius:6px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;backdrop-filter:blur(10px)">📤 WhatsApp</button>
+          <button id="btn-share-group" style="flex:1;padding:6px;background:rgba(255,20,147,.2);border:1.5px solid rgba(255,20,147,.5);border-radius:6px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;backdrop-filter:blur(10px)">👥 Condividi</button>
         </div>
       </div>
 
       <!-- ITINERARIO ORDINATO PER DATA -->
-      <div class="section" style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid var(--success);border-radius:10px;padding:12px;margin-bottom:16px">
+      <div class="section" style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <h3 style="margin:0;color:var(--success)">🗓️ Itinerario (${itinerary.length})</h3>
-          <span style="font-size:11px;color:var(--muted)">Tempo reale</span>
+          <h3 style="margin:0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🗓️ Itinerario (${itinerary.length})</h3>
+          <span style="font-size:11px;color:rgba(255,255,255,0.7)">Tempo reale</span>
         </div>
-        <p style="font-size:12px;color:var(--muted);margin:0 0 8px">Condiviso con i membri della stanza</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:0 0 8px">Condiviso con i membri della stanza</p>
         <div id="itinerary-list">${itineraryHtml}</div>
       </div>
 
       <!-- MESSAGGIO INIZIALE -->
       <div id="list-results" style="margin-top:20px">
-        <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">
+        <div style="padding:20px;text-align:center;color:rgba(255,255,255,0.7);font-size:13px">
           <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
-          <p style="font-size:11px;margin:8px 0 0">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+          <p style="font-size:11px;margin:8px 0 0;color:rgba(255,255,255,0.5)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
         </div>
       </div>
     `;
@@ -5819,11 +7421,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnShareGroup = document.getElementById('btn-share-group');
     const btnGoogleSearch = document.getElementById('btn-google-search');
 
+    console.log('[renderListView] Buttons found:', { btnExportWhatsapp, btnShareGroup, btnGoogleSearch });
+
     if (btnExportWhatsapp) {
       btnExportWhatsapp.onclick = () => exportItineraryWhatsApp();
     }
     if (btnShareGroup) {
-      btnShareGroup.onclick = () => window.showShareItineraryModal?.();
+      console.log('[renderListView] Attaching onclick to btnShareGroup');
+      btnShareGroup.onclick = () => {
+        console.log('[Share] Share button CLICKED!');
+        console.log('[Share] Calling window.showShareItineraryModal, function exists?', typeof window.showShareItineraryModal);
+        window.showShareItineraryModal?.();
+      };
+    } else {
+      console.error('[renderListView] btnShareGroup NOT FOUND!');
     }
     if (btnGoogleSearch) {
       btnGoogleSearch.onclick = () => {
@@ -5853,9 +7464,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!query) {
           // Torna al messaggio iniziale
           resultsDiv.innerHTML = `
-            <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">
+            <div style="padding:20px;text-align:center;color:rgba(255,255,255,0.7);font-size:13px">
               <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
-              <p style="font-size:11px;margin:8px 0 0">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+              <p style="font-size:11px;margin:8px 0 0;color:rgba(255,255,255,0.5)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
             </div>
           `;
           return;
@@ -5887,8 +7498,8 @@ document.addEventListener('DOMContentLoaded', () => {
           resultsDiv.innerHTML = `
             <div style="padding:20px;text-align:center">
               <p style="font-size:14px;margin:0 0 8px;color:#FF1493;font-weight:700">❌ Nessun POI trovato</p>
-              <p style="font-size:12px;margin:0;color:var(--muted)">Non ci sono luoghi a "${query}"</p>
-              <p style="font-size:11px;margin:8px 0 0;color:var(--muted)">💡 Prova con: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima</p>
+              <p style="font-size:12px;margin:0;color:rgba(255,255,255,0.7)">Non ci sono luoghi a "${query}"</p>
+              <p style="font-size:11px;margin:8px 0 0;color:rgba(255,255,255,0.5)">💡 Prova con: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima</p>
             </div>
           `;
           return;
@@ -5927,12 +7538,15 @@ document.addEventListener('DOMContentLoaded', () => {
               ? `/api/placePhoto?reference=${encodeURIComponent(p.photos[0].reference)}&maxwidth=150`
               : '';
 
+            const displayName = getPoiDisplayName(p);
+            const catLabel = CATS[cat]?.label || cat;
+            const nameDebug = displayName || `❌ [${p.name || 'no-name'} / ${p.bestname || 'no-bestname'}]`;
             return `
               <div class="poi-row" data-id="${p.googlePlaceId}">
                 <div class="icon">${CATS[p.cat]?.icon || '📍'}</div>
                 <div class="body">
-                  <div class="name">${getPoiDisplayName(p)}</div>
-                  <div class="sub">${CATS[cat]?.label || cat} · ${distStr}${ratingStr ? ' · ' + ratingStr : ''}${costStr ? ' · ' + costStr : ''}</div>
+                  <div class="name">${nameDebug}</div>
+                  <div class="sub">${catLabel} · ${distStr}${ratingStr ? ' · ' + ratingStr : ''}${costStr ? ' · ' + costStr : ''}</div>
                 </div>
                 ${photoUrl ? `<img
                   src="${photoUrl}"
@@ -6048,7 +7662,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 city: poi.city || poi.searchCity,
                 lat: poi.lat,
                 lng: poi.lng,
-                day: day ? parseInt(day) : null,
+                day: day ? parseInt(day, 10) : null,
                 time: time || '',
                 cost: cost || ''
               };
@@ -6156,388 +7770,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   // ---- Itinerary / Agenda view ----
-  function renderItineraryView(){
-    // ===== COLLABORATIVE ITINERARY (Shared with group) =====
-    const itinerary = state.itinerary || [];
-    const itineraryHTML = itinerary.length ? itinerary.map((entry, idx) => {
-      const poi = allPOIs().find(p => p.id === entry.id);
-      const km = poi && state.gpsCurrentLat
-        ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, poi.lat, poi.lng) : null;
-      const distStr = km !== null ? ` · <span style="color:var(--success);font-weight:600">${fmtDist(km)}</span>` : '';
-      return `<div class="poi-row" style="position:relative" data-itinerary-id="${entry.id}">
-        <div style="position:absolute;top:8px;right:8px;font-size:11px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:4px">${idx+1}</div>
-        <div class="icon">${poi ? (CATS[poi.cat]?.icon || '📍') : '📌'}</div>
-        <div class="body">
-          <div class="name">${entry.name || (poi ? getPoiDisplayName(poi) : '?')}</div>
-          <div class="sub">${entry.city || (poi ? poi.city : '?')}${distStr}</div>
-        </div>
-        <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:var(--danger);border-color:var(--danger);color:#fff" data-remove-itinerary="${entry.id}">Rimuovi</button>
-      </div>`;
-    }).join('') : '<p style="color:var(--muted);font-size:13px">📋 L\'itinerario del gruppo è vuoto. Aggiungi le prime tappe!</p>';
-
-    // ===== SAVED + CUSTOM (Personal list) =====
-    const saved = state.savedPOIs.map(id => allPOIs().find(p => p.id===id)).filter(Boolean);
-    const custom = state.customEvents;
-    const gpsActive = state.gpsEnabled && gpsWatchId !== null;
-    const pts = state.gpsTrack?.length || 0;
-    const lat = state.gpsCurrentLat ? state.gpsCurrentLat.toFixed(5) : '—';
-    const lng = state.gpsCurrentLng ? state.gpsCurrentLng.toFixed(5) : '—';
-
-    const savedHTML = saved.length ? saved.map(p => {
-      const inItinerary = isInItinerary(p.id);
-      const km = (state.gpsCurrentLat && p.lat)
-        ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng) : null;
-      const distSpan = `<span data-gps-dist data-lat="${p.lat}" data-lng="${p.lng}"
-        style="font-size:11px;color:${km!==null?(km<1?'var(--success)':km<5?'var(--warning)':'var(--muted)'):'var(--muted)'}">
-        ${km!==null?'Posizione rilevata '+fmtDist(km):''}</span>`;
-      return `<div class="poi-row" data-id="${p.id}">
-        <div class="icon">${CATS[p.cat]?.icon||'Posizione rilevata'}</div>
-        <div class="body">
-          <div class="name">★ ${getPoiDisplayName(p)}</div>
-          <div class="sub">${p.city} ${distSpan}</div>
-        </div>
-        <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${inItinerary?'var(--warning)':'var(--primary)'};border-color:${inItinerary?'var(--warning)':'var(--primary)'};color:#fff" data-add-to-itinerary="${p.id}">${inItinerary?'✓ Aggiunto':'+ Aggiungi'}</button>
-      </div>`;
-    }).join('') : '<p style="color:var(--muted);font-size:13px">Nessuna tappa salvata. Apri una scheda e premi ☆ Salva.</p>';
-
-    const customHTML = custom.length ? custom.map(e => {
-      const inItinerary = isInItinerary(e.id);
-      const km = (state.gpsCurrentLat && e.lat)
-        ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, e.lat, e.lng) : null;
-      return `<div class="poi-row" data-custom-id="${e.id}">
-        <div class="icon" style="background:var(--warning);color:#1a1a1a">✎</div>
-        <div class="body">
-          <div class="name">${e.name}</div>
-          <div class="sub">${e.city} · personalizzato${km!==null?' · <span data-gps-dist data-lat="'+e.lat+'" data-lng="'+e.lng+'" style="font-size:11px;color:var(--muted)">Posizione rilevata '+fmtDist(km)+'</span>':''}</div>
-        </div>
-        <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${inItinerary?'var(--warning)':'var(--primary)'};border-color:${inItinerary?'var(--warning)':'var(--primary)'};color:#fff" data-add-to-itinerary="${e.id}">${inItinerary?'✓ Aggiunto':'+ Aggiungi'}</button>
-      </div>`;
-    }).join('') : '';
-
-    const html = `
-      <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
-        <input id="itinerary-search" type="text" placeholder="🔍 Cerca tappa..."
-          style="width:100%;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;margin-bottom:8px">
-        <div class="action-row">
-          <button class="btn success" id="export-all-ics" ${itinerary.length===0?'disabled':''}>📥 .ics</button>
-          <button class="btn primary" id="export-json" ${itinerary.length===0?'disabled':''}>📥 JSON</button>
-          <button class="btn primary" id="export-pdf" ${itinerary.length===0?'disabled':''}>📥 HTML/PDF</button>
-          <button class="btn" id="add-custom">+ Custom</button>
-        </div>
-      </div>
-      <div id="gps-status-panel" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px">
-        ${buildGPSPanelHTML(gpsActive, pts, lat, lng)}
-      </div>
-
-      <!-- COLLABORATIVE ITINERARY SECTION -->
-      <div class="section" style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid var(--success);border-radius:10px;padding:12px;margin-bottom:16px">
-        <h3 style="margin-top:0;color:var(--success)">🗓️ Itinerario del Gruppo</h3>
-        <p style="font-size:12px;color:var(--muted);margin:0 0 8px">Condiviso in tempo reale con i membri della stanza</p>
-        <div id="itinerary-list">${itineraryHTML}</div>
-      </div>
-
-      <!-- PERSONAL ITEMS SECTION -->
-      <div id="itinerary-results">
-        <div class="section"><h3>★ Tappe salvate</h3><p style="font-size:12px;color:var(--muted);margin:0 0 8px">Clicca "+ Aggiungi" per aggiungere all'itinerario di gruppo</p><div id="saved-list">${savedHTML}</div></div>
-        ${custom.length?`<div class="section"><h3>✎ Tappe personalizzate</h3><p style="font-size:12px;color:var(--muted);margin:0 0 8px">Clicca "+ Aggiungi" per aggiungere all'itinerario di gruppo</p><div id="custom-list">${customHTML}</div></div>`:''}
-      </div>
-    `;
-    window.openSheet('📅 La tua agenda', html);
-
-    // ===== EVENT HANDLERS =====
-    // Add to itinerary
-    document.querySelectorAll('[data-add-to-itinerary]').forEach(btn => {
-      btn.onclick = () => {
-        const id = btn.dataset.addToItinerary;
-        const poi = allPOIs().find(p => p.id === id);
-        if (poi) {
-          const entry = {
-            id: poi.id,
-            name: getPoiDisplayName(poi),
-            city: poi.city,
-            lat: poi.lat,
-            lng: poi.lng
-          };
-          addToItinerary(entry);
-          toast('✓ Aggiunto a itinerario');
-          renderItineraryView(); // Refresh view
-        }
-      };
-    });
-
-    // Remove from itinerary
-    document.querySelectorAll('[data-remove-itinerary]').forEach(btn => {
-      btn.onclick = () => {
-        const id = btn.dataset.removeItinerary;
-        removeFromItinerary(id);
-        toast('Rimosso da itinerario');
-        renderItineraryView(); // Refresh view
-      };
-    });
-
-    // Setup ricerca
-    const searchInput = document.getElementById('itinerary-search');
-    if (searchInput) {
-      searchInput.oninput = (e) => {
-        const query = e.target.value.toLowerCase().trim();
-
-        if (!query) {
-          document.getElementById('saved-list').innerHTML = savedHTML;
-          if (custom.length) document.getElementById('custom-list').innerHTML = customHTML;
-        } else {
-          const filteredSaved = saved.filter(p =>
-            getPoiDisplayName(p).toLowerCase().includes(query) ||
-            (p.desc && p.desc.toLowerCase().includes(query)) ||
-            (p.city && p.city.toLowerCase().includes(query))
-          );
-          const filteredCustom = custom.filter(e =>
-            e.name.toLowerCase().includes(query) ||
-            (e.city && e.city.toLowerCase().includes(query))
-          );
-
-          const filteredSavedHTML = filteredSaved.length ? filteredSaved.map(p => {
-            const inItinerary = isInItinerary(p.id);
-            const km = (state.gpsCurrentLat && p.lat)
-              ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng) : null;
-            const distSpan = `<span data-gps-dist data-lat="${p.lat}" data-lng="${p.lng}"
-              style="font-size:11px;color:${km!==null?(km<1?'var(--success)':km<5?'var(--warning)':'var(--muted)'):'var(--muted)'}">
-              ${km!==null?'Posizione rilevata '+fmtDist(km):''}</span>`;
-            return `<div class="poi-row" data-id="${p.id}">
-              <div class="icon">${CATS[p.cat]?.icon||'Posizione rilevata'}</div>
-              <div class="body">
-                <div class="name">★ ${getPoiDisplayName(p)}</div>
-                <div class="sub">${p.city} ${distSpan}</div>
-              </div>
-              <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${inItinerary?'var(--warning)':'var(--primary)'};border-color:${inItinerary?'var(--warning)':'var(--primary)'};color:#fff" data-add-to-itinerary="${p.id}">${inItinerary?'✓ Aggiunto':'+ Aggiungi'}</button>
-            </div>`;
-          }).join('') : '<p style="color:var(--muted);font-size:13px">Nessuna tappa trovata</p>';
-
-          const filteredCustomHTML = filteredCustom.length ? filteredCustom.map(e => {
-            const inItinerary = isInItinerary(e.id);
-            const km = (state.gpsCurrentLat && e.lat)
-              ? haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, e.lat, e.lng) : null;
-            return `<div class="poi-row" data-custom-id="${e.id}">
-              <div class="icon" style="background:var(--warning);color:#1a1a1a">✎</div>
-              <div class="body">
-                <div class="name">${e.name}</div>
-                <div class="sub">${e.city} · personalizzato${km!==null?' · <span data-gps-dist data-lat="'+e.lat+'" data-lng="'+e.lng+'" style="font-size:11px;color:var(--muted)">Posizione rilevata '+fmtDist(km)+'</span>':''}</div>
-              </div>
-              <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${inItinerary?'var(--warning)':'var(--primary)'};border-color:${inItinerary?'var(--warning)':'var(--primary)'};color:#fff" data-add-to-itinerary="${e.id}">${inItinerary?'✓ Aggiunto':'+ Aggiungi'}</button>
-            </div>`;
-          }).join('') : '';
-
-          document.getElementById('saved-list').innerHTML = filteredSavedHTML;
-          if (custom.length && document.getElementById('custom-list')) {
-            document.getElementById('custom-list').innerHTML = filteredCustomHTML;
-          }
-        }
-
-        // Re-attach handlers after search
-        document.querySelectorAll('[data-add-to-itinerary]').forEach(btn => {
-          btn.onclick = () => {
-            const id = btn.dataset.addToItinerary;
-            const poi = allPOIs().find(p => p.id === id);
-            if (poi) {
-              const entry = {
-                id: poi.id,
-                name: getPoiDisplayName(poi),
-                city: poi.city,
-                lat: poi.lat,
-                lng: poi.lng
-              };
-              addToItinerary(entry);
-              toast('✓ Aggiunto a itinerario');
-              renderItineraryView();
-            }
-          };
-        });
-
-        document.getElementById('itinerary-results').querySelectorAll('[data-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
-        document.getElementById('itinerary-results').querySelectorAll('[data-custom-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.customId); });
-      };
-    }
-
-    updateGPSStatusPanel();
-    sheetBody.querySelectorAll('[data-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
-    sheetBody.querySelectorAll('[data-custom-id]').forEach(r => { r.onclick = () => openPOI(r.dataset.customId); });
-    const exportBtn = document.getElementById('export-all-ics');
-    if (exportBtn) exportBtn.onclick = exportAllSaved;
-    const exportJsonBtn = document.getElementById('export-json');
-    if (exportJsonBtn) exportJsonBtn.onclick = exportItineraryJSON;
-    const exportPdfBtn = document.getElementById('export-pdf');
-    if (exportPdfBtn) exportPdfBtn.onclick = exportItineraryPDF;
-    document.getElementById('add-custom').onclick = openCustomEventForm;
-  }
-  function exportAllSaved(){
-    const today = new Date();
-    let cursor = new Date(2027,3,10,9,0); // default: 10 aprile 2027 ore 9:00
-    const items = state.savedPOIs.map(id => allPOIs().find(p => p.id===id)).filter(Boolean)
-                  .concat(state.customEvents);
-    if (!items.length){ toast('Niente da esportare'); return; }
-    const events = items.map(p => {
-      const start = new Date(cursor);
-      const end = new Date(cursor.getTime()+90*60000);
-      cursor = new Date(cursor.getTime()+3*60*60000); // +3h per tappa
-      return {
-        id:p.id, title:getPoiDisplayName(p), location:p.city+', Giappone',
-        desc:(p.desc||'')+(p.gf?.notes?'\n\nGF: '+p.gf.notes:'')+(state.notes[p.id]?'\n\nNote: '+state.notes[p.id]:''),
-        lat:p.lat, lng:p.lng, start, end
-      };
-    });
-    downloadICS('giappone-2027-itinerario.ics', buildICS(events));
-    toast('Itinerario completo scaricato 📅');
-  }
-  function openCustomEventForm(){
-    const html = `
-      <div class="form-row"><label>Nome luogo *</label><input id="c-name" placeholder="Es: Hotel Park Hyatt Tokyo"/></div>
-      <div class="form-row"><label>Città</label>
-        <select id="c-city">${CITIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
-      <div class="form-row"><label>Categoria</label>
-        <select id="c-cat">${Object.keys(CATS).filter(k=>k!=='all').map(k=>`<option value="${k}">${CATS[k].icon} ${CATS[k].label}</option>`).join('')}</select></div>
-      <div class="form-row"><label>Latitudine</label><input id="c-lat" type="number" step="0.0001" placeholder="35.6876"/></div>
-      <div class="form-row"><label>Longitudine</label><input id="c-lng" type="number" step="0.0001" placeholder="139.6913"/></div>
-      <div class="form-row"><label>Orari apertura</label><input id="c-hours" placeholder="Es: 9:00–17:00, chiuso lun"/></div>
-      <div class="form-row"><label>Prezzo biglietto</label><input id="c-ticket" placeholder="Es: 500¥ adulto, gratis under 16"/></div>
-      <div class="form-row"><label>Durata visita (minuti)</label><input id="c-duration" type="number" placeholder="90"/></div>
-      <div class="form-row"><label>Descrizione / Note</label><textarea id="c-desc"></textarea></div>
-      <div class="form-row"><label>Recensione personale</label><textarea id="c-review" placeholder="Cosa ti è piaciuto? Consigli..."></textarea></div>
-      <div class="form-row">
-        <label>Foto</label>
-        <div class="photo-upload-zone" id="photo-zone">📷 Tocca per aggiungere foto</div>
-        <input type="file" id="c-photo-inp" accept="image/*" style="display:none"/>
-        <img id="c-photo-preview" class="photo-preview"/>
-      </div>
-      <div class="action-row">
-        <button class="btn primary" id="c-save">💾 Salva</button>
-      </div>
-      <div class="section" style="margin-top:10px"><p style="font-size:12px;color:var(--muted)">💡 Lat/lng: cerca su Google Maps, clic destro → "Cosa c'è qui?" → copia coordinate.</p></div>
-    `;
-    window.openSheet('➕ Nuova tappa personalizzata', html);
-    // Photo upload + canvas resize
-    const photoZone = document.getElementById('photo-zone');
-    const photoInp = document.getElementById('c-photo-inp');
-    const photoPreview = document.getElementById('c-photo-preview');
-    let photoBase64 = null;
-    photoZone.onclick = () => photoInp.click();
-    photoInp.onchange = ev => {
-      const file = ev.target.files[0]; if (!file) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = new Image();
-        img.onload = () => {
-          const MAX = 800;
-          let w = img.width, h = img.height;
-          if (w > MAX || h > MAX) {
-            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-            else { w = Math.round(w * MAX / h); h = MAX; }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          photoBase64 = canvas.toDataURL('image/jpeg', 0.75);
-          photoPreview.src = photoBase64;
-          photoPreview.style.display = 'block';
-          photoZone.textContent = '✅ Foto caricata';
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    };
-    document.getElementById('c-save').onclick = () => {
-      const name = document.getElementById('c-name').value.trim();
-      const lat = parseFloat(document.getElementById('c-lat').value);
-      const lng = parseFloat(document.getElementById('c-lng').value);
-      if (!name || isNaN(lat) || isNaN(lng)){ toast('Compila nome + coordinate'); return; }
-      const dur = document.getElementById('c-duration').value;
-      const p = {
-        id: 'custom-'+Date.now(),
-        name, jp:'',
-        city: document.getElementById('c-city').value,
-        cat: document.getElementById('c-cat').value,
-        lat, lng,
-        desc: document.getElementById('c-desc').value.trim(),
-        review: document.getElementById('c-review').value.trim() || undefined,
-        hours: document.getElementById('c-hours').value.trim() || undefined,
-        ticket: document.getElementById('c-ticket').value.trim() || undefined,
-        duration: dur ? parseInt(dur,10) : undefined,
-        photo: photoBase64 || undefined,
-        custom:true
-      };
-      state.customEvents.push(p); saveState();
-      renderMarkers(); renderItineraryView(); toast('Tappa aggiunta ✎');
-    };
-  }
+  // renderItineraryView rimossa il 2026-06-02: dispatcher usa renderItineraryUnified (riga 5058).
+  // Salvate in git: state.itinerary / savedPOIs / customEvents — vedi STATO_APP.md §8.4.
+  function renderItineraryView() { renderItineraryUnified(); }
   // ---- Tips view ----
-  function renderTipsView(){
-    const html = `
-      <div class="section">
-        <h3>🌾 Gluten-Free in Giappone</h3>
-        <p><strong>Frasi essenziali</strong> (mostrare al ristorante):</p>
-        <ul>
-          <li>グルテンフリーで食べられる料理はありますか？ = "Avete piatti gluten-free?"</li>
-          <li>小麦アレルギーです。醤油の代わりにたまりをください = "Sono allergico al grano. Al posto della salsa di soia, tamari per favore."</li>
-          <li>I <strong>soba al 100%</strong> (十割 juwari) sono GF — ma attenzione al bollitore condiviso.</li>
-        </ul>
-        <p><strong>Da evitare sempre:</strong> tempura, katsu, dumpling gyoza, ramen, udon, takoyaki, okonomiyaki, tonkatsu, gran parte delle salse (soia, ponzu, teriyaki, worcester, karashi mentaiko).</p>
-        <p><strong>Sicuri di default:</strong> sashimi (con tamari proprio), yakitori senza salsa (solo shio), onigiri di ume/shio, riso bianco, mochi semplice, frutta.</p>
-        <p><strong>App consigliate:</strong> Shoku (community celiac Giappone), Google Translate con foto.</p>
-      </div>
-      <div class="section">
-        <h3>📅 Timing ideale 2027</h3>
-        <ul>
-          <li><strong>Sakura:</strong> Tokyo ~27 mar-5 apr, Kyoto ~30 mar-8 apr, Sapporo ~5 mag.</li>
-          <li><strong>Foliage:</strong> Nikko fine ott, Kyoto metà-fine nov, Hokkaido inizio ott.</li>
-          <li><strong>Evitare:</strong> Golden Week (29 apr-5 mag — tutto affollato/caro), Obon (metà ago).</li>
-          <li><strong>Meteo:</strong> giugno = tsuyu (stagione piogge), luglio-agosto = caldo umido intenso, settembre = tifoni.</li>
-          <li><strong>Consigliati:</strong> fine mar-aprile (sakura), fine ottobre-novembre (foliage, prezzi), fine maggio (verde, meteo buono).</li>
-        </ul>
-      </div>
-      <div class="section">
-        <h3>🔄 Alternative consigliate</h3>
-        <ul>
-          <li><strong>Arashiyama bamboo</strong> → <strong>Hokoku-ji (Kamakura)</strong>: stessa magia, 100 persone vs 10.000.</li>
-          <li><strong>Fushimi Inari alle 11</strong> → <strong>Fushimi Inari alle 6</strong>: esperienza totalmente diversa.</li>
-          <li><strong>Harajuku Takeshita</strong> (trappola kawaii) → <strong>Koenji</strong> (vintage vero, nessun turista).</li>
-          <li><strong>Shibuya Sky</strong> (caro) → <strong>Mag's Park Crossing View</strong> (1000¥, stessa vista sull'incrocio).</li>
-          <li><strong>Gotemba Premium Outlets</strong> → <strong>Shimokitazawa</strong> per vintage unico vs brand scontati.</li>
-          <li><strong>Dotonbori Takoyaki</strong> (NO GF) → <strong>Kuromon Market wagyu grilled</strong> (GF naturale).</li>
-        </ul>
-      </div>
-      <div class="section">
-        <h3>✅ Cose da fare assolutamente</h3>
-        <ul>
-          <li>Onsen (bagno termale) — Beppu o ryokan notte.</li>
-          <li>Ryokan tradizionale almeno una notte (idealmente Shirakawa-go o Kyoto).</li>
-          <li>Shinkansen passando tra le città — JR Pass valutare.</li>
-          <li>Izakaya GF-aware (yakitori solo shio + sashimi) almeno una sera.</li>
-          <li>Visita a un mercato mattutino (Tsukiji, Nishiki, Kuromon).</li>
-          <li>Cerimonia del tè (Kyoto o Kamakura).</li>
-        </ul>
-      </div>
-      <div class="section">
-        <h3>⛔ Errori da evitare</h3>
-        <ul>
-          <li>Non mangiare/bere camminando (specie nei santuari).</li>
-          <li>Non dare/ricevere denaro con una sola mano (usarne due o il vassoietto).</li>
-          <li>Tatuaggi: molti onsen li vietano — cercare "tattoo friendly" o ryokan privati.</li>
-          <li>Soffiare il naso in pubblico = maleducato. Tirarlo su = normale.</li>
-          <li>Mancia = offensiva. Mai dare tip.</li>
-          <li>Non improvvisare senza prenotazioni a Ryokan, ristoranti famosi, TeamLab.</li>
-        </ul>
-      </div>
-      <div class="section">
-        <h3>💳 Pratica</h3>
-        <ul>
-          <li><strong>Pagamenti:</strong> cash ancora necessario fuori città grandi. IC Card (Suica/ICOCA) essenziale per trasporti — ora su Apple Wallet/Google Wallet.</li>
-          <li><strong>SIM:</strong> eSIM Japan Wireless o Ubigi prima di partire.</li>
-          <li><strong>JR Pass:</strong> dal 2023 +70% prezzo — calcolare se conveniente (spesso no per itinerari multi-hub lenti).</li>
-          <li><strong>Valigia:</strong> servizio Yamato (takuhaibin) sposta bagagli tra hotel per ~2000¥.</li>
-          <li><strong>Emergenze:</strong> 110 polizia, 119 ambulanza/fuoco. Ambasciata IT a Tokyo +81-3-3453-5291.</li>
-        </ul>
-      </div>
-    `;
-    window.openSheet('💡 Tips Giappone 2027', html);
-  }
+  // Estratta il 2026-05-26 in js/views/tips-view.js (vedi STATO_APP.md §8.5).
+  // Esposta come window.renderTipsView (scaffolding-ready, non collegata al menu).
+
+  /* ═══════════════════════════════════════════════════════════════
+     EVENT DELEGATION — Handle dynamic notes button
+  ═══════════════════════════════════════════════════════════════ */
+  document.addEventListener('click', (e) => {
+    if (e.target.id && e.target.id.startsWith('add-note-btn-')) {
+      const poiId = e.target.id.replace('add-note-btn-', '');
+      const notesSection = document.getElementById(`notes-section-${poiId}`);
+      if (notesSection) {
+        // Replace button with textarea
+        notesSection.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <label style="font-size:12px;color:rgba(255,255,255,0.6);font-weight:600;letter-spacing:0.3px">📝 Note</label>
+          </div>
+          <textarea id="poi-note" placeholder="Es: Prenotare con 2 giorni di anticipo..." style="
+            width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+            border-radius:10px;font-size:13px;color:#fff;resize:vertical;min-height:70px;font-family:inherit;
+            box-sizing:border-box;transition:border-color 0.2s;
+          " onmouseover="this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
+        `;
+        // Focus textarea
+        setTimeout(() => {
+          const textarea = notesSection.querySelector('textarea');
+          if (textarea) textarea.focus();
+        }, 0);
+      }
+    }
+  });
 
   /* ═══════════════════════════════════════════════════════════════
      WEATHER VIEW — Previsioni meteo per le tappe
@@ -6622,18 +7888,69 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
+  // Tokyo Station fallback coordinates
+  const TOKYO_STATION_LAT = 35.6762;
+  const TOKYO_STATION_LNG = 139.7674;
+
+  async function updateWeatherWithFallback(lat, lng, locationName) {
+    console.log('[Weather] Updating weather with fallback:', { lat, lng, locationName });
+    const weatherData = await fetchWeatherHourly(lat, lng, locationName);
+    if (!weatherData) {
+      console.warn('[Weather] Failed to fetch fallback weather');
+      showWeatherError('Errore API');
+      return;
+    }
+
+    // Get current hour weather
+    const now = new Date();
+    const hourIndex = now.getHours();
+    const hourlyData = weatherData.hourly;
+    const currentTemp = Math.round(hourlyData.temperature_2m[hourIndex]);
+    const currentCode = hourlyData.weathercode[hourIndex];
+    const currentCondition = getWeatherConditionName(currentCode);
+    const icon = getWeatherIcon(currentCode);
+
+    // Format date and time
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dayName = days[now.getDay()];
+    const date = now.getDate();
+    const monthName = months[now.getMonth()];
+    const dateStr = `${dayName}, ${date} ${monthName}`;
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    // Update card fields
+    const weatherIcon = document.getElementById('weather-icon');
+    const weatherDate = document.getElementById('weather-date');
+    const weatherTime = document.getElementById('weather-time');
+    const weatherTemp = document.getElementById('weather-temp');
+    const weatherCondition = document.getElementById('weather-condition');
+    const weatherFloating = document.getElementById('weather-floating');
+
+    if (weatherIcon && weatherDate && weatherTemp && weatherCondition && weatherFloating) {
+      weatherIcon.textContent = icon;
+      weatherDate.textContent = dateStr;
+      if (weatherTime) weatherTime.textContent = timeStr;
+      weatherTemp.innerHTML = `${currentTemp}<span style="font-size: 32px;">°C</span>`;
+      weatherCondition.textContent = currentCondition;
+      weatherFloating.classList.add('show');
+      console.log('[Weather] Card updated with fallback:', { currentTemp, currentCondition, dateStr, timeStr });
+    }
+  }
+
   function updateGpsWeatherWidget() {
     console.log('[Weather] Updating GPS weather widget...');
     if (!navigator.geolocation) {
-      console.warn('[Weather] Geolocation not available');
-      showWeatherError('📍 Geolocation non disponibile');
+      console.warn('[Weather] Geolocation not available - using Tokyo Station fallback');
+      updateWeatherWithFallback(TOKYO_STATION_LAT, TOKYO_STATION_LNG, '🗼 Tokyo (fallback)');
       return;
     }
 
     console.log('[Weather] Requesting GPS position...');
+    let timeoutId = null;
     const timeout = setTimeout(() => {
-      console.warn('[Weather] GPS timeout - no response after 10s');
-      showWeatherError('⏱️ GPS timeout');
+      console.warn('[Weather] GPS timeout - using Tokyo Station fallback');
+      updateWeatherWithFallback(TOKYO_STATION_LAT, TOKYO_STATION_LNG, '🗼 Tokyo (timeout)');
     }, 10000);
 
     navigator.geolocation.getCurrentPosition(
@@ -6689,13 +8006,8 @@ document.addEventListener('DOMContentLoaded', () => {
       (error) => {
         clearTimeout(timeout);
         console.warn('[Weather] GPS error:', error.code, error.message);
-        if (error.code === error.PERMISSION_DENIED) {
-          showWeatherError('📍 Consenti localizzazione', 'Permission denied');
-        } else if (error.code === error.POSITION_UNAVAILABLE) {
-          showWeatherError('🌍 GPS non disponibile', 'Position unavailable');
-        } else {
-          showWeatherError('⚠️ Errore GPS', error.message);
-        }
+        console.log('[Weather] Using Tokyo Station fallback');
+        updateWeatherWithFallback(TOKYO_STATION_LAT, TOKYO_STATION_LNG, '🗼 Tokyo (denied)');
       },
       { timeout: 15000, enableHighAccuracy: false }
     );
@@ -6880,8 +8192,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Badge for GPS status
     const badge = isGPS
-      ? '<span style="background:#00FF88;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;margin-left:8px;">📍 GPS</span>'
-      : '<span style="background:#FFD700;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;margin-left:8px;">⚠️ FALLBACK</span>';
+      ? '<span style="background:#00FF88;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;margin-left:8px;">📍 GPS</span>'
+      : '<span style="background:#FFD700;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;margin-left:8px;">⚠️ FALLBACK</span>';
 
     // Build daily forecast cards
     let dailyHtml = '';
@@ -6896,7 +8208,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const bgColor = getWeatherColor(code);
 
       dailyHtml += `
-        <div class="weather-day" data-weather="${code}" style="background-color:${bgColor} !important;">
+        <div class="weather-day" data-weather="${code}" style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);">
           <div class="weather-date">${dayName}</div>
           <div class="weather-icon">${dayIcon}</div>
           <div class="weather-temps">
@@ -6912,11 +8224,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalHtml = `
       <div style="padding:0;">
         <!-- Header -->
-        <div style="background:#FFF9E6;padding:14px 16px;border-bottom:3px solid #FF1493;margin-bottom:16px;">
+        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border-bottom:1.5px solid rgba(255,255,255,0.25);padding:14px 16px;margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div style="display:flex;align-items:center;">
-                <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:0;font-size:18px;font-weight:700;">${locationName}</h2>
+                <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:0;font-size:18px;font-weight:700;">${locationName}</h2>
                 ${badge}
               </div>
               <p style="color:var(--y2k-muted);margin:0;font-size:12px;font-family:'Courier New',monospace;">${dateStr}</p>
@@ -6935,23 +8247,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <!-- Details Grid -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;padding:0 16px;">
-          <div style="background:rgba(255,20,147,0.1);border:2px solid #FF1493;border-radius:10px;padding:14px;text-align:center;">
-            <div style="font-size:11px;color:var(--y2k-ink);font-weight:700;margin-bottom:6px;text-transform:uppercase;">💧 Precipitazioni</div>
-            <div style="font-size:24px;font-weight:700;color:var(--y2k-ink);font-family:'Courier New';">${precip}mm</div>
+          <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+            <div style="font-size:20px;line-height:1;">💧</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.7);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Precip.</div>
+            <div style="font-size:22px;font-weight:800;color:#fff;font-family:'Courier New',monospace;line-height:1.1;">${precip}<span style="font-size:13px;font-weight:600;margin-left:2px;">mm</span></div>
           </div>
-          <div style="background:rgba(0,255,136,0.1);border:2px solid #00FF88;border-radius:10px;padding:14px;text-align:center;">
-            <div style="font-size:11px;color:var(--y2k-ink);font-weight:700;margin-bottom:6px;text-transform:uppercase;">💦 Umidità</div>
-            <div style="font-size:24px;font-weight:700;color:var(--y2k-ink);font-family:'Courier New';">${humidity}%</div>
+          <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+            <div style="font-size:20px;line-height:1;">💦</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.7);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Umidità</div>
+            <div style="font-size:22px;font-weight:800;color:#fff;font-family:'Courier New',monospace;line-height:1.1;">${humidity}<span style="font-size:13px;font-weight:600;margin-left:2px;">%</span></div>
           </div>
-          <div style="background:rgba(255,215,0,0.1);border:2px solid #FFD700;border-radius:10px;padding:14px;text-align:center;">
-            <div style="font-size:11px;color:var(--y2k-ink);font-weight:700;margin-bottom:6px;text-transform:uppercase;">💨 Vento</div>
-            <div style="font-size:24px;font-weight:700;color:var(--y2k-ink);font-family:'Courier New';">${wind}km</div>
+          <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+            <div style="font-size:20px;line-height:1;">💨</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.7);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Vento</div>
+            <div style="font-size:22px;font-weight:800;color:#fff;font-family:'Courier New',monospace;line-height:1.1;">${wind}<span style="font-size:13px;font-weight:600;margin-left:2px;">km/h</span></div>
           </div>
         </div>
 
         <!-- Daily Forecast -->
         <div style="padding:0 16px;">
-          <h3 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:16px 0 12px 0;font-size:16px;font-weight:700;">🗓️ Prossimi 8 giorni</h3>
+          <h3 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:16px 0 12px 0;font-size:16px;font-weight:700;">🗓️ Prossimi 8 giorni</h3>
           <div class="weather-days" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;">
             ${dailyHtml}
           </div>
@@ -7104,7 +8419,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let gpsHtml = `
               <div class="weather-section-divider">
-                <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
+                <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
               </div>
               <div class="weather-hourly-grid">
             `;
@@ -7128,8 +8443,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="hourly-time">${dayStr} ${timeStr}</div>
                   <div class="hourly-icon">${icon}</div>
                   <div class="hourly-temp">${temp}°C</div>
-                  <div class="hourly-condition" style="font-size:10px;">${condition}</div>
-                  <div class="hourly-details" style="font-size:9px;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,0,0,0.1);">
+                  <div class="hourly-condition" style="font-size:12px;">${condition}</div>
+                  <div class="hourly-details" style="font-size:12px;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,0,0,0.1);">
                     💧 ${precip}mm | 💨 ${wind}km | 💦 ${humidity}%
                   </div>
                 </div>
@@ -7141,7 +8456,7 @@ document.addEventListener('DOMContentLoaded', () => {
           } else {
             gpsSection = `
               <div class="weather-section-divider">
-                <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
+                <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
               </div>
               <div style="text-align:center;padding:20px;background:rgba(255,107,107,0.1);border-radius:10px;">
                 <div style="color:#FF6B6B;font-size:13px;">⚠️ Impossibile caricare meteo per la tua posizione</div>
@@ -7152,7 +8467,7 @@ document.addEventListener('DOMContentLoaded', () => {
           console.warn('[Weather] GPS error:', err);
           gpsSection = `
             <div class="weather-section-divider">
-              <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
+              <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
             </div>
             <div style="text-align:center;padding:20px;background:rgba(255,107,107,0.1);border-radius:10px;">
               <div style="color:#FF6B6B;font-size:13px;">📍 GPS non disponibile - consenti accesso alla posizione</div>
@@ -7204,7 +8519,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Object.keys(cities).length > 0) {
           weatherHtml += `
             <div class="weather-section-divider">
-              <h2 style="color:var(--y2k-pink);font-family:'Comic Sans MS',cursive;margin:20px 0 16px 0;font-size:18px;">🗓️ Le Tue Tappe</h2>
+              <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">🗓️ Le Tue Tappe</h2>
             </div>
           `;
 
@@ -7215,7 +8530,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="weather-city">
                   <h3>${city}</h3>
                   <div style="background:rgba(255,107,107,0.1);border:2px solid #FF6B6B;border-radius:10px;padding:16px;text-align:center;">
-                    <div style="color:#FF6B6B;font-family:'Comic Sans MS',cursive;font-weight:700;font-size:14px;margin-bottom:4px;">⚠️ Errore</div>
+                    <div style="color:#FF6B6B;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:14px;margin-bottom:4px;">⚠️ Errore</div>
                     <p style="color:#FF6B6B;font-size:12px;margin:0;opacity:0.8;">Non riusciamo a caricare i dati meteo.</p>
                   </div>
                 </div>
@@ -7284,515 +8599,111 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ═══════════════════════════════════════════════════════════════
-     BUDGET & CURRENCY — Converter + Expense Tracker
+     BUDGET & CURRENCY — estratto il 2026-06-02 in js/views/budget-view.js
+     Stub locale: delega a window.renderBudgetView (esposto da budget-view.js).
   ═══════════════════════════════════════════════════════════════ */
 
-  const CURRENCIES = {
-    JPY: { symbol: '¥', rate: 1, name: 'Japanese Yen' },
-    EUR: { symbol: '€', rate: 0.0065, name: 'Euro' },
-    USD: { symbol: '$', rate: 0.0068, name: 'US Dollar' },
-    GBP: { symbol: '£', rate: 0.0054, name: 'British Pound' },
-    CHF: { symbol: 'CHF', rate: 0.0060, name: 'Swiss Franc' },
-    AUD: { symbol: 'A$', rate: 0.0103, name: 'Australian Dollar' },
-    CAD: { symbol: 'C$', rate: 0.0094, name: 'Canadian Dollar' },
-  };
+  // Shim locale per i chiamanti interni che usano renderBudgetView() diretto.
+  function renderBudgetView() { window.renderBudgetView?.(); }
 
-  const EXPENSE_CATEGORIES = [
-    { id: 'food', name: '🍱 Food', color: '#FF69B4' },
-    { id: 'transport', name: '🚄 Transport', color: '#00FF88' },
-    { id: 'accommodation', name: '🏨 Accommodation', color: '#FFD700' },
-    { id: 'shopping', name: '🛍️ Shopping', color: '#FF1493' },
-    { id: 'activities', name: '🎌 Activities', color: '#6B5EA8' },
-    { id: 'other', name: '📌 Other', color: '#8080C0' },
-  ];
+  // Gallery view estratta il 2026-05-29 in js/views/gallery-view.js (refactor §6.9).
+  // Esposta come window.renderGalleryView / getGalleryDB / saveGalleryDB.
 
-  function getBudgetDB() {
-    const stored = localStorage.getItem('BudgetDB');
-    return stored ? JSON.parse(stored) : {
-      totalBudget: 300000,
-      currency: 'JPY',
-      expenses: [],
-      categoryBudgets: {
-        food: 100000,
-        transport: 50000,
-        accommodation: 100000,
-        shopping: 30000,
-        activities: 15000,
-        other: 5000,
-      }
-    };
-  }
+  function showMenuDrawer() {
+    const T = window.t || ((k, f) => f || k);
+    const menuItems = [
+      { label: T('menu.bookings', 'Prenota'), icon: '📅', view: 'bookings' },
+      { label: T('menu.shopping', 'Shopping'), icon: '🛍️', view: 'shopping' },
+      { label: T('menu.group', 'Gruppo'), icon: '👥', view: 'group' },
+      { label: T('menu.budget', 'Budget'), icon: '💰', view: 'budget' },
+      { label: T('menu.gallery', 'Galleria'), icon: '📸', view: 'gallery' },
+      { label: T('menu.tips', 'Tips Viaggio 2027'), icon: '🌸', view: 'tips' },
+      { label: T('menu.gfHeatmap', 'Heatmap GF'), icon: '🔥', view: 'gf-heatmap' },
+      { label: T('menu.groqai', 'Groq AI'), icon: '🤖', view: 'groq-menu' },
+      { label: T('menu.suggest', 'Suggerisci Posti'), icon: '💡', view: 'gf-suggest' },
+      { label: T('menu.createTrip', 'Voglio creare il mio viaggio'), icon: '✏️', view: 'create-trip', style: 'color: #FF6B35; background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3);' },
+      { label: T('menu.sos', 'SOS'), icon: '🆘', view: 'sos', style: 'color: #FF6B6B; background: rgba(255,107,107,0.1);' },
+      ...(window.DEBUG ? [{ label: T('menu.errors', 'Errori (debug)'), icon: '🐞', view: 'errors', style: 'opacity:0.85;' }] : [])
+    ];
 
-  function saveBudgetDB(db) {
-    localStorage.setItem('BudgetDB', JSON.stringify(db));
-  }
-
-  function convertCurrency(amount, fromCurrency, toCurrency) {
-    const jpy = amount / CURRENCIES[fromCurrency].rate;
-    return jpy * CURRENCIES[toCurrency].rate;
-  }
-
-  function getTotalSpent(db) {
-    return db.expenses.reduce((sum, e) => sum + e.amount, 0);
-  }
-
-  function getSpentByCategory(db) {
-    const spent = {};
-    EXPENSE_CATEGORIES.forEach(c => spent[c.id] = 0);
-    db.expenses.forEach(e => {
-      if (spent.hasOwnProperty(e.category)) spent[e.category] += e.amount;
-    });
-    return spent;
-  }
-
-  function renderBudgetView() {
-    const db = getBudgetDB();
-    const totalSpent = getTotalSpent(db);
-    const remaining = db.totalBudget - totalSpent;
-    const percentSpent = (totalSpent / db.totalBudget * 100).toFixed(1);
-    const spentByCategory = getSpentByCategory(db);
-
-    const curr = CURRENCIES[db.currency];
-    const displayCurr = (jpy) => {
-      const converted = convertCurrency(jpy, 'JPY', db.currency);
-      return curr.symbol + converted.toFixed(0);
-    };
-
-    let html = `
-      <div class="budget-container">
-        <!-- HEADER: Currency Selector + Budget Total -->
-        <div class="budget-header">
-          <div class="budget-title-row">
-            <h2 style="margin:0">💰 Budget Viaggio</h2>
-            <select id="currency-select" style="padding:6px 10px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:12px;cursor:pointer">
-              ${Object.keys(CURRENCIES).map(c => `<option value="${c}" ${c === db.currency ? 'selected' : ''}>${c}</option>`).join('')}
-            </select>
-          </div>
-
-          <!-- Budget Progress Bar -->
-          <div class="budget-progress-section">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-              <span style="color:var(--y2k-ink);font-weight:700">Speso vs Budget</span>
-              <span style="color:var(--y2k-muted);font-size:12px">${percentSpent}%</span>
-            </div>
-            <div class="budget-progress-bar">
-              <div class="budget-progress-fill" style="width:${Math.min(percentSpent, 100)}%"></div>
-            </div>
-            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px">
-              <span style="color:var(--y2k-muted)">Speso: <strong>${displayCurr(totalSpent)}</strong></span>
-              <span style="color:var(--y2k-muted)">Rimanente: <strong style="color:${remaining < 0 ? '#FF6B6B' : '#00AA55'}">${displayCurr(remaining)}</strong></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Budget Setup (Prominent) -->
-        <div class="budget-setup-banner" ${db.totalBudget > 0 ? 'style="opacity:0.7"' : ''}>
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-            <div style="font-size:24px">💰</div>
-            <div style="flex:1">
-              <div style="color:var(--y2k-ink);font-weight:700;font-size:14px;margin-bottom:2px">Imposta il tuo Budget di Viaggio</div>
-              <div style="color:var(--y2k-muted);font-size:12px">Definisci quanto vuoi spendere in Giappone</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input id="config-total-budget-inline" type="number" value="${db.totalBudget}" placeholder="300000" style="flex:1;padding:8px;background:#fff;border:2px solid #FF1493;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:13px;box-sizing:border-box" />
-            <span style="color:var(--y2k-muted);font-weight:700">¥</span>
-            <button id="config-save-inline" class="btn primary" style="padding:8px 16px;font-size:13px">OK</button>
-          </div>
-        </div>
-
-        <!-- Stat Cards -->
-        <div class="budget-stats">
-          <div class="stat-card">
-            <div class="stat-label">Budget Totale</div>
-            <div class="stat-value">${displayCurr(db.totalBudget)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Speso</div>
-            <div class="stat-value" style="color:${totalSpent > db.totalBudget * 0.8 ? '#FF6B6B' : '#1A2560'}">${displayCurr(totalSpent)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Giorni Rimanenti</div>
-            <div class="stat-value">${state.itinerary ? state.itinerary.length : '?'}</div>
-          </div>
-        </div>
-
-        <!-- Category Breakdown -->
-        <div class="budget-categories">
-          <h3 style="margin:0 0 14px 0;color:#A8005A;font-family:'Comic Sans MS',cursive;font-size:14px;font-weight:700">Spesa per Categoria</h3>
-          ${EXPENSE_CATEGORIES.map(cat => {
-            const budgeted = db.categoryBudgets[cat.id] || 0;
-            const spent = spentByCategory[cat.id] || 0;
-            const pct = budgeted > 0 ? (spent / budgeted * 100).toFixed(0) : 0;
-            return `
-              <div class="category-row">
-                <div style="display:flex;align-items:center;gap:8px;flex:1">
-                  <div class="category-dot" style="background:${cat.color}"></div>
-                  <div style="flex:1">
-                    <div style="font-weight:700;color:var(--y2k-ink);font-size:13px">${cat.name}</div>
-                    <div style="font-size:11px;color:var(--y2k-muted)">Budget: ${displayCurr(budgeted)}</div>
-                  </div>
-                </div>
-                <div style="text-align:right">
-                  <div style="font-weight:700;color:var(--y2k-ink);font-size:13px">${displayCurr(spent)}</div>
-                  <div style="font-size:11px;color:var(--y2k-muted)">${pct}%</div>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-
-        <!-- Add Expense Form -->
-        <div class="budget-form-section">
-          <h3 style="margin:0 0 14px 0;color:#A8005A;font-family:'Comic Sans MS',cursive;font-size:14px;font-weight:700">➕ Aggiungi Spesa</h3>
-          <div class="budget-form">
-            <div class="form-row">
-              <label>Categoria</label>
-              <select id="expense-category" style="width:100%;padding:8px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:13px">
-                ${EXPENSE_CATEGORIES.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
-              </select>
-            </div>
-            <div class="form-row">
-              <label>Importo (${db.currency})</label>
-              <input id="expense-amount" type="number" placeholder="0" min="0" style="width:100%;padding:8px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:13px;box-sizing:border-box" />
-            </div>
-            <div class="form-row">
-              <label>Descrizione (opzionale)</label>
-              <input id="expense-description" type="text" placeholder="es. Ramen a Shibuya" style="width:100%;padding:8px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:13px;box-sizing:border-box" />
-            </div>
-            <button id="expense-add-btn" class="btn primary" style="width:100%;padding:12px;font-size:14px">Salva Spesa</button>
-          </div>
-        </div>
-
-        <!-- Recent Expenses -->
-        <div class="budget-expenses-section">
-          <h3 style="margin:0 0 14px 0;color:#A8005A;font-family:'Comic Sans MS',cursive;font-size:14px;font-weight:700">📝 Ultime Spese</h3>
-          ${db.expenses.length === 0 ? `
-            <div style="text-align:center;padding:20px;color:var(--y2k-muted);font-size:13px">Nessuna spesa registrata</div>
-          ` : `
-            <div style="display:flex;flex-direction:column;gap:10px">
-              ${db.expenses.slice(-5).reverse().map((exp, idx) => {
-                const catInfo = EXPENSE_CATEGORIES.find(c => c.id === exp.category);
-                const date = new Date(exp.date).toLocaleDateString('it-IT');
-                return `
-                  <div class="expense-item">
-                    <div style="display:flex;align-items:center;gap:10px;flex:1">
-                      <div style="font-size:18px">${catInfo.name.split(' ')[0]}</div>
-                      <div style="flex:1;min-width:0">
-                        <div style="font-weight:700;color:var(--y2k-ink);font-size:12px;margin-bottom:2px">${exp.description || catInfo.name}</div>
-                        <div style="font-size:11px;color:var(--y2k-muted)">${date}</div>
-                      </div>
-                    </div>
-                    <div style="text-align:right">
-                      <div style="font-weight:700;color:var(--y2k-ink);font-size:13px">${displayCurr(exp.amount)}</div>
-                      <button class="expense-delete-btn" data-expense-index="${db.expenses.indexOf(exp)}" style="background:none;border:none;color:#FF6B6B;font-size:11px;cursor:pointer;font-weight:700;text-decoration:underline;padding:0;margin-top:2px">Elimina</button>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          `}
-        </div>
-
+    const menuHTML = `
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 0;">
+        ${menuItems.map(item => `
+          <button class="menu-drawer-item" data-view="${item.view}" style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: rgba(255,255,255,0.85);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            ${item.style || ''}
+          "
+          onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,165,100,0.3)';"
+          onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='rgba(255,255,255,0.1)';">
+            <span style="font-size: 18px;">${item.icon}</span>
+            <span>${item.label}</span>
+          </button>
+        `).join('')}
       </div>
     `;
 
-    window.openSheet('💰 Budget', html);
+    window.openSheet((window.t ? window.t('menu.title', '⚙️ Menu') : '⚙️ Menu'), menuHTML);
 
-    // Event handlers
-    document.getElementById('currency-select').onchange = (e) => {
-      db.currency = e.target.value;
-      saveBudgetDB(db);
-      renderBudgetView();
-    };
+    // Attach click handlers
+    document.querySelectorAll('.menu-drawer-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const view = btn.dataset.view;
+        console.log('[MenuDrawer] Clicked:', view);
+        window.closeSheet?.();
 
-    setTimeout(() => {
-      const addBtn = document.getElementById('expense-add-btn');
-      const categorySelect = document.getElementById('expense-category');
-      const amountInput = document.getElementById('expense-amount');
-      const descriptionInput = document.getElementById('expense-description');
-
-      console.log('[Budget] Expense handlers setup - btn:', !!addBtn, 'cat:', !!categorySelect, 'amt:', !!amountInput);
-
-      if (addBtn) {
-        addBtn.onclick = () => {
-          console.log('[Budget] Salva Spesa clicked');
-          const category = categorySelect.value;
-          const amount = parseFloat(amountInput.value);
-          const description = descriptionInput.value;
-
-          console.log('[Budget] Expense data:', { category, amount, description });
-
-          if (!amount || amount <= 0) {
-            window.toast('Inserisci un importo valido!');
+        // Switch to the selected view
+        setTimeout(() => {
+          // Handle special case: create trip
+          if (view === 'create-trip') {
+            console.log('[MenuDrawer] Showing onboarding choice modal...');
+            // Clear tripProfile to show onboarding
+            localStorage.removeItem('tripProfile');
+            window.state.tripProfile = null;
+            // Show choice modal
+            if (typeof showOnboardingChoiceModal === 'function') {
+              showOnboardingChoiceModal();
+            }
             return;
           }
 
-          const jpyAmount = convertCurrency(amount, db.currency, 'JPY');
-          console.log('[Budget] Amount JPY:', jpyAmount);
-
-          db.expenses.push({
-            id: Date.now(),
-            category: category,
-            amount: jpyAmount,
-            description: description,
-            date: new Date().toISOString(),
-          });
-
-          saveBudgetDB(db);
-          console.log('[Budget] Expense saved, total count:', db.expenses.length);
-
-          const curr = CURRENCIES[db.currency];
-          const symbol = curr.symbol;
-          window.toast(`Spesa ${symbol}${amount.toFixed(0)} registrata!`);
-
-          // Clear inputs
-          amountInput.value = '';
-          descriptionInput.value = '';
-          categorySelect.value = EXPENSE_CATEGORIES[0].id;
-
-          console.log('[Budget] Calling renderBudgetView from expense save');
-          renderBudgetView();
-        };
-      }
-
-      // Delete buttons
-      document.querySelectorAll('.expense-delete-btn').forEach(btn => {
-        btn.onclick = (e) => {
-          const idx = parseInt(e.target.dataset.expenseIndex);
-          console.log('[Budget] Delete expense at index:', idx);
-          db.expenses.splice(idx, 1);
-          saveBudgetDB(db);
-          renderBudgetView();
-        };
+          const navBtn = document.querySelector(`nav.bottom button[data-view="${view}"]`);
+          if (navBtn) {
+            navBtn.click();
+          } else {
+            // Fallback: trigger view directly
+            if (view === 'list') { renderListView(); }
+            else if (view === 'bookings') { window.renderBookingsView?.(); }
+            else if (view === 'shopping') { renderShoppingView(); }
+            else if (view === 'group') { renderGroupView(); }
+            else if (view === 'budget') { renderBudgetView(); }
+            else if (view === 'gallery') { window.renderGalleryView?.(); }
+            else if (view === 'tips') { window.renderTipsView?.(); }
+            else if (view === 'gf-heatmap') {
+              // Toggle heatmap GF: passa alla mappa e accendi il layer
+              const mapBtn = document.querySelector('nav.bottom button[data-view="map"]');
+              if (mapBtn) mapBtn.click();
+              setTimeout(() => window.GFHeatmap?.toggle?.(), 150);
+            }
+            else if (view === 'groq-menu') { window.openGroqPanel(); }
+            else if (view === 'gf-suggest') { window.openGFSuggestionPanel(); }
+            else if (view === 'sos') { window.renderSOSPanel?.(); }
+            else if (view === 'errors') { window.ErrorCollector?.openPanel?.(); }
+          }
+        }, 200);
       });
-    }, 200);
-
-    setTimeout(() => {
-      const btn = document.getElementById('config-save-inline');
-      const input = document.getElementById('config-total-budget-inline');
-      console.log('[Budget] Setup inline handler - btn:', !!btn, 'input:', !!input);
-
-      if (btn && input) {
-        btn.onclick = () => {
-          console.log('[Budget] Inline OK clicked');
-          const newBudget = parseFloat(input.value);
-          console.log('[Budget] New budget value (JPY):', newBudget);
-
-          if (!newBudget || newBudget <= 0) {
-            window.toast('Inserisci un budget valido!');
-            return;
-          }
-
-          // Input è sempre in JPY, salva diretto
-          db.totalBudget = newBudget;
-          saveBudgetDB(db);
-          console.log('[Budget] DB saved, total JPY:', db.totalBudget);
-
-          // Display in current currency
-          const curr = CURRENCIES[db.currency];
-          const displayAmount = convertCurrency(newBudget, 'JPY', db.currency);
-          const displayVal = curr.symbol + displayAmount.toFixed(0);
-          window.toast('Budget: ' + displayVal);
-
-          console.log('[Budget] Calling renderBudgetView');
-          renderBudgetView();
-        };
-      } else {
-        console.warn('[Budget] Could not find inline elements');
-      }
-    }, 200);
-  }
-
-  /* ═══════════════════════════════════════════════════════════════
-     GALLERY — Photo upload + timeline view
-  ═══════════════════════════════════════════════════════════════ */
-
-  function getGalleryDB() {
-    const stored = localStorage.getItem('GalleryDB');
-    return stored ? JSON.parse(stored) : { photos: [] };
-  }
-
-  function saveGalleryDB(db) {
-    localStorage.setItem('GalleryDB', JSON.stringify(db));
-  }
-
-  function compressImage(dataUrl, maxWidth = 800, maxHeight = 800) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.75));
-      };
-      img.src = dataUrl;
     });
-  }
-
-  function renderGalleryView() {
-    const db = getGalleryDB();
-    const photoCount = db.photos.length;
-
-    let html = `
-      <div class="gallery-container">
-        <!-- Header with stats -->
-        <div class="gallery-header">
-          <h2 style="margin:0;color:var(--y2k-ink);font-family:'Comic Sans MS',cursive;font-size:18px;font-weight:700">📸 Galleria</h2>
-          <div style="font-size:13px;color:var(--y2k-muted);font-weight:700">${photoCount} foto</div>
-        </div>
-
-        <!-- Upload section -->
-        <div class="gallery-upload-section">
-          <div class="gallery-upload-area" id="gallery-drop-zone">
-            <input type="file" id="gallery-file-input" accept="image/*" multiple style="display:none" />
-            <div style="text-align:center;padding:20px;cursor:pointer">
-              <div style="font-size:32px;margin-bottom:8px">📷</div>
-              <div style="color:var(--y2k-ink);font-weight:700;font-size:14px;margin-bottom:4px">Aggiungi Foto</div>
-              <div style="color:var(--y2k-muted);font-size:12px">Clicca o trascina foto qui</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Gallery grid -->
-        <div class="gallery-grid">
-          ${photoCount === 0 ? `
-            <div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--y2k-muted)">
-              <div style="font-size:48px;margin-bottom:12px">🗂️</div>
-              <p>Nessuna foto ancora. Caricane una per iniziare!</p>
-            </div>
-          ` : db.photos.sort((a, b) => new Date(b.date) - new Date(a.date)).map((photo, idx) => {
-            const date = new Date(photo.date).toLocaleDateString('it-IT', { month: 'short', day: 'numeric' });
-            return `
-              <div class="gallery-photo-card">
-                <img src="${photo.data}" alt="Foto ${idx + 1}" class="gallery-photo-img" />
-                <div class="gallery-photo-meta">
-                  <div class="gallery-photo-date">${date}</div>
-                  ${photo.caption ? `<div class="gallery-photo-caption">${photo.caption}</div>` : ''}
-                </div>
-                <div class="gallery-photo-actions">
-                  <button class="gallery-btn-edit" data-idx="${idx}">✏️</button>
-                  <button class="gallery-btn-delete" data-idx="${idx}">🗑️</button>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-
-        <!-- Stats -->
-        <div class="gallery-stats">
-          <div style="color:var(--y2k-muted);font-size:12px">
-            <strong>${photoCount}</strong> foto • <strong>${(db.photos.reduce((s, p) => s + (p.data?.length || 0), 0) / 1024 / 1024).toFixed(1)}</strong> MB
-          </div>
-        </div>
-      </div>
-    `;
-
-    window.openSheet('📸 Galleria', html);
-
-    async function handleFiles(files) {
-      for (const file of files) {
-        if (!file.type.startsWith('image/')) continue;
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const compressed = await compressImage(e.target.result);
-          db.photos.push({
-            id: Date.now() + Math.random(),
-            data: compressed,
-            date: new Date().toISOString(),
-            caption: '',
-          });
-          saveGalleryDB(db);
-          window.toast('Foto aggiunta!');
-          renderGalleryView();
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
-    // File input — setup with delay to ensure DOM ready
-    setTimeout(() => {
-      const fileInput = document.getElementById('gallery-file-input');
-      const dropZone = document.getElementById('gallery-drop-zone');
-
-      if (!fileInput || !dropZone) {
-        console.warn('[Gallery] File input or drop zone not found');
-        return;
-      }
-
-      dropZone.onclick = () => {
-        console.log('[Gallery] Clicking file input');
-        fileInput.click();
-      };
-
-      // Drag & drop
-      dropZone.ondragover = (e) => {
-        e.preventDefault();
-        dropZone.style.background = 'rgba(255,20,147,0.1)';
-      };
-      dropZone.ondragleave = () => {
-        dropZone.style.background = '';
-      };
-      dropZone.ondrop = (e) => {
-        e.preventDefault();
-        dropZone.style.background = '';
-        console.log('[Gallery] Files dropped:', e.dataTransfer.files.length);
-        handleFiles(e.dataTransfer.files);
-      };
-
-      fileInput.onchange = (e) => {
-        console.log('[Gallery] Files selected:', e.target.files.length);
-        handleFiles(e.target.files);
-      };
-
-      console.log('[Gallery] File handlers attached');
-    }, 100);
-
-    // Edit/Delete handlers
-    setTimeout(() => {
-      document.querySelectorAll('.gallery-btn-edit').forEach(btn => {
-        btn.onclick = () => {
-          const idx = parseInt(btn.dataset.idx);
-          const photo = db.photos[idx];
-          const newCaption = prompt('Didascalia:', photo.caption || '');
-          if (newCaption !== null) {
-            photo.caption = newCaption;
-            saveGalleryDB(db);
-            renderGalleryView();
-          }
-        };
-      });
-
-      document.querySelectorAll('.gallery-btn-delete').forEach(btn => {
-        btn.onclick = () => {
-          const idx = parseInt(btn.dataset.idx);
-          if (confirm('Eliminare questa foto?')) {
-            db.photos.splice(idx, 1);
-            saveGalleryDB(db);
-            window.toast('Foto eliminata');
-            renderGalleryView();
-          }
-        };
-      });
-    }, 100);
   }
 
   function renderGFView() {
@@ -7816,8 +8727,66 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('[renderGFView] Città attuale da GPS:', currentCity, '- distanza:', minDist.toFixed(2));
     }
 
-    const html = "<div style=\"display:flex;gap:8px;margin-bottom:12px;\"><input id=\"gf-search\" placeholder=\"Cerca ristorante...\" style=\"flex:1;padding:8px 10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;font:inherit;\"><select id=\"gf-city-filter\" style=\"flex:0 0 120px;width:120px;padding:8px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;overflow:hidden;text-overflow:ellipsis;text-align:left;\"><option value=\"all\">Tutte</option>" + allCities.map(c => "<option value=\"" + c + "\">" + c + "</option>").join("") + "</select></div><div id=\"gf-list-sheet\" style=\"position:relative;min-height:200px;\"><p style=\"color:var(--muted);text-align:center;padding:20px;\">⏳ Caricamento città attuale...</p></div>";
-    window.openSheet("🌾 Gluten Free", html);
+    // Build city chips HTML
+    const cityChipsHTML = `
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; overflow-x: auto; padding-bottom: 4px;">
+        <button class="gf-city-chip active" data-city="all" style="
+          padding: 8px 14px;
+          background: rgba(255,165,100,0.2);
+          border: 1.5px solid rgba(255,165,100,0.4);
+          border-radius: 20px;
+          color: rgba(255,255,255,0.9);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          white-space: nowrap;
+        " onmouseover="this.style.background='rgba(255,165,100,0.3)'" onmouseout="this.style.background='rgba(255,165,100,0.2)'">Tutte</button>
+        ${allCities.map(city => `
+          <button class="gf-city-chip" data-city="${city}" style="
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+          " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">${city}</button>
+        `).join('')}
+      </div>
+    `;
+
+    const html = `
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Search bar -->
+        <input id="gf-search" placeholder="${window.t ? window.t('gf.searchByName') : 'Cerca per nome...'}" style="
+          padding: 10px 14px;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,165,100,0.2);
+          border-radius: 10px;
+          color: rgba(255,255,255,0.95);
+          font-size: 14px;
+          font-family: inherit;
+          transition: all 0.2s;
+        " onfocus="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,165,100,0.4)';" onblur="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,165,100,0.2)';">
+
+        <!-- City chips -->
+        ${cityChipsHTML}
+
+        <!-- List container -->
+        <div id="gf-list-sheet" style="position: relative; min-height: 200px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
+            ${Array.from({length:5}).map(() => '<div class="skeleton skeleton-card"></div>').join('')}
+            <p style="color: rgba(255,255,255,0.4); text-align: center; padding: 6px; margin: 0; font-size: 12px;">${window.t ? window.t('gf.loadingRestaurants') : '⏳ Caricamento ristoranti...'}</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    window.openSheet("💚 GF Guide", html);
 
     // Mostra subito i dati hardcoded
     renderGFList("all", "");
@@ -7863,35 +8832,40 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })();
 
+    // Event handlers
     const searchInput = document.getElementById("gf-search");
-    const cityFilter = document.getElementById("gf-city-filter");
+    const cityChips = document.querySelectorAll(".gf-city-chip");
 
-    if (searchInput) searchInput.oninput = debounce(() => renderGFList(cityFilter.value, searchInput.value), 300);
-    if (cityFilter) cityFilter.onchange = () => renderGFList(cityFilter.value, searchInput.value);
+    let selectedCity = "all";
+
+    if (searchInput) {
+      searchInput.oninput = debounce(() => {
+        renderGFList(selectedCity, searchInput.value);
+      }, 300);
+    }
+
+    if (cityChips) {
+      cityChips.forEach(chip => {
+        chip.addEventListener("click", () => {
+          cityChips.forEach(c => {
+            c.classList.remove("active");
+            c.style.background = "rgba(255,255,255,0.04)";
+            c.style.borderColor = "rgba(255,255,255,0.1)";
+            c.style.color = "rgba(255,255,255,0.7)";
+          });
+          chip.classList.add("active");
+          chip.style.background = "rgba(255,165,100,0.2)";
+          chip.style.borderColor = "rgba(255,165,100,0.4)";
+          chip.style.color = "rgba(255,255,255,0.9)";
+          selectedCity = chip.dataset.city;
+          renderGFList(selectedCity, searchInput?.value || "");
+        });
+      });
+    }
   }
 
-  function renderBookingsView() {
-    const items = allPOIs().filter(p => p.booking && Object.keys(p.booking).length);
-    const html = items.length ? items.map(p => {
-      const bookingBtns = [];
-      if (p.booking.tableCheck) bookingBtns.push(`<a class="btn success" href="${p.booking.tableCheck}" target="_blank" rel="noopener">TableCheck</a>`);
-      if (p.booking.tabelog) bookingBtns.push(`<a class="btn" href="${p.booking.tabelog}" target="_blank" rel="noopener">Tabelog</a>`);
-      if (p.booking.website) bookingBtns.push(`<a class="btn" href="${p.booking.website}" target="_blank" rel="noopener">Sito</a>`);
-      if (p.booking.phone) bookingBtns.push(`<a class="btn" href="tel:${p.booking.phone.replace(/\s+/g,'')}">Chiama</a>`);
-      return `
-        <div class="poi-row" data-id="${p.id}">
-          <div class="icon">${CATS[p.cat]?.icon||'🍴'}</div>
-          <div class="body">
-            <div class="name">${getPoiDisplayName(p)}</div>
-            <div class="sub">${p.city} · ${p.desc?.slice(0, 70) || ''}</div>
-          </div>
-        </div>
-        <div class="section">${bookingBtns.join(' ')}</div>
-      `;
-    }).join('') : '<p style="color:var(--muted);font-size:13px">Nessuna prenotazione disponibile.</p>';
-    window.openSheet('🍽️ Prenota', html);
-    sheetBody.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openPOI(r.dataset.id); });
-  }
+  // renderBookingsView estratto il 2026-05-26 in js/views/bookings-view.js
+  // (vedi STATO_APP.md §8.5). Esposto come window.renderBookingsView.
 
   function createAvatarDataUrl(name) {
     const initials = (name || '').trim().substring(0, 2).toUpperCase() || '?';
@@ -7915,9 +8889,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadVintageShopsForCity(city) {
     if (shoppingCache.vintageShops[city]) {
-      console.log(`[loadVintageShopsForCity] Cache HIT per ${city}`);
+      console.log(`[loadVintageShopsForCity] Cache HIT (memoria) per ${city}`);
       return shoppingCache.vintageShops[city];
     }
+
+    // Check localStorage cache (7-day TTL) before hitting the API
+    try {
+      const lsKey = `vintageShops_v1_${city}`;
+      const raw = localStorage.getItem(lsKey);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (cached.expires > Date.now()) {
+          shoppingCache.vintageShops[city] = cached.shops;
+          console.log(`[loadVintageShopsForCity] Cache HIT (localStorage 7d): ${city} = ${cached.shops.length} negozi`);
+          return cached.shops;
+        }
+        localStorage.removeItem(lsKey);
+      }
+    } catch { /* localStorage non disponibile */ }
 
     // Determina coordinate della città (usa CITY_COORDS)
     const coords = CITY_COORDS[city];
@@ -7944,6 +8933,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const shops = data.shops || [];
       shoppingCache.vintageShops[city] = shops;
+      // Persist to localStorage for 7 days
+      try {
+        localStorage.setItem(`vintageShops_v1_${city}`, JSON.stringify({
+          shops,
+          expires: Date.now() + 7 * 24 * 60 * 60 * 1000
+        }));
+      } catch { /* Storage pieno */ }
       console.log(`[loadVintageShopsForCity] Cache SET: ${city} = ${shops.length} negozi`);
       return shops;
     } catch (err) {
@@ -7960,9 +8956,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadGlutenFreeShopsForCity(city) {
     if (gfCache.shops[city]) {
-      console.log(`%c[GF] Cache HIT: ${city} = ${gfCache.shops[city].length} shops`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
+      console.log(`%c[GF] Cache HIT (memoria): ${city} = ${gfCache.shops[city].length} shops`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
       return gfCache.shops[city];
     }
+
+    // Check localStorage cache (7-day TTL) before hitting the API
+    try {
+      const lsKey = `gfShops_v1_${city}`;
+      const raw = localStorage.getItem(lsKey);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (cached.expires > Date.now()) {
+          gfCache.shops[city] = cached.shops;
+          console.log(`%c[GF] Cache HIT (localStorage 7d): ${city} = ${cached.shops.length} shops`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
+          return cached.shops;
+        }
+        localStorage.removeItem(lsKey); // Expired
+      }
+    } catch { /* localStorage non disponibile */ }
 
     const coords = CITY_COORDS[city];
     if (!coords) {
@@ -7988,6 +8999,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
       const shops = data.shops || [];
       gfCache.shops[city] = shops;
+
+      // Persist to localStorage for 7 days (avoids re-fetching on page reload)
+      try {
+        localStorage.setItem(`gfShops_v1_${city}`, JSON.stringify({
+          shops,
+          expires: Date.now() + 7 * 24 * 60 * 60 * 1000
+        }));
+      } catch { /* Storage pieno */ }
 
       if (shops.length > 0) {
         console.log(`%c[GF] ✅ ${city}: ${shops.length} shops caricati (${fetchTime}ms)`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
@@ -8041,61 +9060,43 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn(logPrefix + ` localStorage read error: ${e.message}`, logStyle);
     }
 
-    const apiUrl = `/api/analyzeGlutenFree?place_id=${encodeURIComponent(placeId)}&name=${encodeURIComponent(name)}&city=${encodeURIComponent(city)}`;
-    console.log(logPrefix + ' 🌐 Fetching API...', logStyle);
-    console.log(logPrefix + ` URL: ${apiUrl}`, logStyle);
+    // FALLBACK: Use smart local detection instead of API
+    // (Backend API doesn't exist in static deployment)
+    console.log(logPrefix + ' 📊 Using smart local GF detection (no API available)', logStyle);
 
-    try {
-      const fetchStart = Date.now();
+    // Try to find matching GF shop in local database
+    const localGFMatch = allGlutenFreeShops.find(shop => {
+      const nameMatch = shop.name && shop.name.toLowerCase().includes(name.toLowerCase().substring(0, 8));
+      const cityMatch = shop.city === city;
+      return nameMatch && cityMatch;
+    });
 
-      // Fetch with 10s timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-      const response = await fetch(apiUrl, { signal: controller.signal });
-      clearTimeout(timeoutId);
-
-      const fetchTime = Date.now() - fetchStart;
-      console.log(logPrefix + ` ✅ Fetch complete (${fetchTime}ms)`, logStyle);
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const parseStart = Date.now();
-      const data = await response.json();
-      const parseTime = Date.now() - parseStart;
-      console.log(logPrefix + ` ✅ JSON parsed (${parseTime}ms)`, logStyle);
-
-      const result = data.gf || { lvl: 'unknown', confidence: 0 };
-
-      // Cache the result in memory
+    if (localGFMatch && localGFMatch.gf) {
+      const result = {
+        lvl: localGFMatch.gf.lvl || 'unknown',
+        confidence: 85,
+        notes: localGFMatch.gf.notes || 'Trovato nel database locale',
+        mentions: 1,
+        total_reviews: 1
+      };
       gfAnalysisCache[memKey] = result;
-
-      // Cache the result in localStorage
-      try {
-        localStorage.setItem(storageKey, JSON.stringify({
-          result: result,
-          timestamp: Date.now(),
-          placeId: placeId,
-          name: name,
-          city: city
-        }));
-        console.log(logPrefix + ' 💾 Result saved to localStorage', logStyle);
-      } catch (e) {
-        console.warn(logPrefix + ` localStorage write error: ${e.message}`, logStyle);
-      }
-
       const totalTime = Date.now() - startTime;
-      console.log(logPrefix + ` ✅ DONE in ${totalTime}ms - Result: ${result.lvl} (${Math.round(result.confidence*100)}%)`, logStyle);
+      console.log(logPrefix + ` ✅ DONE in ${totalTime}ms - LOCAL MATCH: ${result.lvl}`, logStyle);
       return result;
-    } catch (err) {
-      const totalTime = Date.now() - startTime;
-      console.error(logPrefix + ` ❌ ERROR after ${totalTime}ms: ${err.message}`, logStyle);
-
-      // Cache the error result too
-      const errorResult = { lvl: 'unknown', confidence: 0 };
-      gfAnalysisCache[memKey] = errorResult;
-      return errorResult;
     }
+
+    // If no local match, return "ask restaurant" placeholder
+    const defaultResult = {
+      lvl: 'unknown',
+      confidence: 0,
+      notes: '❓ Non disponibile nel nostro database',
+      mentions: 0,
+      total_reviews: 0
+    };
+    gfAnalysisCache[memKey] = defaultResult;
+    const totalTime = Date.now() - startTime;
+    console.log(logPrefix + ` ⏳ DONE in ${totalTime}ms - Using fallback message`, logStyle);
+    return defaultResult;
   }
 
   // Shopping view cache
@@ -8429,7 +9430,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Build photo gallery
         const photosHtml = poi.photos && poi.photos.length > 0
           ? poi.photos.slice(0, 3).map((photo, idx) => `
-              <img src="${photo.url}" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:10px" alt="Foto ${idx+1}" onerror="this.style.display='none'">
+              <img src="${photo.url}" loading="lazy" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:10px" alt="Foto ${idx+1}" onerror="this.style.display='none'">
             `).join('')
           : '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Nessuna foto disponibile</p>';
 
@@ -8663,6 +9664,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderGroupView() {
     console.log('[Group] renderGroupView', { roomId: state.group?.roomId, myName: state.group?.myName, isCreator: state.group?.isCreator });
 
+    // Hide weather widget when opening group panel
+    const weatherWidget = document.getElementById('weather-floating');
+    if (weatherWidget) {
+      weatherWidget.classList.remove('show');
+      console.log('[Group] Hid weather widget');
+    }
+
     // Se gruppo già creato, usa group-panel.js
     if (state.group?.roomId && state.group?.myName && window.groupPanel) {
       const html = window.groupPanel.render();
@@ -8695,7 +9703,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div style="padding:12px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box;">
         <!-- Tab selector: Crea o Entra -->
         <div style="display:flex;gap:8px;">
-          <button id="mode-create" style="flex:1;padding:10px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive;box-sizing:border-box;">
+          <button id="mode-create" style="flex:1;padding:10px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;box-sizing:border-box;">
             ➕ Crea Nuova
           </button>
           <button id="mode-join" style="flex:1;padding:10px;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;font-weight:600;cursor:pointer;box-sizing:border-box;">
@@ -8736,7 +9744,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="font-size:11px;color:#999;">Lascia vuoto per generare un avatar con le tue iniziali.</div>
         </div>
 
-        <button id="group-start" style="width:100%;padding:12px;background:linear-gradient(180deg,#FF1493,#FF69B4);color:white;border:2px solid #FF1493;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Comic Sans MS',cursive;box-sizing:border-box;font-size:14px;">✅ Connetti</button>
+        <button id="group-start" style="width:100%;padding:12px;background:linear-gradient(180deg,#FF1493,#FF69B4);color:white;border:2px solid #FF1493;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;box-sizing:border-box;font-size:14px;">✅ Connetti</button>
         <div id="peer-status-box" style="color:#999;font-size:13px;">Pronto a connettersi...</div>
       </div>
     `;
@@ -8883,6 +9891,38 @@ document.addEventListener('DOMContentLoaded', () => {
       closeSheet();
       renderGroupView();
 
+      // Se c'è una condivisione di itinerario in sospeso, condividila automaticamente
+      if (state.pendingShareItinerary) {
+        console.log('[Group] pendingShareItinerary flag detected, sharing itinerary automatically');
+        setTimeout(() => {
+          // Check if user has any itinerary (either state.itinerary or state.itineraryByDay)
+          const hasItinerary = (state.itinerary && state.itinerary.length > 0) ||
+            (state.itineraryByDay && Object.values(state.itineraryByDay).some(day => day && day.length > 0));
+
+          if (hasItinerary && state.group?.roomId) {
+            console.log('[Group] Auto-sharing itinerary to group:', state.group.roomId);
+            // If only itineraryByDay exists, convert to shared format first
+            if (state.itineraryByDay && (!state.itinerary || state.itinerary.length === 0)) {
+              state.itinerary = [];
+              for (const dayPOIs of Object.values(state.itineraryByDay)) {
+                if (Array.isArray(dayPOIs)) {
+                  state.itinerary.push(...dayPOIs);
+                }
+              }
+            }
+            sharePersonalItineraryToGroup(state.group.roomId);
+            state.pendingShareItinerary = false;
+            saveState();
+            toast('✅ Itinerario condiviso con il gruppo!');
+          } else {
+            console.warn('[Group] Cannot auto-share: missing itinerary or roomId', {
+              hasItinerary,
+              roomId: state.group?.roomId
+            });
+          }
+        }, 500);
+      }
+
       // Redraw GPS marker with correct name now that group is set
       if (state.gpsCurrentLat && state.gpsCurrentLng) {
         console.log(`%c[Group] 🔄 Redrawing GPS marker with myName='${name}'`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
@@ -8934,6 +9974,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
   }
+  window.renderGroupView = renderGroupView; // esposto per js/group-invite.js (deep link join)
 
   // GF Shops discovered from Google Places
   let allGlutenFreeShops = [];
@@ -8965,6 +10006,15 @@ document.addEventListener('DOMContentLoaded', () => {
     "Beppu":        "https://www.findmeglutenfree.com/map#loc=Beppu,+Japan",
     "Okinawa":      "https://www.findmeglutenfree.com/map#loc=Okinawa,+Japan"
   };
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SOS EMERGENCY PANEL — Celiac Emergency Support
+  // Estratto il 2026-05-26 in js/views/sos-view.js (vedi STATO_APP.md §8.5).
+  // Le helper copyToClipboard / showMedicalCard / downloadMedicalCard /
+  // openGoogleMaps sono ora esposte su window dal modulo estratto (bug
+  // pre-esistente risolto: prima erano dichiarate ma non globali, gli
+  // onclick HTML del pannello SOS non funzionavano).
+  // ═══════════════════════════════════════════════════════════════════
 
 function renderGFList(city, searchText) {
 const container = document.getElementById("gf-list-sheet") || document.getElementById("gf-list");
@@ -9005,44 +10055,122 @@ if (window.state?.gpsCurrentLat) {
 const discoverUrl = FMGF_CITY_URLS[city] || "https://www.findmeglutenfree.com/map#loc=Japan";
 
 if (filtered.length === 0) {
-  const noResultsMsg = window.state?.gpsCurrentLat ? "Nessun ristorante gluten-free trovato entro 50km dalla tua posizione." : "Nessun ristorante gluten-free trovato. Abilita GPS per cercare vicino a te.";
-  container.innerHTML = "<div style=\"padding:14px 12px;text-align:center;\"><p style=\"margin:0 0 8px;font-size:13px;\">🌾 " + noResultsMsg + "</p><a href=\"" + discoverUrl + "\" target=\"_blank\" style=\"display:inline-block;padding:8px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#000;font-size:13px;font-weight:600;text-decoration:none;\">🔍 Cerca su Find Me Gluten Free</a></div>";
+  const noResultsMsg = window.state?.gpsCurrentLat
+    ? "Nessun ristorante gluten-free trovato entro 50km."
+    : "Nessun ristorante gluten-free trovato.";
+  const suggestion = window.state?.gpsCurrentLat
+    ? "Prova ad allargare la ricerca o abilitare GPS."
+    : "Abilita GPS per cercare vicino a te.";
+
+  container.innerHTML = `
+    <div style="
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      text-align: center;
+      min-height: 200px;
+    ">
+      <div style="font-size: 48px; margin-bottom: 16px;">🌾</div>
+      <h3 style="
+        font-size: 16px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.95);
+        margin: 0 0 8px 0;
+      ">${noResultsMsg}</h3>
+      <p style="
+        font-size: 13px;
+        color: rgba(255,255,255,0.6);
+        margin: 0 0 16px 0;
+      ">${suggestion}</p>
+      <a href="${discoverUrl}" target="_blank" style="
+        display: inline-block;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #FF6B35, #FF5E1F);
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(255,107,53,0.3);
+      " onmouseover="this.style.boxShadow='0 8px 20px rgba(255,107,53,0.4)'" onmouseout="this.style.boxShadow='0 4px 12px rgba(255,107,53,0.3)'">🔍 Scopri su Find Me GF</a>
+    </div>
+  `;
   return;
 }
 
 let html = filtered.map(r => {
-  const tags = (r.tags || []).map(t => `<span style="margin-right:6px;color:#4caf50;font-weight:600;">${t}</span>`).join('');
-  const actions = [];
+  const tags = (r.tags || []).map(t => `<span style="display:inline-block;margin-right:6px;margin-bottom:4px;padding:2px 8px;background:rgba(74,222,128,0.15);color:#4caf50;border-radius:4px;font-size:11px;font-weight:600;">${t}</span>`).join('');
 
-  if (r.source === 'google') {
-    if (r.google_maps_url) actions.push(`<a href="${r.google_maps_url}" target="_blank" style="color:var(--accent);text-decoration:underline;font-weight:600;">🗺️ Vedi su Maps</a>`);
-  } else {
-    if (r.fmgf_url) actions.push(`<a href="${r.fmgf_url}" target="_blank" style="color:var(--accent);text-decoration:underline;font-weight:600;margin-right:8px;">🔍 Verifica su Find Me GF</a>`);
-    if (r.maps_url) actions.push(`<a href="${r.maps_url}" target="_blank" style="color:var(--text);text-decoration:underline;font-weight:600;">🗺️ Apri in Maps</a>`);
+  // Primary CTA buttons
+  const ctaButtons = [];
+  if (r.phone) {
+    ctaButtons.push(`<a href="tel:${r.phone.replace(/[^0-9+]/g,'')}" style="flex:1;padding:10px 12px;background:linear-gradient(135deg, #FF6B35, #FF5E1F);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(255,107,53,0.4)'" onmouseout="this.style.boxShadow='none'">📞 Chiama</a>`);
+  }
+  if (r.maps_url) {
+    ctaButtons.push(`<a href="${r.maps_url}" target="_blank" style="flex:1;padding:10px 12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,165,100,0.2);border-radius:8px;color:rgba(255,255,255,0.85);font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)';this.style.borderColor='rgba(255,165,100,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,165,100,0.2)'">🗺️ Mappe</a>`);
+  }
+
+  // Secondary links
+  const secondaryLinks = [];
+  if (r.source === 'google' && r.google_maps_url) {
+    secondaryLinks.push(`<a href="${r.google_maps_url}" target="_blank" style="color:rgba(255,165,100,0.8);text-decoration:none;font-size:12px;font-weight:500;">Vedi su Google Maps</a>`);
+  } else if (r.fmgf_url) {
+    secondaryLinks.push(`<a href="${r.fmgf_url}" target="_blank" style="color:rgba(255,165,100,0.8);text-decoration:none;font-size:12px;font-weight:500;">Verifica su Find Me GF</a>`);
   }
 
   const rating = r.rating ? `⭐ ${r.rating}` : '';
-  const reviewCount = r.review_count ? `(${r.review_count} review)` : '';
-  const distanceStr = r.distance ? ` · <span style="color:var(--success);font-weight:600">${fmtDist(r.distance)}</span>` : '';
+  const reviewCount = r.review_count ? `(${r.review_count})` : '';
+  const distanceStr = r.distance ? `<span style="color:#4ADE80;font-weight:600">${fmtDist(r.distance)}</span>` : '';
 
   return `
-    <div class="poi-row" data-id="${r.id}">
-      <div class="icon">🌾</div>
-      <div class="body">
-        <div class="name">${r.name}</div>
-        <div class="sub">${r.city}${r.area?` · ${r.area}`:''}${r.cuisine?` · ${r.cuisine}`:''}${distanceStr}</div>
-        ${tags ? `<div style="margin-top:6px;font-size:12px;">${tags}</div>` : ''}
-        ${rating || reviewCount ? `<div style="margin-top:4px;font-size:12px;color:var(--text);">${rating} ${reviewCount}</div>` : ''}
-        ${r.note ? `<div style="margin-top:8px;font-size:12px;color:var(--text);">${r.note}</div>` : ''}
-        <div style="margin-top:10px;font-size:12px;">${actions.join(' ')}</div>
+    <div style="
+      padding: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      transition: all 0.2s;
+    " onmouseover="this.style.background='rgba(255,255,255,0.06)';this.style.borderColor='rgba(255,165,100,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.1)'">
+      <!-- Header: Name + Distance -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.95); margin-bottom: 2px;">${r.name}</div>
+          <div style="font-size: 12px; color: rgba(255,255,255,0.6);">${r.city}${r.area?` · ${r.area}`:''}${r.cuisine?` · ${r.cuisine}`:''}</div>
+        </div>
+        ${distanceStr ? `<div style="margin-left: 8px; white-space: nowrap; font-size: 12px; font-weight: 600;">${distanceStr}</div>` : ''}
       </div>
-      <div class="gf-dot ${r.tags?.length || r.source === 'google' ? 'full' : 'none'}"></div>
-    </div>`;
+
+      <!-- Address (if available) -->
+      ${r.address ? `<div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 8px;">${r.address}</div>` : ''}
+
+      <!-- Tags -->
+      ${tags ? `<div style="margin-bottom: 8px; font-size: 0;">${tags}</div>` : ''}
+
+      <!-- Rating -->
+      ${rating || reviewCount ? `<div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 10px;">${rating} ${reviewCount}</div>` : ''}
+
+      <!-- Note -->
+      ${r.note ? `<div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 10px; padding: 8px; background: rgba(74,222,128,0.05); border-left: 2px solid rgba(74,222,128,0.3); border-radius: 4px;">${r.note}</div>` : ''}
+
+      <!-- CTA Buttons -->
+      <div style="display: flex; gap: 8px; margin-bottom: ${secondaryLinks.length ? '8px' : '0'};">
+        ${ctaButtons.join('')}
+      </div>
+
+      <!-- Secondary links -->
+      ${secondaryLinks.length ? `<div style="font-size: 12px; text-align: center;">${secondaryLinks.join(' · ')}</div>` : ''}
+    </div>
+  `;
 }).join('');
 
 container.innerHTML = html;
 container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDetail(r.dataset.id); });
 }
+window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
 
   function openGFDetail(id) {
     const r = GF_RESTAURANTS.find(x => x.id === id);
@@ -9072,7 +10200,14 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
 
   // ========== GOOGLE PLACES INTEGRATION ==========
   // Store all POIs loaded from Google Places
-  window.GOOGLE_PLACES_POIS = [];
+  // FALLBACK TEST POIs for development (when Google Places API isn't working)
+  window.GOOGLE_PLACES_POIS = [
+    { id: 'test-tsukiji', name: 'Tsukiji Outer Market', city: 'Tokyo', lat: 35.6645, lng: 139.7713, cat: 'food', gf: { lvl: 'full' }, desc: 'Fresh seafood market' },
+    { id: 'test-senso', name: 'Senso-ji Temple', city: 'Tokyo', lat: 35.7148, lng: 139.7967, cat: 'experience', desc: 'Historic Buddhist temple' },
+    { id: 'test-shibuya', name: 'Shibuya Crossing', city: 'Tokyo', lat: 35.6595, lng: 139.7004, cat: 'experience', desc: 'Iconic pedestrian crossing' },
+    { id: 'test-tokyo-tower', name: 'Tokyo Tower', city: 'Tokyo', lat: 35.6586, lng: 139.7454, cat: 'experience', desc: 'Historic observation tower' },
+    { id: 'test-meiji', name: 'Meiji Shrine', city: 'Tokyo', lat: 35.6763, lng: 139.7003, cat: 'experience', desc: 'Shinto shrine in Shibuya' }
+  ];
 
   // Listen for Google Places POI data loaded
   window.addEventListener('google-places-pois-loaded', (e) => {
@@ -9097,6 +10232,7 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     if (uniqueNewPois.length > 0) {
       console.log('[App] Rendering markers with new POIs');
       renderMarkers();
+      try { renderFilters(); } catch (e) {} // aggiorna i chip alle categorie ora presenti
     } else {
       console.log('[App] No new POIs to add, skipping render');
     }
@@ -9327,9 +10463,51 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
   };
 
   /* ================= GF PLACES DATABASE ================= */
+  const GFSuggestionsDB = {
+    STORE_KEY: 'gf_suggestions_submitted',
+
+    getAll() {
+      try {
+        return JSON.parse(localStorage.getItem(this.STORE_KEY) || '[]');
+      } catch { return []; }
+    },
+
+    add(suggestion) {
+      try {
+        const suggestions = this.getAll();
+        suggestion.id = 'gfs_' + Date.now();
+        suggestion.submittedAt = new Date().toISOString();
+        suggestion.status = 'pending'; // pending, approved, rejected
+        suggestions.push(suggestion);
+        localStorage.setItem(this.STORE_KEY, JSON.stringify(suggestions));
+
+        if (window.broadcastToPeers) {
+          window.broadcastToPeers({ type: 'gf_suggestion_add', suggestion });
+        }
+
+        return suggestion;
+      } catch (err) {
+        console.error('[GFSuggestionsDB.add]', err);
+        return null;
+      }
+    },
+
+    delete(id) {
+      try {
+        const suggestions = this.getAll();
+        const filtered = suggestions.filter(s => s.id !== id);
+        localStorage.setItem(this.STORE_KEY, JSON.stringify(filtered));
+        return true;
+      } catch (err) {
+        console.error('[GFSuggestionsDB.delete]', err);
+        return false;
+      }
+    }
+  };
+
   const GFPlacesDB = {
     STORE_KEY: 'gf_custom_places',
-    
+
     getAll() {
       try {
         return JSON.parse(localStorage.getItem(this.STORE_KEY) || '[]');
@@ -9534,75 +10712,178 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     }
   };
 
-  window.openGFPlacesPanel = function() {
+  // Global state for edit mode
+  window.gfEditMode = {
+    enabled: false,
+    placeId: null
+  };
+
+  window.openGFPlacesPanel = function(prefillData = null, editId = null) {
+    // Set edit mode if editId provided
+    if (editId) {
+      window.gfEditMode.enabled = true;
+      window.gfEditMode.placeId = editId;
+    } else {
+      window.gfEditMode.enabled = false;
+      window.gfEditMode.placeId = null;
+    }
+
     const places = GFPlacesDB.getAll();
-    
+
     let placesHtml = '';
     if (places.length === 0) {
       placesHtml = '<div class="gf-empty-state"><div class="icon">📍</div>Nessun posto aggiunto. Comincia ad aggiungere i tuoi posti GF!</div>';
     } else {
       placesHtml = places.map(p => `
-        <div class="gf-place-card">
-          <div class="gpc-header">
+        <div class="gf-place-card" style="background:rgba(74,91,168,0.08);border:1px solid rgba(74,91,168,0.2);border-radius:12px;padding:12px;">
+          <div class="gpc-header" style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
             <div>
-              <div class="gpc-name">${p.name}</div>
-              <div class="gpc-city">${p.city}${p.area ? ' · ' + p.area : ''}</div>
+              <div class="gpc-name" style="font-weight:700;color:var(--text);margin-bottom:4px;">${p.name}</div>
+              <div class="gpc-city" style="font-size:12px;color:var(--muted);">${p.city}${p.area ? ' · ' + p.area : ''}</div>
             </div>
-            <div class="gpc-rating">${'⭐'.repeat(p.rating || 0)}</div>
+            <div class="gpc-rating" style="font-size:14px;">${'⭐'.repeat(p.rating || 0)}</div>
           </div>
-          <div class="gpc-meta">
-            ${(p.tags || []).map(t => `<span class="gpc-tag">${t}</span>`).join('')}
+          ${p.safety_level ? `<div style="display:inline-block;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-bottom:8px;${p.safety_level === 'GREEN' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F' : p.safety_level === 'YELLOW' ? 'background:rgba(255,215,0,0.2);color:#FFD700' : 'background:rgba(255,107,107,0.2);color:#FF6B6B'};">${p.safety_level === 'GREEN' ? '🟢 SAFE' : p.safety_level === 'YELLOW' ? '🟡 CAUTION' : '🔴 DANGER'}</div>` : ''}
+          <div class="gpc-meta" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            ${(p.tags || []).map(t => `<span class="gpc-tag" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:3px 8px;font-size:11px;">${t}</span>`).join('')}
           </div>
-          ${p.note ? `<div style="margin-top:8px;font-size:12px;color:var(--muted);">${p.note}</div>` : ''}
-          <div class="gpc-actions">
-            <button onclick="window.editGFPlace('${p.id}')">✏️ Modifica</button>
-            <button onclick="if(confirm('Elimina?')) { window.deleteGFPlace('${p.id}'); window.openGFPlacesPanel(); }">🗑️ Elimina</button>
+          ${p.note ? `<div style="margin:8px 0;font-size:12px;color:var(--muted);line-height:1.4;">${p.note}</div>` : ''}
+          <div class="gpc-actions" style="display:flex;gap:6px;margin-top:10px;">
+            <button onclick="window.startEditGFPlace('${p.id}')" style="flex:1;padding:6px;background:rgba(100,149,237,0.2);border:1px solid rgba(100,149,237,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">✏️ Modifica</button>
+            <button onclick="if(confirm('Elimina?')) { window.deleteGFPlace('${p.id}'); window.openGFPlacesPanel(); }" style="flex:1;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">🗑️ Elimina</button>
           </div>
         </div>
       `).join('');
     }
-    
+
     const addFormHtml = `
-      <div class="gf-place-form">
-        <h3 style="margin:0 0 12px;font-size:14px;color:var(--text)">➕ Aggiungi Posto GF</h3>
-        <div class="form-row">
-          <label>Nome Ristorante</label>
-          <input type="text" id="gf-place-name" placeholder="Es: Sakura Gluten-Free" />
+      <div class="gf-place-form" style="background:rgba(74,91,168,0.12);backdrop-filter:blur(10px);border:1px solid rgba(74,91,168,0.3);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <a href="https://www.findmeglutenfree.com/jp" target="_blank" style="flex:1;padding:10px;background:linear-gradient(180deg,#4A5BA8,#3A4B98);color:#fff;border:none;border-radius:6px;text-decoration:none;font-weight:700;font-size:12px;text-align:center;cursor:pointer;">🌐 Trova su Find Me GF</a>
         </div>
-        <div class="form-row">
-          <label>Città</label>
-          <input type="text" id="gf-place-city" placeholder="Es: Kyoto" />
+
+        <h3 style="margin:0;font-size:13px;color:var(--text);font-weight:700;">➕ Aggiungi Manualmente</h3>
+
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="gf-place-name" placeholder="Nome" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
+          <input type="text" id="gf-place-city" placeholder="Città" style="flex:0.8;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
         </div>
-        <div class="form-row">
-          <label>Zona (opzionale)</label>
-          <input type="text" id="gf-place-area" placeholder="Es: Gion" />
-        </div>
-        <div class="form-row">
-          <label>Note</label>
-          <textarea id="gf-place-note" placeholder="Menu completamente GF, staff parla inglese..."></textarea>
-        </div>
-        <div class="form-row">
-          <label>Tags (separati da virgola)</label>
-          <input type="text" id="gf-place-tags" placeholder="100% sicuro, Cucina separata, Delivery online" />
-        </div>
-        <div class="form-row">
-          <label>Rating (1-5 stelle)</label>
-          <select id="gf-place-rating">
-            <option value="5">⭐⭐⭐⭐⭐ Perfetto</option>
-            <option value="4">⭐⭐⭐⭐ Molto buono</option>
-            <option value="3">⭐⭐⭐ Buono</option>
-            <option value="2">⭐⭐ Discreto</option>
-            <option value="1">⭐ Scadente</option>
+
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="gf-place-area" placeholder="Zona (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
+          <select id="gf-place-rating" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;">
+            <option value="5">⭐⭐⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+            <option value="2">⭐⭐</option>
+            <option value="1">⭐</option>
           </select>
         </div>
-        <div class="form-actions">
-          <button onclick="window.saveGFPlace()">💾 Salva Posto</button>
+
+        <select id="gf-place-safety" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;">
+          <option value="GREEN">🟢 GREEN - 100% Safe</option>
+          <option value="YELLOW" selected>🟡 YELLOW - Caution</option>
+          <option value="RED">🔴 RED - Danger</option>
+        </select>
+
+        <textarea id="gf-place-note" placeholder="Note personali..." style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;min-height:70px;"></textarea>
+
+        <input type="text" id="gf-place-tags" placeholder="Tags (Es: 100% sicuro, Cucina separata)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
+
+        <input type="hidden" id="gf-place-source-url" value="" />
+        <input type="hidden" id="gf-place-lat" value="" />
+        <input type="hidden" id="gf-place-lng" value="" />
+
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button onclick="window.geocodeGFPlace()" style="flex:1;padding:8px;background:rgba(100,149,237,0.2);border:1px solid rgba(100,149,237,0.4);color:var(--text);border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">📍 Geo-localizza</button>
+          <button onclick="window.saveGFPlace()" id="gf-save-button" style="flex:1;padding:8px;background:linear-gradient(180deg,#7FFF7F,#6FEF6F);color:#000;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">💾 Salva</button>
         </div>
       </div>
     `;
-    
-    const html = `<div class="gf-places-container">${addFormHtml}${placesHtml}</div>`;
+
+    const html = `<div class="gf-places-container" style="padding:16px;display:flex;flex-direction:column;gap:16px;">${addFormHtml}${placesHtml}</div>`;
     window.openSheet('🏪 I Miei Posti GF', html);
+
+    // Pre-fill form if data provided (deep linking or edit mode)
+    if (prefillData) {
+      setTimeout(() => {
+        if (prefillData.name) {
+          const nameField = document.getElementById('gf-place-name');
+          if (nameField) nameField.value = prefillData.name;
+        }
+        if (prefillData.city) {
+          const cityField = document.getElementById('gf-place-city');
+          if (cityField) cityField.value = prefillData.city;
+        }
+        if (prefillData.area) {
+          const areaField = document.getElementById('gf-place-area');
+          if (areaField) areaField.value = prefillData.area;
+        }
+        if (prefillData.rating) {
+          const ratingField = document.getElementById('gf-place-rating');
+          if (ratingField) ratingField.value = prefillData.rating;
+        }
+        if (prefillData.safety_level) {
+          const safetyField = document.getElementById('gf-place-safety');
+          if (safetyField) safetyField.value = prefillData.safety_level;
+        }
+        if (prefillData.note) {
+          const noteField = document.getElementById('gf-place-note');
+          if (noteField) noteField.value = prefillData.note;
+        }
+        if (prefillData.tags && Array.isArray(prefillData.tags)) {
+          const tagsField = document.getElementById('gf-place-tags');
+          if (tagsField) tagsField.value = prefillData.tags.join(', ');
+        }
+        if (prefillData.source_url) {
+          const sourceUrlField = document.getElementById('gf-place-source-url');
+          if (sourceUrlField) sourceUrlField.value = prefillData.source_url;
+        }
+        if (prefillData.lat) {
+          document.getElementById('gf-place-lat').value = prefillData.lat;
+        }
+        if (prefillData.lng) {
+          document.getElementById('gf-place-lng').value = prefillData.lng;
+        }
+
+        // Update button text if in edit mode
+        if (window.gfEditMode && window.gfEditMode.enabled) {
+          const saveBtn = document.getElementById('gf-save-button');
+          if (saveBtn) {
+            saveBtn.innerHTML = '✏️ Aggiorna';
+            saveBtn.style.background = 'linear-gradient(180deg,#6BA3D4,#5B93C4)';
+          }
+        }
+
+        console.log('[openGFPlacesPanel] Form pre-filled with:', prefillData);
+      }, 100);
+    } else {
+      // Reset button text if not in edit mode
+      setTimeout(() => {
+        const saveBtn = document.getElementById('gf-save-button');
+        if (saveBtn) {
+          saveBtn.innerHTML = '💾 Salva';
+          saveBtn.style.background = 'linear-gradient(180deg,#7FFF7F,#6FEF6F)';
+        }
+      }, 100);
+    }
+  };
+
+  window.startEditGFPlace = function(placeId) {
+    console.log('[startEditGFPlace] Starting edit for:', placeId);
+
+    const places = GFPlacesDB.getAll();
+    const place = places.find(p => p.id === placeId);
+
+    if (!place) {
+      toast('❌ Posto non trovato');
+      return;
+    }
+
+    console.log('[startEditGFPlace] Found place:', place);
+
+    // Open panel with edit mode
+    window.openGFPlacesPanel(place, placeId);
   };
 
   window.saveGFPlace = function() {
@@ -9614,7 +10895,9 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     const areaField = document.getElementById('gf-place-area');
     const noteField = document.getElementById('gf-place-note');
     const ratingField = document.getElementById('gf-place-rating');
+    const safetyField = document.getElementById('gf-place-safety');
     const tagsField = document.getElementById('gf-place-tags');
+    const sourceUrlField = document.getElementById('gf-place-source-url');
 
     console.log('[saveGFPlace] Fields found:', {
       name: !!nameField,
@@ -9622,7 +10905,9 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
       area: !!areaField,
       note: !!noteField,
       rating: !!ratingField,
-      tags: !!tagsField
+      safety: !!safetyField,
+      tags: !!tagsField,
+      sourceUrl: !!sourceUrlField
     });
 
     const name = nameField?.value.trim();
@@ -9630,10 +10915,14 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     const area = areaField?.value.trim() || null;
     const note = noteField?.value.trim() || null;
     const rating = parseInt(ratingField?.value || '5');
+    const safety_level = safetyField?.value || 'YELLOW';
     const tags = (tagsField?.value || '')
       .split(',').map(t => t.trim()).filter(Boolean);
+    const source_url = sourceUrlField?.value.trim() || null;
+    const lat = document.getElementById('gf-place-lat')?.value || null;
+    const lng = document.getElementById('gf-place-lng')?.value || null;
 
-    console.log('[saveGFPlace] Values:', { name, city, area, note, rating, tags });
+    console.log('[saveGFPlace] Values:', { name, city, area, note, rating, safety_level, tags, source_url });
 
     // Validazione
     if (!name || !city) {
@@ -9643,11 +10932,21 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     }
 
     // Crea l'oggetto place
-    const place = { name, city, area, note, rating, tags };
+    const place = { name, city, area, note, rating, safety_level, tags, source_url, lat, lng };
     console.log('[saveGFPlace] Place object:', place);
 
-    // Salva nel database
-    const saved = GFPlacesDB.add(place);
+    // Salva o aggiorna nel database
+    let saved;
+    const isEdit = window.gfEditMode && window.gfEditMode.enabled;
+
+    if (isEdit) {
+      console.log('[saveGFPlace] Edit mode - updating place:', window.gfEditMode.placeId);
+      saved = GFPlacesDB.edit(window.gfEditMode.placeId, place);
+    } else {
+      console.log('[saveGFPlace] Add mode - creating new place');
+      saved = GFPlacesDB.add(place);
+    }
+
     console.log('[saveGFPlace] Saved to DB:', saved);
 
     if (!saved) {
@@ -9663,28 +10962,354 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
     if (noteField) noteField.value = '';
     if (ratingField) ratingField.value = '5';
     if (tagsField) tagsField.value = '';
+    document.getElementById('gf-place-lat').value = '';
+    document.getElementById('gf-place-lng').value = '';
+    document.getElementById('gf-place-source-url').value = '';
 
     console.log('[saveGFPlace] Form cleared');
 
     // Mostra successo
-    toast('✅ Posto aggiunto! Sincronizzazione in corso...');
+    const successMsg = isEdit ? '✅ Posto aggiornato!' : '✅ Posto aggiunto!';
+    toast(successMsg);
     console.log('[saveGFPlace] Success - reopening panel');
+
+    // Reset edit mode
+    window.gfEditMode.enabled = false;
+    window.gfEditMode.placeId = null;
 
     // Riapri il panel dopo un po'
     setTimeout(() => {
       console.log('[saveGFPlace] Reopening GFPlacesPanel');
       window.openGFPlacesPanel();
     }, 500);
+
+    // Refresh GF places layer on map
+    if (window.refreshGFPlacesLayer) {
+      window.refreshGFPlacesLayer();
+    }
+  };
+
+  // ===== INITIAL GF PLACES LAYER LOAD =====
+  // Load GF places on map when app initializes
+  setTimeout(() => {
+    if (window.refreshGFPlacesLayer) {
+      window.refreshGFPlacesLayer();
+      console.log('[App] GF Places layer initialized');
+    }
+  }, 1000);
+
+// ===== DEEP LINKING & SHARE TARGET SUPPORT =====
+  window.handleDeepLink = function() {
+    const params = new URLSearchParams(window.location.search);
+
+    // Check for Share Target API data (when shared from another app)
+    const sharedTitle = params.get('title');
+    const sharedText = params.get('text');
+    const sharedUrl = params.get('url');
+
+    if (sharedTitle || sharedText || sharedUrl) {
+      console.log('[handleDeepLink] Detected Share Target data:', { sharedTitle, sharedText, sharedUrl });
+
+      // Parse the shared data to extract restaurant info
+      const prefillData = window.parseSharedRestaurantData(sharedTitle, sharedText, sharedUrl);
+
+      // Clean URL bar (remove parameters)
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      console.log('[handleDeepLink] Opening GF Places panel from shared data:', prefillData);
+
+      // Show confirmation toast
+      if (window.toast && typeof window.toast === 'function') {
+        window.toast('📲 Ristorante importato da Find Me GF!');
+      } else {
+        console.log('[handleDeepLink] Toast function not available');
+      }
+
+      // Open panel after a brief delay
+      setTimeout(() => {
+        window.openGFPlacesPanel(prefillData);
+      }, 500);
+
+      return true;
+    }
+
+    // Check if any GF deep link parameters exist (custom deep links)
+    const gfName = params.get('gf_name');
+    const gfCity = params.get('gf_city');
+
+    if (gfName || gfCity) {
+      console.log('[handleDeepLink] Detected GF deep link parameters');
+
+      // Build prefill data
+      const prefillData = {
+        name: gfName || '',
+        city: gfCity || '',
+        area: params.get('gf_area') || '',
+        rating: params.get('gf_rating') || '5',
+        safety_level: params.get('gf_safety') || 'YELLOW',
+        note: params.get('gf_note') || '',
+        tags: params.get('gf_tags') ? params.get('gf_tags').split(',').map(t => t.trim()) : [],
+        source_url: params.get('gf_source_url') || ''
+      };
+
+      // Clean URL bar (remove parameters)
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      console.log('[handleDeepLink] Opening GF Places panel with prefilled data:', prefillData);
+
+      // Open panel after a brief delay to ensure page is ready
+      setTimeout(() => {
+        window.openGFPlacesPanel(prefillData);
+      }, 500);
+
+      return true;
+    }
+
+    return false;
+  };
+
+  // ===== GEOCODING SUPPORT (OpenStreetMap Nominatim) =====
+  window.geocodeRestaurant = async function(name, city, address) {
+    try {
+      console.log('[Geocode] Looking up:', { name, city, address });
+
+      // Build search query
+      const query = address ? address : `${name}, ${city}, Japan`;
+      console.log('[Geocode] Query:', query);
+
+      // Use Nominatim (OpenStreetMap) free geocoding service
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
+      );
+
+      if (!response.ok) {
+        console.warn('[Geocode] API error:', response.status);
+        return null;
+      }
+
+      const results = await response.json();
+      if (results.length === 0) {
+        console.warn('[Geocode] No results found for:', query);
+        return null;
+      }
+
+      const result = results[0];
+      const coords = {
+        lat: parseFloat(result.lat),
+        lng: parseFloat(result.lon),
+        address: result.display_name
+      };
+
+      console.log('[Geocode] Found:', coords);
+      return coords;
+    } catch (err) {
+      console.error('[Geocode] Error:', err);
+      return null;
+    }
+  };
+
+  // ===== PARSE SHARED RESTAURANT DATA =====
+  // Extract restaurant name and city from shared text/title
+  window.parseSharedRestaurantData = function(title, text, url) {
+    console.log('[parseSharedRestaurantData] Input:', { title, text, url });
+
+    let restaurantName = '';
+    let city = '';
+    let sourceUrl = url || '';
+    let notes = '';
+
+    // Strategy 1: If title looks like a restaurant name (from FMGF or similar)
+    if (title && title.length > 0) {
+      restaurantName = title.trim();
+    }
+
+    // Strategy 2: Extract from text/description
+    if (text && text.length > 0) {
+      const textLines = text.split('\n');
+
+      // First line often has the restaurant name
+      if (!restaurantName && textLines.length > 0) {
+        restaurantName = textLines[0].trim();
+      }
+
+      // Look for city patterns (Tokyo, Kyoto, Osaka, etc.)
+      const cityPatterns = /(?:Tokyo|Kyoto|Osaka|Kobe|Nagoya|Sapporo|Fukuoka|Hiroshima|Kobe|Nara|Kanazawa|Nagano|Sendai)/i;
+      const cityMatch = text.match(cityPatterns);
+      if (cityMatch) {
+        city = cityMatch[0];
+      }
+
+      // Store full text as notes
+      notes = text.substring(0, 200); // First 200 chars as notes
+    }
+
+    // Strategy 3: Extract restaurant name from URL (if it's a FMGF or similar URL)
+    if (!restaurantName && url && url.includes('findmeglutenfree')) {
+      // Try to extract from URL path
+      const nameMatch = url.match(/\/places\/([\w-]+)/i);
+      if (nameMatch) {
+        restaurantName = decodeURIComponent(nameMatch[1]).replace(/-/g, ' ');
+      }
+    }
+
+    const prefillData = {
+      name: restaurantName,
+      city: city,
+      area: '',
+      rating: '4',
+      safety_level: 'YELLOW',
+      note: notes,
+      tags: url && url.includes('findmeglutenfree') ? ['Da FMGF'] : [],
+      source_url: sourceUrl
+    };
+
+    console.log('[parseSharedRestaurantData] Result:', prefillData);
+    return prefillData;
+  };
+
+  window.geocodeGFPlace = async function() {
+    console.log('[geocodeGFPlace] Starting geocoding...');
+
+    const nameField = document.getElementById('gf-place-name');
+    const cityField = document.getElementById('gf-place-city');
+    const areaField = document.getElementById('gf-place-area');
+
+    const name = nameField?.value.trim();
+    const city = cityField?.value.trim();
+    const area = areaField?.value.trim();
+
+    if (!name || !city) {
+      toast('⚠️ Inserisci nome e città prima di geo-localizzare');
+      return;
+    }
+
+    toast('🔍 Geo-localizzando ' + name + '...');
+
+    const address = area ? `${name}, ${area}, ${city}, Japan` : `${name}, ${city}, Japan`;
+    const coords = await window.geocodeRestaurant(name, city, address);
+
+    if (coords) {
+      console.log('[geocodeGFPlace] Success:', coords);
+      document.getElementById('gf-place-lat').value = coords.lat;
+      document.getElementById('gf-place-lng').value = coords.lng;
+      toast(`✅ Trovato! ${coords.address.substring(0, 40)}...`);
+    } else {
+      toast('❌ Posizione non trovata. Riprova con un indirizzo più specifico.');
+    }
   };
 
   window.deleteGFPlace = function(id) {
     GFPlacesDB.delete(id);
     toast('✅ Posto eliminato');
+
+    // Refresh GF places layer on map
+    if (window.refreshGFPlacesLayer) {
+      window.refreshGFPlacesLayer();
+    }
   };
 
   window.editGFPlace = function(id) {
     toast('⚠️ Edit in progress — salva come nuovo e elimina vecchio');
   };
+
+  // ===== GF POI SUGGESTION PANEL =====
+  window.openGFSuggestionPanel = function() {
+    const suggestions = GFSuggestionsDB.getAll();
+
+    let suggestionsHtml = '';
+    if (suggestions.length === 0) {
+      suggestionsHtml = '<div style="text-align:center;padding:20px;color:var(--muted);">Nessun suggerimento inviato ancora</div>';
+    } else {
+      suggestionsHtml = suggestions.map(s => `
+        <div style="background:rgba(74,91,168,0.08);border:1px solid rgba(74,91,168,0.2);border-radius:12px;padding:12px;margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+            <div>
+              <div style="font-weight:700;color:var(--text);">${s.name}</div>
+              <div style="font-size:12px;color:var(--muted);">${s.city}${s.area ? ' · ' + s.area : ''}</div>
+            </div>
+            <div style="padding:3px 8px;border-radius:4px;font-size:12px;font-weight:700;${
+              s.status === 'approved' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F' :
+              s.status === 'rejected' ? 'background:rgba(255,107,107,0.2);color:#FF6B6B' :
+              'background:rgba(255,215,0,0.2);color:#FFD700'
+            };">${s.status === 'approved' ? '✅ Approvato' : s.status === 'rejected' ? '❌ Rifiutato' : '⏳ In attesa'}</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Inviato: ${new Date(s.submittedAt).toLocaleDateString('it-IT')}</div>
+          <button onclick="if(confirm('Elimina questo suggerimento?')) { GFSuggestionsDB.delete('${s.id}'); window.openGFSuggestionPanel(); }" style="width:100%;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">🗑️ Elimina</button>
+        </div>
+      `).join('');
+    }
+
+    const formHtml = `
+      <div style="background:rgba(100,200,100,0.12);backdrop-filter:blur(10px);border:1px solid rgba(100,200,100,0.3);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+        <h3 style="margin:0;font-size:13px;color:var(--text);font-weight:700;">✨ Suggerisci un Nuovo POI</h3>
+
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="gf-suggest-name" placeholder="Nome ristorante" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+          <input type="text" id="gf-suggest-city" placeholder="Città" style="flex:0.8;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+        </div>
+
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="gf-suggest-area" placeholder="Zona (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+          <input type="text" id="gf-suggest-address" placeholder="Indirizzo (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+        </div>
+
+        <input type="email" id="gf-suggest-email" placeholder="La tua email (opzionale)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+
+        <textarea id="gf-suggest-description" placeholder="Descrizione / Motivo (Eg: Menu 100% GF, staff attento...)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;min-height:70px;box-sizing:border-box;"></textarea>
+
+        <button onclick="window.submitGFSuggestion()" style="width:100%;padding:10px;background:linear-gradient(180deg,#64C864,#54B854);color:#000;border:none;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;box-sizing:border-box;">🚀 Invia Suggerimento</button>
+      </div>
+    `;
+
+    const html = `<div style="padding:16px;display:flex;flex-direction:column;gap:16px;">${formHtml}<div><h3 style="margin:0 0 12px;font-size:13px;color:var(--text);font-weight:700;">📋 I Tuoi Suggerimenti</h3>${suggestionsHtml}</div></div>`;
+    window.openSheet('💡 Suggerisci POI', html);
+  };
+
+  window.submitGFSuggestion = function() {
+    const name = document.getElementById('gf-suggest-name')?.value.trim();
+    const city = document.getElementById('gf-suggest-city')?.value.trim();
+    const area = document.getElementById('gf-suggest-area')?.value.trim() || null;
+    const address = document.getElementById('gf-suggest-address')?.value.trim() || null;
+    const email = document.getElementById('gf-suggest-email')?.value.trim() || null;
+    const description = document.getElementById('gf-suggest-description')?.value.trim() || null;
+
+    if (!name || !city) {
+      toast('❌ Nome e città sono obbligatori');
+      return;
+    }
+
+    const suggestion = {
+      name,
+      city,
+      area,
+      address,
+      email,
+      description
+    };
+
+    const saved = GFSuggestionsDB.add(suggestion);
+
+    if (saved) {
+      toast('🎉 Suggerimento inviato! Grazie per aver contribuito! 🙏');
+
+      // Pulisci il form
+      document.getElementById('gf-suggest-name').value = '';
+      document.getElementById('gf-suggest-city').value = '';
+      document.getElementById('gf-suggest-area').value = '';
+      document.getElementById('gf-suggest-address').value = '';
+      document.getElementById('gf-suggest-email').value = '';
+      document.getElementById('gf-suggest-description').value = '';
+
+      // Riapri panel
+      setTimeout(() => {
+        window.openGFSuggestionPanel();
+      }, 500);
+    } else {
+      toast('❌ Errore nel salvataggio');
+    }
+  };
+
+  // ===== FIND ME GLUTEN FREE INTEGRATION =====
 
   // Hook: broadcast GF places quando ricevi aggiornamenti P2P
   const originalOnMessage = window.onDataChannelMessage;
@@ -9715,18 +11340,34 @@ container.querySelectorAll('.poi-row').forEach(r => { r.onclick = () => openGFDe
 
   // ===================== PHASE 7: Service Worker Registration =====================
   // Service Worker è RICHIESTO per beforeinstallprompt su molti browser
+  console.log('[SW] 🔍 Registering Service Worker...');
+  console.log('[SW] Protocol:', window.location.protocol);
+  console.log('[SW] Host:', window.location.host);
+
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js')
       .then(reg => {
-        console.log('[SW] ✓ Service Worker Registered, scope:', reg.scope);
-        console.log('[SW] beforeinstallprompt dovrebbe ora funzionare');
+        console.log('[SW] ✅ Service Worker Registered successfully');
+        console.log('[SW] Scope:', reg.scope);
+        console.log('[SW] State:', reg.installing ? 'installing' : reg.waiting ? 'waiting' : reg.active ? 'active' : 'unknown');
+        // Rileva nuova versione pronta → avvisa l'utente (niente reload a sorpresa)
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener('statechange', () => {
+            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+              if (window.toast) window.toast('🔄 Nuova versione disponibile — ricarica la pagina per aggiornare');
+            }
+          });
+        });
       })
       .catch(err => {
-        console.warn('[SW] ✗ Service Worker Registration failed:', err.message);
-        console.warn('[SW] Installation prompt potrebbe non funzionare');
+        console.error('[SW] ❌ Service Worker Registration FAILED');
+        console.error('[SW] Error:', err.message);
+        console.warn('[SW] Installation prompt NON funzionerà senza SW');
       });
   } else {
-    console.warn('[SW] Service Worker API non supportata');
+    console.warn('[SW] ⚠️ Service Worker API non supportata');
   }
 
   // ===================== EXPOSE HELPERS TO GLOBAL SCOPE =====================
@@ -9768,7 +11409,6 @@ class GestureDetector {
     this.handleTouchStart = this.handleTouchStart.bind(this);
     this.handleTouchMove = this.handleTouchMove.bind(this);
     this.handleTouchEnd = this.handleTouchEnd.bind(this);
-    this.handleLongPress = this.handleLongPress.bind(this);
 
     this.init();
   }
@@ -9923,7 +11563,7 @@ window._refreshGroupView = function() {
 // ── Polling fallback: se il pannello è aperto, mantienilo sincronizzato ───────
 // Scatta ogni 5s — rete di sicurezza per il pannello gruppo in caso event-bus fallisca
 let _lastMemberCount = 0;
-setInterval(function() {
+let _groupPanelInterval = setInterval(function() {
   try {
     if (!window.state?.group?.roomId || !window.groupPanel) return;
     const groupWin = document.getElementById('y2kwin-gruppo');
@@ -9937,30 +11577,42 @@ setInterval(function() {
       if (body) {
         body.innerHTML = html;
         window.groupPanel.attachEvents();
-        console.log('[Group] polling: panel updated, members:', currentCount);
       }
     }
   } catch(e) {}
 }, 5000);
+// Cancel polling when group panel closes
+document.addEventListener('y2kwin_closed', (e) => {
+  if (e.detail?.id === 'y2kwin-gruppo' && _groupPanelInterval) {
+    clearInterval(_groupPanelInterval);
+    _groupPanelInterval = null;
+  }
+});
 
 // ── Polling fallback per chat: se il pannello è aperto, mantienilo sincronizzato ───────
 // Scatta ogni 5s — rete di sicurezza per la chat in caso event-bus fallisca
 let _lastChatMessageCount = 0;
-setInterval(function() {
+let _chatPanelInterval = setInterval(function() {
   try {
     if (!window.groupChat || !window.state?.group?.roomId) return;
     const chatHist = window.groupChat.getHistory?.();
     if (!chatHist) return;
     const chatWin = document.getElementById('y2kwin-groupchat');
-    if (!chatWin) return; // Panel not open
+    if (!chatWin) return;
     const currentCount = (chatHist.messages || []).length;
     if (currentCount !== _lastChatMessageCount) {
       _lastChatMessageCount = currentCount;
       window.groupChat.renderChatPanel?.();
-      console.log('[GroupChat] polling: chat updated, messages:', currentCount);
     }
   } catch(e) {}
 }, 5000);
+// Cancel polling when chat panel closes
+document.addEventListener('y2kwin_closed', (e) => {
+  if (e.detail?.id === 'y2kwin-groupchat' && _chatPanelInterval) {
+    clearInterval(_chatPanelInterval);
+    _chatPanelInterval = null;
+  }
+});
 
 /* ═══════════════════════════════════════════════════════════════
    PUSH NOTIFICATIONS — Initialize
@@ -10062,11 +11714,23 @@ navigator.serviceWorker?.addEventListener('message', (event) => {
   }
 });
 
+// ===== DEEP LINKING HANDLER =====
+// Check for deep link parameters from Find Me Gluten Free
+console.log('[DeepLink] Checking for deep link parameters...');
+window.handleDeepLink();
+
+// ===== GROUP SYNC INIT =====
+if (window.GROUP_SYNC) {
+  console.log('[App] Initializing group sync...');
+  window.GROUP_SYNC.init();
+}
+
 }); // close DOMContentLoaded
-</script>
-<script src="./js/y2k-windows.js"></script>
 
-<!-- Vercel Analytics - Performance Monitoring -->
-<script defer src="https://vercel-analytics.com/script.js"></script>
-
-</body>
+// Re-render della vista attiva quando cambia la lingua (i18n)
+document.addEventListener('langchange', () => {
+  try {
+    const active = document.querySelector('nav.bottom button.active');
+    if (active && active.dataset.view && active.dataset.view !== 'map') active.click();
+  } catch (e) {}
+});

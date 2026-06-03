@@ -27,8 +27,29 @@ console.log('[AI] Loading...');
   window.VisionImageAnalyzer = {
     model: null,
 
+    // Lazy-load TensorFlow.js + MobileNet (~1.5MB) only on first use.
+    _ensureLibs() {
+      if (window._visionLibsPromise) return window._visionLibsPromise;
+      if (typeof mobilenet !== 'undefined') return (window._visionLibsPromise = Promise.resolve());
+      const load = (src) => new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = src; s.async = true;
+        s.onload = res;
+        s.onerror = () => rej(new Error('Failed to load ' + src));
+        document.head.appendChild(s);
+      });
+      window._visionLibsPromise = (async () => {
+        if (typeof tf === 'undefined') {
+          await load('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.12.0/dist/tf.min.js');
+        }
+        await load('https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js');
+      })();
+      return window._visionLibsPromise;
+    },
+
     async loadModel() {
       if (this.model) return this.model;
+      await this._ensureLibs();
       if (typeof mobilenet === 'undefined') {
         throw new Error('Vision libraries are not loaded');
       }

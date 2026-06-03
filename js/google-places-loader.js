@@ -8,13 +8,21 @@
  * - Auto-expands radius if needed
  */
 
-const RADIUS_TIERS = [1000, 2000, 5000, 10000, 20000, 50000]; // meters: 1km, 2km, 5km, 10km, 20km, 50km
+// 3 tiers instead of 6 — cuts Nearby Search calls by ~50%
+const RADIUS_TIERS = [1000, 5000, 20000]; // meters: 1km, 5km, 20km
 const GPS_UPDATE_INTERVAL = 30000; // Check GPS every 30s
 const LOAD_TIMEOUT = 10000; // 10s timeout per request
 
 let currentGPS = null;
 let loadedRadii = new Set();
 let loadInProgress = new Set();
+
+// Debounce caricamento POI su pan/zoom mappa: coalesce gli eventi moveend ravvicinati
+let _poiLoadDebounce = null;
+function debouncedLoadNearbyPOIs(lat, lng, delay = 500) {
+  clearTimeout(_poiLoadDebounce);
+  _poiLoadDebounce = setTimeout(() => loadNearbyPOIs(lat, lng), delay);
+}
 
 // Wait for GPS coordinates to be available
 async function waitForGPS(maxWaitMs = 25000, pollIntervalMs = 500) {
@@ -85,12 +93,12 @@ async function initGooglePlacesLoader() {
           const newLat = center[1];
           const newLng = center[0];
 
-          // Load POIs from new map center if moved significantly (300m threshold for responsive updates)
+          // Load POIs from new map center if moved significantly (1500m threshold to reduce API calls)
           const distance = currentGPS ? getDistance(currentGPS.lat, currentGPS.lng, newLat, newLng) : Infinity;
-          if (distance > 300) {
+          if (distance > 1500) {
             currentGPS = { lat: newLat, lng: newLng };
             console.log(`[GooglePlacesLoader] Map moved ${distance.toFixed(0)}m, loading POIs from: ${newLat.toFixed(4)}, ${newLng.toFixed(4)}`);
-            loadNearbyPOIs(newLat, newLng);
+            debouncedLoadNearbyPOIs(newLat, newLng);
           } else {
             console.log(`[GooglePlacesLoader] Map moved ${distance.toFixed(0)}m (threshold 300m) - skipped load`);
           }
@@ -114,9 +122,9 @@ async function initGooglePlacesLoader() {
             const newLat = center[1];
             const newLng = center[0];
             const distance = currentGPS ? getDistance(currentGPS.lat, currentGPS.lng, newLat, newLng) : Infinity;
-            if (distance > 300) {
+            if (distance > 1500) {
               currentGPS = { lat: newLat, lng: newLng };
-              loadNearbyPOIs(newLat, newLng);
+              debouncedLoadNearbyPOIs(newLat, newLng);
             }
           } catch (err) {
             console.error('[GooglePlacesLoader] Error in moveend handler (retry):', err);
@@ -250,73 +258,91 @@ async function fetchGooglePlacesPOIs(lat, lng, radiusM) {
 }
 
 // Map Google Places types to app categories
+// Tipi Google generici/amministrativi: non determinano la categoria (si cerca un tipo più specifico)
+const GENERIC_GOOGLE_TYPES = new Set([
+  'point_of_interest', 'establishment', 'premise', 'subpremise', 'geocode',
+  'political', 'plus_code', 'route', 'street_address', 'intersection',
+  'locality', 'sublocality', 'postal_code', 'food', 'store', 'health'
+]);
+
+// Mappa COMPLETA tipi Google Places (legacy + nuova API) → categorie specifiche dell'app
+// (le chiavi target esistono in CAT_EMOJI/CAT_COLORS, così ogni POI ha marker dedicato)
+const GOOGLE_TYPE_MAP = {
+  // ── Cibo & ristorazione ───────────────────────────────
+  restaurant: 'restaurant', japanese_restaurant: 'restaurant', sushi_restaurant: 'restaurant',
+  ramen_restaurant: 'restaurant', tempura_restaurant: 'restaurant', italian_restaurant: 'restaurant',
+  chinese_restaurant: 'restaurant', french_restaurant: 'restaurant', indian_restaurant: 'restaurant',
+  korean_restaurant: 'restaurant', thai_restaurant: 'restaurant', seafood_restaurant: 'restaurant',
+  steak_house: 'restaurant', pizza_restaurant: 'restaurant', hamburger_restaurant: 'restaurant',
+  fast_food_restaurant: 'restaurant', vegetarian_restaurant: 'restaurant', vegan_restaurant: 'restaurant',
+  barbecue_restaurant: 'restaurant', breakfast_restaurant: 'restaurant', brunch_restaurant: 'restaurant',
+  meal_delivery: 'meal_delivery', meal_takeaway: 'meal_takeaway',
+  cafe: 'cafe', coffee_shop: 'cafe', cat_cafe: 'cafe', tea_house: 'cafe', ice_cream_shop: 'cafe', dessert_shop: 'cafe',
+  bakery: 'bakery', bar: 'bar', pub: 'bar', wine_bar: 'bar', night_club: 'bar', liquor_store: 'bar', drinking_bar: 'bar',
+  // ── Culto ─────────────────────────────────────────────
+  shinto_shrine: 'shrine', shrine: 'shrine',
+  buddhist_temple: 'temple', hindu_temple: 'temple', temple: 'temple',
+  church: 'church', mosque: 'mosque', synagogue: 'synagogue', place_of_worship: 'temple',
+  // ── Cultura & landmark ───────────────────────────────
+  museum: 'museum', art_gallery: 'gallery', library: 'library',
+  historical_landmark: 'historical_landmark', historical_place: 'historical_landmark',
+  monument: 'monument', cultural_landmark: 'culture', cultural_institution: 'culture',
+  tourist_attraction: 'landmark', landmark: 'landmark', observation_deck: 'viewpoint',
+  performing_arts_theater: 'theatre', concert_hall: 'theatre', movie_theater: 'movie_theater', casino: 'entertainment',
+  // ── Natura & parchi ──────────────────────────────────
+  park: 'park', national_park: 'park', state_park: 'park', dog_park: 'park',
+  garden: 'garden', botanical_garden: 'botanical_garden', zoo: 'zoo', aquarium: 'aquarium',
+  amusement_park: 'amusement_park', theme_park: 'amusement_park', water_park: 'amusement_park',
+  natural_feature: 'natural_feature', hiking_area: 'hiking_area', beach: 'natural_feature',
+  scenic_spot: 'scenic_spot', viewpoint: 'viewpoint', marina: 'water',
+  // ── Shopping ─────────────────────────────────────────
+  shopping_mall: 'shopping_mall', department_store: 'department_store', supermarket: 'supermarket',
+  grocery_store: 'supermarket', convenience_store: 'convenience_store', clothing_store: 'clothing_store',
+  shoe_store: 'shoe_store', book_store: 'book_store', jewelry_store: 'jewelry_store',
+  electronics_store: 'electronics_store', cell_phone_store: 'electronics_store', furniture_store: 'furniture_store',
+  home_goods_store: 'home_goods_store', hardware_store: 'home_goods_store', florist: 'florist',
+  toy_store: 'toy_store', pet_store: 'shop', sporting_goods_store: 'shop', gift_shop: 'shop',
+  market: 'market', pharmacy: 'pharmacy', drugstore: 'pharmacy', store: 'shop', shop: 'shop',
+  // ── Alloggio ─────────────────────────────────────────
+  hotel: 'hotel', lodging: 'hotel', inn: 'hotel', motel: 'hotel', resort_hotel: 'hotel',
+  hostel: 'hostel', guest_house: 'guest_house', bed_and_breakfast: 'guest_house',
+  campground: 'campground', rv_park: 'campground', apartment_building: 'apartment_building', apartment_complex: 'apartment_building',
+  // ── Benessere & salute ───────────────────────────────
+  spa: 'spa', public_bath: 'onsen', sauna: 'onsen', gym: 'gym', fitness_center: 'gym', yoga_studio: 'yoga_studio',
+  hospital: 'hospital', clinic: 'clinic', doctor: 'doctor', dentist: 'dentist',
+  physiotherapist: 'physiotherapist', beauty_salon: 'beauty_salon', hair_care: 'hair_care', hair_salon: 'hair_care', massage: 'massage',
+  // ── Trasporti ────────────────────────────────────────
+  train_station: 'train_station', subway_station: 'train_station', light_rail_station: 'train_station',
+  transit_station: 'station', bus_station: 'bus_station', bus_stop: 'bus_station',
+  airport: 'airport', international_airport: 'airport', parking: 'parking', parking_lot: 'parking',
+  taxi_stand: 'taxi_stand', car_rental: 'car_rental', gas_station: 'gas_station', ferry_terminal: 'transport',
+  // ── Servizi ──────────────────────────────────────────
+  bank: 'bank', atm: 'atm', post_office: 'post_office', real_estate_agency: 'real_estate_agency',
+  travel_agency: 'travel_agency', insurance_agency: 'insurance_agency', accounting: 'accounting',
+  lawyer: 'attorney', attorney: 'attorney', car_repair: 'car_repair', car_wash: 'car_wash',
+  laundry: 'laundry', dry_cleaner: 'dry_cleaner', locksmith: 'locksmith', electrician: 'electrician',
+  plumber: 'plumber', police: 'services', fire_station: 'services', city_hall: 'services',
+  local_government_office: 'services', embassy: 'services', courthouse: 'services', internet_cafe: 'internet_cafe',
+  // ── Istruzione / sport / intrattenimento ─────────────
+  school: 'school', primary_school: 'school', secondary_school: 'school', university: 'school',
+  stadium: 'sports', sports_complex: 'sports', sports_club: 'sports', bowling_alley: 'entertainment',
+  // ── Quartieri ────────────────────────────────────────
+  neighborhood: 'neighborhood'
+};
+
 function mapGoogleTypesToCategory(types) {
-  if (!types || !Array.isArray(types)) return 'poi';
+  if (!types || !Array.isArray(types) || !types.length) return 'poi';
 
-  const typeMap = {
-    // FOOD & DINING (🍜)
-    'restaurant': 'food', 'cafe': 'food', 'bakery': 'food', 'bar': 'food',
-    'night_club': 'food', 'meal_delivery': 'food', 'meal_takeaway': 'food',
-    'food': 'food', 'drinking_bar': 'food', 'liquor_store': 'food',
-    'ramen_restaurant': 'food', 'sushi_restaurant': 'food', 'tempura_restaurant': 'food',
-
-    // ACCOMMODATION (🏨)
-    'hotel': 'accommodation', 'lodging': 'accommodation', 'hostel': 'accommodation',
-    'apartment_building': 'accommodation', 'guest_house': 'accommodation',
-    'campground': 'accommodation', 'rv_park': 'accommodation', 'inn': 'accommodation',
-
-    // CULTURE & LANDMARKS - TEMPLES/SHRINES (⛩️🏯)
-    'temple': 'culture', 'buddhist_temple': 'culture', 'hindu_temple': 'culture',
-    'mosque': 'culture', 'church': 'culture', 'synagogue': 'culture',
-    'shrine': 'culture', 'place_of_worship': 'culture',
-
-    // CULTURE & LANDMARKS - ART/HISTORY/MUSEUMS (🖼️📚)
-    'museum': 'culture', 'library': 'culture', 'art_gallery': 'culture',
-    'historical_landmark': 'culture', 'tourist_attraction': 'culture', 'landmark': 'culture',
-    'cultural_institution': 'culture', 'monument': 'culture',
-
-    // SHOPPING (🛍️)
-    'shopping_mall': 'shopping', 'store': 'shopping', 'supermarket': 'shopping',
-    'clothing_store': 'shopping', 'shoe_store': 'shopping', 'pharmacy': 'shopping',
-    'department_store': 'shopping', 'home_goods_store': 'shopping', 'jewelry_store': 'shopping',
-    'book_store': 'shopping', 'electronics_store': 'shopping', 'furniture_store': 'shopping',
-    'convenience_store': 'shopping', 'florist': 'shopping', 'toy_store': 'shopping',
-
-    // NATURE & PARKS (🌿🌳)
-    'park': 'nature', 'natural_feature': 'nature', 'amusement_park': 'nature',
-    'zoo': 'nature', 'botanical_garden': 'nature', 'aquarium': 'nature',
-    'hiking_area': 'nature', 'scenic_spot': 'nature',
-
-    // WELLNESS & HEALTH (🧘)
-    'spa': 'wellness', 'gym': 'wellness', 'health': 'wellness', 'dentist': 'wellness',
-    'hospital': 'wellness', 'doctor': 'wellness', 'physiotherapist': 'wellness',
-    'beauty_salon': 'wellness', 'hair_care': 'wellness', 'clinic': 'wellness',
-    'massage': 'wellness', 'yoga_studio': 'wellness',
-
-    // SERVICES - BUSINESS/COMMERCIAL (🏢🔧)
-    'accounting': 'services', 'attorney': 'services', 'electrician': 'services',
-    'plumber': 'services', 'car_repair': 'services', 'car_wash': 'services',
-    'laundry': 'services', 'dry_cleaner': 'services', 'locksmith': 'services',
-    'real_estate_agency': 'services', 'insurance_agency': 'services', 'travel_agency': 'services',
-    'post_office': 'services', 'bank': 'services', 'atm': 'services',
-    'fire_station': 'services', 'police': 'services', 'movie_rental': 'services',
-    'internet_cafe': 'services', 'business_center': 'services',
-
-    // TRANSPORT (🚆🚕)
-    'train_station': 'transport', 'bus_station': 'transport', 'airport': 'transport',
-    'parking': 'transport', 'car_rental': 'transport', 'taxi_stand': 'transport',
-    'bike_rental': 'transport', 'gas_station': 'transport',
-
-    // GENERIC FALLBACK (📍)
-    'establishment': 'poi',
-    'point_of_interest': 'poi'  // Changed from 'culture' to 'poi'
-  };
-
+  // 1ª passata: primo tipo SPECIFICO mappato (salta i generici)
   for (const type of types) {
-    if (typeMap[type]) return typeMap[type];
+    if (GENERIC_GOOGLE_TYPES.has(type)) continue;
+    if (GOOGLE_TYPE_MAP[type]) return GOOGLE_TYPE_MAP[type];
   }
+  // 2ª passata: tipi generici "morbidi" che comunque danno un'idea
+  if (types.includes('food')) return 'restaurant';
+  if (types.includes('store')) return 'shop';
+  if (types.includes('health')) return 'wellness';
 
-  // Log unmapped types for debugging
   console.warn(`[GooglePlacesLoader] Unmapped types: ${types.join(', ')}`);
   return 'poi';
 }
@@ -398,8 +424,12 @@ function transformGooglePlacesPOIs(pois) {
         return null;
       }
 
-      // Se è già trasformato, restituiscilo così com'è
+      // Se è già trasformato, restituiscilo — ri-categorizzando i POI legacy
+      // finiti in 'poi' con la mappa aggiornata (es. cache IndexedDB pre-fix).
       if (poi.lat !== undefined && poi.lng !== undefined && poi.id) {
+        if ((!poi.cat || poi.cat === 'poi') && Array.isArray(poi.types) && poi.types.length) {
+          poi.cat = mapGoogleTypesToCategory(poi.types);
+        }
         return poi;
       }
 

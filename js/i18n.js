@@ -1,0 +1,195 @@
+// ============================================================================
+// I18N.JS — Internationalization (it / en / ja)
+// Caricato PRIMA di app-core.js. Espone window.t() e window.I18N.
+// Fallback all'italiano se una chiave manca → nessuna stringa rotta.
+// ============================================================================
+(function () {
+  'use strict';
+
+  const DICT = {
+    it: {
+      'header.brand': '🌸 SafeEats',
+      'nav.map': 'Mappa', 'nav.itinerary': 'Itinerario', 'nav.gf': 'GF Guide', 'nav.menu': 'Menu',
+      'banner.offline': '📶 Offline — dati in cache',
+      'weather.more': 'altro', 'weather.title': 'Previsioni Meteo', 'weather.cached': '📍 Dati in cache',
+      'error.mapTitle': 'Impossibile caricare la mappa',
+      'error.mapMsg': 'Lo script della mappa non si è caricato. Controlla la connessione e ricarica. Se usi un ad-blocker, disabilitalo per questa pagina.',
+      'error.reload': '🔄 Ricarica',
+      'sheet.details': 'Dettagli',
+      'menu.title': '⚙️ Menu',
+      'menu.bookings': 'Prenota', 'menu.shopping': 'Shopping', 'menu.group': 'Gruppo',
+      'menu.budget': 'Budget', 'menu.gallery': 'Galleria', 'menu.groqai': 'Groq AI',
+      'menu.suggest': 'Suggerisci Posti', 'menu.createTrip': 'Voglio creare il mio viaggio', 'menu.sos': 'SOS',
+      'common.close': 'Chiudi', 'common.cancel': 'Annulla', 'common.save': 'Salva',
+      'common.next': 'Avanti →', 'common.back': '← Indietro', 'common.delete': 'Elimina',
+      'common.ok': 'OK', 'common.add': 'Aggiungi', 'common.share': 'Condividi',
+      'common.remove': 'Rimuovi', 'common.edit': 'Modifica', 'common.search': 'Cerca',
+      'poi.open': '🟢 Aperto', 'poi.closed': '🔴 Chiuso', 'poi.hours': 'Orari di apertura',
+      'poi.address': 'INDIRIZZO', 'poi.gfConfirmed': 'GF Confermato', 'poi.gfLikely': 'GF Probabile',
+      'poi.features': 'CARATTERISTICHE', 'poi.veg': '🥗 Vegetariano', 'poi.dinner': '🌙 Cena',
+      'poi.lunch': '☕ Pranzo', 'poi.alcohol': '🍺 Alcolici', 'poi.takeaway': '📦 Takeaway',
+      'poi.reservable': '📋 Prenotabile', 'poi.suggestedTime': '⏱️ Tempo consigliato',
+      'poi.entrance': '🎟️ Ingresso', 'poi.paidEntry': 'Ingresso a pagamento', 'poi.addToItinerary': '📅 Aggiungi all\'itinerario', 'poi.noPhoto': 'Nessuna foto disponibile',
+      'cat.restaurant': 'Ristorante', 'cat.food': 'Cibo', 'cat.cafe': 'Caffè', 'cat.bar': 'Bar',
+      'cat.takeaway': 'Asporto', 'cat.bakery': 'Panetteria', 'cat.izakaya': 'Izakaya', 'cat.museum': 'Museo',
+      'cat.shrine': 'Santuario', 'cat.temple': 'Tempio', 'cat.church': 'Chiesa', 'cat.landmark': 'Punto di interesse',
+      'cat.attraction': 'Attrazione turistica', 'cat.postoffice': 'Ufficio postale', 'cat.services': 'Servizi',
+      'common.gotIt': 'Ho capito', 'itin.addStop': '➕ Aggiungi una tappa',
+      'itin.emptyTitle': '📭 Itinerario vuoto', 'itin.noItinShare': 'Nessun itinerario da condividere',
+      'budget.title': '💰 Budget Viaggio', 'budget.sheetTitle': '💰 Budget', 'budget.spentVs': 'Speso vs Budget',
+      'budget.spent': 'Speso', 'budget.remaining': 'Rimanente', 'budget.setTitle': 'Imposta il tuo Budget di Viaggio',
+      'budget.setDesc': 'Definisci quanto vuoi spendere in Giappone', 'budget.total': 'Budget Totale',
+      'budget.daysLeft': 'Giorni Rimanenti', 'budget.byCategory': 'Spesa per Categoria', 'budget.budgetLabel': 'Budget',
+      'budget.addExpense': '➕ Aggiungi Spesa', 'budget.category': 'Categoria', 'budget.amount': 'Importo',
+      'budget.descOpt': 'Descrizione (opzionale)', 'budget.saveExpense': 'Salva Spesa', 'budget.recent': '📝 Ultime Spese',
+      'budget.noExpenses': 'Nessuna spesa registrata',
+      'gf.searchByName': 'Cerca per nome...', 'gf.loadingRestaurants': '⏳ Caricamento ristoranti...',
+      'group.members': 'Membri', 'group.gpsSharing': 'Condivisione GPS', 'group.room': 'Stanza',
+      'common.online': 'Online', 'common.offline': 'Offline',
+      'wizard.step1': '📅 STEP 1/4 — Scegli il giorno', 'wizard.step2': "🕐 STEP 2/4 — Scegli l'orario",
+      'wizard.step3': '📋 STEP 3/4 — Dettagli (opzionali)', 'wizard.step4': '✅ STEP 4/4 — Riepilogo',
+      'wizard.day': '📅 Scegli il giorno', 'wizard.time': "🕐 Scegli l'orario", 'wizard.details': '📋 Dettagli',
+      'wizard.summary': '✅ Riepilogo', 'wizard.duration': '⏱️ Durata (minuti)',
+      'lang.label': 'Lingua'
+    },
+    en: {
+      'header.brand': '🌸 SafeEats',
+      'nav.map': 'Map', 'nav.itinerary': 'Itinerary', 'nav.gf': 'GF Guide', 'nav.menu': 'Menu',
+      'banner.offline': '📶 Offline — cached data',
+      'weather.more': 'more', 'weather.title': 'Weather Forecast', 'weather.cached': '📍 Cached data',
+      'error.mapTitle': 'Could not load the map',
+      'error.mapMsg': 'The map script failed to load. Check your connection and reload. If you use an ad-blocker, disable it for this page.',
+      'error.reload': '🔄 Reload',
+      'sheet.details': 'Details',
+      'menu.title': '⚙️ Menu',
+      'menu.bookings': 'Bookings', 'menu.shopping': 'Shopping', 'menu.group': 'Group',
+      'menu.budget': 'Budget', 'menu.gallery': 'Gallery', 'menu.groqai': 'Groq AI',
+      'menu.suggest': 'Suggest places', 'menu.createTrip': 'Create my trip', 'menu.sos': 'SOS',
+      'common.close': 'Close', 'common.cancel': 'Cancel', 'common.save': 'Save',
+      'common.next': 'Next →', 'common.back': '← Back', 'common.delete': 'Delete',
+      'common.ok': 'OK', 'common.add': 'Add', 'common.share': 'Share',
+      'common.remove': 'Remove', 'common.edit': 'Edit', 'common.search': 'Search',
+      'poi.open': '🟢 Open', 'poi.closed': '🔴 Closed', 'poi.hours': 'Opening hours',
+      'poi.address': 'ADDRESS', 'poi.gfConfirmed': 'GF Confirmed', 'poi.gfLikely': 'GF Likely',
+      'poi.features': 'FEATURES', 'poi.veg': '🥗 Vegetarian', 'poi.dinner': '🌙 Dinner',
+      'poi.lunch': '☕ Lunch', 'poi.alcohol': '🍺 Alcohol', 'poi.takeaway': '📦 Takeaway',
+      'poi.reservable': '📋 Reservable', 'poi.suggestedTime': '⏱️ Suggested time',
+      'poi.entrance': '🎟️ Entrance', 'poi.paidEntry': 'Paid entry', 'poi.addToItinerary': '📅 Add to itinerary', 'poi.noPhoto': 'No photo available',
+      'cat.restaurant': 'Restaurant', 'cat.food': 'Food', 'cat.cafe': 'Café', 'cat.bar': 'Bar',
+      'cat.takeaway': 'Takeaway', 'cat.bakery': 'Bakery', 'cat.izakaya': 'Izakaya', 'cat.museum': 'Museum',
+      'cat.shrine': 'Shrine', 'cat.temple': 'Temple', 'cat.church': 'Church', 'cat.landmark': 'Landmark',
+      'cat.attraction': 'Tourist attraction', 'cat.postoffice': 'Post office', 'cat.services': 'Services',
+      'common.gotIt': 'Got it', 'itin.addStop': '➕ Add a stop',
+      'itin.emptyTitle': '📭 Empty itinerary', 'itin.noItinShare': 'No itinerary to share',
+      'budget.title': '💰 Trip Budget', 'budget.sheetTitle': '💰 Budget', 'budget.spentVs': 'Spent vs Budget',
+      'budget.spent': 'Spent', 'budget.remaining': 'Remaining', 'budget.setTitle': 'Set your trip budget',
+      'budget.setDesc': 'Define how much to spend in Japan', 'budget.total': 'Total Budget',
+      'budget.daysLeft': 'Days Remaining', 'budget.byCategory': 'Spending by Category', 'budget.budgetLabel': 'Budget',
+      'budget.addExpense': '➕ Add Expense', 'budget.category': 'Category', 'budget.amount': 'Amount',
+      'budget.descOpt': 'Description (optional)', 'budget.saveExpense': 'Save Expense', 'budget.recent': '📝 Recent Expenses',
+      'budget.noExpenses': 'No expenses recorded',
+      'gf.searchByName': 'Search by name...', 'gf.loadingRestaurants': '⏳ Loading restaurants...',
+      'group.members': 'Members', 'group.gpsSharing': 'GPS sharing', 'group.room': 'Room',
+      'common.online': 'Online', 'common.offline': 'Offline',
+      'wizard.step1': '📅 STEP 1/4 — Choose the day', 'wizard.step2': '🕐 STEP 2/4 — Choose the time',
+      'wizard.step3': '📋 STEP 3/4 — Details (optional)', 'wizard.step4': '✅ STEP 4/4 — Summary',
+      'wizard.day': '📅 Choose the day', 'wizard.time': '🕐 Choose the time', 'wizard.details': '📋 Details',
+      'wizard.summary': '✅ Summary', 'wizard.duration': '⏱️ Duration (minutes)',
+      'lang.label': 'Language'
+    },
+    ja: {
+      'header.brand': '🌸 SafeEats',
+      'nav.map': '地図', 'nav.itinerary': '旅程', 'nav.gf': 'GFガイド', 'nav.menu': 'メニュー',
+      'banner.offline': '📶 オフライン — キャッシュ',
+      'weather.more': '詳細', 'weather.title': '天気予報', 'weather.cached': '📍 キャッシュ',
+      'error.mapTitle': '地図を読み込めません',
+      'error.mapMsg': '地図スクリプトの読み込みに失敗しました。接続を確認して再読み込みしてください。広告ブロッカーを使用している場合は、このページで無効にしてください。',
+      'error.reload': '🔄 再読み込み',
+      'sheet.details': '詳細',
+      'menu.title': '⚙️ メニュー',
+      'menu.bookings': '予約', 'menu.shopping': 'ショッピング', 'menu.group': 'グループ',
+      'menu.budget': '予算', 'menu.gallery': 'ギャラリー', 'menu.groqai': 'Groq AI',
+      'menu.suggest': '場所を提案', 'menu.createTrip': '旅行を作成する', 'menu.sos': 'SOS',
+      'common.close': '閉じる', 'common.cancel': 'キャンセル', 'common.save': '保存',
+      'common.next': '次へ →', 'common.back': '← 戻る', 'common.delete': '削除',
+      'common.ok': 'OK', 'common.add': '追加', 'common.share': '共有',
+      'common.remove': '削除', 'common.edit': '編集', 'common.search': '検索',
+      'poi.open': '🟢 営業中', 'poi.closed': '🔴 閉店', 'poi.hours': '営業時間',
+      'poi.address': '住所', 'poi.gfConfirmed': 'GF確認済み', 'poi.gfLikely': 'GFの可能性',
+      'poi.features': '特徴', 'poi.veg': '🥗 ベジタリアン', 'poi.dinner': '🌙 ディナー',
+      'poi.lunch': '☕ ランチ', 'poi.alcohol': '🍺 アルコール', 'poi.takeaway': '📦 テイクアウト',
+      'poi.reservable': '📋 予約可', 'poi.suggestedTime': '⏱️ 推奨滞在時間',
+      'poi.entrance': '🎟️ 入場', 'poi.paidEntry': '有料入場', 'poi.addToItinerary': '📅 旅程に追加', 'poi.noPhoto': '写真がありません',
+      'cat.restaurant': 'レストラン', 'cat.food': '料理', 'cat.cafe': 'カフェ', 'cat.bar': 'バー',
+      'cat.takeaway': 'テイクアウト', 'cat.bakery': 'ベーカリー', 'cat.izakaya': '居酒屋', 'cat.museum': '美術館',
+      'cat.shrine': '神社', 'cat.temple': '寺', 'cat.church': '教会', 'cat.landmark': '名所',
+      'cat.attraction': '観光名所', 'cat.postoffice': '郵便局', 'cat.services': 'サービス',
+      'common.gotIt': '了解', 'itin.addStop': '➕ 立ち寄り先を追加',
+      'itin.emptyTitle': '📭 旅程が空です', 'itin.noItinShare': '共有する旅程がありません',
+      'budget.title': '💰 旅行予算', 'budget.sheetTitle': '💰 予算', 'budget.spentVs': '支出 / 予算',
+      'budget.spent': '支出', 'budget.remaining': '残り', 'budget.setTitle': '旅行予算を設定',
+      'budget.setDesc': '日本での予算を決めましょう', 'budget.total': '総予算',
+      'budget.daysLeft': '残り日数', 'budget.byCategory': 'カテゴリ別支出', 'budget.budgetLabel': '予算',
+      'budget.addExpense': '➕ 支出を追加', 'budget.category': 'カテゴリ', 'budget.amount': '金額',
+      'budget.descOpt': '説明（任意）', 'budget.saveExpense': '支出を保存', 'budget.recent': '📝 最近の支出',
+      'budget.noExpenses': '支出の記録なし',
+      'gf.searchByName': '名前で検索...', 'gf.loadingRestaurants': '⏳ レストランを読み込み中...',
+      'group.members': 'メンバー', 'group.gpsSharing': 'GPS共有', 'group.room': 'ルーム',
+      'common.online': 'オンライン', 'common.offline': 'オフライン',
+      'wizard.step1': '📅 STEP 1/4 — 日を選択', 'wizard.step2': '🕐 STEP 2/4 — 時間を選択',
+      'wizard.step3': '📋 STEP 3/4 — 詳細（任意）', 'wizard.step4': '✅ STEP 4/4 — 概要',
+      'wizard.day': '📅 日を選択', 'wizard.time': '🕐 時間を選択', 'wizard.details': '📋 詳細',
+      'wizard.summary': '✅ 概要', 'wizard.duration': '⏱️ 所要時間（分）',
+      'lang.label': '言語'
+    }
+  };
+
+  const SUPPORTED = ['it', 'en', 'ja'];
+  let lang = 'it';
+  try {
+    const saved = localStorage.getItem('lang');
+    if (saved && SUPPORTED.includes(saved)) lang = saved;
+    else {
+      const nav = (navigator.language || 'it').slice(0, 2);
+      if (SUPPORTED.includes(nav)) lang = nav;
+    }
+  } catch (e) {}
+
+  function t(key, fallback) {
+    return (DICT[lang] && DICT[lang][key]) || DICT.it[key] || fallback || key;
+  }
+
+  function applyStatic(root) {
+    const scope = root || document;
+    scope.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    scope.querySelectorAll('[data-i18n-ph]').forEach(el => { el.setAttribute('placeholder', t(el.dataset.i18nPh)); });
+    scope.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+    scope.querySelectorAll('[data-i18n-title]').forEach(el => { el.setAttribute('title', t(el.dataset.i18nTitle)); });
+  }
+
+  function setLang(next) {
+    if (!SUPPORTED.includes(next)) return;
+    lang = next;
+    try { localStorage.setItem('lang', next); } catch (e) {}
+    document.documentElement.lang = next;
+    applyStatic();
+    // notifica i moduli dinamici (per re-render)
+    document.dispatchEvent(new CustomEvent('langchange', { detail: { lang: next } }));
+  }
+
+  window.I18N = { t, setLang, applyStatic, get lang() { return lang; }, supported: SUPPORTED };
+  window.t = t;
+
+  // applica alla shell statica + collega lo switcher
+  function init() {
+    document.documentElement.lang = lang;
+    applyStatic();
+    const sw = document.getElementById('lang-switcher');
+    if (sw) {
+      sw.value = lang;
+      sw.addEventListener('change', e => setLang(e.target.value));
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();

@@ -124,8 +124,8 @@ const GROUP_SYNC = {
   }
 };
 
-// Export/Import handlers
-window.GROUP_SYNC.exportItinerary = function() {
+// Export/Import handlers (usa il const locale: window.GROUP_SYNC è assegnato sotto)
+GROUP_SYNC.exportItinerary = function() {
   const data = {
     version: 1,
     roomId: window.state?.group?.roomId,
@@ -144,7 +144,7 @@ window.GROUP_SYNC.exportItinerary = function() {
   if (window.toast) window.toast('✅ Itinerario esportato');
 };
 
-window.GROUP_SYNC.importItinerary = function() {
+GROUP_SYNC.importItinerary = function() {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json';

@@ -28,6 +28,8 @@ function renderItineraryUnified() {
 
   let distanceByDay = {};
   for (let d = 0; d < days; d++) {
+    // Calcola tratte (distanza/durata/modo/costo) tra tappe consecutive prima di leggerle
+    window.ITINERARY?.computeDayRouting?.(d);
     const dayPOIs = window.state.itineraryByDay[d] || [];
     costByDay[d] = (dayPOIs || []).reduce((sum, entry) => sum + (entry.cost || 0), 0);
     distanceByDay[d] = (dayPOIs || []).reduce((sum, entry) => {
@@ -93,20 +95,22 @@ function renderItineraryUnified() {
             ${costBadge}
           </div>
 
-          <!-- ROW 3: Route from previous POI (if calculated) -->
-          ${entry.route_from_prev ? `
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:6px 10px;background:rgba(100,150,200,0.1);border-radius:6px">
-              <span style="font-size:11px;color:rgba(100,200,255,0.8);font-weight:600">
-                📍 ${entry.route_from_prev.distance_km}km
-              </span>
-              <span style="font-size:11px;color:rgba(100,200,255,0.8);font-weight:600">
-                ⏱️ ${entry.route_from_prev.duration_min}min
-              </span>
-              <span style="font-size:10px;color:rgba(100,200,255,0.7);padding:2px 6px;background:rgba(100,200,255,0.15);border-radius:4px">
-                ${entry.route_from_prev.mode === 'walking' ? '🚶' : entry.route_from_prev.mode === 'driving' ? '🚗' : '🚌'} ${entry.route_from_prev.mode}
-              </span>
-            </div>
-          ` : ''}
+          <!-- ROW 3: Spostamento dalla tappa precedente (tempo + mezzo + costo) -->
+          ${entry.route_from_prev ? (() => {
+            const r = entry.route_from_prev;
+            const em = r.mode === 'walking' ? '🚶' : r.mode === 'driving' ? '🚆' : '🚇';
+            const lbl = r.mode === 'walking' ? 'a piedi' : r.mode === 'driving' ? 'treno' : 'mezzi';
+            const fare = (r.cost > 0) ? `💴 ¥${r.cost}` : 'gratis';
+            const fareColor = (r.cost > 0) ? '#FFB88C' : '#7FFF7F';
+            return `
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:6px 10px;background:rgba(100,150,200,0.1);border-radius:6px;margin-top:4px">
+              <span style="font-size:10px;color:rgba(255,255,255,0.45);font-weight:700;text-transform:uppercase">↳ spostamento</span>
+              <span style="font-size:11px;color:rgba(120,200,255,0.9);font-weight:600">${em} ${lbl}</span>
+              <span style="font-size:11px;color:rgba(120,200,255,0.9);font-weight:600">⏱️ ${r.duration_min} min</span>
+              <span style="font-size:11px;color:rgba(120,200,255,0.7)">📍 ${r.distance_km} km</span>
+              <span style="font-size:11px;font-weight:700;color:${fareColor}">${fare}</span>
+            </div>`;
+          })() : ''}
 
           <!-- ROW 4: Opening hours + Price level (if enriched) -->
           ${(entry.opening_hours || entry.price_level) ? `
@@ -198,6 +202,13 @@ function renderItineraryUnified() {
           " onmouseover="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.25), rgba(74,124,89,0.15))';this.style.borderColor='rgba(76,175,80,0.6)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.15), rgba(74,124,89,0.1))';this.style.borderColor='rgba(76,175,80,0.4)'">
             <span style="font-size:16px">➕</span> Aggiungi POI a questo giorno
           </button>
+          ${dayPOIs.length >= 3 ? `<button class="itinerary-optimize-btn" data-day="${dayIndex}" style="
+            width:100%;margin-top:8px;padding:9px 14px;min-height:40px;
+            background:rgba(255,107,53,0.14);border:1px solid rgba(255,107,53,0.4);
+            border-radius:8px;color:#FFB88C;font-weight:700;font-size:13px;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;gap:6px">
+            <span style="font-size:15px">🧭</span> Ottimizza il giro (meno spostamenti)
+          </button>` : ''}
         </div>
       </div>
     `;
@@ -331,6 +342,19 @@ function renderItineraryUnified() {
             transition: all 0.2s;
           " onmouseover="this.style.background='rgba(76,175,80,0.3)'" onmouseout="this.style.background='rgba(76,175,80,0.2)'">
             📤 Esporta su WhatsApp
+          </button>
+          <button id="btn-share-link-unified" onclick="handleShareLink()" style="
+            padding: 12px 16px;
+            background: rgba(150,120,220,0.2);
+            border: 1.5px solid rgba(150,120,220,0.5);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          " onmouseover="this.style.background='rgba(150,120,220,0.3)'" onmouseout="this.style.background='rgba(150,120,220,0.2)'">
+            🔗 Copia link condivisibile
           </button>
           <button id="btn-share-group-unified" onclick="handleShareGroup()" style="
             padding: 12px 16px;
@@ -529,6 +553,64 @@ window.handleExportWhatsApp = function() {
   }
 };
 
+// ─── Link itinerario condivisibile (URL read-only, niente backend) ───
+function _buildSharePayload() {
+  const ibd = window.state?.itineraryByDay || {};
+  const items = [];
+  Object.keys(ibd).forEach(d => (ibd[d] || []).forEach(e => {
+    items.push({ d: +d, p: e.poi_id, n: e.poi_name, t: e.time, dur: e.duration, c: e.cost, lat: e.lat, lng: e.lng });
+  }));
+  return { v: 1, days: window.state?.tripProfile?.days || 8, items };
+}
+function _encodeShare(obj) {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function _decodeShare(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+  return JSON.parse(decodeURIComponent(escape(atob(s))));
+}
+window.handleShareLink = function() {
+  const payload = _buildSharePayload();
+  if (!payload.items.length) { if (window.toast) window.toast('⚠️ Aggiungi tappe prima di condividere'); return; }
+  const url = location.origin + location.pathname + '?share=' + _encodeShare(payload);
+  if (url.length > 8000) { if (window.toast) window.toast('⚠️ Itinerario troppo grande per un link'); return; }
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(url).then(
+      () => { if (window.toast) window.toast('🔗 Link copiato! Incollalo dove vuoi'); },
+      () => window.prompt('Copia il link:', url)
+    );
+  } else { window.prompt('Copia il link:', url); }
+};
+window.importSharedItinerary = function(payload) {
+  try {
+    if (!payload || !Array.isArray(payload.items)) return;
+    payload.items.forEach(it => window.ITINERARY?.addPOIToDay?.(it.p, it.n, it.d, it.t || '10:00', it.dur || 60, '', it.c || 0, 'altro'));
+    window.saveState?.();
+    if (window.toast) window.toast('✅ Itinerario importato');
+    if (typeof renderItineraryUnified === 'function') renderItineraryUnified();
+  } catch (e) { if (window.toast) window.toast('❌ Errore import'); }
+};
+window.openSharedItineraryPreview = function(payload) {
+  const count = (payload && payload.items && payload.items.length) || 0;
+  window.__sharedPayload = payload;
+  const html = `<div style="padding:8px">
+    <p style="color:#fff;font-size:14px;margin:0 0 14px">Qualcuno ha condiviso un itinerario con <strong>${count}</strong> tappe.</p>
+    <button onclick="window.importSharedItinerary(window.__sharedPayload); window.closeSheet&&window.closeSheet();" class="btn primary" style="width:100%;padding:13px;font-weight:700">📥 Importa nel mio itinerario</button>
+  </div>`;
+  window.openSheet && window.openSheet('🔗 Itinerario condiviso', html);
+};
+(function detectShareLink() {
+  function check() {
+    try {
+      const code = new URLSearchParams(location.search).get('share');
+      if (!code) return;
+      const payload = _decodeShare(code);
+      setTimeout(() => window.openSharedItineraryPreview(payload), 1500);
+    } catch (e) { console.warn('[ShareLink] link non valido', e); }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', check); else check();
+})();
+
 window.handleShareGroup = function() {
   console.log('[ItineraryUnified] 👥 Share group button clicked');
 
@@ -583,6 +665,21 @@ function setupGlobalEventDelegation() {
     const poiId = btn.dataset.poiId;
     if (window.ITINERARY?.markVisited) {
       window.ITINERARY.markVisited(poiId);
+    }
+  }, false);
+
+  // Ottimizza il giro del giorno (meno spostamenti)
+  sheetBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('.itinerary-optimize-btn');
+    if (!btn) return;
+    e.stopPropagation();
+    const dayIdx = parseInt(btn.dataset.day, 10);
+    const ok = window.ITINERARY?.optimizeDay?.(dayIdx);
+    if (ok) {
+      renderItineraryUnified();
+      if (window.toast) window.toast('🧭 Giro ottimizzato');
+    } else if (window.toast) {
+      window.toast('⚠️ Servono almeno 3 tappe con posizione nota');
     }
   }, false);
 
@@ -674,7 +771,7 @@ function showEmptyItineraryModal() {
         color: rgba(255,255,255,0.95);
         margin: 0 0 16px 0;
         line-height: 1.3;
-      ">Nessun itinerario da condividere</h2>
+      ">${window.t ? window.t('itin.noItinShare') : 'Nessun itinerario da condividere'}</h2>
 
       <!-- Description -->
       <p style="
@@ -708,7 +805,7 @@ function showEmptyItineraryModal() {
           height: auto !important;
           min-height: auto !important;
         " onmouseover="this.style.background='rgba(255,107,53,0.25)'; this.style.borderColor='rgba(255,107,53,0.6)';" onmouseout="this.style.background='rgba(255,107,53,0.15)'; this.style.borderColor='rgba(255,107,53,0.4)';">
-          Ho capito
+          ${window.t ? window.t('common.gotIt') : 'Ho capito'}
         </button>
 
         <!-- Secondary button: Aggiungi una tappa -->
@@ -726,13 +823,13 @@ function showEmptyItineraryModal() {
           height: auto !important;
           min-height: auto !important;
         " onmouseover="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.3), rgba(76,175,80,0.15))'; this.style.borderColor='rgba(76,175,80,0.6)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.2), rgba(76,175,80,0.1))'; this.style.borderColor='rgba(76,175,80,0.4)';">
-          ➕ Aggiungi una tappa
+          ${window.t ? window.t('itin.addStop') : '➕ Aggiungi una tappa'}
         </button>
       </div>
     </div>
   `;
 
-  window.openSheet('📭 Itinerario vuoto', html);
+  window.openSheet((window.t ? window.t('itin.emptyTitle') : '📭 Itinerario vuoto'), html);
   console.log('[ItineraryUnified] 📭 showEmptyShareModal() opened');
 
   // Setup button handlers via event delegation (will be caught by global handlers)

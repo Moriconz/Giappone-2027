@@ -1,0 +1,647 @@
+/* ============================================================================
+   MODERN 2026 — Design system & visual identity
+   Caricato PER ULTIMO: vince la cascata e definisce il look dell'app.
+   Sostituisce l'identità "Y2K". css/legacy-skin.css resta sotto per la
+   sola struttura dei componenti; qui ne ridipingiamo la pelle in chiave
+   moderna, flat, dark, mobile-first.
+   ============================================================================ */
+
+:root {
+  /* ── Palette moderna (dark) ───────────────────────────────────── */
+  --m-bg:           #0f1218;
+  --m-bg-2:         #141823;
+  --m-surface:      #1a1f2b;
+  --m-surface-2:    #222836;
+  --m-surface-3:    #2a3140;
+  --m-border:       rgba(255, 255, 255, 0.10);
+  --m-border-strong:rgba(255, 255, 255, 0.16);
+
+  --m-text:         #f3f5f8;
+  --m-text-2:       #b8c0cc;
+  --m-text-3:       #828b99;
+
+  --m-accent:       #ff7a45;   /* coral — brand */
+  --m-accent-600:   #f5631f;
+  --m-accent-soft:  rgba(255, 122, 69, 0.14);
+  --m-accent-border:rgba(255, 122, 69, 0.45);
+
+  --m-success:      #34d399;
+  --m-warning:      #fbbf24;
+  --m-danger:       #f87171;
+  --m-info:         #38bdf8;
+
+  /* ── Scala ────────────────────────────────────────────────────── */
+  --m-r-sm: 8px;
+  --m-r-md: 12px;
+  --m-r-lg: 16px;
+  --m-r-pill: 999px;
+
+  --m-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --m-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --m-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.45);
+
+  --m-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --m-tap: 44px;            /* tap target minimo */
+
+  /* ── Remap token LEGACY (usati ~35× in index.html) ───────────── */
+  --y2k-pink:  var(--m-accent);   /* heading weather/budget → coral */
+  --y2k-ink:   #1c2233;           /* testo scuro su input bianchi (budget) */
+  --y2k-muted: #7c8696;           /* muted leggibile su chiaro e scuro */
+  --y2k-dark:  var(--m-bg);
+  --y2k-mid:   var(--m-surface);
+  --y2k-light: var(--m-surface-2);
+  --y2k-green: var(--m-success);
+  --y2k-gold:  var(--m-warning);
+  --y2k-cream: var(--m-surface);
+  --y2k-glow-p: none;
+  --y2k-glow-g: none;
+
+  /* allinea anche i token "components.css" */
+  --color-warm: var(--m-accent);
+  --accent: var(--m-accent);
+  --primary: var(--m-accent);
+}
+
+/* ── Base ───────────────────────────────────────────────────────── */
+html, body {
+  background: var(--m-bg) !important;
+  color: var(--m-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+body.panel-open { overflow: hidden; }
+
+::selection { background: var(--m-accent-soft); color: var(--m-text); }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent !important; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-radius: var(--m-r-pill) !important;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.24) !important; }
+
+/* ── Backdrop pannelli ──────────────────────────────────────────── */
+.panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1900;
+  background: rgba(6, 8, 12, 0.74);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s var(--m-ease), visibility 0.25s;
+}
+.panel-backdrop.show { opacity: 1; visibility: visible; }
+
+/* ── Pannelli (.y2k-win) — bottom-sheet su mobile, modal su desktop ── */
+.y2k-win {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 88vh;
+  background: var(--m-surface) !important;
+  border: 1px solid var(--m-border-strong) !important;
+  border-bottom: none !important;
+  border-radius: var(--m-r-lg) var(--m-r-lg) 0 0 !important;
+  /* anello chiaro per staccare il bordo dalla mappa oscurata + ombra profonda */
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.10), 0 -10px 44px rgba(0, 0, 0, 0.55) !important;
+  overflow: hidden;
+  animation: m-sheet-up 0.32s var(--m-ease);
+  /* reset di eventuali stili legacy */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  min-width: 0 !important;
+  max-width: 100vw !important;       /* hard-cap: mai più largo del viewport (mobile) */
+  box-sizing: border-box !important;
+  transform: none !important;
+}
+.y2k-win::before { display: none !important; } /* via la linea retro */
+
+@keyframes m-sheet-up {
+  from { transform: translateY(100%); opacity: 0.6; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.y2k-win-title {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 14px 16px !important;
+  background: transparent !important;
+  border-bottom: 1px solid var(--m-border) !important;
+  cursor: default !important;
+  flex-shrink: 0;
+  position: relative;
+}
+/* grab-handle moderno al centro dell'header (bottom-sheet) */
+.y2k-win-title::before {
+  content: "";
+  position: absolute;
+  top: 7px; left: 50%;
+  transform: translateX(-50%);
+  width: 44px; height: 5px;
+  border-radius: var(--m-r-pill);
+  background: rgba(255, 255, 255, 0.38);
+}
+.y2k-win-title span {
+  flex: 1 !important;
+  color: var(--m-text) !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  text-align: left !important;
+  padding: 0 !important;
+  text-shadow: none !important;
+  letter-spacing: 0.1px;
+}
+.y2k-win-close {
+  flex-shrink: 0;
+  width: 34px !important; height: 34px !important;
+  min-width: 34px !important; min-height: 34px !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  border: none !important;
+  border-radius: var(--m-r-pill) !important;
+  background: var(--m-surface-2) !important;
+  color: var(--m-text-2) !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  transition: background 0.15s var(--m-ease), color 0.15s var(--m-ease);
+  padding: 0 !important; margin: 0 !important;
+}
+.y2k-win-close:hover { background: var(--m-danger) !important; color: #fff !important; }
+
+.y2k-win-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px !important;
+  color: var(--m-text) !important;
+  background: transparent !important;
+}
+.y2k-win-resize { display: none !important; } /* niente resize manuale */
+
+/* Desktop / tablet largo → modal centrato */
+@media (min-width: 680px) {
+  .y2k-win {
+    left: 50%;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    transform: translate(-50%, -50%) !important;
+    width: min(680px, 92vw);
+    max-height: 86vh;
+    border: 1px solid var(--m-border) !important;
+    border-radius: var(--m-r-lg) !important;
+    animation: m-modal-in 0.28s var(--m-ease);
+  }
+  .y2k-win-title::before { display: none; } /* niente grab-handle su desktop */
+  @keyframes m-modal-in {
+    from { transform: translate(-50%, -46%) scale(0.97); opacity: 0; }
+    to   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
+}
+
+/* ── Bottom nav ─────────────────────────────────────────────────── */
+nav.bottom {
+  background: rgba(20, 24, 35, 0.92) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+  border-top: 1px solid var(--m-border) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3) !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+}
+nav.bottom button {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--m-text-3) !important;
+  min-height: var(--m-tap) !important;
+  border-radius: var(--m-r-md) !important;
+  transition: color 0.15s var(--m-ease), background 0.15s var(--m-ease);
+}
+nav.bottom button:hover { background: rgba(255, 255, 255, 0.04) !important; color: var(--m-text-2) !important; }
+nav.bottom button.active {
+  color: var(--m-accent) !important;
+  background: var(--m-accent-soft) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+header {
+  background: rgba(20, 24, 35, 0.85) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid var(--m-border) !important;
+  box-shadow: none !important;
+}
+
+/* ── Bottoni ────────────────────────────────────────────────────── */
+.btn,
+.y2k-win-body button,
+.sheet-body button,
+.sheet-inner button {
+  font-family: inherit !important;
+  font-weight: 600 !important;
+  border-radius: var(--m-r-md) !important;
+  transition: transform 0.12s var(--m-ease), background 0.15s var(--m-ease), box-shadow 0.15s var(--m-ease) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.btn,
+.y2k-win-body button:not(.y2k-win-close),
+.sheet-body button {
+  background: var(--m-surface-2) !important;
+  color: var(--m-text) !important;
+  border: 1px solid var(--m-border) !important;
+}
+.btn:hover,
+.y2k-win-body button:not(.y2k-win-close):hover,
+.sheet-body button:hover { background: var(--m-surface-3) !important; box-shadow: var(--m-shadow-sm) !important; }
+.btn:active,
+.y2k-win-body button:not(.y2k-win-close):active { transform: translateY(1px) !important; }
+
+.btn.primary, .btn-primary, .btn-cta,
+.y2k-win-body .btn.primary {
+  background: var(--m-accent) !important;
+  color: #1a1207 !important;
+  border-color: var(--m-accent) !important;
+  font-weight: 700 !important;
+}
+.btn.primary:hover, .btn-primary:hover, .btn-cta:hover { background: var(--m-accent-600) !important; }
+.btn.success { background: var(--m-success) !important; color: #04231a !important; border-color: var(--m-success) !important; }
+.btn.warning { background: var(--m-warning) !important; color: #2a1d00 !important; border-color: var(--m-warning) !important; }
+.btn.danger  { background: var(--m-danger)  !important; color: #2a0707 !important; border-color: var(--m-danger)  !important; }
+
+/* ── Campi form ─────────────────────────────────────────────────── */
+.y2k-win-body input[type="text"],
+.y2k-win-body input[type="number"],
+.y2k-win-body input[type="email"],
+.y2k-win-body input[type="password"],
+.y2k-win-body input[type="search"],
+.y2k-win-body textarea,
+.y2k-win-body select,
+.sheet-body input, .sheet-body textarea, .sheet-body select {
+  background: var(--m-surface-2) !important;
+  border: 1px solid var(--m-border) !important;
+  color: var(--m-text) !important;
+  border-radius: var(--m-r-sm) !important;
+  font-size: 14px !important;
+  font-family: inherit !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.y2k-win-body input::placeholder,
+.y2k-win-body textarea::placeholder { color: var(--m-text-3) !important; }
+.y2k-win-body input:focus,
+.y2k-win-body textarea:focus,
+.y2k-win-body select:focus {
+  outline: none !important;
+  border-color: var(--m-accent-border) !important;
+  box-shadow: 0 0 0 3px var(--m-accent-soft) !important;
+}
+
+/* ── Chip / tag / pill ──────────────────────────────────────────── */
+.chip, .tag {
+  background: var(--m-surface-2) !important;
+  border: 1px solid var(--m-border) !important;
+  color: var(--m-text-2) !important;
+  border-radius: var(--m-r-pill) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.chip.active, .chip[aria-pressed="true"] {
+  background: var(--m-accent-soft) !important;
+  border-color: var(--m-accent-border) !important;
+  color: var(--m-accent) !important;
+}
+
+/* ── Card: poi-row / shop-card / booking-card / section ─────────── */
+.y2k-win-body .poi-row,
+.poi-row, .shop-card, .booking-card,
+.gallery-photo-card, .expense-item, .weather-forecast-card {
+  background: var(--m-surface-2) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: var(--m-r-md) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.y2k-win-body .poi-row:hover,
+.poi-row:hover, .shop-card:hover, .booking-card:hover {
+  background: var(--m-surface-3) !important;
+  border-color: var(--m-border-strong) !important;
+  transform: none !important;
+}
+.y2k-win-body .section,
+.section {
+  background: var(--m-surface-2) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: var(--m-r-md) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* typography dentro i pannelli */
+.y2k-win-body h1 { font-size: 18px !important; }
+.y2k-win-body h2 { font-size: 16px !important; }
+.y2k-win-body h3 { font-size: 14px !important; color: var(--m-accent) !important; }
+.y2k-win-body h1, .y2k-win-body h2 { color: var(--m-text) !important; }
+.y2k-win-body p, .y2k-win-body li, .y2k-win-body div,
+.y2k-win-body span, .y2k-win-body label { color: var(--m-text-2) !important; }
+.y2k-win-body strong { color: var(--m-text) !important; }
+
+/* ── Weather widget floating ────────────────────────────────────── */
+#weather-floating #weather-card,
+.weather-forecast-card {
+  background: var(--m-surface) !important;
+  border: 1px solid var(--m-border-strong) !important;
+  border-radius: var(--m-r-lg) !important;
+  box-shadow: var(--m-shadow-md) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+  padding: 14px 12px !important;
+}
+#weather-date { color: var(--m-text-3) !important; letter-spacing: 0.4px !important; }
+#weather-condition { color: var(--m-text-2) !important; }
+#weather-temp { color: var(--m-text) !important; }
+/* bottone "altro": da barra magenta a pill discreto a tema */
+#weather-more-btn {
+  background: var(--m-surface-3) !important;
+  border: 1px solid var(--m-border) !important;
+  color: var(--m-text-2) !important;
+  border-radius: var(--m-r-pill) !important;
+  font-weight: 600 !important;
+  padding: 5px 8px !important;
+  margin-top: 8px !important;
+  transition: background 0.15s var(--m-ease), color 0.15s var(--m-ease) !important;
+}
+#weather-more-btn:hover { background: var(--m-accent-soft) !important; color: var(--m-accent) !important; }
+
+/* ── Map blur quando un pannello è aperto ───────────────────────── */
+#map.blur { filter: blur(2px) brightness(0.7); transition: filter 0.25s var(--m-ease); }
+
+/* ── Accessibilità ──────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--m-accent) !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+nav.bottom button, .y2k-win-close, .btn, button[onclick] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Chrome sempre visibile (override stili inline hardcoded) ───── */
+#filters {
+  background: var(--m-bg-2) !important;
+  border-bottom: 1px solid var(--m-border) !important;
+}
+/* Chip filtri — coerenti col tema (override del look legacy) */
+#filters .chip {
+  background: var(--m-surface-2) !important;
+  border: 1px solid var(--m-border) !important;
+  color: var(--m-text-2) !important;
+  border-radius: var(--m-r-pill) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+#filters .chip:hover {
+  background: var(--m-surface-3) !important;
+  border-color: var(--m-border-strong) !important;
+}
+#filters .chip.active {
+  background: var(--m-accent) !important;
+  border-color: var(--m-accent) !important;
+  color: #1a1207 !important;
+  box-shadow: 0 2px 10px var(--m-accent-soft) !important;
+}
+header { display: flex !important; align-items: center !important; justify-content: space-between !important; }
+header h1 { color: var(--m-text) !important; }
+#lang-switcher {
+  background: var(--m-surface-2) !important;
+  color: var(--m-text) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: var(--m-r-sm) !important;
+  padding: 6px 8px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  min-height: 36px !important;
+}
+#lang-switcher:focus-visible { outline: 2px solid var(--m-accent) !important; }
+#offline-banner {
+  background: var(--m-warning) !important;
+  color: #2a1d00 !important;
+}
+#offline-banner.show {
+  display: block !important;
+  position: fixed !important;
+  top: 0; left: 0; right: 0;
+  z-index: 3000 !important;
+  text-align: center !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 6px 12px !important;
+}
+#debug-panel { display: none !important; } /* nascosto salvo debug esplicito */
+
+/* ── Dettaglio POI: rifinitura UI ───────────────────────────────── */
+/* Contenimento overflow orizzontale (alcuni elementi sforavano la larghezza) */
+.y2k-win-body { overflow-x: hidden !important; }
+.y2k-win-body img,
+.y2k-win-body button,
+.y2k-win-body input,
+.y2k-win-body select,
+.y2k-win-body textarea,
+.y2k-win-body .section,
+.y2k-win-body .info-chip,
+.y2k-win-body > div {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+.y2k-win-body p, .y2k-win-body h1, .y2k-win-body h2, .y2k-win-body h3 { overflow-wrap: anywhere; }
+.y2k-win-body .btn-cta {
+  display: block !important;
+  width: 100% !important;
+  padding: 14px 16px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  border-radius: var(--m-r-md) !important;
+  background: var(--m-accent) !important;
+  color: #1a1207 !important;
+  border: none !important;
+  box-shadow: 0 4px 16px var(--m-accent-soft) !important;
+}
+.y2k-win-body .btn-cta:hover { background: var(--m-accent-600) !important; transform: translateY(-1px) !important; }
+.y2k-win-body .info-chip {
+  border-radius: var(--m-r-pill) !important;
+  font-size: 12px !important;
+  padding: 4px 10px !important;
+  font-weight: 600 !important;
+}
+.y2k-win-body .rating-stars .star { font-size: 22px !important; cursor: pointer; color: var(--m-text-3); transition: color 0.12s var(--m-ease); }
+.y2k-win-body .rating-stars .star.active { color: var(--m-warning); }
+/* header POI: nome più arioso, niente doppione ravvicinato */
+.y2k-win-body h2 { line-height: 1.25 !important; }
+
+/* ── Toast ──────────────────────────────────────────────────────── */
+.toast, #toast, [class*="toast"], #toast-container {
+  border-radius: var(--m-r-md) !important;
+}
+#toast-container.show {
+  background: var(--m-glass) !important;
+  color: var(--m-text) !important;
+  border: 1px solid var(--m-glass-brd) !important;
+  box-shadow: var(--m-shadow-md) !important;
+  -webkit-backdrop-filter: var(--m-blur-md) !important;
+  backdrop-filter: var(--m-blur-md) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   GLASS LAYER 2026 — effetto vetro coerente
+   Superfici di 1° livello (sopra la mappa) = vero backdrop-filter blur.
+   Elementi interni = traslucidi + bordo luminoso (niente blur annidato).
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  --m-glass:     rgba(22, 27, 38, 0.62);
+  --m-glass-2:   rgba(255, 255, 255, 0.05);
+  --m-glass-3:   rgba(255, 255, 255, 0.09);
+  --m-glass-brd: rgba(255, 255, 255, 0.14);
+  --m-glass-hi:  rgba(255, 255, 255, 0.07);
+  --m-blur:      blur(22px) saturate(160%);
+  --m-blur-md:   blur(16px) saturate(150%);
+  --m-blur-sm:   blur(10px) saturate(140%);
+}
+
+/* — Pannello (POI, wizard, modali) — */
+.y2k-win {
+  background: var(--m-glass) !important;
+  -webkit-backdrop-filter: var(--m-blur) !important;
+  backdrop-filter: var(--m-blur) !important;
+  border: 1px solid var(--m-glass-brd) !important;
+  box-shadow: inset 0 1px 0 var(--m-glass-hi), 0 -10px 44px rgba(0, 0, 0, 0.5) !important;
+}
+.y2k-win-title { background: rgba(255, 255, 255, 0.04) !important; border-bottom: 1px solid var(--m-glass-brd) !important; }
+
+/* — Chrome (nav, header, barra filtri, weather): frost sulla mappa — */
+nav.bottom {
+  background: rgba(16, 20, 30, 0.55) !important;
+  -webkit-backdrop-filter: var(--m-blur) !important;
+  backdrop-filter: var(--m-blur) !important;
+  border-top: 1px solid var(--m-glass-brd) !important;
+}
+header {
+  background: rgba(16, 20, 30, 0.45) !important;
+  -webkit-backdrop-filter: var(--m-blur-md) !important;
+  backdrop-filter: var(--m-blur-md) !important;
+  border-bottom: 1px solid var(--m-glass-brd) !important;
+}
+#filters {
+  background: rgba(15, 18, 24, 0.66) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+  backdrop-filter: blur(16px) saturate(120%) !important;
+  border-bottom: 1px solid var(--m-glass-brd) !important;
+}
+#weather-floating #weather-card {
+  background: rgba(30, 37, 54, 0.42) !important;
+  -webkit-backdrop-filter: var(--m-blur) !important;
+  backdrop-filter: var(--m-blur) !important;
+  border: 1px solid var(--m-glass-brd) !important;
+}
+
+/* — Elementi interni: traslucidi (sul vetro del pannello), niente blur annidato — */
+.y2k-win-body .poi-row, .poi-row, .shop-card, .booking-card,
+.gallery-photo-card, .expense-item, .weather-forecast-card, .weather-day,
+.y2k-win-body .section, .section, .gf-box, .groq-panel {
+  background: var(--m-glass-2) !important;
+  border: 1px solid var(--m-glass-brd) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.y2k-win-body .poi-row:hover, .poi-row:hover, .shop-card:hover, .booking-card:hover {
+  background: var(--m-glass-3) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+.y2k-win-body input, .y2k-win-body select, .y2k-win-body textarea,
+.sheet-body input, .sheet-body select, .sheet-body textarea {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1px solid var(--m-glass-brd) !important;
+}
+.y2k-win-body button:not(.btn-cta):not(.y2k-win-close),
+.y2k-win-body .btn:not(.primary), .sheet-body button {
+  background: var(--m-glass-3) !important;
+  border: 1px solid var(--m-glass-brd) !important;
+}
+/* chip filtri: vetro traslucido; attivo resta coral pieno per chiarezza */
+#filters .chip, .chip, .tag {
+  background: var(--m-glass-2) !important;
+  border: 1px solid var(--m-glass-brd) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+#filters .chip.active {
+  background: var(--m-accent) !important;
+  border-color: var(--m-accent) !important;
+  color: #1a1207 !important;
+}
+
+/* Fallback: senza supporto backdrop-filter, superfici più opache (leggibilità) */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .y2k-win { background: rgba(22, 27, 38, 0.97) !important; }
+  nav.bottom, header, #filters { background: rgba(16, 20, 30, 0.97) !important; }
+  #weather-floating #weather-card { background: rgba(30, 37, 54, 0.96) !important; }
+}
+
+/* Skeleton loaders (shimmer) */
+@keyframes m-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.11) 37%, rgba(255,255,255,0.04) 63%) !important;
+  background-size: 200% 100% !important;
+  animation: m-shimmer 1.4s ease-in-out infinite !important;
+  border-radius: var(--m-r-sm);
+}
+.skeleton-card { height: 60px; border-radius: var(--m-r-md); margin-bottom: 8px; }
+.skeleton-line { height: 12px; margin-bottom: 8px; }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none !important; } }
+
+/* Badge messaggi chat non letti (sul tasto Menu) */
+.chat-unread-badge {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(8px);
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--m-danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px rgba(16, 20, 30, 0.9);
+  pointer-events: none;
+}

@@ -233,30 +233,29 @@ class PhotoGallery {
     return `
       <div style="
         width: 100%;
-        height: 260px;
-        border-radius: 12px 12px 0 0;
-        background: linear-gradient(135deg, rgba(74, 91, 168, 0.08), rgba(74, 91, 168, 0.04));
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        height: 132px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+        border: 1px solid rgba(255, 255, 255, 0.08);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         flex-direction: column;
-        gap: 12px;
-        backdrop-filter: blur(8px);
+        gap: 8px;
       ">
         <div style="
-          font-size: 56px;
-          opacity: 0.6;
+          font-size: 34px;
+          opacity: 0.5;
           line-height: 1;
         ">⛩️</div>
         <div style="
-          color: rgba(255, 255, 255, 0.5);
-          font-size: 13px;
+          color: rgba(255, 255, 255, 0.4);
+          font-size: 12px;
           text-align: center;
           font-weight: 500;
         ">
-          Nessuna foto disponibile
+          ${(window.t ? window.t('poi.noPhoto', 'Nessuna foto disponibile') : 'Nessuna foto disponibile')}
         </div>
       </div>
     `;

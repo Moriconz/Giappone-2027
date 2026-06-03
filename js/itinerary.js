@@ -47,9 +47,17 @@ const ITINERARY_SYSTEM = {
       this.initState();
     }
 
-    if (dayIndex < 0 || dayIndex >= Object.keys(window.state.itineraryByDay).length) {
+    if (dayIndex < 0) {
       console.warn('[Itinerary] Invalid day index:', dayIndex);
       return false;
+    }
+
+    // Auto-estende i giorni se itineraryByDay è desincronizzato da tripProfile.days
+    // (es. itineraryByDay creato a 8 giorni prima dell'onboarding, poi tripProfile.days aumentato).
+    const tripDays = window.state?.tripProfile?.days || 0;
+    const targetDays = Math.max(Object.keys(window.state.itineraryByDay).length, tripDays, dayIndex + 1);
+    for (let i = 0; i < targetDays; i++) {
+      if (!Array.isArray(window.state.itineraryByDay[i])) window.state.itineraryByDay[i] = [];
     }
 
     // Check if already in that day
@@ -275,6 +283,64 @@ const ITINERARY_SYSTEM = {
   },
 
   /**
+   * Ottimizza l'ordine delle tappe di un giorno minimizzando gli spostamenti
+   * (nearest-neighbor sulle coordinate) e riassegna gli orari in sequenza.
+   * Le coordinate si leggono dall'entry o, in fallback, da allPOIs(). Le tappe
+   * senza coordinate restano in coda.
+   */
+  optimizeDay(dayIdx) {
+    const day = window.state?.itineraryByDay?.[dayIdx];
+    if (!day || day.length < 3) return false;
+    const R = window.ROUTING;
+    if (!R) return false;
+    const pois = (typeof window.allPOIs === 'function') ? window.allPOIs() : [];
+    const coordOf = (e) => {
+      if (typeof e.lat === 'number' && typeof e.lng === 'number') return [e.lat, e.lng];
+      const p = pois.find(x => x.id === e.poi_id);
+      return (p && typeof p.lat === 'number' && typeof p.lng === 'number') ? [p.lat, p.lng] : null;
+    };
+    const withCoords = day.filter(e => coordOf(e));
+    const withoutCoords = day.filter(e => !coordOf(e));
+    if (withCoords.length < 2) return false;
+
+    // Nearest-neighbor partendo dalla prima tappa
+    const remaining = withCoords.slice(1);
+    const ordered = [withCoords[0]];
+    while (remaining.length) {
+      const last = coordOf(ordered[ordered.length - 1]);
+      let bi = 0, bd = Infinity;
+      remaining.forEach((e, i) => {
+        const c = coordOf(e);
+        const d = R.estimateDistanceHaversine(last[0], last[1], c[0], c[1]);
+        if (d < bd) { bd = d; bi = i; }
+      });
+      ordered.push(remaining.splice(bi, 1)[0]);
+    }
+
+    // Riassegna orari sequenziali (start = orario della prima tappa)
+    const toMin = s => { const [h, m] = (s || '10:00').split(':').map(Number); return (h || 0) * 60 + (m || 0); };
+    const toStr = m => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+    let cur = toMin(ordered[0].time);
+    for (let i = 0; i < ordered.length; i++) {
+      ordered[i].time = toStr(cur);
+      ordered[i].lastModified = Date.now();
+      const dur = ordered[i].duration || 60;
+      let travel = 0;
+      if (i < ordered.length - 1) {
+        const a = coordOf(ordered[i]), b = coordOf(ordered[i + 1]);
+        const dist = R.estimateDistanceHaversine(a[0], a[1], b[0], b[1]);
+        travel = R.estimateDuration(dist, R.suggestMode(dist));
+      }
+      cur += dur + travel;
+    }
+
+    window.state.itineraryByDay[dayIdx] = [...ordered, ...withoutCoords];
+    window.saveState?.();
+    window.GROUP_SYNC?.broadcastItinerary?.();
+    return true;
+  },
+
+  /**
    * Mark POI as visited
    */
   markVisited(poiId) {
@@ -421,6 +487,35 @@ const ITINERARY_SYSTEM = {
   },
 
   /**
+   * Calcola route_from_prev (distanza, durata, modo, costo ¥) per ogni tappa del
+   * giorno a partire dalla precedente. Coordinate da entry.lat/lng o da allPOIs().
+   * Alimenta sia il rendering delle tratte sia il budget trasporti.
+   */
+  computeDayRouting(dayIndex) {
+    const day = window.state?.itineraryByDay?.[dayIndex];
+    if (!day || !window.ROUTING) return;
+    const pois = (typeof window.allPOIs === 'function') ? window.allPOIs() : [];
+    const coordOf = (e) => {
+      if (typeof e.lat === 'number' && typeof e.lng === 'number') return [e.lat, e.lng];
+      const p = pois.find(x => x.id === e.poi_id);
+      return (p && typeof p.lat === 'number' && typeof p.lng === 'number') ? [p.lat, p.lng] : null;
+    };
+    for (let i = 0; i < day.length; i++) {
+      if (i === 0) { day[i].route_from_prev = null; continue; }
+      const a = coordOf(day[i - 1]), b = coordOf(day[i]);
+      if (!a || !b) { day[i].route_from_prev = null; continue; }
+      const dist = window.ROUTING.estimateDistanceHaversine(a[0], a[1], b[0], b[1]);
+      const mode = window.ROUTING.suggestMode(dist);
+      day[i].route_from_prev = {
+        distance_km: Math.round(dist * 10) / 10,
+        duration_min: window.ROUTING.estimateDuration(dist, mode),
+        mode,
+        cost: window.ROUTING.estimateFare(dist, mode)
+      };
+    }
+  },
+
+  /**
    * Calculate budget breakdown for a specific day
    * Returns: { poi_cost, ticket_cost, transport_cost, total }
    */
@@ -428,6 +523,10 @@ const ITINERARY_SYSTEM = {
     if (!window.state?.itineraryByDay?.[dayIndex]) {
       return { poi_cost: 0, ticket_cost: 0, transport_cost: 0, total: 0 };
     }
+
+    // Assicura che le tratte (e i relativi costi) siano calcolate anche se
+    // l'itinerario non è stato ancora renderizzato (es. apertura diretta del Budget)
+    this.computeDayRouting(dayIndex);
 
     const dayPOIs = window.state.itineraryByDay[dayIndex];
     let poiCost = 0;
@@ -437,10 +536,11 @@ const ITINERARY_SYSTEM = {
     dayPOIs.forEach(entry => {
       poiCost += entry.cost || 0;
       ticketCost += entry.ticket_cost || 0;
-      if (entry.route_from_prev?.duration_min) {
-        // Estimate transport cost: ~50 yen per 10km (Japan transit average)
-        const estimatedTransportCost = Math.round((entry.route_from_prev.distance_km / 10) * 50);
-        transportCost += estimatedTransportCost;
+      if (entry.route_from_prev) {
+        // Usa il fare stimato (estimateFare); fallback alla vecchia stima se assente
+        transportCost += (entry.route_from_prev.cost != null)
+          ? entry.route_from_prev.cost
+          : Math.round((entry.route_from_prev.distance_km / 10) * 50);
       }
     });
 

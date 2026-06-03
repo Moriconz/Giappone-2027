@@ -5,6 +5,8 @@
  * URL: /api/reverseGeocode?lat=...&lng=...
  */
 
+import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -28,6 +30,14 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Google Maps API key not configured on server' });
   }
 
+  // Arrotonda a 3 decimali (~110m) — coordinate vicine condividono il risultato
+  const cacheParams = {
+    lat: Math.round(parseFloat(lat) * 1000) / 1000,
+    lng: Math.round(parseFloat(lng) * 1000) / 1000
+  };
+  const cached = await cacheGet('reverseGeocode', cacheParams);
+  if (cached) return res.status(200).json(cached);
+
   try {
     // Reverse Geocoding: coordinate → place name
     // API key stays on server — NOT exposed to client
@@ -40,8 +50,9 @@ export default async function handler(req, res) {
       // Estrai il nome del luogo (prima parte dell'indirizzo formattato)
       const fullAddress = data.results[0].formatted_address;
       const placeName = fullAddress.split(',')[0].trim();
-
-      return res.status(200).json({ name: placeName });
+      const responseBody = { name: placeName };
+      await cacheSet('reverseGeocode', cacheParams, responseBody, TTL.THIRTY_DAYS);
+      return res.status(200).json(responseBody);
     }
 
     // Se nessun risultato trovato

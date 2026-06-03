@@ -22,14 +22,31 @@ class GooglePlacesDetailsClient {
       return null;
     }
 
-    // Check in-memory cache
+    const TTL_MS = 24 * 60 * 60 * 1000; // 24h
+
+    // 1. Check in-memory cache
     if (this.detailsCache.has(placeId)) {
       const cached = this.detailsCache.get(placeId);
-      if (Date.now() - cached.timestamp < 24 * 60 * 60 * 1000) { // 24h cache
-        console.log('[PlacesDetails] Using cached details for:', placeId);
+      if (Date.now() - cached.timestamp < TTL_MS) {
+        console.log('[PlacesDetails] Using cached details (memoria) for:', placeId);
         return cached.data;
       }
     }
+
+    // 2. Check localStorage cache (survives page reloads, same 24h TTL)
+    try {
+      const lsKey = `placeDetails_v1_${placeId}`;
+      const raw = localStorage.getItem(lsKey);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (cached.expires > Date.now()) {
+          this.detailsCache.set(placeId, { data: cached.data, timestamp: Date.now() });
+          console.log('[PlacesDetails] Using cached details (localStorage) for:', placeId);
+          return cached.data;
+        }
+        localStorage.removeItem(lsKey);
+      }
+    } catch { /* localStorage non disponibile */ }
 
     try {
       console.log('[PlacesDetails] Fetching details for:', placeId);
@@ -48,10 +65,15 @@ class GooglePlacesDetailsClient {
       const details = await response.json();
 
       // Cache in-memory
-      this.detailsCache.set(placeId, {
-        data: details,
-        timestamp: Date.now()
-      });
+      this.detailsCache.set(placeId, { data: details, timestamp: Date.now() });
+
+      // Cache to localStorage (24h TTL)
+      try {
+        localStorage.setItem(`placeDetails_v1_${placeId}`, JSON.stringify({
+          data: details,
+          expires: Date.now() + TTL_MS
+        }));
+      } catch { /* Storage pieno */ }
 
       console.log('[PlacesDetails] Fetched:', {
         name: details.displayName,

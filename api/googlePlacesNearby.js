@@ -6,6 +6,8 @@
  * Returns: { results: [...POIs from Google Places] }
  */
 
+import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 const RATE_LIMIT_DELAY_MS = 200; // 5 requests/sec max
 
@@ -46,6 +48,16 @@ export default async function handler(req, res) {
     if (radiusM < 100 || radiusM > 50000) {
       return res.status(400).json({ error: 'radiusM must be between 100 and 50000' });
     }
+
+    // Cache key: griglia ~1km (2 decimali ≈ 1.1km) — utenti nella stessa città condividono il risultato
+    const cacheParams = {
+      lat: Math.round(lat * 100) / 100,
+      lng: Math.round(lng * 100) / 100,
+      r: radiusM,
+      t: type || null
+    };
+    const cached = await cacheGet('nearby', cacheParams);
+    if (cached) return res.status(200).json(cached);
 
     console.log(`[googlePlacesNearby] Search: ${lat}, ${lng}, radius ${radiusM}m${type ? `, type: ${type}` : ''}`);
 
@@ -99,14 +111,9 @@ export default async function handler(req, res) {
 
     console.log(`[googlePlacesNearby] Returning ${results.length} results`);
 
-    return res.status(200).json({
-      results,
-      status: 'OK',
-      count: results.length,
-      lat,
-      lng,
-      radiusM
-    });
+    const responseBody = { results, status: 'OK', count: results.length, lat, lng, radiusM };
+    await cacheSet('nearby', cacheParams, responseBody, TTL.THIRTY_DAYS);
+    return res.status(200).json(responseBody);
   } catch (err) {
     console.error('[googlePlacesNearby] Fatal error:', err);
     return res.status(500).json({ error: err.message });

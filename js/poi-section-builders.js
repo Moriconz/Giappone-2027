@@ -5,6 +5,9 @@
  * Used by poiDetailHTML() to build adaptive layouts per POI type.
  */
 
+// i18n helper (fallback all'italiano se window.t non disponibile)
+const PSB_T = (k, fb) => (window.t ? window.t(k, fb) : (fb || k));
+
 /**
  * HEADER COMPATTO RIDISEGNATO
  * Layout: [EMOJI] CATEGORIA [EDIT] su riga 1
@@ -32,7 +35,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       color: ${isOpen ? '#86efac' : '#fca5a5'};
       font-size: 11px;
       font-weight: 600;
-    ">${isOpen ? '🟢 Aperto' : '🔴 Chiuso'}</span>`;
+    ">${isOpen ? PSB_T('poi.open') : PSB_T('poi.closed')}</span>`;
     parts.push(statusBadge);
   }
 
@@ -40,21 +43,21 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
 
   // Mappa categorie inglesi → italiano
   const catLabels = {
-    'restaurant': 'Ristorante',
-    'food': 'Cibo',
-    'cafe': 'Caffè',
-    'bar': 'Bar',
-    'meal_takeaway': 'Asporto',
-    'bakery': 'Panetteria',
-    'izakaya': 'Izakaya',
-    'museum': 'Museo',
-    'shrine': 'Santuario',
-    'temple': 'Tempio',
-    'church': 'Chiesa',
-    'landmark': 'Punto di interesse',
-    'tourist_attraction': 'Attrazione turistica',
-    'post_office': 'Ufficio postale',
-    'services': 'Servizi'
+    'restaurant': PSB_T('cat.restaurant'),
+    'food': PSB_T('cat.food'),
+    'cafe': PSB_T('cat.cafe'),
+    'bar': PSB_T('cat.bar'),
+    'meal_takeaway': PSB_T('cat.takeaway'),
+    'bakery': PSB_T('cat.bakery'),
+    'izakaya': PSB_T('cat.izakaya'),
+    'museum': PSB_T('cat.museum'),
+    'shrine': PSB_T('cat.shrine'),
+    'temple': PSB_T('cat.temple'),
+    'church': PSB_T('cat.church'),
+    'landmark': PSB_T('cat.landmark'),
+    'tourist_attraction': PSB_T('cat.attraction'),
+    'post_office': PSB_T('cat.postoffice'),
+    'services': PSB_T('cat.services')
   };
   const catLabel = catLabels[poi.cat] || (poi.cat ? poi.cat.charAt(0).toUpperCase() + poi.cat.slice(1) : 'POI');
 
@@ -158,7 +161,7 @@ function renderOpeningHours(details) {
         gap: 8px;
       ">
         <span>🕐</span>
-        <span>Orari di apertura</span>
+        <span>${PSB_T('poi.hours')}</span>
         <span style="margin-left: auto; font-size: 12px;">▼</span>
       </button>
 
@@ -200,7 +203,7 @@ function renderAddress(poi, details) {
         font-size: 12px;
         color: rgba(255, 255, 255, 0.5);
         margin-bottom: 6px;
-      ">📍 INDIRIZZO</div>
+      ">📍 ${PSB_T('poi.address')}</div>
       <div style="
         font-size: 13px;
         color: #fff;
@@ -311,16 +314,16 @@ function renderRestaurantAttributes(poi, details) {
       padding: 6px 10px;
       font-size: 11px;
       font-weight: 700;
-    ">🌾 ${gfStatus === 'confirmed' ? 'GF Confermato' : 'GF Probabile'}</span>
+    ">🌾 ${gfStatus === 'confirmed' ? PSB_T('poi.gfConfirmed') : PSB_T('poi.gfLikely')}</span>
   ` : '';
 
   const attributes = [
-    { flag: details.servesVegetarianFood, label: '🥗 Vegetariano' },
-    { flag: details.servesDinner, label: '🌙 Cena' },
-    { flag: details.servesLunch, label: '☕ Pranzo' },
-    { flag: details.servesBeer, label: '🍺 Alcolici' },
-    { flag: details.takeout, label: '📦 Takeaway' },
-    { flag: details.reservable, label: '📋 Prenotabile' }
+    { flag: details.servesVegetarianFood, label: PSB_T('poi.veg') },
+    { flag: details.servesDinner, label: PSB_T('poi.dinner') },
+    { flag: details.servesLunch, label: PSB_T('poi.lunch') },
+    { flag: details.servesBeer, label: PSB_T('poi.alcohol') },
+    { flag: details.takeout, label: PSB_T('poi.takeaway') },
+    { flag: details.reservable, label: PSB_T('poi.reservable') }
   ];
 
   const activeAttrs = attributes
@@ -355,7 +358,7 @@ function renderRestaurantAttributes(poi, details) {
         color: rgba(255, 255, 255, 0.5);
         margin-bottom: 8px;
         text-transform: uppercase;
-      ">🍴 CARATTERISTICHE</div>
+      ">🍴 ${PSB_T('poi.features')}</div>
       <div style="
         display: flex;
         flex-wrap: wrap;
@@ -431,7 +434,7 @@ function renderSuggestedDuration(poi) {
       font-size: 13px;
       color: #fff;
     ">
-      <div style="font-weight: 600; margin-bottom: 4px;">⏱️ Tempo consigliato</div>
+      <div style="font-weight: 600; margin-bottom: 4px;">${PSB_T('poi.suggestedTime')}</div>
       <div>${duration}</div>
     </div>
   `;
@@ -443,7 +446,7 @@ function renderSuggestedDuration(poi) {
 function renderEntranceFee(poi) {
   if (!poi.ticket && poi.paid !== true) return '';
 
-  const fee = poi.ticket || poi.cost || 'Ingresso a pagamento';
+  const fee = poi.ticket || poi.cost || PSB_T('poi.paidEntry');
 
   return `
     <div style="
@@ -455,7 +458,7 @@ function renderEntranceFee(poi) {
       font-size: 13px;
       color: #fff;
     ">
-      <div style="font-weight: 600; margin-bottom: 4px;">🎟️ Ingresso</div>
+      <div style="font-weight: 600; margin-bottom: 4px;">${PSB_T('poi.entrance')}</div>
       <div>${fee}</div>
     </div>
   `;

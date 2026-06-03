@@ -4,6 +4,8 @@
  * URL: /api/searchVintageShops?city=Tokyo&lat=35.6762&lng=139.6503
  */
 
+import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,6 +23,10 @@ export default async function handler(req, res) {
   if (!city || !GOOGLE_MAPS_API_KEY) {
     return res.status(400).json({ error: 'Missing city or API key', shops: [] });
   }
+
+  const cacheParams = { city: city.toLowerCase() };
+  const cached = await cacheGet('vintageShops', cacheParams);
+  if (cached) return res.status(200).json(cached);
 
   async function fetchJson(url) {
     const resp = await fetch(url);
@@ -93,11 +99,9 @@ export default async function handler(req, res) {
 
   try {
     const shops = await searchVintageShops();
-    return res.status(200).json({
-      city: city,
-      count: shops.length,
-      shops: shops
-    });
+    const responseBody = { city, count: shops.length, shops };
+    await cacheSet('vintageShops', cacheParams, responseBody, TTL.SEVEN_DAYS);
+    return res.status(200).json(responseBody);
   } catch (error) {
     console.error('[searchVintageShops] Error:', error);
     return res.status(500).json({ error: error.message, shops: [] });

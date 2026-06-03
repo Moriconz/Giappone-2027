@@ -6,7 +6,7 @@
  * ✓ Offline-first strategy
  */
 
-const CACHE_NAME = 'giappone-2027-v5';
+const CACHE_NAME = 'giappone-2027-v6';
 const CACHE_API = 'giappone-2027-api-v1';
 const CACHE_IMG = 'giappone-2027-img-v1';
 const OFFLINE_URL = '../index.html';

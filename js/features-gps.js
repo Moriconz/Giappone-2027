@@ -428,6 +428,18 @@ window.addEventListener('online', () => {
   }
 });
 
+// Banner offline: mostra/nascondi in base alla connessione (POI restano da cache IndexedDB)
+(function () {
+  function updateOfflineBanner() {
+    const b = document.getElementById('offline-banner');
+    if (b) b.classList.toggle('show', !navigator.onLine);
+  }
+  window.addEventListener('online', updateOfflineBanner);
+  window.addEventListener('offline', updateOfflineBanner);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', updateOfflineBanner);
+  else updateOfflineBanner();
+})();
+
 // ============================================================================
 // Export functions to window
 // ============================================================================

@@ -11,6 +11,8 @@
  * }
  */
 
+import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
 console.log('[googlePlacesDetails] API Key:', GOOGLE_PLACES_API_KEY ? '✅' : '❌');
@@ -44,6 +46,10 @@ export default async function handler(req, res) {
     if (!placeId || typeof placeId !== 'string') {
       return res.status(400).json({ error: 'placeId required' });
     }
+
+    const cacheParams = { placeId };
+    const cached = await cacheGet('details', cacheParams);
+    if (cached) return res.status(200).json(cached);
 
     console.log(`[googlePlacesDetails] Fetching details for place_id: ${placeId}`);
 
@@ -133,6 +139,7 @@ export default async function handler(req, res) {
       reviews: result.reviews.length
     });
 
+    await cacheSet('details', cacheParams, result, TTL.SEVEN_DAYS);
     return res.status(200).json(result);
 
   } catch (err) {

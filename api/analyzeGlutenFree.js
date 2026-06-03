@@ -4,6 +4,8 @@
  * URL: /api/analyzeGlutenFree?place_id=xyz&name=Restaurant&city=Tokyo
  */
 
+import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,6 +27,10 @@ export default async function handler(req, res) {
   if (!GOOGLE_MAPS_API_KEY) {
     return res.status(400).json({ error: 'Missing API key', gf: null });
   }
+
+  const cacheParams = { place_id: place_id || null, name: name?.toLowerCase() || null, city: city?.toLowerCase() || null };
+  const cached = await cacheGet('analyzeGF', cacheParams);
+  if (cached) return res.status(200).json(cached);
 
   async function fetchJson(url) {
     const resp = await fetch(url);
@@ -146,7 +152,7 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(200).json({
+    const responseBody = {
       gf: {
         lvl: gfLevel,
         confidence: Math.round(confidence),
@@ -155,7 +161,9 @@ export default async function handler(req, res) {
         total_reviews: reviews.length,
         source: 'google_places_reviews'
       }
-    });
+    };
+    await cacheSet('analyzeGF', cacheParams, responseBody, TTL.SEVEN_DAYS);
+    return res.status(200).json(responseBody);
 
   } catch (error) {
     console.error('[analyzeGlutenFree] Error:', error);

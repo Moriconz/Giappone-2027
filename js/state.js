@@ -54,6 +54,28 @@ if (!window.state.group || typeof window.state.group !== 'object') {
   window.state.group = { name: 'Giappone 2027', members: [], myAvatar: null, myName: '' };
 }
 
+// ── Schema versioning & migration (evita crash su cambi di schema) ──
+window.STATE_VERSION = 2;
+(function migrateState() {
+  const s = window.state;
+  const from = s._schemaVersion || 1;
+  if (from === window.STATE_VERSION) return;
+  try {
+    if (from < 2) {
+      // v1 → v2: normalizza le strutture chiave
+      if (!s.itineraryByDay || typeof s.itineraryByDay !== 'object' || Array.isArray(s.itineraryByDay)) s.itineraryByDay = {};
+      if (!Array.isArray(s.savedPOIs)) s.savedPOIs = [];
+      if (!s.notes || typeof s.notes !== 'object') s.notes = {};
+      if (s.group && !Array.isArray(s.group.messages)) s.group.messages = s.group.messages || [];
+    }
+    // Migrazioni future: if (from < 3) { ... }
+    s._schemaVersion = window.STATE_VERSION;
+    console.log('[State] Schema migrato', from, '→', window.STATE_VERSION);
+  } catch (e) {
+    console.error('[State] Errore migrazione schema:', e);
+  }
+})();
+
 // Global save function
 window.saveState = function() {
   try {

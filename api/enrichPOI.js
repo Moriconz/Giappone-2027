@@ -4,6 +4,8 @@
  * URL: /api/enrichPOI?id=poi-123&name=Tokyo Tower&lat=35.6762&lng=139.7505
  */
 
+import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,6 +23,15 @@ export default async function handler(req, res) {
   if (!id || !name || !GOOGLE_MAPS_API_KEY) {
     return res.status(400).json({ error: 'Missing parameters', poi: null });
   }
+
+  // Cache key usa coordinate arrotondate a 3 decimali (~110m) — stessa posizione = stessa risposta
+  const cacheParams = {
+    id,
+    lat: lat ? Math.round(parseFloat(lat) * 1000) / 1000 : null,
+    lng: lng ? Math.round(parseFloat(lng) * 1000) / 1000 : null
+  };
+  const cached = await cacheGet('enrichPOI', cacheParams);
+  if (cached) return res.status(200).json(cached);
 
   async function fetchJson(url) {
     const resp = await fetch(url);
@@ -143,7 +154,9 @@ export default async function handler(req, res) {
       google_maps_url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.name)}&query_place_id=${placeId}`
     };
 
-    return res.status(200).json({ poi: enrichedPOI });
+    const responseBody = { poi: enrichedPOI };
+    await cacheSet('enrichPOI', cacheParams, responseBody, TTL.THIRTY_DAYS);
+    return res.status(200).json(responseBody);
 
   } catch (error) {
     console.error('[enrichPOI] Error:', error);

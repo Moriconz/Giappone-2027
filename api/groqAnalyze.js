@@ -4,6 +4,8 @@
  * URL: /api/groqAnalyze
  */
 
+import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,6 +27,11 @@ export default async function handler(req, res) {
   if (!menuText || !menuText.trim()) {
     return res.status(400).json({ error: 'Missing menuText' });
   }
+
+  // Input deterministico: stesso menu → stessa risposta Groq → cache a 30 giorni
+  const cacheParams = { text: menuText.trim().toLowerCase() };
+  const cached = await cacheGet('groqAnalyze', cacheParams);
+  if (cached) return res.status(200).json(cached);
 
   if (!GRO_API_KEY) {
     console.error('[groqAnalyze] GRO_API_KEY not set in environment');
@@ -79,7 +86,9 @@ Se dubbia, metti in RISCHIO (conservativo).`
 
     try {
       const result = JSON.parse(content);
-      return res.status(200).json({ result });
+      const responseBody = { result };
+      await cacheSet('groqAnalyze', cacheParams, responseBody, TTL.THIRTY_DAYS);
+      return res.status(200).json(responseBody);
     } catch (parseErr) {
       console.error('[groqAnalyze] JSON parse error:', parseErr, 'content:', content);
       return res.status(500).json({ error: 'Invalid response format from Groq', detail: content });

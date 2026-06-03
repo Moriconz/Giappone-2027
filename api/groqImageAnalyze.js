@@ -3,6 +3,8 @@
  * Uses Groq chat completions to classify a dish from image labels or menu text.
  */
 
+import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -24,6 +26,14 @@ export default async function handler(req, res) {
   if ((!Array.isArray(imageLabels) || imageLabels.length === 0) && (!menuText || !menuText.trim())) {
     return res.status(400).json({ error: 'Missing image labels or menu text for analysis' });
   }
+
+  // Stesso input → stessa risposta → cache a 30 giorni
+  const cacheParams = {
+    labels: Array.isArray(imageLabels) ? [...imageLabels].sort().join(',') : '',
+    text: menuText?.trim().toLowerCase() || ''
+  };
+  const cached = await cacheGet('groqImageAnalyze', cacheParams);
+  if (cached) return res.status(200).json(cached);
 
   if (!GRO_API_KEY) {
     console.error('[groqImageAnalyze] GRO_API_KEY not set in environment');
@@ -84,7 +94,9 @@ ${menuText ? `Testo menu aggiuntivo: ${menuText}` : ''}`;
 
     try {
       const result = JSON.parse(jsonText);
-      return res.status(200).json({ result });
+      const responseBody = { result };
+      await cacheSet('groqImageAnalyze', cacheParams, responseBody, TTL.THIRTY_DAYS);
+      return res.status(200).json(responseBody);
     } catch (parseErr) {
       console.error('[groqImageAnalyze] JSON parse error:', parseErr, 'content:', content);
       return res.status(500).json({ error: 'Invalid response format from Groq', detail: content });

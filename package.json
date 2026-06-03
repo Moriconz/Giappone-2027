@@ -4,7 +4,19 @@
   "private": true,
   "type": "module",
   "description": "Giappone 2027 — travel app (static frontend + Vercel serverless API)",
+  "scripts": {
+    "lint:i18n": "node scripts/lint-i18n.mjs",
+    "smoke": "node smoke-test.mjs http://localhost:8080",
+    "visual": "node scripts/visual-regression.mjs http://localhost:8080",
+    "visual:update": "node scripts/visual-regression.mjs http://localhost:8080 --update"
+  },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.34.3"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.0.4"
   }
 }
