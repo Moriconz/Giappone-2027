@@ -221,5 +221,80 @@ R.checks.errorCollector = await page.evaluate(() => {
   };
 });
 
+// ── FLUSSO 13: Shopping view ─────────────────────────────────────────
+R.checks.shoppingRender = await page.evaluate(() => {
+  try {
+    window.y2kWindows?.closeAll();
+    if (typeof window.renderShoppingView === 'function') {
+      window.renderShoppingView();
+      const body = document.querySelector('.y2k-win .y2k-win-body');
+      return { ok: true, hasContent: !!(body && body.textContent.trim().length > 0) };
+    }
+    return { skipped: 'renderShoppingView not found' };
+  } catch (e) { return { error: e.message }; }
+});
+
+// ── FLUSSO 14: SOS view ───────────────────────────────────────────────
+R.checks.sosRender = await page.evaluate(() => {
+  try {
+    window.y2kWindows?.closeAll();
+    if (typeof window.renderSosView === 'function') {
+      window.renderSosView();
+      const body = document.querySelector('.y2k-win .y2k-win-body');
+      return { ok: true, hasContent: !!(body && body.textContent.trim().length > 0) };
+    }
+    return { skipped: 'renderSosView not found' };
+  } catch (e) { return { error: e.message }; }
+});
+
+// ── FLUSSO 15: Gallery (IndexedDB) ───────────────────────────────────
+R.checks.galleryIDB = await page.evaluate(async () => {
+  try {
+    const idbOk = typeof indexedDB !== 'undefined';
+    // renderGalleryView è async; non aspettiamo il suo completamento ma verifichiamo che non lanci
+    if (typeof window.renderGalleryView === 'function') {
+      window.renderGalleryView().catch(() => {});
+      await new Promise(r => setTimeout(r, 800));
+      const body = document.querySelector('.y2k-win .y2k-win-body');
+      return { idbOk, ok: true, hasContent: !!(body && body.textContent.trim().length > 0) };
+    }
+    return { idbOk, skipped: 'renderGalleryView not found' };
+  } catch (e) { return { error: e.message }; }
+});
+
+// ── FLUSSO 16: Group chat render ─────────────────────────────────────
+R.checks.groupChat = await page.evaluate(() => {
+  try {
+    return {
+      chatModuleExists: typeof window.GROUP_CHAT !== 'undefined' || typeof window.renderGroupChat === 'function',
+      sendFn: typeof window.GROUP_CHAT?.sendMessage === 'function',
+    };
+  } catch (e) { return { error: e.message }; }
+});
+
+// ── FLUSSO 17: i18n nuove chiavi (onboard.tip*, tappa.*, snap.*) ──────
+R.checks.i18nNewKeys = await page.evaluate(() => {
+  try {
+    const t = window.t;
+    if (!t) return { skipped: 'window.t not defined' };
+    const langs = ['it', 'en', 'ja'];
+    const keys = ['onboard.tip1', 'onboard.tip2', 'onboard.tip3',
+                  'tappa.selectDay', 'tappa.added',
+                  'snap.storageFull', 'snap.deleted',
+                  'sos.copied', 'sos.cardDownloaded'];
+    const results = {};
+    for (const lang of langs) {
+      window.I18N.setLang(lang);
+      results[lang] = {};
+      for (const k of keys) {
+        const v = t(k, '__MISSING__');
+        results[lang][k] = v === '__MISSING__' ? 'MISSING' : 'ok';
+      }
+    }
+    window.I18N.setLang('it');
+    return results;
+  } catch (e) { return { error: e.message }; }
+});
+
 await browser.close();
 console.log(JSON.stringify(R, null, 2));
