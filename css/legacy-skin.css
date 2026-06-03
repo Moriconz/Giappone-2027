@@ -1220,18 +1220,6 @@ nav.bottom button.active {
 }
 
 
-/* ── Toast ──────────────────────────────────────────────────────── */
-#toast-container {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  border: 2px solid var(--y2k-green) !important;
-  border-radius: 999px !important;
-  color: #fff !important;
-  font-family: 'Comic Sans MS', cursive !important;
-  font-weight: 700 !important;
-  padding: 11px 20px !important;
-  box-shadow: var(--y2k-glow-p) !important;
-}
-
 
 .copy-address-btn {
   width: 32px !important;
