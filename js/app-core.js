@@ -4402,7 +4402,7 @@ document.addEventListener('DOMContentLoaded', () => {
           pointer-events: none;
         `;
         overlay.innerHTML = `
-          <div style="text-align: center;">
+          <div style="text-align: center; pointer-events: auto;">
             <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
             <h2 style="
               font-size: 18px;
@@ -4413,14 +4413,34 @@ document.addEventListener('DOMContentLoaded', () => {
             <p style="
               font-size: 14px;
               color: rgba(255,255,255,0.6);
-              margin: 0;
+              margin: 0 0 16px 0;
               line-height: 1.5;
               max-width: 240px;
             ">Prova a cambiare i filtri o a zoomare fuori per vedere più posti.</p>
+            <button id="map-empty-reset-filters" style="
+              padding: 10px 20px;
+              background: rgba(99,102,241,0.3);
+              border: 1.5px solid rgba(99,102,241,0.6);
+              border-radius: 20px;
+              color: rgba(255,255,255,0.9);
+              font-size: 13px;
+              font-weight: 600;
+              cursor: pointer;
+              font-family: inherit;
+            ">Resetta filtri</button>
           </div>
         `;
         const mapHost = document.getElementById('view-map') || document.getElementById('map');
-        if (mapHost) mapHost.appendChild(overlay);
+        if (mapHost) {
+          mapHost.appendChild(overlay);
+          overlay.querySelector('#map-empty-reset-filters')?.addEventListener('click', () => {
+            state.activeFilter = 'all';
+            state.onlyLocal = false;
+            state.showGFPlaces = false;
+            renderFilters();
+            renderMarkers();
+          });
+        }
       }
     } else if (emptyStateOverlay) {
       emptyStateOverlay.style.display = 'none';
@@ -7593,6 +7613,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 ${photoUrl ? `<img
                   src="${photoUrl}"
+                  loading="lazy"
                   style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;cursor:pointer"
                   alt="Foto"
                   title="Clicca per ingrandire"

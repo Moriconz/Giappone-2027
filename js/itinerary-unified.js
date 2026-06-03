@@ -247,7 +247,11 @@ function renderItineraryUnified() {
         " onmouseover="this.style.background='rgba(255,107,107,0.3)'" onmouseout="this.style.background='rgba(255,107,107,0.2)'">✕ Rimuovi</button>
       </div>
     `;
-  }).join('') : '<p style="color:rgba(255,255,255,0.5);font-size:12px;padding:8px">Nessuna tappa condivisa ancora.</p>';
+  }).join('') : `<div style="text-align:center;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:12px">
+    <span style="font-size:36px">👥</span>
+    <p style="color:rgba(255,255,255,0.5);font-size:13px;margin:0;line-height:1.5">Nessuna tappa condivisa ancora.<br>Unisciti o crea un gruppo per sincronizzare l'itinerario.</p>
+    <button onclick="window.renderGroupView?.()" style="padding:8px 18px;background:rgba(99,102,241,0.2);border:1.5px solid rgba(99,102,241,0.4);border-radius:16px;color:rgba(255,255,255,0.85);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">👥 Vai al Gruppo</button>
+  </div>`;
 
   // Render weather alerts
   const weatherAlertsHTML = window.WEATHER_FEATURES?.renderWeatherAlerts?.() || '';

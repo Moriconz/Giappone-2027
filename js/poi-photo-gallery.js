@@ -43,6 +43,7 @@ class PhotoGallery {
           <img
             src="${photoUrls[0]}"
             alt="POI photo"
+            loading="lazy"
             style="
               width: 100%;
               height: 100%;
@@ -59,6 +60,7 @@ class PhotoGallery {
       <img
         src="${url}"
         alt="Photo ${idx + 1}"
+        loading="lazy"
         class="${galleryId}-slide"
         data-index="${idx}"
         style="
