@@ -3,6 +3,8 @@
 // Protects against localStorage loss (phone change, browser data wipe)
 // ============================================================================
 
+const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+
 const BACKUP_VERSION = 1;
 const BACKUP_FIELDS = [
   'itinerary',
@@ -59,7 +61,7 @@ function exportBackup() {
   a.click();
   setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
 
-  if (window.toast) window.toast(`📦 Backup scaricato — ${summary}`);
+  if (window.toast) window.toast(T('backup.exported', '📦 Backup scaricato') + ' — ' + summary);
   console.log('[Backup] Exported:', filename, summary);
 }
 
@@ -114,7 +116,7 @@ function importBackup() {
 
     window.saveState?.();
 
-    if (window.toast) window.toast('✅ Backup ripristinato — ricarica l\'app per vedere le modifiche');
+    if (window.toast) window.toast(T('backup.restored', '✅ Backup ripristinato — ricarica l\'app per vedere le modifiche'));
 
     // Show reload prompt
     const reload = await (window.modalConfirm || confirm)(
