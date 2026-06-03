@@ -85,7 +85,7 @@
 
     // Ultimo fallback: prompt per copia manuale
     try {
-      window.prompt(_T('invite.copyManual', 'Copia il link invito:'), url);
+      (window.modalPrompt || function(m, o) { return Promise.resolve(window.prompt(m, o && o.defaultValue || '')); })(_T('invite.copyManual', 'Copia il link invito:'), { defaultValue: url });
       return true;
     } catch (e) {
       _toast('❌ ' + url);

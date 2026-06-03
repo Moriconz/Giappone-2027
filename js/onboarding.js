@@ -808,8 +808,7 @@ function initOnboardingForm() {
     const interests = Array.from(formData.getAll('interests'));
 
     if (interests.length === 0) {
-      if (window.toast) window.toast('⚠️ Seleziona almeno un interesse');
-      else alert('Seleziona almeno un interesse');
+      (window.toast || function(m) { window.modalConfirm(m, { confirmText: 'OK', cancelText: '' }); })('⚠️ Seleziona almeno un interesse');
       return;
     }
 
