@@ -58,8 +58,18 @@
 
   /* allinea anche i token "components.css" */
   --color-warm: var(--m-accent);
-  --accent: var(--m-accent);
-  --primary: var(--m-accent);
+  --accent:     var(--m-accent);
+  --primary:    var(--m-accent);
+
+  /* legacy shorthand aliases used by JS template strings */
+  --surface:    var(--m-surface);
+  --surface-2:  var(--m-surface-2);
+  --text:       var(--m-text);
+  --text-2:     var(--m-text-2);
+  --border:     var(--m-border);
+  --muted:      var(--m-text-3);
+  --danger:     #ef4444;
+  --success:    #4ade80;
 }
 
 /* ── Base ───────────────────────────────────────────────────────── */
