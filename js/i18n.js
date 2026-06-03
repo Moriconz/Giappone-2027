@@ -92,7 +92,16 @@
       'snap.storageFull': '❌ Spazio esaurito, impossibile salvare', 'snap.emptyItin': '⚠️ Itinerario vuoto, nulla da salvare',
       'snap.notFound': '❌ Snapshot non trovato', 'snap.restoreFailed': '❌ Ripristino fallito',
       'snap.deleted': '🗑️ Snapshot eliminato', 'snap.autoDeleted': '🗑️ Auto-snapshot eliminato',
-      'ical.emptyItin': '⚠️ Itinerario vuoto', 'ical.exportFailed': '❌ Export iCal fallito'
+      'ical.emptyItin': '⚠️ Itinerario vuoto', 'ical.exportFailed': '❌ Export iCal fallito',
+      'cpoi.catGeneric': 'Generico', 'cpoi.catFood': 'Cibo', 'cpoi.catSleep': 'Alloggio',
+      'cpoi.catMeet': 'Ritrovo', 'cpoi.catNature': 'Natura/Cultura', 'cpoi.catShop': 'Shopping',
+      'cpoi.defaultName': 'Posto mio', 'cpoi.name': 'Nome', 'cpoi.namePh': 'Es. Onsen segreto',
+      'cpoi.cat': 'Categoria', 'cpoi.note': 'Nota (opzionale)', 'cpoi.notePh': 'Dettagli, come arrivare...',
+      'cpoi.create': 'Crea posto', 'cpoi.title': '📌 Nuovo posto', 'cpoi.created': 'creato',
+      'cpoi.custom': 'posto personalizzato', 'cpoi.addItin': 'Aggiungi a itinerario',
+      'cpoi.openMaps': 'Apri in Google Maps', 'cpoi.addedItin': 'Aggiunto al Day 1',
+      'cpoi.deleted': 'Posto eliminato',
+      'cpoi.intro': "Crea un posto personalizzato in questa posizione. Apparirà sulla mappa e potrai aggiungerlo all'itinerario."
     },
     en: {
       'header.brand': '🌸 SafeEats',
@@ -179,7 +188,16 @@
       'snap.storageFull': '❌ Storage full, cannot save', 'snap.emptyItin': '⚠️ Empty itinerary, nothing to save',
       'snap.notFound': '❌ Snapshot not found', 'snap.restoreFailed': '❌ Restore failed',
       'snap.deleted': '🗑️ Snapshot deleted', 'snap.autoDeleted': '🗑️ Auto-snapshot deleted',
-      'ical.emptyItin': '⚠️ Empty itinerary', 'ical.exportFailed': '❌ iCal export failed'
+      'ical.emptyItin': '⚠️ Empty itinerary', 'ical.exportFailed': '❌ iCal export failed',
+      'cpoi.catGeneric': 'Generic', 'cpoi.catFood': 'Food', 'cpoi.catSleep': 'Accommodation',
+      'cpoi.catMeet': 'Meeting point', 'cpoi.catNature': 'Nature/Culture', 'cpoi.catShop': 'Shopping',
+      'cpoi.defaultName': 'My place', 'cpoi.name': 'Name', 'cpoi.namePh': 'E.g. Secret onsen',
+      'cpoi.cat': 'Category', 'cpoi.note': 'Note (optional)', 'cpoi.notePh': 'Details, how to get there...',
+      'cpoi.create': 'Create place', 'cpoi.title': '📌 New place', 'cpoi.created': 'created',
+      'cpoi.custom': 'custom place', 'cpoi.addItin': 'Add to itinerary',
+      'cpoi.openMaps': 'Open in Google Maps', 'cpoi.addedItin': 'Added to Day 1',
+      'cpoi.deleted': 'Place deleted',
+      'cpoi.intro': 'Create a custom place at this location. It will appear on the map and you can add it to your itinerary.'
     },
     ja: {
       'header.brand': '🌸 SafeEats',
@@ -266,7 +284,16 @@
       'snap.storageFull': '❌ 保存できません：ストレージ容量不足', 'snap.emptyItin': '⚠️ 旅程が空です、保存するものがありません',
       'snap.notFound': '❌ スナップショットが見つかりません', 'snap.restoreFailed': '❌ 復元に失敗しました',
       'snap.deleted': '🗑️ スナップショット削除済み', 'snap.autoDeleted': '🗑️ 自動スナップショット削除済み',
-      'ical.emptyItin': '⚠️ 旅程が空です', 'ical.exportFailed': '❌ iCalエクスポートに失敗しました'
+      'ical.emptyItin': '⚠️ 旅程が空です', 'ical.exportFailed': '❌ iCalエクスポートに失敗しました',
+      'cpoi.catGeneric': 'その他', 'cpoi.catFood': '食べ物', 'cpoi.catSleep': '宿泊',
+      'cpoi.catMeet': '集合場所', 'cpoi.catNature': '自然・文化', 'cpoi.catShop': 'ショッピング',
+      'cpoi.defaultName': 'マイスポット', 'cpoi.name': '名前', 'cpoi.namePh': '例：秘密の温泉',
+      'cpoi.cat': 'カテゴリ', 'cpoi.note': 'メモ（任意）', 'cpoi.notePh': '詳細、行き方...',
+      'cpoi.create': '場所を作成', 'cpoi.title': '📌 新しい場所', 'cpoi.created': '作成しました',
+      'cpoi.custom': 'カスタムスポット', 'cpoi.addItin': '旅程に追加',
+      'cpoi.openMaps': 'Google Mapsで開く', 'cpoi.addedItin': 'Day 1に追加しました',
+      'cpoi.deleted': '場所を削除しました',
+      'cpoi.intro': 'この場所にカスタムスポットを作成します。地図に表示され、旅程に追加できます。'
     }
   };
 
