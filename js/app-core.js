@@ -5174,7 +5174,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (view === 'groq-menu') { window.openGroqPanel(); return; }
       if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
       if (view === 'gf-suggest') { window.openGFSuggestionPanel(); return; }
-      if (view === 'reminders') { window.openItineraryReminders?.(); return; }
+      if (view === 'reminders') { window.loadScript('./js/itinerary-reminders.js').then(() => window.openItineraryReminders?.()); return; }
       if (view === 'jr-pass') { window.openJRPassPanel?.(); return; }
       if (view === 'japan-cal') { window.JapanCalendarHints?.openPanel?.(); return; }
     });
@@ -8597,7 +8597,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => window.GFHeatmap?.toggle?.(), 150);
               });
             }
-            else if (view === 'reminders') { window.openItineraryReminders?.(); }
+            else if (view === 'reminders') { window.loadScript('./js/itinerary-reminders.js').then(() => window.openItineraryReminders?.()); }
             else if (view === 'jr-pass') { window.openJRPassPanel?.(); }
             else if (view === 'japan-cal') { window.JapanCalendarHints?.openPanel?.(); }
             else if (view === 'groq-menu') { window.openGroqPanel(); }
