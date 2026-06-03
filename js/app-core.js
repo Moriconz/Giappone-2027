@@ -5171,6 +5171,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (view === 'budget') { renderBudgetView(); return; }
       if (view === 'gallery') { window.renderGalleryView?.(); return; }
       if (view === 'sos') { window.loadScript('./js/views/sos-view.js').then(() => window.renderSOSPanel?.()); return; }
+      if (view === 'tips') { window.loadScript('./js/views/tips-view.js').then(() => window.renderTipsView?.()); return; }
       if (view === 'groq-menu') { window.openGroqPanel(); return; }
       if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
       if (view === 'gf-suggest') { window.openGFSuggestionPanel(); return; }
