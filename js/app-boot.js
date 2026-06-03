@@ -562,6 +562,28 @@
   };
 })();
 
+// ── Post-onboarding welcome tip ───────────────────────────────────────────────
+(function() {
+  if (!sessionStorage.getItem('gj_onboarding_just_done')) return;
+  sessionStorage.removeItem('gj_onboarding_just_done');
+  // Wait for app to init, then show a friendly tip
+  setTimeout(() => {
+    const t = window.t;
+    const tips = [
+      t ? t('onboard.tip1', '📅 Tocca un luogo sulla mappa per aggiungerlo all\'itinerario') : '📅 Tocca un luogo per aggiungerlo all\'itinerario',
+      t ? t('onboard.tip2', '💰 Apri Menu → Budget per impostare le spese') : '💰 Menu → Budget per le spese',
+      t ? t('onboard.tip3', '👥 Crea un gruppo per viaggiare con altri') : '👥 Crea un gruppo per viaggiare insieme',
+    ];
+    let i = 0;
+    function showNext() {
+      if (i >= tips.length || !window.toast) return;
+      window.toast(tips[i++]);
+      if (i < tips.length) setTimeout(showNext, 4000);
+    }
+    showNext();
+  }, 2500);
+})();
+
 // ── Lazy-load helper ──────────────────────────────────────────────────────────
 // window.loadScript(src) → Promise<void>
 // Loads a script on demand; resolves immediately if already loaded.

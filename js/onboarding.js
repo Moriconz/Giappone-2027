@@ -322,6 +322,38 @@ function showOnboarding() {
                 onblur="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,165,100,0.2)';"
               >
             </div>
+
+            <div>
+              <label style="
+                display: block;
+                font-size: 13px;
+                font-weight: 600;
+                color: rgba(255,255,255,0.7);
+                margin-bottom: 10px;
+                letter-spacing: 0.3px;
+              ">Data di inizio</label>
+              <input
+                type="date"
+                name="startDate"
+                class="form-input"
+                value="2027-04-10"
+                style="
+                  width: 100%;
+                  padding: 14px 16px;
+                  background: rgba(255,255,255,0.06);
+                  border: 1px solid rgba(255,165,100,0.2);
+                  border-radius: 10px;
+                  color: rgba(255,255,255,0.95);
+                  font-size: 15px;
+                  font-family: inherit;
+                  transition: all 0.3s ease;
+                  box-sizing: border-box;
+                  color-scheme: dark;
+                "
+                onfocus="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,165,100,0.4)';"
+                onblur="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,165,100,0.2)';"
+              >
+            </div>
           </div>
 
           <!-- Step 2: Group size -->
@@ -784,6 +816,7 @@ function initOnboardingForm() {
     const tripProfile = {
       name: formData.get('tripName'),
       days: parseInt(formData.get('days')),
+      startDate: formData.get('startDate') || '2027-04-10',
       groupSize: formData.get('groupSize'),
       interests: interests,
       diet: formData.get('diet'),
@@ -801,7 +834,8 @@ function initOnboardingForm() {
       window.saveState?.();
     }
 
-    console.log('[Onboarding] Profile saved:', tripProfile);
+    // Signal post-onboarding tip on next load
+    sessionStorage.setItem('gj_onboarding_just_done', '1');
 
     // Remove onboarding overlay
     document.getElementById('onboarding-overlay').remove();
