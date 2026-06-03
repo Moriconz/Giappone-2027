@@ -7,6 +7,8 @@
  * Shown: Only if tripProfile doesn't exist
  */
 
+const _To = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+
 function initOnboarding() {
   const ONBOARDING_KEY = 'tripProfile';
 
@@ -71,7 +73,7 @@ function showOnboardingChoiceModal() {
           margin: 0;
           text-align: center;
           letter-spacing: -0.5px;
-        ">Benvenuto!</h1>
+        ">${_To("ob.welcome", "Benvenuto!")}</h1>
 
         <!-- SUBTITLE -->
         <p style="
@@ -80,7 +82,7 @@ function showOnboardingChoiceModal() {
           text-align: center;
           margin: 0;
           line-height: 1.6;
-        ">Che cosa vuoi fare?</p>
+        ">${_To("ob.choice", "Che cosa vuoi fare?")}</p>
 
         <!-- OPTION 1: CREATE TRIP -->
         <button id="choice-create" style="
@@ -99,7 +101,7 @@ function showOnboardingChoiceModal() {
           gap: 12px;
         " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(255,107,53,0.3)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
           <span style="font-size: 18px">✏️</span>
-          Creare il mio viaggio
+          ${_To("ob.create", "Creare il mio viaggio")}
         </button>
 
         <!-- OPTION 2: JOIN TRIP -->
@@ -119,7 +121,7 @@ function showOnboardingChoiceModal() {
           gap: 12px;
         " onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,165,100,0.5)';this.style.color='rgba(255,255,255,0.95)'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,165,100,0.3)';this.style.color='rgba(255,255,255,0.8)'">
           <span style="font-size: 18px">👥</span>
-          Partecipare a un viaggio
+          ${_To("ob.join", "Partecipare a un viaggio")}
         </button>
 
         <!-- INFO -->
@@ -130,7 +132,7 @@ function showOnboardingChoiceModal() {
           margin: 0;
           line-height: 1.5;
         ">
-          💡 Potrai sempre creare un viaggio dal menù della mappa
+          ${_To("ob.hint", "💡 Potrai sempre creare un viaggio dal menù della mappa")}
         </p>
       </div>
     </div>
@@ -251,7 +253,7 @@ function showOnboarding() {
           margin: 0 0 40px 0;
           line-height: 1.6;
           font-weight: 400;
-        ">Prepariamo il tuo viaggio perfetto. Ti guideremo in 5 semplici step.</p>
+        ">${_To("ob.subtitle", "Prepariamo il tuo viaggio perfetto. Ti guideremo in 5 semplici step.")}</p>
 
         <form id="onboarding-form" style="display: flex; flex-direction: column; gap: 28px;">
 
@@ -682,7 +684,7 @@ function showOnboarding() {
               "
               onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,165,100,0.3)';"
               onmouseout="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,165,100,0.2)';"
-            >← Indietro</button>
+            >${_To("ob.prev", "← Indietro")}</button>
 
             <button
               type="button"
@@ -702,7 +704,7 @@ function showOnboarding() {
               "
               onmouseover="this.style.boxShadow='0 12px 32px rgba(255,107,53,0.4)'; this.style.transform='translateY(-2px)';"
               onmouseout="this.style.boxShadow='0 8px 24px rgba(255,107,53,0.3)'; this.style.transform='translateY(0)';"
-            >Avanti →</button>
+            >${_To("ob.next", "Avanti →")}</button>
           </div>
 
           <button
@@ -723,7 +725,7 @@ function showOnboarding() {
             "
             onmouseover="this.style.boxShadow='0 12px 32px rgba(255,107,53,0.4)'; this.style.transform='translateY(-2px)';"
             onmouseout="this.style.boxShadow='0 8px 24px rgba(255,107,53,0.3)'; this.style.transform='translateY(0)';"
-          >Inizia a pianificare 🗺️</button>
+          >${_To("ob.finish", "Inizia a pianificare 🗺️")}</button>
         </form>
 
         <!-- FOOTER TEXT -->
@@ -734,7 +736,7 @@ function showOnboarding() {
           margin-top: 28px;
           margin-bottom: 0;
           line-height: 1.5;
-        ">Puoi modificare queste preferenze in qualsiasi momento dal menu ⚙️</p>
+        ">${_To("ob.footer", "Puoi modificare queste preferenze in qualsiasi momento dal menu ⚙️")}</p>
       </div>
     </div>
   `;
@@ -761,7 +763,7 @@ function initOnboardingForm() {
     // Update step indicator
     const stepIndicator = document.getElementById('step-indicator');
     if (stepIndicator) {
-      stepIndicator.textContent = `Passo ${step} di ${totalSteps}`;
+      stepIndicator.textContent = _To('ob.stepOf', 'Passo') + ' ' + step + ' ' + _To('ob.of', 'di') + ' ' + totalSteps;
     }
 
     const prevBtn = document.getElementById('btn-prev');
@@ -808,7 +810,7 @@ function initOnboardingForm() {
     const interests = Array.from(formData.getAll('interests'));
 
     if (interests.length === 0) {
-      (window.toast || function(m) { window.modalConfirm(m, { confirmText: 'OK', cancelText: '' }); })('⚠️ Seleziona almeno un interesse');
+      (window.toast || function(m) { window.modalConfirm(m, { confirmText: 'OK', cancelText: '' }); })(_To('ob.selectInterest', '⚠️ Seleziona almeno un interesse'));
       return;
     }
 
