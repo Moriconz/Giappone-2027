@@ -198,6 +198,23 @@ document.addEventListener('DOMContentLoaded', () => {
   window.CITY_COORDS = CITY_COORDS; // esposto per js/views/
   // ---- State (persisted) ----
   const STATE_KEY = 'giappone2027_state_v1';
+
+  function _loadPersistedState() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STATE_KEY) || '{}');
+      // Guard every field that must be a specific type — corrupt values revert to defaults.
+      const arrays = ['savedPOIs','itinerary','customEvents','customPOIs','gpsTraces'];
+      const objects = ['notes','gfReports','userCategoryOverrides','itinerarySharing','groupItineraries','itineraryByDay'];
+      arrays.forEach(k => { if (raw[k] !== undefined && !Array.isArray(raw[k])) { console.warn('[State] Corrupt field reset:', k); delete raw[k]; } });
+      objects.forEach(k => { if (raw[k] !== undefined && (typeof raw[k] !== 'object' || Array.isArray(raw[k]) || raw[k] === null)) { console.warn('[State] Corrupt field reset:', k); delete raw[k]; } });
+      if (raw.group !== undefined && (typeof raw.group !== 'object' || Array.isArray(raw.group) || raw.group === null)) { console.warn('[State] Corrupt group reset'); delete raw.group; }
+      return raw;
+    } catch(e) {
+      console.error('[State] Parse error — starting fresh:', e);
+      return {};
+    }
+  }
+
   const state = Object.assign({
     activeCat:'all', onlyGF:false, onlyLocal:false, showGFPlaces:false, savedPOIs:[], notes:{}, customEvents:[], customPOIs:[], gfReports:{}, dismissInstall:false,
     itinerary:[], // Collaborative itinerary shared across group members
@@ -209,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // TEMPORARY: Default GPS for testing (Tokyo center)
     gpsCurrentLat: 35.6762,
     gpsCurrentLng: 139.6503
-  }, JSON.parse(localStorage.getItem(STATE_KEY) || '{}'));
+  }, _loadPersistedState());
   window.state = state;
   window.saveState = saveState;
   console.log('[State] Init', { group: state.group });
