@@ -116,7 +116,7 @@
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">${body}</div>
-        <p style="font-size:10px;color:rgba(255,255,255,0.35);text-align:center;margin-top:6px;">${T('err.privacy', 'Gli errori restano sul tuo dispositivo. Nessun invio esterno.')}</p>
+        <p style="font-size:10px;color:rgba(255,255,255,0.50);text-align:center;margin-top:6px;">${T('err.privacy', 'Gli errori restano sul tuo dispositivo. Nessun invio esterno.')}</p>
       </div>
     `;
     window.openSheet(T('err.title', '🐞 Errori (debug)'), html);

@@ -187,7 +187,7 @@
       window.openSheet('🛍️ Shopping', `
         <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
           ${Array.from({length: 6}).map(() => '<div class="skeleton" style="height:68px;border-radius:12px;"></div>').join('')}
-          <p style="color:rgba(255,255,255,0.35);text-align:center;font-size:12px;margin:4px 0 0;">⏳ Caricamento negozi in corso…</p>
+          <p style="color:rgba(255,255,255,0.50);text-align:center;font-size:12px;margin:4px 0 0;">⏳ Caricamento negozi in corso…</p>
         </div>`);
       return;
     }

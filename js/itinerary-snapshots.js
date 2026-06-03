@@ -320,7 +320,7 @@
           ${empty}
           ${rows}
         </div>
-        <div style="font-size:10.5px;color:rgba(255,255,255,0.35);text-align:center;padding-top:8px;">
+        <div style="font-size:10.5px;color:rgba(255,255,255,0.50);text-align:center;padding-top:8px;">
           ${T('snap.limit', `Massimo ${MAX_SNAPSHOTS} versioni — le più vecchie vengono rimosse automaticamente.`)}
         </div>
       </div>

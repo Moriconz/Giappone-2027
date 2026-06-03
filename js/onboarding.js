@@ -729,7 +729,7 @@ function showOnboarding() {
         <!-- FOOTER TEXT -->
         <p style="
           font-size: 12px;
-          color: rgba(255,255,255,0.35);
+          color: rgba(255,255,255,0.50);
           text-align: center;
           margin-top: 28px;
           margin-bottom: 0;
