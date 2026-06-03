@@ -931,31 +931,6 @@ nav.bottom button.active {
 }
 .form-row { margin-bottom: 14px !important; }
 
-/* ── Booking cards ──────────────────────────────────────────────── */
-.booking-card {
-  backdrop-filter: blur(15px) !important;
-  background: rgba(255, 107, 53, 0.15) !important;
-  border: 1px solid rgba(255, 107, 53, 0.25) !important;
-  border-radius: 12px !important;
-  padding: 14px 16px !important;
-  margin-bottom: 12px !important;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
-}
-.booking-card .bc-title  { color: #fff !important; font-weight: 700 !important; font-size: 14px !important; }
-.booking-card .bc-city   { color: rgba(255, 255, 255, 0.6) !important; font-size: 12px !important; }
-.booking-card .bc-icon   { background: rgba(255, 107, 53, 0.4) !important; box-shadow: 0 0 12px rgba(255, 107, 53, 0.3) !important; }
-.booking-card .bc-reminder { color: rgba(255, 255, 255, 0.6) !important; }
-.bc-status.confirmed {
-  background: rgba(0, 255, 136, 0.2) !important;
-  color: rgba(0, 255, 136, 0.9) !important;
-  border: 1px solid rgba(0, 255, 136, 0.4) !important;
-}
-.bc-status.pending {
-  background: rgba(255, 215, 0, 0.2) !important;
-  color: rgba(255, 215, 0, 0.9) !important;
-  border: 1px solid rgba(255, 215, 0, 0.4) !important;
-}
-
 
 /* ── Shop cards ─────────────────────────────────────────────────── */
 .shop-card {
@@ -1192,11 +1167,6 @@ nav.bottom button.active {
 .gf-empty-state { color: var(--y2k-muted) !important; }
 
 
-/* ── Do/Don't lists ─────────────────────────────────────────────── */
-.do-list li::before   { color: #009944 !important; }
-.dont-list li::before { color: #CC0033 !important; }
-.do-list li, .dont-list li { color: var(--y2k-ink) !important; }
-
 /* ── Info chips ─────────────────────────────────────────────────── */
 .info-chip {
   background: linear-gradient(135deg, #E8E0FF, #D8CCFF) !important;
@@ -1218,7 +1188,6 @@ nav.bottom button.active {
   background: rgba(200,190,240,0.08) !important;
   padding: 20px !important;
 }
-
 
 
 .copy-address-btn {
