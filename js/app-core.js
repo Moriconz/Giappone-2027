@@ -4998,6 +4998,9 @@ document.addEventListener('DOMContentLoaded', () => {
   window.sheetBody = sheetBody; // esposto per le views estratte (vedi js/views/)
   document.getElementById('sheet-close').onclick = closeSheet;
   sheet.addEventListener('click', e => { if (e.target === sheet) closeSheet(); });
+  let _sheetPrevFocus = null;
+  let _sheetTrapHandler = null;
+
   function openSheet(title, html){
     console.log('[openSheet] Starting, title:', title);
     console.log('[openSheet] sheetTitle:', sheetTitle, 'sheetBody:', sheetBody, 'sheet:', sheet);
@@ -5012,10 +5015,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const weatherWidget = document.getElementById('weather-floating');
     if (weatherWidget) weatherWidget.classList.remove('show');
     console.log('[openSheet] ✅ Sheet opened, class added');
+
+    // Focus trap: save previous focus, move focus into sheet
+    _sheetPrevFocus = document.activeElement;
+    const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    if (_sheetTrapHandler) document.removeEventListener('keydown', _sheetTrapHandler);
+    _sheetTrapHandler = (ev) => {
+      if (ev.key !== 'Tab') return;
+      const els = Array.from(sheet.querySelectorAll(FOCUSABLE)).filter(el => el.offsetParent !== null);
+      if (!els.length) return;
+      const first = els[0], last = els[els.length - 1];
+      if (ev.shiftKey) { if (document.activeElement === first) { ev.preventDefault(); last.focus(); } }
+      else            { if (document.activeElement === last)  { ev.preventDefault(); first.focus(); } }
+    };
+    document.addEventListener('keydown', _sheetTrapHandler);
+    requestAnimationFrame(() => {
+      const closeBtn = document.getElementById('sheet-close');
+      const firstEl = sheet.querySelector(FOCUSABLE);
+      (closeBtn || firstEl)?.focus();
+    });
   }
   function closeSheet(){
     console.log('[closeSheet] 🔴 closeSheet called');
     sheet.classList.remove('open');
+    // Release focus trap and restore prior focus
+    if (_sheetTrapHandler) { document.removeEventListener('keydown', _sheetTrapHandler); _sheetTrapHandler = null; }
+    if (_sheetPrevFocus && typeof _sheetPrevFocus.focus === 'function') { try { _sheetPrevFocus.focus(); } catch (_) {} }
+    _sheetPrevFocus = null;
 
     // Remove wizard listeners when sheet closes
     if (window._wizardClickListener) {

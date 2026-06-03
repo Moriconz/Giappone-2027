@@ -579,9 +579,9 @@ window.handleShareLink = function() {
   if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(url).then(
       () => { if (window.toast) window.toast('🔗 Link copiato! Incollalo dove vuoi'); },
-      () => window.prompt('Copia il link:', url)
+      () => { if (window.toast) window.toast('⚠️ Copia manuale: ' + url.substring(0, 60) + '…'); }
     );
-  } else { window.prompt('Copia il link:', url); }
+  } else { if (window.toast) window.toast('⚠️ Clipboard non disponibile'); }
 };
 window.importSharedItinerary = function(payload) {
   try {
