@@ -755,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
     state.itinerary = [];
     saveState();
     console.log('[Delete] Deleted personal itinerary');
-    toast('🗑️ Itinerario eliminato');
+    toast(T('toast.itinDeleted', '🗑️ Itinerario eliminato'));
     return true;
   }
 
@@ -768,7 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const owner = state.groupItineraries?.[`group_${groupId}_shared`]?.owner;
 
     if (!owner) {
-      toast('⚠️ Impossibile trovare il proprietario dell\'itinerario');
+      toast('⚠️ Impossibile trovare il proprietario dell\'itinerario'); // rare internal error, no i18n key needed
       return;
     }
 
@@ -1267,7 +1267,7 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmBtn.addEventListener('click', () => {
           addPOIToGroupItinerary(poi, roomId, itineraryId);
           window.y2kWindows.close('group-selection-modal');
-          toast('✅ Tappa aggiunta all\'itinerario di gruppo!');
+          toast(T('toast.groupAdded', '✅ Tappa aggiunta all\'itinerario di gruppo!'));
         });
       }
 
@@ -6929,7 +6929,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.ratings[id] = n;
         saveState();
         starsEl.querySelectorAll('.star').forEach(x => x.classList.toggle('on', parseInt(x.dataset.star,10)<=n));
-        toast('Voto salvato ⭐');
+        toast(T('toast.ratingSaved', 'Voto salvato ⭐'));
       };
     });
     const savePoiBtn = document.getElementById('save-poi');
@@ -7019,14 +7019,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const a = document.createElement('a');
     a.href = url; a.download = 'giappone-2027-itinerario.json'; document.body.appendChild(a); a.click();
     setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500);
-    toast('Itinerario JSON scaricato 📥');
+    toast(T('toast.itinJsonExported', 'Itinerario JSON scaricato 📥'));
   }
   function exportItineraryPDF(){
     const itinerary = state.itinerary || [];
     const bookings = state.bookings || {};
     const notes = state.notes || {};
     if (!itinerary.length) {
-      toast('Aggiungi tappe prima di esportare');
+      toast(T('toast.addStopsFirst', 'Aggiungi tappe prima di esportare'));
       return;
     }
     // Simple HTML-based PDF generation
@@ -7081,7 +7081,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      toast('Consenti i popup per esportare il PDF');
+      toast(T('toast.popupBlocked', 'Consenti i popup per esportare il PDF'));
       return;
     }
 
@@ -7126,7 +7126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lat:p.lat, lng:p.lng, start:start, end:end
       }]);
       downloadICS(`${p.id}_${getPoiDisplayName(p).replace(/[^a-z0-9]/gi,'_')}.ics`, ics);
-      toast('Calendario scaricato 📅');
+      toast(T('toast.calExported', 'Calendario scaricato 📅'));
     };
   }
   // ===== GLOBAL POI CACHE =====
@@ -7186,7 +7186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (itinerary.length === 0) {
-      toast('❌ Itinerario vuoto. Aggiungi tappe prima!');
+      toast(T('toast.itinEmptyActions', '❌ Itinerario vuoto. Aggiungi tappe prima!'));
       return;
     }
 
@@ -7214,7 +7214,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Copia e apri WhatsApp
     navigator.clipboard.writeText(text).then(() => {
-      toast('✅ Itinerario copiato! Incollalo su WhatsApp');
+      toast(T('toast.itinCopied', '✅ Itinerario copiato! Incollalo su WhatsApp'));
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
       window.open(whatsappUrl, '_blank');
     }).catch(() => {
@@ -7246,11 +7246,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function shareItineraryInGroup() {
     const itinerary = state.itinerary || [];
     if (itinerary.length === 0) {
-      toast('❌ Itinerario vuoto!');
+      toast(T('toast.itinEmpty', '❌ Itinerario vuoto!'));
       return;
     }
     if (!window.peerGPS?.connections || Object.keys(window.peerGPS.connections).length === 0) {
-      toast('❌ Non sei in una stanza. Crea/accedi a una stanza prima!');
+      toast(T('toast.noRoom', '❌ Non sei in una stanza. Crea/accedi a una stanza prima!'));
       return;
     }
     broadcastItinerary();
@@ -7749,13 +7749,13 @@ document.addEventListener('DOMContentLoaded', () => {
               console.log('[DIALOG CALLBACK] entry created:', entry);
               addToItinerary(entry);
               console.log('[DIALOG CALLBACK] calling renderListView...');
-              toast('✓ Aggiunto a itinerario personale');
+              toast(T('toast.stopAddedPersonal', '✓ Aggiunto a itinerario personale'));
               renderListView();
               console.log('[DIALOG CALLBACK] renderListView completed');
             });
           } else {
             console.error('[AGGIUNGI] Dati POI incompleti:', poiId);
-            toast('Errore: impossibile aggiungere questa tappa');
+            toast(T('toast.stopAddError', 'Errore: impossibile aggiungere questa tappa'));
           }
         });
 
@@ -7844,7 +7844,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         const id = btn.dataset.removeItinerary;
         removeFromItinerary(id);
-        toast('Rimosso da itinerario');
+        toast(T('toast.stopRemovedSimple', 'Rimosso da itinerario'));
         renderListView();
       };
     });
@@ -9198,7 +9198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (peerGPS) {
       peerGPS.stop();
     }
-    toast('❌ Uscito dal gruppo');
+    toast(T('toast.groupLeft', '❌ Uscito dal gruppo'));
     // Aggiorna il contenuto dello sheet in-place (non chiudere/riaprire)
     renderGroupView();
   };
@@ -9228,7 +9228,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.showMemberOptions = function(memberName) {
     const gpsData = state.gpsRemoteMarkers?.[memberName];
     if (!gpsData) {
-      toast('⚠️ Posizione non disponibile');
+      toast(T('toast.posUnavailable', '⚠️ Posizione non disponibile'));
       return;
     }
 
@@ -9417,7 +9417,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (copyCodeBtn && codeDisplay) {
       copyCodeBtn.onclick = () => {
         const code = codeDisplay.textContent.trim();
-        navigator.clipboard?.writeText(code).then(() => toast('📋 Codice copiato: ' + code))
+        navigator.clipboard?.writeText(code).then(() => toast(T('toast.codeCopied', '📋 Codice copiato') + ': ' + code))
           .catch(() => toast('Codice: ' + code));
       };
     }
@@ -9499,7 +9499,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       document.getElementById('group-avatar')?.value.trim() || '';
 
       if (!room || room.length < 4) {
-        toast('⚠️ Codice stanza non valido');
+        toast(T('toast.invalidRoom', '⚠️ Codice stanza non valido'));
         return;
       }
 
@@ -9523,7 +9523,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Mostra tab Gruppo SUBITO
-      toast('✅ Connesso a: ' + room);
+      toast(T('toast.groupConnected', '✅ Connesso a: ') + room);
       closeSheet();
       renderGroupView();
 
