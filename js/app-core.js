@@ -6963,7 +6963,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savePoiBtn) savePoiBtn.onclick = () => {
       const i = state.savedPOIs.indexOf(id);
       if (i>=0) state.savedPOIs.splice(i,1); else state.savedPOIs.push(id);
-      saveState(); openPOI(id); toast(i>=0?'Rimosso':'Salvato ★');
+      saveState(); openPOI(id); toast(i>=0 ? (window.t ? window.t('poi.unsaved','Rimosso') : 'Rimosso') : (window.t ? window.t('poi.saved','Salvato ★') : 'Salvato ★'));
     };
     const noteEl = document.getElementById('poi-note');
     if (noteEl) {
@@ -7144,7 +7144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cal-export').onclick = () => {
       const startVal = document.getElementById('cal-start').value;
       const dur = parseInt(document.getElementById('cal-dur').value,10);
-      if (!startVal){ toast('Seleziona data/ora'); return; }
+      if (!startVal){ toast(window.t ? window.t('cal.selectDateTime','Seleziona data/ora') : 'Seleziona data/ora'); return; }
       const start = new Date(startVal);
       const end = new Date(start.getTime() + dur*60000);
       const ics = buildICS([{
@@ -7262,7 +7262,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <pre style="background:var(--surface-2);padding:12px;border-radius:8px;font-size:11px;color:var(--text);overflow-x:auto;max-height:300px">${text}</pre>
           <div style="display:flex;gap:8px;margin-top:14px">
             <button onclick="this.parentElement.parentElement.parentElement.remove()" style="flex:1;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">Chiudi</button>
-            <button onclick="navigator.clipboard.writeText(\`${text.replace(/`/g, '\\`')}\`);toast('✅ Copiato!')" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600">📋 Copia</button>
+            <button onclick="navigator.clipboard.writeText(\`${text.replace(/`/g, '\\`')}\`);toast(window.t?window.t('sos.copied','✅ Copiato!'):'✅ Copiato!')" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600">📋 Copia</button>
           </div>
         </div>
       </div>
