@@ -10,6 +10,8 @@ console.log('[RTDB] Loading MQTT transport...');
 (function () {
   'use strict';
 
+  const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+
   const MQTT_BROKER  = 'wss://broker.emqx.io:8084/mqtt';
   const TOPIC_PFX    = 'giap2027v2/';   // prefisso topic MQTT
   const HB_INTERVAL  = 20000;           // ms tra heartbeat (20s)
@@ -224,7 +226,7 @@ console.log('[RTDB] Loading MQTT transport...');
           }));
 
           // Show toast
-          if (window.toast) window.toast(`📤 ${data.from} ha condiviso un itinerario con il gruppo`);
+          if (window.toast) window.toast(`📤 ${data.from} ` + T('group.toastShared', 'ha condiviso un itinerario con il gruppo'));
         }
         break;
 
@@ -345,7 +347,7 @@ console.log('[RTDB] Loading MQTT transport...');
               detail: { groupId, fromMember, itinerary: window.state.itinerary }
             }));
 
-            if (window.toast) window.toast(`✅ ${fromMember} ha aggiornato l'itinerario del gruppo`);
+            if (window.toast) window.toast(`✅ ${fromMember} ` + T('group.toastUpdated', "ha aggiornato l'itinerario del gruppo"));
           }
         }
         break;
@@ -358,7 +360,7 @@ console.log('[RTDB] Loading MQTT transport...');
 
           // Notify owner with toast
           if (window.toast) {
-            window.toast(`📨 ${requestedBy} ha richiesto di smettere di condividere l'itinerario`);
+            window.toast(`📨 ${requestedBy} ` + T('group.toastUnshareReq', 'ha richiesto di smettere di condividere'));
           }
 
           // Could trigger a modal asking owner to accept/deny
@@ -383,7 +385,7 @@ console.log('[RTDB] Loading MQTT transport...');
           }
 
           if (window.toast) {
-            window.toast(`🚫 ${unsharedBy} ha smesso di condividere l'itinerario`);
+            window.toast(`🚫 ${unsharedBy} ` + T('group.toastUnshared', "ha smesso di condividere l'itinerario"));
           }
 
           document.dispatchEvent(new CustomEvent('itinerary_unshared', {
@@ -404,7 +406,7 @@ console.log('[RTDB] Loading MQTT transport...');
           }
 
           if (window.toast) {
-            window.toast(`🗑️ ${deletedBy} ha eliminato l'itinerario condiviso`);
+            window.toast(`🗑️ ${deletedBy} ` + T('group.toastDeleted', "ha eliminato l'itinerario condiviso"));
           }
 
           document.dispatchEvent(new CustomEvent('itinerary_deleted', {

@@ -80,7 +80,12 @@
       'toast.stopRemovedSimple': 'Rimosso da itinerario',
       'toast.codeCopied': '📋 Codice copiato',
       'toast.invalidRoom': '⚠️ Codice stanza non valido',
-      'toast.groupConnected': '✅ Connesso a: '
+      'toast.groupConnected': '✅ Connesso a: ',
+      'group.toastShared': 'ha condiviso un itinerario con il gruppo',
+      'group.toastUpdated': "ha aggiornato l'itinerario del gruppo",
+      'group.toastUnshareReq': 'ha richiesto di smettere di condividere',
+      'group.toastUnshared': "ha smesso di condividere l'itinerario",
+      'group.toastDeleted': "ha eliminato l'itinerario condiviso"
     },
     en: {
       'header.brand': '🌸 SafeEats',
@@ -155,7 +160,12 @@
       'toast.stopRemovedSimple': 'Removed from itinerary',
       'toast.codeCopied': '📋 Code copied',
       'toast.invalidRoom': '⚠️ Invalid room code',
-      'toast.groupConnected': '✅ Connected to: '
+      'toast.groupConnected': '✅ Connected to: ',
+      'group.toastShared': 'shared an itinerary with the group',
+      'group.toastUpdated': 'updated the group itinerary',
+      'group.toastUnshareReq': 'requested to stop sharing',
+      'group.toastUnshared': 'stopped sharing the itinerary',
+      'group.toastDeleted': 'deleted the shared itinerary'
     },
     ja: {
       'header.brand': '🌸 SafeEats',
@@ -230,7 +240,12 @@
       'toast.stopRemovedSimple': '旅程から削除しました',
       'toast.codeCopied': '📋 コードをコピーしました',
       'toast.invalidRoom': '⚠️ 無効なルームコードです',
-      'toast.groupConnected': '✅ 接続しました：'
+      'toast.groupConnected': '✅ 接続しました：',
+      'group.toastShared': 'がグループに旅程を共有しました',
+      'group.toastUpdated': 'がグループの旅程を更新しました',
+      'group.toastUnshareReq': 'が共有停止を要求しました',
+      'group.toastUnshared': 'が旅程の共有を停止しました',
+      'group.toastDeleted': 'が共有旅程を削除しました'
     }
   };
 
