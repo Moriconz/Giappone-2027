@@ -3701,6 +3701,8 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   });
   const vectorSource = new ol.source.Vector();
+  // Clustering: groups nearby markers at low zoom; distance in pixels
+  const clusterSource = new ol.source.Cluster({ source: vectorSource, distance: 50, minDistance: 20 });
   const CAT_COLORS = {
     // Culture & Heritage (blue-purple tones)
     shrine:'#E07B39', temple:'#B5541E', church:'#6B4C8A', mosque:'#8B5A9E',
@@ -3913,13 +3915,42 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   // Cache styles per performance
   const _styleCache = {};
+  // Cluster bubble style — cached by count bucket + zoom level bucket
+  const _clusterStyleCache = new Map();
+  function _makeClusterStyle(count) {
+    const bucket = count >= 100 ? 'L' : count >= 20 ? 'M' : 'S';
+    if (_clusterStyleCache.has(bucket)) return _clusterStyleCache.get(bucket);
+    const radius = bucket === 'L' ? 20 : bucket === 'M' ? 16 : 13;
+    const color  = bucket === 'L' ? 'rgba(239,68,68,0.9)' : bucket === 'M' ? 'rgba(251,146,60,0.9)' : 'rgba(99,102,241,0.9)';
+    const style = new ol.style.Style({
+      image: new ol.style.Circle({
+        radius,
+        fill: new ol.style.Fill({ color }),
+        stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+      }),
+      text: new ol.style.Text({
+        text: count > 999 ? '999+' : String(count),
+        fill: new ol.style.Fill({ color: '#fff' }),
+        font: `bold ${bucket === 'S' ? 11 : 13}px -apple-system,sans-serif`
+      })
+    });
+    _clusterStyleCache.set(bucket, style);
+    return style;
+  }
+
   const vectorLayer = new ol.layer.Vector({
-    source: vectorSource,
-    style: (feature) => {
-      // Hide marker if filtered out
-      if (feature.get('hidden') === true) {
-        return null; // Don't render this marker
-      }
+    source: clusterSource,
+    style: (clusterFeature) => {
+      const features = clusterFeature.get('features') || [];
+      const count = features.length;
+
+      // Cluster of multiple markers → show bubble
+      if (count > 1) return _makeClusterStyle(count);
+
+      // Single feature (or no features yet)
+      const feature = count === 1 ? features[0] : clusterFeature;
+      if (!feature) return null;
+      if (feature.get('hidden') === true) return null;
 
       const cat = feature.get('cat') || 'all';
       const isGF = feature.get('isGF') || false;
@@ -3927,7 +3958,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!_styleCache[key]) {
         const style = makePoiStyle(cat, isGF);
-        _styleCache[key] = style || createFallbackStyle(cat); // Fallback if style creation fails
+        _styleCache[key] = style || createFallbackStyle(cat);
       }
 
       return _styleCache[key];
@@ -4746,33 +4777,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
   map.on('click', (e) => {
     console.log('%c[MAP CLICK]', 'background: #1A3C5E; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold');
-    // Check shopping layer first (higher priority)
     let handled = false;
     let featuresFound = 0;
-    map.forEachFeatureAtPixel(e.pixel, (feature, layer) => {
+    map.forEachFeatureAtPixel(e.pixel, (clusterFeature, layer) => {
       featuresFound++;
-      const clickedId = feature.get('id');
-      const clickedType = feature.get('type');
-      console.log(`%c[MAP CLICK] Feature ${featuresFound}:`, 'background:#FF9800;color:white;padding:4px 8px;border-radius:3px', {
-        id: clickedId,
-        type: clickedType,
-        name: feature.get('name'),
-        peerName: feature.get('peerName')
-      });
-
       if (handled) return;
+
+      // Unwrap cluster features
+      const clusterMembers = clusterFeature.get('features');
+      let feature;
+      if (clusterMembers && clusterMembers.length > 1) {
+        // Zoom into cluster
+        const extent = ol.extent.createEmpty();
+        clusterMembers.forEach(f => ol.extent.extend(extent, f.getGeometry().getExtent()));
+        map.getView().fit(extent, { padding: [80, 80, 80, 80], duration: 400, maxZoom: 16 });
+        handled = true;
+        return;
+      } else if (clusterMembers && clusterMembers.length === 1) {
+        feature = clusterMembers[0];
+      } else {
+        feature = clusterFeature;
+      }
+
       const id = feature.get('id');
       const type = feature.get('type');
       const peerName = feature.get('peerName');
       const name = feature.get('name');
       const safetyLevel = feature.get('safety_level');
 
+      console.log(`%c[MAP CLICK] Feature ${featuresFound}:`, 'background:#FF9800;color:white;padding:4px 8px;border-radius:3px', { id, type, name, peerName });
+
       if (peerName) {
         console.log('[MAP CLICK] → Peer location');
         toast('Posizione rilevata ' + peerName);
         handled = true;
       } else if (safetyLevel) {
-        // GF Place clicked
         console.log('[MAP CLICK] → Opening GF Place:', name, safetyLevel);
         const safetyIcon = safetyLevel === 'GREEN' ? '🟢' : safetyLevel === 'RED' ? '🔴' : '🟡';
         toast(`${safetyIcon} ${name} (${feature.get('city')})`);
@@ -4783,7 +4822,6 @@ document.addEventListener('DOMContentLoaded', () => {
         handled = true;
       } else if (id) {
         console.log('%c[MAP CLICK] → Opening POI:', 'background:#FF6B6B;color:white;padding:4px 8px;border-radius:3px', id, 'Type:', type);
-        console.log('[MAP CLICK] Payload:', { name, id, type, lat: feature.get('lat'), lng: feature.get('lng') });
         openPOI(id);
         handled = true;
       }
