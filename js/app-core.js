@@ -1965,7 +1965,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <input type="text" class="poi-name-edit" data-poi-idx="${idx}" value="${escapeHtml(poi.name?.value || poi.name || '')}"
               style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px">
           </div>
-          <button class="poi-delete-btn" data-poi-idx="${idx}"
+          <button class="poi-delete-btn" data-poi-idx="${idx}" aria-label="Elimina POI"
             style="background:#FF6B6B;border:none;color:white;border-radius:4px;padding:4px 8px;cursor:pointer;font-weight:600;flex-shrink:0">
             🗑️
           </button>

@@ -74,9 +74,11 @@
         <!-- Gallery grid -->
         <div class="gallery-grid">
           ${photoCount === 0 ? `
-            <div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--y2k-muted)">
-              <div style="font-size:48px;margin-bottom:12px">🗂️</div>
-              <p>Nessuna foto ancora. Caricane una per iniziare!</p>
+            <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;padding:40px 20px;text-align:center;">
+              <div style="font-size:52px;margin-bottom:14px">📷</div>
+              <div style="font-size:16px;font-weight:700;color:var(--m-text);margin-bottom:6px">Nessuna foto ancora</div>
+              <p style="font-size:13px;color:var(--m-text-3);margin:0 0 20px;max-width:240px;line-height:1.5">Cattura i momenti del viaggio e salvali qui. Le foto restano nel dispositivo.</p>
+              <button onclick="document.getElementById('gallery-file-input')?.click()" style="padding:11px 22px;background:linear-gradient(135deg,var(--m-accent),var(--m-accent-600));border:none;border-radius:var(--m-r-md);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:var(--m-shadow-sm)">📁 Aggiungi la prima foto</button>
             </div>
           ` : db.photos.sort((a, b) => new Date(b.date) - new Date(a.date)).map((photo, idx) => {
             const date = new Date(photo.date).toLocaleDateString('it-IT', { month: 'short', day: 'numeric' });
@@ -88,8 +90,8 @@
                   ${photo.caption ? `<div class="gallery-photo-caption">${photo.caption}</div>` : ''}
                 </div>
                 <div class="gallery-photo-actions">
-                  <button class="gallery-btn-edit" data-idx="${idx}">✏️</button>
-                  <button class="gallery-btn-delete" data-idx="${idx}">🗑️</button>
+                  <button class="gallery-btn-edit" data-idx="${idx}" aria-label="Modifica descrizione">✏️</button>
+                  <button class="gallery-btn-delete" data-idx="${idx}" aria-label="Elimina foto">🗑️</button>
                 </div>
               </div>
             `;
