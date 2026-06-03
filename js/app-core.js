@@ -5174,6 +5174,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (view === 'groq-menu') { window.openGroqPanel(); return; }
       if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
       if (view === 'gf-suggest') { window.openGFSuggestionPanel(); return; }
+      if (view === 'jr-pass') { window.openJRPassPanel?.(); return; }
+      if (view === 'japan-cal') { window.JapanCalendarHints?.openPanel?.(); return; }
     });
   }
 
@@ -8513,6 +8515,8 @@ document.addEventListener('DOMContentLoaded', () => {
       { label: T('menu.gallery', 'Galleria'), icon: '📸', view: 'gallery' },
       { label: T('menu.tips', 'Tips Viaggio 2027'), icon: '🌸', view: 'tips' },
       { label: T('menu.gfHeatmap', 'Heatmap GF'), icon: '🔥', view: 'gf-heatmap' },
+      { label: T('menu.jrpass', '🚄 Conviene il JR Pass?'), icon: '🚄', view: 'jr-pass' },
+      { label: T('menu.japanCal', '📅 Calendario Giappone'), icon: '📅', view: 'japan-cal' },
       { label: T('menu.groqai', 'Groq AI'), icon: '🤖', view: 'groq-menu' },
       { label: T('menu.suggest', 'Suggerisci Posti'), icon: '💡', view: 'gf-suggest' },
       { label: T('menu.createTrip', 'Voglio creare il mio viaggio'), icon: '✏️', view: 'create-trip', style: 'color: #FF6B35; background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3);' },
@@ -8591,6 +8595,8 @@ document.addEventListener('DOMContentLoaded', () => {
               if (mapBtn) mapBtn.click();
               setTimeout(() => window.GFHeatmap?.toggle?.(), 150);
             }
+            else if (view === 'jr-pass') { window.openJRPassPanel?.(); }
+            else if (view === 'japan-cal') { window.JapanCalendarHints?.openPanel?.(); }
             else if (view === 'groq-menu') { window.openGroqPanel(); }
             else if (view === 'gf-suggest') { window.openGFSuggestionPanel(); }
             else if (view === 'sos') { window.renderSOSPanel?.(); }

@@ -131,6 +131,17 @@ window.groupPanel = (() => {
           </p>
         </div>
 
+        <!-- INVITA MEMBRO -->
+        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🔗 Invita</h3>
+          <button class="btn" id="btn-copy-invite-link" style="width:100%;margin-bottom:8px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
+            🔗 Copia link invito
+          </button>
+          <button class="btn" id="btn-open-audit-log" style="width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.8);border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-size:12px;">
+            📜 Cronologia modifiche
+          </button>
+        </div>
+
         <!-- GESTIONE STANZA -->
         <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
           <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">⚙️ Gestione Stanza</h3>
@@ -185,6 +196,13 @@ window.groupPanel = (() => {
     // Phase 3: Update itineraries list and undo/redo buttons
     updateGroupItinerariesList();
     updateUndoRedoButtons();
+
+    // Invite link + audit log
+    const inviteLinkBtn = document.getElementById('btn-copy-invite-link');
+    if (inviteLinkBtn) inviteLinkBtn.onclick = () => window.copyGroupInviteLink?.();
+
+    const auditLogBtn = document.getElementById('btn-open-audit-log');
+    if (auditLogBtn) auditLogBtn.onclick = () => window.openGroupAuditLog?.();
 
     // Chat gruppo
     const chatBtn = document.getElementById('open-group-chat');

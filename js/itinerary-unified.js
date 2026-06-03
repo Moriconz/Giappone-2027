@@ -262,6 +262,8 @@ function renderItineraryUnified() {
 
       ${weatherAlertsHTML}
 
+      ${(function(){ try { return window.JapanCalendarHints?.renderHintsHTML?.() || ''; } catch(_){ return ''; } })()}
+
       <!-- BUDGET SUMMARY — Level 1: Manual costs only (current state) -->
       <div class="budget-summary" style="
         background:linear-gradient(135deg, rgba(100,150,200,0.1), rgba(255,107,53,0.05));
@@ -302,7 +304,10 @@ function renderItineraryUnified() {
       <div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 12px 0;">
           <h3 style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.95);margin:0;">📅 Il Tuo Itinerario</h3>
-          ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="padding:5px 12px;background:rgba(255,107,53,0.15);border:1.5px solid rgba(255,107,53,0.5);border-radius:20px;color:#FF8A5B;font-size:12px;font-weight:600;cursor:pointer;" title="Riorganizza le tappe per zone geografiche, minimizzando gli spostamenti">🧭 Ottimizza viaggio</button>` : ''}
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="padding:5px 10px;background:rgba(255,107,53,0.15);border:1.5px solid rgba(255,107,53,0.5);border-radius:20px;color:#FF8A5B;font-size:11px;font-weight:600;cursor:pointer;" title="Riorganizza per zone geografiche">🧭 Ottimizza</button>` : ''}
+            <button onclick="window.openItinerarySuggest?.()" style="padding:5px 10px;background:rgba(100,150,255,0.12);border:1.5px solid rgba(100,150,255,0.4);border-radius:20px;color:rgba(150,180,255,1);font-size:11px;font-weight:600;cursor:pointer;" title="Suggerimenti POI da aggiungere">✨ Suggerimenti</button>
+          </div>
         </div>
         <div class="itinerary-accordion">${accordionHTML}</div>
       </div>
