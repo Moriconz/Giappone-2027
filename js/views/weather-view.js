@@ -194,6 +194,377 @@
     })();
   }
 
+  // ---- GPS weather widget + helpers (extracted from app-core.js 2026-06-03) ----
+  /* ═══════════════════════════════════════════════════════════════
+     WEATHER VIEW — Previsioni meteo per le tappe
+  ═══════════════════════════════════════════════════════════════ */
+  const weatherCache = { data: null, timestamp: 0, TTL: 6 * 60 * 60 * 1000 }; // 6 ore
+
+  async function fetchWeatherData(lat, lon, cityName) {
+    try {
+      console.log(`[Weather] Fetching data for ${cityName} (${lat}, ${lon})`);
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,relative_humidity_2m_max,weather_code&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm&timezone=Asia/Tokyo`
+      );
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
+      const data = await response.json();
+      console.log(`[Weather] Data received for ${cityName}`);
+      return data;
+    } catch (err) {
+      console.error(`[Weather] Fetch failed for ${cityName}:`, err);
+      return null;
+    }
+  }
+
+  function getWeatherIcon(code) {
+    // WMO Weather interpretation codes
+    if (code === 0 || code === 1) return '☀️'; // Clear
+    if (code === 2) return '⛅'; // Partly cloudy
+    if (code === 3) return '☁️'; // Overcast
+    if (code >= 45 && code <= 48) return '🌫️'; // Foggy
+    if (code >= 51 && code <= 67) return '🌧️'; // Drizzle/Rain
+    if (code >= 71 && code <= 77) return '❄️'; // Snow
+    if (code >= 80 && code <= 82) return '⛈️'; // Rain showers
+    if (code >= 85 && code <= 86) return '❄️'; // Snow showers
+    if (code >= 80 && code <= 99) return '⛈️'; // Thunderstorm
+    return '🌡️'; // Default
+  }
+
+  function getWeatherColor(code) {
+    if (code === 0 || code === 1) return '#FFD700'; // Sole = Giallo
+    if (code === 2) return '#E0D5FF'; // Parzialmente nuvoloso = Lavanda
+    if (code === 3) return '#B8ACFF'; // Nuvoloso = Viola
+    if (code >= 45 && code <= 48) return '#8080C0'; // Nebbia = Blu scuro
+    if (code >= 51 && code <= 82) return '#87CEEB'; // Pioggia = Blu
+    if (code >= 85 && code <= 86) return '#E0F0FF'; // Neve = Bianco-blu
+    return '#C8BDFF'; // Default
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // GPS Weather Widget + Hourly Forecast
+  // ═══════════════════════════════════════════════════════════════
+
+  function getWeatherConditionName(code) {
+    // WMO Weather interpretation codes to Italian names
+    if (code === 0 || code === 1) return 'Sereno';
+    if (code === 2) return 'Parzialmente nuvoloso';
+    if (code === 3) return 'Nuvoloso';
+    if (code >= 45 && code <= 48) return 'Nebbia';
+    if (code >= 51 && code <= 67) return 'Pioggia leggera';
+    if (code >= 71 && code <= 77) return 'Neve';
+    if (code >= 80 && code <= 82) return 'Pioggia';
+    if (code >= 85 && code <= 86) return 'Neve';
+    if (code >= 80 && code <= 99) return 'Temporale';
+    return 'Sconosciuto';
+  }
+
+  function fetchWeatherHourly(lat, lon, city = 'Posizione') {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,weathercode,windspeed_10m,relativehumidity_2m&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm&timezone=Asia/Tokyo`;
+    console.log(`[Weather] Fetching: ${city} (${lat}, ${lon})`);
+
+    return fetch(url)
+      .then(response => {
+        console.log(`[Weather] API response for ${city}:`, response.status, response.ok);
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        console.log(`[Weather] ✅ Data received for ${city}`, data ? 'has data' : 'null');
+        return data;
+      })
+      .catch(err => {
+        console.error(`[Weather] ❌ Fetch FAILED for ${city}:`, err.message);
+        return null;
+      });
+  }
+
+  // Tokyo Station fallback coordinates
+  const TOKYO_STATION_LAT = 35.6762;
+  const TOKYO_STATION_LNG = 139.7674;
+
+  async function updateWeatherWithFallback(lat, lng, locationName) {
+    console.log('[Weather] Updating weather with fallback:', { lat, lng, locationName });
+    const weatherData = await fetchWeatherHourly(lat, lng, locationName);
+    if (!weatherData) {
+      console.warn('[Weather] Failed to fetch fallback weather');
+      showWeatherError('Errore API');
+      return;
+    }
+
+    // Get current hour weather
+    const now = new Date();
+    const hourIndex = now.getHours();
+    const hourlyData = weatherData.hourly;
+    const currentTemp = Math.round(hourlyData.temperature_2m[hourIndex]);
+    const currentCode = hourlyData.weathercode[hourIndex];
+    const currentCondition = getWeatherConditionName(currentCode);
+    const icon = getWeatherIcon(currentCode);
+
+    // Format date and time
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dayName = days[now.getDay()];
+    const date = now.getDate();
+    const monthName = months[now.getMonth()];
+    const dateStr = `${dayName}, ${date} ${monthName}`;
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    // Update card fields
+    const weatherIcon = document.getElementById('weather-icon');
+    const weatherDate = document.getElementById('weather-date');
+    const weatherTime = document.getElementById('weather-time');
+    const weatherTemp = document.getElementById('weather-temp');
+    const weatherCondition = document.getElementById('weather-condition');
+    const weatherFloating = document.getElementById('weather-floating');
+
+    if (weatherIcon && weatherDate && weatherTemp && weatherCondition && weatherFloating) {
+      weatherIcon.textContent = icon;
+      weatherDate.textContent = dateStr;
+      if (weatherTime) weatherTime.textContent = timeStr;
+      weatherTemp.innerHTML = `${currentTemp}<span style="font-size: 32px;">°C</span>`;
+      weatherCondition.textContent = currentCondition;
+      weatherFloating.classList.add('show');
+      console.log('[Weather] Card updated with fallback:', { currentTemp, currentCondition, dateStr, timeStr });
+    }
+  }
+
+  function updateGpsWeatherWidget() {
+    console.log('[Weather] Updating GPS weather widget...');
+    if (!navigator.geolocation) {
+      console.warn('[Weather] Geolocation not available - using Tokyo Station fallback');
+      updateWeatherWithFallback(TOKYO_STATION_LAT, TOKYO_STATION_LNG, '🗼 Tokyo (fallback)');
+      return;
+    }
+
+    console.log('[Weather] Requesting GPS position...');
+    let timeoutId = null;
+    const timeout = setTimeout(() => {
+      console.warn('[Weather] GPS timeout - using Tokyo Station fallback');
+      updateWeatherWithFallback(TOKYO_STATION_LAT, TOKYO_STATION_LNG, '🗼 Tokyo (timeout)');
+    }, 10000);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        clearTimeout(timeout);
+        const { latitude, longitude } = position.coords;
+        console.log('[Weather] GPS position:', { latitude, longitude });
+
+        const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
+        if (!weatherData) {
+          console.warn('[Weather] Failed to fetch GPS weather');
+          showWeatherError('Errore API');
+          return;
+        }
+
+        // Get current hour weather
+        const now = new Date();
+        const hourIndex = now.getHours();
+        const hourlyData = weatherData.hourly;
+        const dailyData = weatherData.daily;
+        const currentTemp = Math.round(hourlyData.temperature_2m[hourIndex]);
+        const currentCode = hourlyData.weathercode[hourIndex];
+        const currentCondition = getWeatherConditionName(currentCode);
+        const icon = getWeatherIcon(currentCode);
+
+        // Format date (e.g., "Sun, 15 Apr") and time (e.g., "13:25")
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const dayName = days[now.getDay()];
+        const date = now.getDate();
+        const monthName = months[now.getMonth()];
+        const dateStr = `${dayName}, ${date} ${monthName}`;
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        // Update card fields
+        const weatherIcon = document.getElementById('weather-icon');
+        const weatherDate = document.getElementById('weather-date');
+        const weatherTime = document.getElementById('weather-time');
+        const weatherTemp = document.getElementById('weather-temp');
+        const weatherCondition = document.getElementById('weather-condition');
+        const weatherFloating = document.getElementById('weather-floating');
+
+        if (weatherIcon && weatherDate && weatherTemp && weatherCondition && weatherFloating) {
+          weatherIcon.textContent = icon;
+          weatherDate.textContent = dateStr;
+          if (weatherTime) weatherTime.textContent = timeStr;
+          weatherTemp.innerHTML = `${currentTemp}<span style="font-size: 32px;">°C</span>`;
+          weatherCondition.textContent = currentCondition;
+          weatherFloating.classList.add('show');
+          console.log('[Weather] Card updated:', { currentTemp, currentCondition, dateStr, timeStr });
+        }
+      },
+      (error) => {
+        clearTimeout(timeout);
+        console.warn('[Weather] GPS error:', error.code, error.message);
+        console.log('[Weather] Using Tokyo Station fallback');
+        updateWeatherWithFallback(TOKYO_STATION_LAT, TOKYO_STATION_LNG, '🗼 Tokyo (denied)');
+      },
+      { timeout: 15000, enableHighAccuracy: false }
+    );
+  }
+
+  function showWeatherError(errorMsg, consoleMsg = '') {
+    const weatherDate = document.getElementById('weather-date');
+    const weatherIcon = document.getElementById('weather-icon');
+    const weatherTemp = document.getElementById('weather-temp');
+    const weatherCondition = document.getElementById('weather-condition');
+    const weatherFloating = document.getElementById('weather-floating');
+
+    if (weatherDate && weatherIcon && weatherTemp && weatherCondition && weatherFloating) {
+      weatherIcon.textContent = '⚠️';
+      weatherDate.textContent = 'Errore';
+      weatherTemp.textContent = '—';
+      weatherCondition.textContent = errorMsg;
+      weatherFloating.classList.add('show');
+      console.warn('[Weather] Error displayed:', consoleMsg || errorMsg);
+    }
+  }
+
+  // Expose updateGpsWeatherWidget globally so it can be called
+  window.updateGpsWeatherWidget = updateGpsWeatherWidget;
+
+  // ═══════════════════════════════════════════════════════════════
+  // WEATHER MODAL — Full forecast detail
+  // ═══════════════════════════════════════════════════════════════
+
+  window._weatherModalData = null;
+
+  window.openWeatherModal = function() {
+    console.log('[Weather Modal] Opening...');
+    const modal = document.getElementById('weather-modal');
+    if (!modal) {
+      console.error('[Weather Modal] Modal element not found');
+      return;
+    }
+
+    // Show modal first
+    modal.style.display = 'block';
+
+    // If cached, render immediately
+    if (window._weatherModalData) {
+      console.log('[Weather Modal] Using cached data');
+      window.renderWeatherModal(window._weatherModalData);
+      return;
+    }
+
+    // Otherwise fetch fresh data
+    console.log('[Weather Modal] Fetching fresh data...');
+    if (!navigator.geolocation) {
+      console.error('[Weather Modal] Geolocation not available');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          console.log('[Weather Modal] Got position:', { latitude, longitude });
+          const weatherData = await fetchWeatherHourly(latitude, longitude, 'La tua posizione');
+          if (weatherData) {
+            window._weatherModalData = weatherData;
+            window.renderWeatherModal(weatherData);
+            console.log('[Weather Modal] Data fetched and rendered');
+          } else {
+            console.error('[Weather Modal] No data returned');
+          }
+        } catch (err) {
+          console.error('[Weather Modal] Fetch error:', err);
+        }
+      },
+      (error) => {
+        console.error('[Weather Modal] Geolocation error:', error.message);
+      }
+    );
+  };
+
+  window.renderWeatherModal = function(weatherData) {
+    const container = document.getElementById('weather-cards-container');
+    if (!container || !weatherData.daily) return;
+
+    const dailyData = weatherData.daily;
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    container.innerHTML = '';
+
+    // Render 4 days
+    for (let i = 0; i < Math.min(4, dailyData.time.length); i++) {
+      const dateStr = dailyData.time[i];
+      const date = new Date(dateStr);
+      const dayName = days[date.getDay()];
+      const day = date.getDate();
+      const month = months[date.getMonth()];
+      const time = '13:25'; // Fixed time for now
+
+      const tempMax = Math.round(dailyData.temperature_2m_max[i]);
+      const code = dailyData.weather_code[i];
+      const condition = getWeatherConditionName(code);
+      const icon = getWeatherIcon(code);
+
+      const card = document.createElement('div');
+      card.className = 'weather-forecast-card';
+      card.innerHTML = `
+        <div>
+          <div class="weather-card-date">${dayName}, ${day} ${month}</div>
+          <div class="weather-card-condition">${time}</div>
+        </div>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div class="weather-card-icon">${icon}</div>
+          <div style="font-size: 14px; color: rgba(255,255,255,0.8); text-align: center;">${condition}</div>
+        </div>
+        <div>
+          <div class="weather-card-temp">${tempMax}<span class="weather-card-temp-unit">°C</span></div>
+          <button class="weather-card-more">more</button>
+          <div class="weather-card-footer">
+            <div class="weather-card-dot ${i === 0 ? 'active' : ''}"></div>
+            <div class="weather-card-dot ${i === 1 ? 'active' : ''}"></div>
+            <div class="weather-card-dot ${i === 2 ? 'active' : ''}"></div>
+            <div class="weather-card-dot ${i === 3 ? 'active' : ''}"></div>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    }
+
+    console.log('[Weather Modal] Rendered 4 cards');
+  }
+
+  window.closeWeatherModal = function() {
+    const modal = document.getElementById('weather-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      // Show weather widget again
+      const weatherWidget = document.getElementById('weather-floating');
+      if (weatherWidget) weatherWidget.classList.add('show');
+      console.log('[Weather Modal] Closed');
+    }
+  };
+
+  // Modal overlay click to close
+  window.addEventListener('load', () => {
+    const modal = document.getElementById('weather-modal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeWeatherModal();
+      });
+    }
+  });
+
+  // Initialize GPS weather widget and update every 10 minutes
+  window.initGpsWeatherWidget = function() {
+    console.log('[Weather] initGpsWeatherWidget called');
+    updateGpsWeatherWidget();
+    setInterval(updateGpsWeatherWidget, 10 * 60 * 1000); // Every 10 minutes
+
+    // Add click handler to open detailed weather modal via event delegation
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#weather-floating') || e.target.closest('#weather-text')) {
+        console.log('[Weather] Weather widget clicked');
+        window.openWeatherModal?.();
+      }
+    });
+  };
+  // ---- Weather modal (previously in app-core.js) ----
   function buildAndShowWeatherModal(weatherData, locationName, isGPS = false) {
     console.log('[Weather] Building and showing modal for', locationName, 'GPS:', isGPS);
     const hourlyData = weatherData.hourly;
@@ -404,4 +775,9 @@
 
   window.renderWeatherView = renderWeatherView;
   window.buildAndShowWeatherModal = buildAndShowWeatherModal;
+  window.fetchWeatherData = fetchWeatherData;
+  window.fetchWeatherHourly = fetchWeatherHourly;
+  window.getWeatherIcon = getWeatherIcon;
+  window.getWeatherConditionName = getWeatherConditionName;
+  window.getWeatherColor = getWeatherColor;
 })();
