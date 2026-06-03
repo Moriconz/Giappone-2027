@@ -281,7 +281,11 @@ R.checks.i18nNewKeys = await page.evaluate(() => {
     const keys = ['onboard.tip1', 'onboard.tip2', 'onboard.tip3',
                   'tappa.selectDay', 'tappa.added',
                   'snap.storageFull', 'snap.deleted',
-                  'sos.copied', 'sos.cardDownloaded'];
+                  'sos.copied', 'sos.cardDownloaded',
+                  'wizard.invalidPOI', 'wizard.duplicate', 'wizard.addError', 'wizard.systemNA',
+                  'itin.noPOI', 'itin.exported', 'itin.imported',
+                  'chat.cleared', 'undo.undone', 'undo.redone',
+                  'backup.exported', 'backup.restored'];
     const results = {};
     for (const lang of langs) {
       window.I18N.setLang(lang);

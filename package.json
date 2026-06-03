@@ -17,6 +17,8 @@
     "@upstash/redis": "^1.34.3"
   },
   "devDependencies": {
-    "puppeteer": "^25.0.4"
+    "puppeteer": "^25.0.4",
+    "serve": "^14.2.0",
+    "wait-on": "^8.0.0"
   }
 }
