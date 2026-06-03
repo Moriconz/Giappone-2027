@@ -4,6 +4,8 @@
  * Single place for trip building and management
  */
 
+const _T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+
 function renderItineraryUnified() {
   console.log('═══════════════════════════════════════════════════');
   console.log('[UnifiedItinerary] 🚀 STARTING renderItineraryUnified()');
@@ -453,7 +455,7 @@ window.handleExportHTML = function() {
 
   if (totalPOIs === 0) {
     console.log('[ItineraryUnified] ⚠️ Itinerary empty');
-    if (window.toast) window.toast('⚠️ Nessun POI aggiunto');
+    if (window.toast) window.toast(_T('itin.noPOI', '⚠️ Nessun POI aggiunto'));
     return;
   }
 
@@ -530,7 +532,7 @@ window.handleExportHTML = function() {
   newTab.document.write(html);
   newTab.document.close();
 
-  if (window.toast) window.toast('✅ Itinerario esportato');
+  if (window.toast) window.toast(_T('itin.exported', '✅ Itinerario esportato'));
   console.log('[ItineraryUnified] ✅ HTML export complete');
 };
 
@@ -580,12 +582,12 @@ function _decodeShare(s) {
 }
 window.handleShareLink = function() {
   const payload = _buildSharePayload();
-  if (!payload.items.length) { if (window.toast) window.toast('⚠️ Aggiungi tappe prima di condividere'); return; }
+  if (!payload.items.length) { if (window.toast) window.toast(_T('toast.addStopsFirst', '⚠️ Aggiungi tappe prima di condividere')); return; }
   const url = location.origin + location.pathname + '?share=' + _encodeShare(payload);
-  if (url.length > 8000) { if (window.toast) window.toast('⚠️ Itinerario troppo grande per un link'); return; }
+  if (url.length > 8000) { if (window.toast) window.toast(_T('itin.tooLargeForLink', '⚠️ Itinerario troppo grande per un link')); return; }
   if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(url).then(
-      () => { if (window.toast) window.toast('🔗 Link copiato! Incollalo dove vuoi'); },
+      () => { if (window.toast) window.toast(_T('itin.linkCopied', '🔗 Link copiato! Incollalo dove vuoi')); },
       () => { if (window.toast) window.toast('⚠️ Copia manuale: ' + url.substring(0, 60) + '…'); }
     );
   } else { if (window.toast) window.toast('⚠️ Clipboard non disponibile'); }
@@ -595,7 +597,7 @@ window.importSharedItinerary = function(payload) {
     if (!payload || !Array.isArray(payload.items)) return;
     payload.items.forEach(it => window.ITINERARY?.addPOIToDay?.(it.p, it.n, it.d, it.t || '10:00', it.dur || 60, '', it.c || 0, 'altro'));
     window.saveState?.();
-    if (window.toast) window.toast('✅ Itinerario importato');
+    if (window.toast) window.toast(_T('itin.imported', '✅ Itinerario importato'));
     if (typeof renderItineraryUnified === 'function') renderItineraryUnified();
   } catch (e) { if (window.toast) window.toast('❌ Errore import'); }
 };
@@ -686,9 +688,9 @@ function setupGlobalEventDelegation() {
     const ok = window.ITINERARY?.optimizeDay?.(dayIdx);
     if (ok) {
       renderItineraryUnified();
-      if (window.toast) window.toast('🧭 Giro ottimizzato');
+      if (window.toast) window.toast(_T('itin.optimized', '🧭 Giro ottimizzato'));
     } else if (window.toast) {
-      window.toast('⚠️ Servono almeno 3 tappe con posizione nota');
+      window.toast(_T('itin.need3', '⚠️ Servono almeno 3 tappe con posizione nota'));
     }
   }, false);
 
@@ -719,7 +721,7 @@ function setupGlobalEventDelegation() {
             window.state.itinerary.splice(idx, 1);
             window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
             renderItineraryUnified();
-            if (window.toast) window.toast('✓ Tappa rimossa');
+            if (window.toast) window.toast(_T('itin.poiRemoved', '✓ Tappa rimossa'));
           }
         }
       });
@@ -938,7 +940,7 @@ function setupAccordionAndDragDrop() {
     btn.addEventListener('click', (e) => {
       const dayIndex = parseInt(btn.dataset.day);
       if (window.toast) {
-        window.toast('📍 Tap un POI sulla mappa per aggiungerlo a Day ' + (dayIndex + 1));
+        window.toast(_T('itin.tapMapHint', '📍 Tap un POI sulla mappa per aggiungerlo a Day ') + (dayIndex + 1));
       }
     });
   });
