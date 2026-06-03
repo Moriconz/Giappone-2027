@@ -8627,6 +8627,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { label: T('menu.groqai', 'Groq AI'), icon: '🤖', view: 'groq-menu' },
       { label: T('menu.suggest', 'Suggerisci Posti'), icon: '💡', view: 'gf-suggest' },
       { label: T('menu.createTrip', 'Voglio creare il mio viaggio'), icon: '✏️', view: 'create-trip', style: 'color: #FF6B35; background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3);' },
+      { label: T('menu.backup', 'Backup & Ripristino'), icon: '📦', view: 'backup' },
       { label: T('menu.sos', 'SOS'), icon: '🆘', view: 'sos', style: 'color: #FF6B6B; background: rgba(255,107,107,0.1);' },
       ...(window.DEBUG ? [{ label: T('menu.errors', 'Errori (debug)'), icon: '🐞', view: 'errors', style: 'opacity:0.85;' }] : [])
     ];
@@ -8704,6 +8705,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (view === 'groq-menu') { window.openGroqPanel(); }
             else if (view === 'gf-suggest') { window.openGFSuggestionPanel(); }
             else if (view === 'sos') { window.renderSOSPanel?.(); }
+            else if (view === 'backup') { window.openBackupPanel?.(); }
             else if (view === 'errors') { window.ErrorCollector?.openPanel?.(); }
           }
         }, 200);
