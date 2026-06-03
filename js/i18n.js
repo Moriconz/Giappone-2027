@@ -20,6 +20,7 @@
       'menu.bookings': 'Prenota', 'menu.shopping': 'Shopping', 'menu.group': 'Gruppo',
       'menu.budget': 'Budget', 'menu.gallery': 'Galleria', 'menu.groqai': 'Groq AI',
       'menu.suggest': 'Suggerisci Posti', 'menu.createTrip': 'Voglio creare il mio viaggio', 'menu.sos': 'SOS',
+      'menu.tips': 'Tips Viaggio 2027', 'menu.gfHeatmap': 'Heatmap GF', 'menu.backup': 'Backup & Ripristino', 'menu.errors': 'Errori (debug)',
       'common.close': 'Chiudi', 'common.cancel': 'Annulla', 'common.save': 'Salva',
       'common.next': 'Avanti →', 'common.back': '← Indietro', 'common.delete': 'Elimina',
       'common.ok': 'OK', 'common.add': 'Aggiungi', 'common.share': 'Condividi',
@@ -50,7 +51,19 @@
       'wizard.step3': '📋 STEP 3/4 — Dettagli (opzionali)', 'wizard.step4': '✅ STEP 4/4 — Riepilogo',
       'wizard.day': '📅 Scegli il giorno', 'wizard.time': "🕐 Scegli l'orario", 'wizard.details': '📋 Dettagli',
       'wizard.summary': '✅ Riepilogo', 'wizard.duration': '⏱️ Durata (minuti)',
-      'lang.label': 'Lingua'
+      'lang.label': 'Lingua',
+      'toast.stopAdded': '✅ Tappa aggiunta!', 'toast.stopRemoved': '🗑️ Tappa rimossa',
+      'toast.stopAlready': '⚠️ Questa tappa è già nell\'itinerario',
+      'toast.itinShared': '✅ Itinerario condiviso con il gruppo!',
+      'toast.itinEmpty': '⚠️ L\'itinerario personale è vuoto',
+      'toast.noGroup': '⚠️ Non sei in nessun gruppo. Crea o unisciti a un gruppo per condividere.',
+      'toast.groupAdded': '✅ Tappa aggiunta all\'itinerario di gruppo!',
+      'toast.savedShared': '✅ Modifiche salvate e condivise!',
+      'toast.noResults': '❌ Nessun risultato trovato',
+      'toast.gpsOff': 'GPS disattivato', 'toast.gpsNA': 'GPS non disponibile',
+      'toast.trackCleared': 'Traccia cancellata',
+      'toast.storageWarning': '⚠️ Dati quasi al limite (4.3MB). Cancella la traccia GPS se necessario.',
+      'toast.storageFull': '⚠️ Impossibile salvare: storage pieno.'
     },
     en: {
       'header.brand': '🌸 SafeEats',
@@ -65,6 +78,7 @@
       'menu.bookings': 'Bookings', 'menu.shopping': 'Shopping', 'menu.group': 'Group',
       'menu.budget': 'Budget', 'menu.gallery': 'Gallery', 'menu.groqai': 'Groq AI',
       'menu.suggest': 'Suggest places', 'menu.createTrip': 'Create my trip', 'menu.sos': 'SOS',
+      'menu.tips': 'Japan 2027 Tips', 'menu.gfHeatmap': 'GF Heatmap', 'menu.backup': 'Backup & Restore', 'menu.errors': 'Errors (debug)',
       'common.close': 'Close', 'common.cancel': 'Cancel', 'common.save': 'Save',
       'common.next': 'Next →', 'common.back': '← Back', 'common.delete': 'Delete',
       'common.ok': 'OK', 'common.add': 'Add', 'common.share': 'Share',
@@ -95,7 +109,19 @@
       'wizard.step3': '📋 STEP 3/4 — Details (optional)', 'wizard.step4': '✅ STEP 4/4 — Summary',
       'wizard.day': '📅 Choose the day', 'wizard.time': '🕐 Choose the time', 'wizard.details': '📋 Details',
       'wizard.summary': '✅ Summary', 'wizard.duration': '⏱️ Duration (minutes)',
-      'lang.label': 'Language'
+      'lang.label': 'Language',
+      'toast.stopAdded': '✅ Stop added!', 'toast.stopRemoved': '🗑️ Stop removed',
+      'toast.stopAlready': '⚠️ This stop is already in the itinerary',
+      'toast.itinShared': '✅ Itinerary shared with group!',
+      'toast.itinEmpty': '⚠️ Personal itinerary is empty',
+      'toast.noGroup': '⚠️ You\'re not in a group. Create or join a group to share.',
+      'toast.groupAdded': '✅ Stop added to group itinerary!',
+      'toast.savedShared': '✅ Changes saved and shared!',
+      'toast.noResults': '❌ No results found',
+      'toast.gpsOff': 'GPS disabled', 'toast.gpsNA': 'GPS unavailable',
+      'toast.trackCleared': 'Track cleared',
+      'toast.storageWarning': '⚠️ Data near limit (4.3MB). Clear GPS track if needed.',
+      'toast.storageFull': '⚠️ Cannot save: storage full.'
     },
     ja: {
       'header.brand': '🌸 SafeEats',
@@ -110,6 +136,7 @@
       'menu.bookings': '予約', 'menu.shopping': 'ショッピング', 'menu.group': 'グループ',
       'menu.budget': '予算', 'menu.gallery': 'ギャラリー', 'menu.groqai': 'Groq AI',
       'menu.suggest': '場所を提案', 'menu.createTrip': '旅行を作成する', 'menu.sos': 'SOS',
+      'menu.tips': '日本2027 Tips', 'menu.gfHeatmap': 'GFヒートマップ', 'menu.backup': 'バックアップ＆復元', 'menu.errors': 'エラー（デバッグ）',
       'common.close': '閉じる', 'common.cancel': 'キャンセル', 'common.save': '保存',
       'common.next': '次へ →', 'common.back': '← 戻る', 'common.delete': '削除',
       'common.ok': 'OK', 'common.add': '追加', 'common.share': '共有',
@@ -140,7 +167,19 @@
       'wizard.step3': '📋 STEP 3/4 — 詳細（任意）', 'wizard.step4': '✅ STEP 4/4 — 概要',
       'wizard.day': '📅 日を選択', 'wizard.time': '🕐 時間を選択', 'wizard.details': '📋 詳細',
       'wizard.summary': '✅ 概要', 'wizard.duration': '⏱️ 所要時間（分）',
-      'lang.label': '言語'
+      'lang.label': '言語',
+      'toast.stopAdded': '✅ 立ち寄り先を追加しました！', 'toast.stopRemoved': '🗑️ 削除しました',
+      'toast.stopAlready': '⚠️ この場所はすでに旅程にあります',
+      'toast.itinShared': '✅ グループと旅程を共有しました！',
+      'toast.itinEmpty': '⚠️ 旅程が空です',
+      'toast.noGroup': '⚠️ グループに参加していません。共有するにはグループを作成または参加してください。',
+      'toast.groupAdded': '✅ グループ旅程に追加しました！',
+      'toast.savedShared': '✅ 変更を保存し共有しました！',
+      'toast.noResults': '❌ 結果が見つかりません',
+      'toast.gpsOff': 'GPS無効', 'toast.gpsNA': 'GPS利用不可',
+      'toast.trackCleared': 'トラック削除',
+      'toast.storageWarning': '⚠️ データが上限に近づいています（4.3MB）。GPSトラックを削除してください。',
+      'toast.storageFull': '⚠️ 保存できません：ストレージが満杯です。'
     }
   };
 

@@ -282,12 +282,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const serialized = JSON.stringify(state);
       if (serialized.length > 4_500_000) {
         console.warn('[Giappone2027] localStorage quota warning: ' + Math.round(serialized.length/1024) + 'KB — considera di ridurre la traccia GPS o gli avatar.');
-        toast('⚠️ Dati quasi al limite (4.3MB). Cancella la traccia GPS se necessario.');
+        toast(T('toast.storageWarning', '⚠️ Dati quasi al limite (4.3MB). Cancella la traccia GPS se necessario.'));
       }
       localStorage.setItem(STATE_KEY, serialized);
     }catch(e){
       console.error('[State] Save error:', e);
-      toast('⚠️ Impossibile salvare: storage pieno.');
+      toast(T('toast.storageFull', '⚠️ Impossibile salvare: storage pieno.'));
     }
   }
 
@@ -1210,7 +1210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('[UI] showGroupSelectionModal for POI:', poi.name);
 
     if (!state.group || !state.group.roomId) {
-      toast('⚠️ Non sei in nessun gruppo. Crea o unisciti a un gruppo per condividere.');
+      toast(T('toast.noGroup', '⚠️ Non sei in nessun gruppo. Crea o unisciti a un gruppo per condividere.'));
       return;
     }
 
@@ -1296,7 +1296,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const poiExists = itinerary.pois.some(p => p.googlePlaceId === poi.id);
     if (poiExists) {
       console.log('[GroupItin] POI already in itinerary');
-      toast('⚠️ Questa tappa è già nell\'itinerario');
+      toast(T('toast.stopAlready', '⚠️ Questa tappa è già nell\'itinerario'));
       return;
     }
 
@@ -1374,7 +1374,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detail: { itineraryId, itinerary }
     }));
 
-    toast('🗑️ Tappa rimossa');
+    toast(T('toast.stopRemoved', '🗑️ Tappa rimossa'));
   }
 
   /**
@@ -1787,7 +1787,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!state.itinerary || state.itinerary.length === 0) {
       console.error('[ShareItin] ERROR: L\'itinerario personale è vuoto');
-      toast('⚠️ L\'itinerario personale è vuoto');
+      toast(T('toast.itinEmpty', '⚠️ L\'itinerario personale è vuoto'));
       return;
     }
 
@@ -1832,7 +1832,7 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmBtn.addEventListener('click', () => {
           sharePersonalItineraryToGroup(roomId);
           window.y2kWindows.close('share-itinerary-modal');
-          toast('✅ Itinerario condiviso con il gruppo!');
+          toast(T('toast.itinShared', '✅ Itinerario condiviso con il gruppo!'));
         });
       }
 
@@ -1901,7 +1901,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
 
     // Show success message
-    toast('✅ Itinerario condiviso con il gruppo!');
+    toast(T('toast.itinShared', '✅ Itinerario condiviso con il gruppo!'));
   }
 
   /**
@@ -2084,7 +2084,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }));
 
         window.y2kWindows.close('edit-itinerary-modal');
-        toast('✅ Modifiche salvate e condivise!');
+        toast(T('toast.savedShared', '✅ Modifiche salvate e condivise!'));
 
         console.log('[Editor] ✓ Changes saved and broadcasted');
       });
@@ -2109,7 +2109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.searchGooglePlaces?.(query, (results) => {
           if (!results || results.length === 0) {
-            toast('❌ Nessun risultato trovato');
+            toast(T('toast.noResults', '❌ Nessun risultato trovato'));
             return;
           }
 
@@ -4634,7 +4634,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // === FINE FAKE GPS ===
     
-    if (!geolocationToUse) { toast('GPS non disponibile'); return; }
+    if (!geolocationToUse) { toast(T('toast.gpsNA', 'GPS non disponibile')); return; }
     state.gpsEnabled=true; state.gpsPermissionAsked=true; saveState();
     if (gpsWatchId!==null) return;
     gpsWatchId=geolocationToUse.watchPosition(pos=>{
@@ -4667,7 +4667,7 @@ document.addEventListener('DOMContentLoaded', () => {
     state.gpsEnabled=false; saveState();
     if(gpsWatchId!==null){navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;}
     updateGPSMarker(null, null);
-    updateGPSStatusPanel(); toast('GPS disattivato');
+    updateGPSStatusPanel(); toast(T('toast.gpsOff', 'GPS disattivato'));
   }
   function toggleGPS(){ if(state.gpsEnabled&&gpsWatchId!==null) stopGPS(); else startGPS(); }
   function updateAgendaDistances(){
@@ -4708,7 +4708,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(clrBtn) clrBtn.onclick=()=>{
       state.gpsTrack=[]; state.gpsCurrentLat=null; state.gpsCurrentLng=null;
       updateGPSMarker(null, null);
-      saveState(); updateAgendaDistances(); updateGPSStatusPanel(); toast('Traccia cancellata');
+      saveState(); updateAgendaDistances(); updateGPSStatusPanel(); toast(T('toast.trackCleared', 'Traccia cancellata'));
     };
   }
   if(state.gpsEnabled&&!gpsWatchId) startGPS();
@@ -7180,7 +7180,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     broadcastItinerary();
-    toast('✅ Itinerario condiviso con il gruppo!');
+    toast(T('toast.itinShared', '✅ Itinerario condiviso con il gruppo!'));
   }
 
   // Ricerca Google Places API
@@ -7209,7 +7209,7 @@ document.addEventListener('DOMContentLoaded', () => {
           fromGoogle: true
         })));
       } else {
-        toast('❌ Nessun risultato trovato');
+        toast(T('toast.noResults', '❌ Nessun risultato trovato'));
         callback([]);
       }
     });
@@ -7236,7 +7236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fromGoogle: true
       };
       addToItinerary(entry);
-      toast('✅ Tappa aggiunta all\'itinerario!');
+      toast(T('toast.stopAdded', '✅ Tappa aggiunta!'));
       renderListView();
     });
   }
@@ -9923,7 +9923,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sharePersonalItineraryToGroup(state.group.roomId);
             state.pendingShareItinerary = false;
             saveState();
-            toast('✅ Itinerario condiviso con il gruppo!');
+            toast(T('toast.itinShared', '✅ Itinerario condiviso con il gruppo!'));
           } else {
             console.warn('[Group] Cannot auto-share: missing itinerary or roomId', {
               hasItinerary,
