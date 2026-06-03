@@ -220,7 +220,7 @@ window.groupPanel = (() => {
         if (!roomId) return;
         window.groupChat?.clearHistory(roomId);
         if (typeof toast === 'function') {
-          toast('🧹 Cronologia chat cancellata.');
+          toast(T('chat.cleared', '🧹 Cronologia chat cancellata.'));
         }
       });
     }
@@ -234,7 +234,7 @@ window.groupPanel = (() => {
           updateGroupItinerariesList();
           updateUndoRedoButtons();
           if (typeof toast === 'function') {
-            toast('⬅️ Cambio annullato');
+            toast(T('undo.undone', '⬅️ Cambio annullato'));
           }
         }
       });
@@ -248,7 +248,7 @@ window.groupPanel = (() => {
           updateGroupItinerariesList();
           updateUndoRedoButtons();
           if (typeof toast === 'function') {
-            toast('➡️ Cambio ripetuto');
+            toast(T('undo.redone', '➡️ Cambio ripetuto'));
           }
         }
       });
