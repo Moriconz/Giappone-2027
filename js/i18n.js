@@ -123,7 +123,22 @@
       'sos.copyError': '❌ Errore nella copia', 'sos.cardDownloaded': '✅ Tessera medica scaricata',
       'onboard.tip1': "📅 Tocca un luogo sulla mappa per aggiungerlo all'itinerario",
       'onboard.tip2': '💰 Apri Menu → Budget per impostare le spese del viaggio',
-      'onboard.tip3': '👥 Crea un gruppo per pianificare insieme agli altri'
+      'onboard.tip3': '👥 Crea un gruppo per pianificare insieme agli altri',
+      'itin.notFound': '⚠️ Itinerario non trovato', 'itin.systemNA': '❌ Sistema itinerario non pronto',
+      'places.loading': '⏳ Caricando servizio Google Places...',
+      'groq.noMenu': '⚠️ Inserisci il menu da analizzare', 'groq.cached': '✅ Risultato da cache offline',
+      'groq.analyzing': '🔄 Analizzando menu con Groq...', 'groq.badResponse': '❌ Groq error: risposta non valida',
+      'groq.done': '✅ Menu analizzato!', 'groq.noPhoto': '⚠️ Nessuna foto caricata',
+      'groq.analyzingPhoto': '🔄 Analizzando foto con Groq...', 'groq.offline': '⚠️ Groq non disponibile, uso analisi locale',
+      'groq.invalid': '⚠️ Risposta Groq invalida, uso analisi locale', 'groq.imgError': '❌ Errore: risposta immagine non valida',
+      'groq.photoDone': '✅ Foto analizzata!', 'groq.fallback': '⚠️ Errore Groq, uso analisi locale',
+      'groq.noInput': '⚠️ Inserisci il menu o carica una foto da analizzare',
+      'gfp.notFound': '❌ Posto non trovato', 'gfp.required': '❌ Nome e città sono obbligatori',
+      'gfp.saveError': '❌ Errore nel salvataggio del posto', 'gfp.geoRequired': '⚠️ Inserisci nome e città prima di geo-localizzare',
+      'gfp.geoFail': '❌ Posizione non trovata. Riprova con un indirizzo più specifico.',
+      'gfp.deleted': '✅ Posto eliminato', 'gfp.editHint': '⚠️ Edit in progress — salva come nuovo e elimina vecchio',
+      'gfp.saveErr': '❌ Errore nel salvataggio', 'gfp.submitted': '🎉 Suggerimento inviato! Grazie per aver contribuito! 🙏',
+      'gfp.synced': '🔄 Posti GF sincronizzati dal peer'
     },
     en: {
       'header.brand': '🌸 SafeEats',
@@ -241,7 +256,22 @@
       'sos.copyError': '❌ Copy failed', 'sos.cardDownloaded': '✅ Medical card downloaded',
       'onboard.tip1': '📅 Tap a place on the map to add it to your itinerary',
       'onboard.tip2': '💰 Open Menu → Budget to set your trip expenses',
-      'onboard.tip3': '👥 Create a group to plan together with others'
+      'onboard.tip3': '👥 Create a group to plan together with others',
+      'itin.notFound': '⚠️ Itinerary not found', 'itin.systemNA': '❌ Itinerary system not ready',
+      'places.loading': '⏳ Loading Google Places service...',
+      'groq.noMenu': '⚠️ Enter a menu to analyze', 'groq.cached': '✅ Result from offline cache',
+      'groq.analyzing': '🔄 Analyzing menu with Groq...', 'groq.badResponse': '❌ Groq error: invalid response',
+      'groq.done': '✅ Menu analyzed!', 'groq.noPhoto': '⚠️ No photo uploaded',
+      'groq.analyzingPhoto': '🔄 Analyzing photo with Groq...', 'groq.offline': '⚠️ Groq unavailable, using local analysis',
+      'groq.invalid': '⚠️ Invalid Groq response, using local analysis', 'groq.imgError': '❌ Error: invalid image response',
+      'groq.photoDone': '✅ Photo analyzed!', 'groq.fallback': '⚠️ Groq error, using local analysis',
+      'groq.noInput': '⚠️ Enter a menu or upload a photo to analyze',
+      'gfp.notFound': '❌ Place not found', 'gfp.required': '❌ Name and city are required',
+      'gfp.saveError': '❌ Error saving the place', 'gfp.geoRequired': '⚠️ Enter name and city before geocoding',
+      'gfp.geoFail': '❌ Location not found. Try a more specific address.',
+      'gfp.deleted': '✅ Place deleted', 'gfp.editHint': '⚠️ Edit in progress — save as new and delete old',
+      'gfp.saveErr': '❌ Save error', 'gfp.submitted': '🎉 Suggestion submitted! Thanks for contributing! 🙏',
+      'gfp.synced': '🔄 GF places synced from peer'
     },
     ja: {
       'header.brand': '🌸 SafeEats',
@@ -359,7 +389,22 @@
       'sos.copyError': '❌ コピーに失敗しました', 'sos.cardDownloaded': '✅ 医療カードをダウンロードしました',
       'onboard.tip1': '📅 地図の場所をタップして旅程に追加できます',
       'onboard.tip2': '💰 メニュー → 予算 で旅行の費用を設定しましょう',
-      'onboard.tip3': '👥 グループを作成して一緒に旅行を計画しましょう'
+      'onboard.tip3': '👥 グループを作成して一緒に旅行を計画しましょう',
+      'itin.notFound': '⚠️ 旅程が見つかりません', 'itin.systemNA': '❌ 旅程システムが準備できていません',
+      'places.loading': '⏳ Google Placesサービスを読み込み中...',
+      'groq.noMenu': '⚠️ 分析するメニューを入力してください', 'groq.cached': '✅ オフラインキャッシュからの結果',
+      'groq.analyzing': '🔄 Groqでメニューを分析中...', 'groq.badResponse': '❌ Groqエラー：無効な応答',
+      'groq.done': '✅ メニューを分析しました！', 'groq.noPhoto': '⚠️ 写真がアップロードされていません',
+      'groq.analyzingPhoto': '🔄 Groqで写真を分析中...', 'groq.offline': '⚠️ Groqが使用不可、ローカル分析を使用',
+      'groq.invalid': '⚠️ Groqの応答が無効、ローカル分析を使用', 'groq.imgError': '❌ エラー：画像応答が無効です',
+      'groq.photoDone': '✅ 写真を分析しました！', 'groq.fallback': '⚠️ Groqエラー、ローカル分析を使用',
+      'groq.noInput': '⚠️ 分析するメニューまたは写真を入力してください',
+      'gfp.notFound': '❌ 場所が見つかりません', 'gfp.required': '❌ 名前と都市は必須です',
+      'gfp.saveError': '❌ 場所の保存エラー', 'gfp.geoRequired': '⚠️ ジオコーディングの前に名前と都市を入力してください',
+      'gfp.geoFail': '❌ 場所が見つかりません。より具体的な住所を試してください。',
+      'gfp.deleted': '✅ 場所を削除しました', 'gfp.editHint': '⚠️ 編集中 — 新規で保存して古いものを削除してください',
+      'gfp.saveErr': '❌ 保存エラー', 'gfp.submitted': '🎉 提案を送信しました！ご協力ありがとうございます！🙏',
+      'gfp.synced': '🔄 ピアからGFスポットを同期しました'
     }
   };
 

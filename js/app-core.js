@@ -1958,7 +1958,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const itinerary = state.groupItineraries?.[itineraryId];
     if (!itinerary) {
-      toast('⚠️ Itinerario non trovato');
+      toast(T('itin.notFound', '⚠️ Itinerario non trovato'));
       return;
     }
 
@@ -5965,7 +5965,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // FASE 1.4: Show day selector for adding POI to itinerary
             if (!window.ITINERARY) {
               console.error('[openPOI] ITINERARY system not available');
-              toast('❌ Sistema itinerario non pronto');
+              toast(T('itin.systemNA', '❌ Sistema itinerario non pronto'));
               return;
             }
 
@@ -7305,7 +7305,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Ricerca Google Places API
   async function searchGooglePlaces(query, callback) {
     if (!window.googlePlacesService) {
-      toast('⏳ Caricando servizio Google Places...');
+      toast(T('places.loading', '⏳ Caricando servizio Google Places...'));
       return;
     }
 
@@ -9477,19 +9477,19 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
     
     async analyzeMenu(menuText) {
       if (!menuText.trim()) {
-        toast('⚠️ Inserisci il menu da analizzare');
+        toast(T('groq.noMenu', '⚠️ Inserisci il menu da analizzare'));
         return null;
       }
       
       const hash = btoa(menuText).substring(0, 16);
       const cached = this.getFromCache(hash);
       if (cached) {
-        toast('✅ Risultato da cache offline');
+        toast(T('groq.cached', '✅ Risultato da cache offline'));
         return cached;
       }
       
       try {
-        toast('🔄 Analizzando menu con Groq...');
+        toast(T('groq.analyzing', '🔄 Analizzando menu con Groq...'));
         const resp = await fetch('/api/groqAnalyze', {
           method: 'POST',
           headers: {
@@ -9507,12 +9507,12 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
         const data = await resp.json();
         const result = data.result;
         if (!result) {
-          toast('❌ Groq error: risposta non valida');
+          toast(T('groq.badResponse', '❌ Groq error: risposta non valida'));
           return null;
         }
 
         this.saveToCache(hash, result);
-        toast('✅ Menu analizzato!');
+        toast(T('groq.done', '✅ Menu analizzato!'));
         return result;
       } catch (err) {
         console.error('[Groq]', err);
@@ -9523,7 +9523,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
 
     async analyzeImage(imageBase64, imageLabels = [], menuText = '') {
       if (!imageBase64) {
-        toast('⚠️ Nessuna foto caricata');
+        toast(T('groq.noPhoto', '⚠️ Nessuna foto caricata'));
         return null;
       }
 
@@ -9532,7 +9532,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
         return null;
       }
 
-      toast('🔄 Analizzando foto con Groq...');
+      toast(T('groq.analyzingPhoto', '🔄 Analizzando foto con Groq...'));
       try {
         const resp = await fetch('/api/groqImageAnalyze', {
           method: 'POST',
@@ -9546,7 +9546,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
           const err = await resp.json().catch(() => ({}));
           const errorMessage = err.error || 'server error';
           if (imageLabels.length) {
-            toast('⚠️ Groq non disponibile, uso analisi locale');
+            toast(T('groq.offline', '⚠️ Groq non disponibile, uso analisi locale'));
             return this.localAnalyzeFromLabels(imageLabels, menuText);
           }
           toast(`❌ Errore immagine: ${errorMessage}`);
@@ -9557,19 +9557,19 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
         const result = data.result;
         if (!result) {
           if (imageLabels.length) {
-            toast('⚠️ Risposta Groq invalida, uso analisi locale');
+            toast(T('groq.invalid', '⚠️ Risposta Groq invalida, uso analisi locale'));
             return this.localAnalyzeFromLabels(imageLabels, menuText);
           }
-          toast('❌ Errore: risposta immagine non valida');
+          toast(T('groq.imgError', '❌ Errore: risposta immagine non valida'));
           return null;
         }
 
-        toast('✅ Foto analizzata!');
+        toast(T('groq.photoDone', '✅ Foto analizzata!'));
         return result;
       } catch (err) {
         console.error('[GroqImage]', err);
         if (imageLabels.length) {
-          toast('⚠️ Errore Groq, uso analisi locale');
+          toast(T('groq.fallback', '⚠️ Errore Groq, uso analisi locale'));
           return this.localAnalyzeFromLabels(imageLabels, menuText);
         }
         toast(`❌ Errore immagine: ${err.message}`);
@@ -9842,7 +9842,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
     const imageLabels = photoInput?.dataset?.labels ? JSON.parse(photoInput.dataset.labels) : [];
 
     if (!menuText.trim() && !photoBase64) {
-      toast('⚠️ Inserisci il menu o carica una foto da analizzare');
+      toast(T('groq.noInput', '⚠️ Inserisci il menu o carica una foto da analizzare'));
       return;
     }
 
@@ -10042,7 +10042,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
     const place = places.find(p => p.id === placeId);
 
     if (!place) {
-      toast('❌ Posto non trovato');
+      toast(T('gfp.notFound', '❌ Posto non trovato'));
       return;
     }
 
@@ -10093,7 +10093,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
     // Validazione
     if (!name || !city) {
       console.warn('[saveGFPlace] Validation failed - name or city missing');
-      toast('❌ Nome e città sono obbligatori');
+      toast(T('gfp.required', '❌ Nome e città sono obbligatori'));
       return;
     }
 
@@ -10117,7 +10117,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
 
     if (!saved) {
       console.error('[saveGFPlace] Failed to save place');
-      toast('❌ Errore nel salvataggio del posto');
+      toast(T('gfp.saveError', '❌ Errore nel salvataggio del posto'));
       return;
     }
 
@@ -10345,7 +10345,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
     const area = areaField?.value.trim();
 
     if (!name || !city) {
-      toast('⚠️ Inserisci nome e città prima di geo-localizzare');
+      toast(T('gfp.geoRequired', '⚠️ Inserisci nome e città prima di geo-localizzare'));
       return;
     }
 
@@ -10360,13 +10360,13 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
       document.getElementById('gf-place-lng').value = coords.lng;
       toast(`✅ Trovato! ${coords.address.substring(0, 40)}...`);
     } else {
-      toast('❌ Posizione non trovata. Riprova con un indirizzo più specifico.');
+      toast(T('gfp.geoFail', '❌ Posizione non trovata. Riprova con un indirizzo più specifico.'));
     }
   };
 
   window.deleteGFPlace = function(id) {
     GFPlacesDB.delete(id);
-    toast('✅ Posto eliminato');
+    toast(T('gfp.deleted', '✅ Posto eliminato'));
 
     // Refresh GF places layer on map
     if (window.refreshGFPlacesLayer) {
@@ -10375,7 +10375,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
   };
 
   window.editGFPlace = function(id) {
-    toast('⚠️ Edit in progress — salva come nuovo e elimina vecchio');
+    toast(T('gfp.editHint', '⚠️ Edit in progress — salva come nuovo e elimina vecchio'));
   };
 
   // ===== GF POI SUGGESTION PANEL =====
@@ -10440,7 +10440,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
     const description = document.getElementById('gf-suggest-description')?.value.trim() || null;
 
     if (!name || !city) {
-      toast('❌ Nome e città sono obbligatori');
+      toast(T('gfp.required', '❌ Nome e città sono obbligatori'));
       return;
     }
 
@@ -10456,7 +10456,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
     const saved = GFSuggestionsDB.add(suggestion);
 
     if (saved) {
-      toast('🎉 Suggerimento inviato! Grazie per aver contribuito! 🙏');
+      toast(T('gfp.submitted', '🎉 Suggerimento inviato! Grazie per aver contribuito! 🙏'));
 
       // Pulisci il form
       document.getElementById('gf-suggest-name').value = '';
@@ -10471,7 +10471,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
         window.openGFSuggestionPanel();
       }, 500);
     } else {
-      toast('❌ Errore nel salvataggio');
+      toast(T('gfp.saveErr', '❌ Errore nel salvataggio'));
     }
   };
 
@@ -10491,7 +10491,7 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
       } else if (msg.type === 'gf_place_delete') {
         GFPlacesDB.delete(msg.id);
       }
-      toast('🔄 Posti GF sincronizzati dal peer');
+      toast(T('gfp.synced', '🔄 Posti GF sincronizzati dal peer'));
     }
   };
 
