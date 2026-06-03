@@ -85,7 +85,7 @@ function showOnboardingChoiceModal() {
         <!-- OPTION 1: CREATE TRIP -->
         <button id="choice-create" style="
           padding: 18px 20px;
-          background: linear-gradient(135deg, #FF6B35, #FF5E1F);
+          background: linear-gradient(135deg, var(--m-accent), #FF5E1F);
           border: none;
           border-radius: 12px;
           color: #fff;
@@ -388,7 +388,7 @@ function showOnboarding() {
                     width: 20px;
                     height: 20px;
                     cursor: pointer;
-                    accent-color: #FF6B35;
+                    accent-color: var(--m-accent);
                   "
                 >
                 <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Solo</span>
@@ -415,7 +415,7 @@ function showOnboarding() {
                     width: 20px;
                     height: 20px;
                     cursor: pointer;
-                    accent-color: #FF6B35;
+                    accent-color: var(--m-accent);
                   "
                 >
                 <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Partner/Coppia</span>
@@ -443,7 +443,7 @@ function showOnboarding() {
                     width: 20px;
                     height: 20px;
                     cursor: pointer;
-                    accent-color: #FF6B35;
+                    accent-color: var(--m-accent);
                   "
                 >
                 <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Gruppo (3+)</span>
@@ -484,7 +484,7 @@ function showOnboarding() {
                       width: 18px;
                       height: 18px;
                       cursor: pointer;
-                      accent-color: #FF6B35;
+                      accent-color: var(--m-accent);
                     "
                   >
                   <span style="font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 500;">${interest}</span>
@@ -526,7 +526,7 @@ function showOnboarding() {
                     width: 20px;
                     height: 20px;
                     cursor: pointer;
-                    accent-color: #FF6B35;
+                    accent-color: var(--m-accent);
                   "
                 >
                 <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Nessuno</span>
@@ -553,7 +553,7 @@ function showOnboarding() {
                     width: 20px;
                     height: 20px;
                     cursor: pointer;
-                    accent-color: #FF6B35;
+                    accent-color: var(--m-accent);
                   "
                 >
                 <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Vegetariano</span>
@@ -580,7 +580,7 @@ function showOnboarding() {
                     width: 20px;
                     height: 20px;
                     cursor: pointer;
-                    accent-color: #FF6B35;
+                    accent-color: var(--m-accent);
                   "
                 >
                 <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Vegano</span>
@@ -607,7 +607,7 @@ function showOnboarding() {
                     width: 20px;
                     height: 20px;
                     cursor: pointer;
-                    accent-color: #FF6B35;
+                    accent-color: var(--m-accent);
                   "
                 >
                 <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Gluten-free</span>
@@ -658,7 +658,7 @@ function showOnboarding() {
               border-radius: 10px;
             ">
               <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 4px;">Budget totale</div>
-              <div style="font-size: 24px; color: #FF6B35; font-weight: 700;">€<span id="budget-total">400</span></div>
+              <div style="font-size: 24px; color: var(--m-accent); font-weight: 700;">€<span id="budget-total">400</span></div>
             </div>
           </div>
 
@@ -690,7 +690,7 @@ function showOnboarding() {
               style="
                 flex: 1;
                 padding: 14px 20px;
-                background: linear-gradient(135deg, #FF6B35, #FF5E1F);
+                background: linear-gradient(135deg, var(--m-accent), #FF5E1F);
                 border: none;
                 border-radius: 10px;
                 color: #fff;
@@ -711,7 +711,7 @@ function showOnboarding() {
             style="
               display: none;
               padding: 16px 20px;
-              background: linear-gradient(135deg, #FF6B35, #FF5E1F);
+              background: linear-gradient(135deg, var(--m-accent), #FF5E1F);
               border: none;
               border-radius: 10px;
               color: #fff;

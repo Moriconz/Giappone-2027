@@ -138,7 +138,7 @@ function renderStep1(state) {
         <div style="
           width:33.33%;
           height:100%;
-          background:linear-gradient(90deg, #FF6B35, #FF5E1F);
+          background:linear-gradient(90deg, var(--m-accent), #FF5E1F);
           transition:width 0.3s ease;
         "></div>
       </div>
@@ -201,7 +201,7 @@ function renderStep1(state) {
             border-radius:4px;
             padding:4px 8px;
             width:fit-content;
-            color:#FF6B35;
+            color:var(--m-accent);
             font-weight:600;
             text-transform:capitalize;
           ">${state.poiType}</div>
@@ -222,7 +222,7 @@ function renderStep1(state) {
         <button id="wizard-next-1" style="
           width:100%;
           padding:14px 16px;
-          background:linear-gradient(135deg, #FF6B35, #FF5E1F);
+          background:linear-gradient(135deg, var(--m-accent), #FF5E1F);
           border:none;
           border-radius:10px;
           color:#fff;
@@ -283,7 +283,7 @@ function renderStep2(state) {
         <div style="
           width:66.66%;
           height:100%;
-          background:linear-gradient(90deg, #FF6B35, #FF5E1F);
+          background:linear-gradient(90deg, var(--m-accent), #FF5E1F);
           transition:width 0.3s ease;
         "></div>
       </div>
@@ -384,7 +384,7 @@ function renderStep2(state) {
         <button id="wizard-next-2" style="
           flex:1;
           padding:14px 16px;
-          background:linear-gradient(135deg, #FF6B35, #FF5E1F);
+          background:linear-gradient(135deg, var(--m-accent), #FF5E1F);
           border:none;
           border-radius:10px;
           color:#fff;
@@ -417,7 +417,7 @@ function renderStep3(state) {
         <div style="
           width:100%;
           height:100%;
-          background:linear-gradient(90deg, #FF6B35, #FF5E1F);
+          background:linear-gradient(90deg, var(--m-accent), #FF5E1F);
           transition:width 0.3s ease;
         "></div>
       </div>

@@ -52,7 +52,7 @@ function window.renderItineraryUnified?.() {
         ">Aggiungi dei POI alla tua pianificazione. Tocca un luogo sulla mappa o seleziona dalle tappe suggerite.</p>
         <button style="
           padding: 12px 24px;
-          background: linear-gradient(135deg, #FF6B35, #FF5E1F);
+          background: linear-gradient(135deg, var(--m-accent), #FF5E1F);
           border: none;
           border-radius: 10px;
           color: #fff;
@@ -97,7 +97,7 @@ function window.renderItineraryUnified?.() {
         cursor:grab;
         transition:all 0.2s;
       " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
-        <span style="flex-shrink:0;width:20px;height:20px;background:#FF6B35;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">${idx + 1}</span>
+        <span style="flex-shrink:0;width:20px;height:20px;background:var(--m-accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">${idx + 1}</span>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;color:#fff;font-weight:500">${entry.poi_name}</div>
           <div style="font-size:11px;color:rgba(255,255,255,0.6)">⏰ ${entry.time}</div>
@@ -138,7 +138,7 @@ function window.renderItineraryUnified?.() {
             background:rgba(255,107,53,0.2);
             border:1px dashed rgba(255,107,53,0.4);
             border-radius:6px;
-            color:#FF6B35;
+            color:var(--m-accent);
             font-weight:600;
             font-size:12px;
             cursor:pointer;
@@ -172,7 +172,7 @@ function window.renderItineraryUnified?.() {
           </div>
           <div style="flex:1">
             <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px">Totale</div>
-            <div style="font-size:16px;color:#FF6B35;font-weight:700">€${budget}</div>
+            <div style="font-size:16px;color:var(--m-accent);font-weight:700">€${budget}</div>
           </div>
         </div>
       </div>

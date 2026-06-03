@@ -72,7 +72,7 @@ function renderItineraryUnified() {
 
           <!-- ROW 1: Number + Name + Menu/VisitedStatus -->
           <div style="display:flex;align-items:center;gap:8px;width:100%;overflow:hidden;opacity:${entry.status === 'visited' ? '0.7' : '1'}" class="itinerary-poi-header">
-            <span style="flex-shrink:0;width:24px;height:24px;background:linear-gradient(135deg, #FF6B35, #FF8A5B);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${idx + 1}</span>
+            <span style="flex-shrink:0;width:24px;height:24px;background:linear-gradient(135deg, var(--m-accent), var(--m-accent));color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${idx + 1}</span>
             <div style="flex:1;min-width:0;overflow:hidden">
               <div style="font-size:14px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:${entry.status === 'visited' ? 'line-through' : 'none'}">${poiNameDisplay}</div>
               ${entry.addedBy ? `<div style="font-size:10px;color:rgba(255,255,255,0.5);white-space:nowrap">da ${entry.addedBy}</div>` : ''}
@@ -101,7 +101,7 @@ function renderItineraryUnified() {
             const em = r.mode === 'walking' ? '🚶' : r.mode === 'driving' ? '🚆' : '🚇';
             const lbl = r.mode === 'walking' ? 'a piedi' : r.mode === 'driving' ? 'treno' : 'mezzi';
             const fare = (r.cost > 0) ? `💴 ¥${r.cost}` : 'gratis';
-            const fareColor = (r.cost > 0) ? '#FFB88C' : '#7FFF7F';
+            const fareColor = (r.cost > 0) ? 'rgba(255,122,69,0.6)' : '#7FFF7F';
             return `
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:6px 10px;background:rgba(100,150,200,0.1);border-radius:6px;margin-top:4px">
               <span style="font-size:10px;color:rgba(255,255,255,0.45);font-weight:700;text-transform:uppercase">↳ spostamento</span>
@@ -169,7 +169,7 @@ function renderItineraryUnified() {
           <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
             <span style="display:flex;align-items:center;gap:12px;font-size:13px;color:rgba(255,255,255,0.7)">
               <span style="background:rgba(74,124,89,0.3);color:#4ade80;padding:3px 10px;border-radius:4px;font-weight:600">${dayPOIs.length} POI</span>
-              <span style="background:rgba(255,107,53,0.3);color:#FFB88C;padding:3px 10px;border-radius:4px;font-weight:600">⏱ ${(dayDuration / 60).toFixed(1)}h</span>
+              <span style="background:rgba(255,107,53,0.3);color:rgba(255,122,69,0.6);padding:3px 10px;border-radius:4px;font-weight:600">⏱ ${(dayDuration / 60).toFixed(1)}h</span>
               ${costByDay[dayIndex] > 0 ? `<span style="background:rgba(100,200,255,0.25);color:#64c8ff;padding:3px 10px;border-radius:4px;font-weight:600">¥${costByDay[dayIndex]}</span>` : ''}
               ${distanceByDay[dayIndex] > 0 ? `<span style="background:rgba(100,180,200,0.25);color:#64b4c8;padding:3px 10px;border-radius:4px;font-weight:600">🚶 ${distanceByDay[dayIndex].toFixed(1)}km</span>` : ''}
             </span>
@@ -205,7 +205,7 @@ function renderItineraryUnified() {
           ${dayPOIs.length >= 3 ? `<button class="itinerary-optimize-btn" data-day="${dayIndex}" style="
             width:100%;margin-top:8px;padding:9px 14px;min-height:40px;
             background:rgba(255,107,53,0.14);border:1px solid rgba(255,107,53,0.4);
-            border-radius:8px;color:#FFB88C;font-weight:700;font-size:13px;cursor:pointer;
+            border-radius:8px;color:rgba(255,122,69,0.6);font-weight:700;font-size:13px;cursor:pointer;
             display:flex;align-items:center;justify-content:center;gap:6px">
             <span style="font-size:15px">🧭</span> Ottimizza il giro (meno spostamenti)
           </button>` : ''}
@@ -305,7 +305,7 @@ function renderItineraryUnified() {
         <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 12px 0;">
           <h3 style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.95);margin:0;">📅 Il Tuo Itinerario</h3>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="padding:5px 10px;background:rgba(255,107,53,0.15);border:1.5px solid rgba(255,107,53,0.5);border-radius:20px;color:#FF8A5B;font-size:11px;font-weight:600;cursor:pointer;" title="Riorganizza per zone geografiche">🧭 Ottimizza</button>` : ''}
+            ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="padding:5px 10px;background:rgba(255,107,53,0.15);border:1.5px solid rgba(255,107,53,0.5);border-radius:20px;color:var(--m-accent);font-size:11px;font-weight:600;cursor:pointer;" title="Riorganizza per zone geografiche">🧭 Ottimizza</button>` : ''}
             <button onclick="window.openItinerarySuggest?.()" style="padding:5px 10px;background:rgba(100,150,255,0.12);border:1.5px solid rgba(100,150,255,0.4);border-radius:20px;color:rgba(150,180,255,1);font-size:11px;font-weight:600;cursor:pointer;" title="Suggerimenti POI da aggiungere">✨ Suggerimenti</button>
             <button onclick="window.loadScript('./js/views/itinerary-version-history.js').then(()=>window.openItineraryVersionHistory?.())" style="padding:5px 10px;background:rgba(180,120,255,0.1);border:1.5px solid rgba(180,120,255,0.35);border-radius:20px;color:rgba(200,160,255,1);font-size:11px;font-weight:600;cursor:pointer;" title="Storico versioni itinerario">⏮ Storico</button>
             <button onclick="window.openItineraryReminders?.()" style="padding:5px 10px;background:rgba(255,200,50,0.1);border:1.5px solid rgba(255,200,50,0.35);border-radius:20px;color:rgba(255,210,80,1);font-size:11px;font-weight:600;cursor:pointer;" title="Promemoria tappe">🔔 Promemoria</button>
@@ -807,7 +807,7 @@ function showEmptyItineraryModal() {
           background: rgba(255,107,53,0.15) !important;
           border: 1px solid rgba(255,107,53,0.4) !important;
           border-radius: 5px !important;
-          color: #FF6B35 !important;
+          color: var(--m-accent) !important;
           font-size: 13px !important;
           font-weight: 600 !important;
           cursor: pointer !important;

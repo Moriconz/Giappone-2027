@@ -164,7 +164,7 @@ function addWizardButtonToSheet(poiData) {
         width:100%;
         margin-top:24px;
         padding:14px 16px;
-        background:linear-gradient(135deg, #FF6B35, #FF5E1F);
+        background:linear-gradient(135deg, var(--m-accent), #FF5E1F);
         border:none;
         border-radius:10px;
         color:#fff;

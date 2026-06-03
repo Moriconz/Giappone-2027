@@ -28,7 +28,7 @@
 
   // Color palette per le iniziali degli autori (deterministica)
   const AVATAR_COLORS = [
-    '#FF6B35', '#FFC857', '#6B9BFF', '#7FE2A9', '#E07AFF',
+    'var(--m-accent)', '#FFC857', '#6B9BFF', '#7FE2A9', '#E07AFF',
     '#FFB088', '#88E0FF', '#FFD45A', '#A88BFF', '#FF8DC7'
   ];
 

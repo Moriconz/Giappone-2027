@@ -263,7 +263,7 @@
         <div style="display:flex;flex-direction:column;gap:8px;">${dayBlocks}</div>
         ${result.without?.length ? `<p style="font-size:11px;color:rgba(255,200,100,0.8);margin:0;">⚠️ ${result.without.length} ${T('topt.noCoord', 'tappe senza posizione resteranno nel Giorno 1.')}</p>` : ''}
         <div style="display:flex;gap:8px;margin-top:4px;">
-          <button id="topt-apply" style="flex:2;padding:12px;background:linear-gradient(135deg,#FF6B35,#FF5E1F);border:none;border-radius:9px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">✅ ${T('topt.apply', 'Applica')}</button>
+          <button id="topt-apply" style="flex:2;padding:12px;background:linear-gradient(135deg,var(--m-accent),#FF5E1F);border:none;border-radius:9px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">✅ ${T('topt.apply', 'Applica')}</button>
           <button id="topt-cancel" style="flex:1;padding:12px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.16);border-radius:9px;color:#fff;font-weight:600;font-size:13px;cursor:pointer;">${T('common.cancel', 'Annulla')}</button>
         </div>
         <p style="font-size:10.5px;color:rgba(255,255,255,0.55);text-align:center;margin:2px 0 0;">${T('topt.undoHint', 'Puoi annullare con ⬅️ o ripristinare una versione salvata.')}</p>

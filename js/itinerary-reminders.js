@@ -171,7 +171,7 @@
 
     const permGranted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
     const permBtn = !permGranted ? `
-      <button id="rem-enable-btn" style="width:100%;padding:10px;background:linear-gradient(135deg,#FF6B35,#FF5E1F);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:12px;">
+      <button id="rem-enable-btn" style="width:100%;padding:10px;background:linear-gradient(135deg,var(--m-accent),#FF5E1F);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:12px;">
         🔔 ${T('reminder.enableBtn', 'Attiva notifiche OS')}
       </button>` : `
       <div style="padding:8px 12px;background:rgba(127,226,169,0.15);border:1px solid rgba(127,226,169,0.4);border-radius:8px;font-size:12px;color:#7fe2a9;margin-bottom:12px;">

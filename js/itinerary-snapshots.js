@@ -310,7 +310,7 @@
             ${T('snap.intro', 'Salva versioni del tuo itinerario prima di provare modifiche.')}
           </p>
           <button id="snap-save-new" style="
-            padding:8px 14px;background:linear-gradient(135deg,#FF6B35,#FF5E1F);
+            padding:8px 14px;background:linear-gradient(135deg,var(--m-accent),#FF5E1F);
             border:none;border-radius:8px;color:#fff;font-weight:700;font-size:12px;
             cursor:pointer;white-space:nowrap;">
             ${T('snap.saveNow', '💾 Salva versione ora')}

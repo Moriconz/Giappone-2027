@@ -1739,15 +1739,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const html = `
       <div style="padding: 0; min-width: 300px;">
-        <div style="background:linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,20,147,.1));border:1px solid #FF6B35;border-radius:10px;padding:16px;margin:12px;">
-          <h3 style="margin:0 0 12px 0;color:#FF6B35;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">⚠️ Non sei in nessun gruppo</h3>
+        <div style="background:linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,20,147,.1));border:1px solid var(--m-accent);border-radius:10px;padding:16px;margin:12px;">
+          <h3 style="margin:0 0 12px 0;color:var(--m-accent);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">⚠️ Non sei in nessun gruppo</h3>
 
           <p style="margin:0 0 16px 0;color:#fff;font-size:13px;line-height:1.5;">
             Per condividere il tuo itinerario con altri, devi prima entrare in un gruppo oppure crearne uno nuovo.
           </p>
 
           <div style="display:flex;gap:8px">
-            <button id="btn-go-groups" style="flex:1;background:linear-gradient(180deg,#FF6B35,#FF8C42);border:2px solid #FF6B35;color:white;border-radius:8px;padding:11px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
+            <button id="btn-go-groups" style="flex:1;background:linear-gradient(180deg,var(--m-accent),#FF8C42);border:2px solid var(--m-accent);color:white;border-radius:8px;padding:11px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
               👥 Gruppami
             </button>
             <button id="btn-close-no-group" style="flex:1;background:rgba(255,107,53,.2);border:2px solid rgba(255,107,53,.5);color:#fff;border-radius:8px;padding:11px;font-weight:600;cursor:pointer;">
@@ -4058,7 +4058,7 @@ document.addEventListener('DOMContentLoaded', () => {
     zIndex: 400,
     style: (feature) => {
       const mode = feature.get('mode') || 'transit';
-      const color = mode === 'walking' ? '#7FFF7F' : mode === 'driving' ? '#64c8ff' : '#FFB88C';
+      const color = mode === 'walking' ? '#7FFF7F' : mode === 'driving' ? '#64c8ff' : 'rgba(255,122,69,0.6)';
       return new ol.style.Style({
         stroke: new ol.style.Stroke({
           color, width: 5,
@@ -6067,7 +6067,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             padding: 12px;
                             background: ${isSelected ? 'rgba(255, 107, 53, 0.4)' : 'rgba(255, 107, 53, 0.15)'};
                             border: 2px solid ${isSelected ? 'rgba(255, 107, 53, 0.8)' : 'rgba(255, 107, 53, 0.3)'};
-                            color: #FF6B35;
+                            color: var(--m-accent);
                             border-radius: 6px;
                             font-weight: 600;
                             cursor: pointer;
@@ -6121,7 +6121,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       <p style="color: rgba(255,255,255,0.55); font-size: 11px; margin-top: 6px;">Formato: HH:MM (es: 14:30, 09:45)</p>
                       ${hoursWarning}
                     </div>
-                    <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 16px;">Giorno selezionato: <strong style="color: #FF6B35;">Day ${wizardState.selectedDay + 1}</strong></p>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 16px;">Giorno selezionato: <strong style="color: var(--m-accent);">Day ${wizardState.selectedDay + 1}</strong></p>
                   </div>
                 `;
               } else if (wizardState.step === 3) {
@@ -6358,7 +6358,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       padding: 8px 16px;
                       background: rgba(255, 107, 53, 0.3);
                       border: 1px solid rgba(255, 107, 53, 0.5);
-                      color: #FF6B35;
+                      color: var(--m-accent);
                       border-radius: 4px;
                       cursor: pointer;
                       font-size: 12px;
@@ -6689,7 +6689,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     padding: 8px 16px;
                     background: rgba(255, 107, 53, 0.3);
                     border: 1px solid rgba(255, 107, 53, 0.5);
-                    color: #FF6B35;
+                    color: var(--m-accent);
                     border-radius: 4px;
                     cursor: pointer;
                     font-size: 12px;
@@ -8519,7 +8519,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { label: T('menu.japanCal', '📅 Calendario Giappone'), icon: '📅', view: 'japan-cal' },
       { label: T('menu.groqai', 'Groq AI'), icon: '🤖', view: 'groq-menu' },
       { label: T('menu.suggest', 'Suggerisci Posti'), icon: '💡', view: 'gf-suggest' },
-      { label: T('menu.createTrip', 'Voglio creare il mio viaggio'), icon: '✏️', view: 'create-trip', style: 'color: #FF6B35; background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3);' },
+      { label: T('menu.createTrip', 'Voglio creare il mio viaggio'), icon: '✏️', view: 'create-trip', style: 'color: var(--m-accent); background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3);' },
       { label: T('menu.backup', 'Backup & Ripristino'), icon: '📦', view: 'backup' },
       { label: T('menu.sos', 'SOS'), icon: '🆘', view: 'sos', style: 'color: #FF6B6B; background: rgba(255,107,107,0.1);' },
       ...(window.DEBUG ? [{ label: T('menu.errors', 'Errori (debug)'), icon: '🐞', view: 'errors', style: 'opacity:0.85;' }] : [])
@@ -9236,7 +9236,7 @@ if (filtered.length === 0) {
       <a href="${discoverUrl}" target="_blank" style="
         display: inline-block;
         padding: 10px 20px;
-        background: linear-gradient(135deg, #FF6B35, #FF5E1F);
+        background: linear-gradient(135deg, var(--m-accent), #FF5E1F);
         border: none;
         border-radius: 8px;
         color: #fff;
@@ -9258,7 +9258,7 @@ let html = filtered.map(r => {
   // Primary CTA buttons
   const ctaButtons = [];
   if (r.phone) {
-    ctaButtons.push(`<a href="tel:${r.phone.replace(/[^0-9+]/g,'')}" style="flex:1;padding:10px 12px;background:linear-gradient(135deg, #FF6B35, #FF5E1F);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(255,107,53,0.4)'" onmouseout="this.style.boxShadow='none'">📞 Chiama</a>`);
+    ctaButtons.push(`<a href="tel:${r.phone.replace(/[^0-9+]/g,'')}" style="flex:1;padding:10px 12px;background:linear-gradient(135deg, var(--m-accent), #FF5E1F);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(255,107,53,0.4)'" onmouseout="this.style.boxShadow='none'">📞 Chiama</a>`);
   }
   if (r.maps_url) {
     ctaButtons.push(`<a href="${r.maps_url}" target="_blank" style="flex:1;padding:10px 12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,165,100,0.2);border-radius:8px;color:rgba(255,255,255,0.85);font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)';this.style.borderColor='rgba(255,165,100,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,165,100,0.2)'">🗺️ Mappe</a>`);

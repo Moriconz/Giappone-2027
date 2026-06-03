@@ -208,7 +208,7 @@ const BUDGET_WIDGET_HELPER = {
       mode: 'full-budget', // Future mode
       title: 'Budget Viaggio',
       sections: [
-        { label: 'Pianificato', value: 0, color: '#FF6B35' },
+        { label: 'Pianificato', value: 0, color: 'var(--m-accent)' },
         { label: 'Stimato', value: 0, color: '#4ade80' },
         { label: 'Rimasto', value: 0, color: '#4ade80' }
       ],

@@ -100,7 +100,7 @@
           image: new ol.style.Circle({
             radius: 15,
             fill: new ol.style.Fill({ color: 'rgba(255,107,53,0.18)' }),
-            stroke: new ol.style.Stroke({ color: '#FF6B35', width: 2 })
+            stroke: new ol.style.Stroke({ color: 'var(--m-accent)', width: 2 })
           })
         });
       }
@@ -224,7 +224,7 @@
             border-radius:8px;color:#fff;font-size:13px;box-sizing:border-box;resize:vertical;font-family:inherit;"></textarea>
         </div>
         <button id="cpoi-save" style="
-          padding:12px;background:linear-gradient(135deg,#FF6B35,#FF5E1F);border:none;border-radius:9px;
+          padding:12px;background:linear-gradient(135deg,var(--m-accent),#FF5E1F);border:none;border-radius:9px;
           color:#fff;font-weight:700;font-size:14px;cursor:pointer;">
           📌 ${T('cpoi.create', 'Crea posto')}
         </button>
