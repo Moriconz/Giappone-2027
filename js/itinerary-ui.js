@@ -102,7 +102,7 @@ function window.renderItineraryUnified?.() {
           <div style="font-size:13px;color:#fff;font-weight:500">${entry.poi_name}</div>
           <div style="font-size:11px;color:rgba(255,255,255,0.6)">⏰ ${entry.time}</div>
         </div>
-        <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;width:28px;height:28px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;cursor:pointer;font-size:12px">⋮</button>
+        <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" aria-label="Opzioni tappa" style="flex-shrink:0;width:28px;height:28px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;cursor:pointer;font-size:12px">⋮</button>
       </div>
     `).join('') : '<p style="color:rgba(255,255,255,0.5);font-size:12px;padding:8px">Nessun POI. Tap [+] per aggiungere</p>';
 

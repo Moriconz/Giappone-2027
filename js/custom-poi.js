@@ -275,7 +275,7 @@
           <button id="cpoi-add-itin" style="flex:1;padding:11px;background:rgba(76,175,80,0.25);border:1.5px solid rgba(76,175,80,0.5);border-radius:8px;color:#fff;font-weight:600;font-size:13px;cursor:pointer;">
             ➕ ${T('cpoi.addItin', 'Aggiungi a itinerario')}
           </button>
-          <button id="cpoi-delete" style="padding:11px 14px;background:rgba(255,107,107,0.18);border:1.5px solid rgba(255,107,107,0.4);border-radius:8px;color:#fff;font-weight:600;font-size:13px;cursor:pointer;">🗑️</button>
+          <button id="cpoi-delete" aria-label="${T('common.delete', 'Elimina')}" style="padding:11px 14px;background:rgba(255,107,107,0.18);border:1.5px solid rgba(255,107,107,0.4);border-radius:8px;color:#fff;font-weight:600;font-size:13px;cursor:pointer;">🗑️</button>
         </div>
         <a href="https://maps.google.com/?q=${poi.lat},${poi.lng}" target="_blank" rel="noopener" style="text-align:center;font-size:12px;color:#64c8ff;text-decoration:none;">🗺️ ${T('cpoi.openMaps', 'Apri in Google Maps')}</a>
       </div>
