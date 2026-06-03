@@ -1,6 +1,20 @@
 // app-boot.js — primo blocco <script> inline estratto da index.html
 (function() {
   'use strict';
+
+  // ── Console gating ────────────────────────────────────────────────────────
+  // Suppress verbose logs in production. Re-enable with ?debug or localStorage.
+  const _debugOn = location.search.includes('debug') || localStorage.getItem('gj_debug') === '1';
+  window.DEBUG = _debugOn;
+  if (!_debugOn) {
+    const _noop = () => {};
+    // Keep console.error so real errors surface; suppress log/warn/info/debug
+    ['log', 'warn', 'info', 'debug', 'groupCollapsed', 'group', 'groupEnd'].forEach(m => {
+      console[m] = _noop;
+    });
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   console.log('[Install] Initializing PWA install system...');
 
   window.__deferredPrompt = null;
