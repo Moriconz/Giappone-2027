@@ -18,6 +18,8 @@
 (function () {
   'use strict';
 
+  const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+
   function _toast(msg) {
     if (typeof window.toast === 'function') window.toast(msg);
     else console.log('[toast]', msg);
@@ -25,12 +27,12 @@
 
   function copyToClipboard(text) {
     if (!navigator.clipboard) {
-      _toast('❌ Clipboard non supportata');
+      _toast(T('sos.clipboardNA', '❌ Clipboard non supportata'));
       return;
     }
     navigator.clipboard.writeText(text).then(
-      () => _toast('✅ Copiato negli appunti'),
-      (err) => { console.error('Copy failed:', err); _toast('❌ Errore nella copia'); }
+      () => _toast(T('sos.copied', '✅ Copiato negli appunti')),
+      (err) => { console.error('Copy failed:', err); _toast(T('sos.copyError', '❌ Errore nella copia')); }
     );
   }
 
@@ -110,7 +112,7 @@ Data di creazione (Date Created): ${new Date().toLocaleDateString()}
     link.href = URL.createObjectURL(blob);
     link.download = 'SafeEats-Medical-Card-' + new Date().toISOString().split('T')[0] + '.txt';
     link.click();
-    _toast('✅ Tessera medica scaricata');
+    _toast(T('sos.cardDownloaded', '✅ Tessera medica scaricata'));
   }
 
   function renderSOSPanel() {

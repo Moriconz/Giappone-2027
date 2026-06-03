@@ -394,7 +394,7 @@ window.groupPanel = (() => {
             window.saveState();
             updateGroupItinerariesList();
             if (typeof toast === 'function') {
-              toast('🗑️ Itinerario eliminato');
+              toast(T('toast.itinDeleted', '🗑️ Itinerario eliminato'));
             }
           }
         }
