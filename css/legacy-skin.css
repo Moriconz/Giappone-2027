@@ -595,7 +595,7 @@ nav.bottom button.active {
 }
 
 /* tutti i testi dentro la finestra ereditano colore chiaro */
-.sheet-inner *:not(button):not(.tag.cat):not(.tag.gf-full):not(.tag.gf-partial):not(.chip.active):not(.btn.primary):not(.btn.success):not(.ai-msg.user):not(.booking-date-badge):not(.item-tag):not(.gpc-tag):not(.nav-badge) {
+.sheet-inner *:not(button):not(.tag.cat):not(.tag.gf-full):not(.tag.gf-partial):not(.chip.active):not(.btn.primary):not(.btn.success):not(.ai-msg.user):not(.gpc-tag) {
   color: #fff !important;
 }
 
@@ -888,12 +888,7 @@ nav.bottom button.active {
   color: #fff !important;
   box-shadow: 0 0 15px rgba(0, 255, 136, 0.2) !important;
 }
-.btn.navigate {
-  backdrop-filter: blur(15px) !important;
-  background: rgba(0, 255, 136, 0.2) !important;
-  border-color: rgba(0, 255, 136, 0.4) !important;
-  color: #fff !important;
-}
+.btn
 
 /* ── Form inputs dentro le finestre ────────────────────────────── */
 .sheet-inner .form-row label,
@@ -960,10 +955,7 @@ nav.bottom button.active {
   color: rgba(255, 215, 0, 0.9) !important;
   border: 1px solid rgba(255, 215, 0, 0.4) !important;
 }
-.booking-date-badge {
-  background: rgba(255, 107, 53, 0.4) !important;
-  color: #fff !important;
-}
+
 
 /* ── Shop cards ─────────────────────────────────────────────────── */
 .shop-card {
@@ -1046,34 +1038,14 @@ nav.bottom button.active {
 }
 .shop-card .sc-name   { color: #fff !important; font-weight: 700 !important; }
 .shop-card .sc-meta   { color: rgba(255, 255, 255, 0.6) !important; font-size: 12px !important; }
-.shop-card .sc-rating { color: rgba(255, 215, 0, 0.8) !important; font-weight: 700 !important; }
+.shop-card 
 .shop-card .sc-hours  { color: rgba(255, 255, 255, 0.6) !important; font-size: 12px !important; }
-.shop-card .sc-notes  { color: rgba(255, 107, 53, 0.8) !important; font-style: italic !important; font-size: 13px !important; }
-.item-tag {
-  backdrop-filter: blur(10px) !important;
-  background: rgba(255, 107, 53, 0.35) !important;
-  color: #fff !important;
-  border-radius: 5px !important;
-  border: 1px solid rgba(255, 107, 53, 0.5) !important;
-  font-size: 11px !important;
-  padding: 3px 8px !important;
-  font-weight: 600 !important;
-}
+.shop-card 
+
 
 /* ── AI Chat ────────────────────────────────────────────────────── */
-.ai-shell {
-  background: transparent !important;
-  padding: 16px 4px !important;
-}
-.ai-welcome {
-  backdrop-filter: blur(10px) !important;
-  background: rgba(255, 107, 53, 0.1) !important;
-  border: 1px solid rgba(255, 107, 53, 0.2) !important;
-  border-radius: 14px !important;
-  padding: 16px !important;
-}
-.ai-welcome-title { color: #fff !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; font-size: 16px !important; font-weight: 700 !important; }
-.ai-welcome-sub   { color: rgba(255, 255, 255, 0.6) !important; font-size: 13px !important; }
+
+
 .ai-msg.user {
   backdrop-filter: blur(10px) !important;
   background: rgba(255, 107, 53, 0.4) !important;
@@ -1097,51 +1069,7 @@ nav.bottom button.active {
   border: 1px dashed rgba(255, 107, 53, 0.3) !important;
   color: rgba(255, 255, 255, 0.5) !important;
 }
-.ai-input-row textarea {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 107, 53, 0.3) !important;
-  color: #fff !important;
-  border-radius: 10px !important;
-  padding: 10px 14px !important;
-  backdrop-filter: blur(10px) !important;
-}
-.ai-input-row textarea:focus {
-  border-color: rgba(255, 107, 53, 0.6) !important;
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2) !important;
-}
-.ai-send {
-  backdrop-filter: blur(10px) !important;
-  background: rgba(255, 107, 53, 0.4) !important;
-  color: #fff !important;
-  border: 1px solid rgba(255, 107, 53, 0.5) !important;
-  border-radius: 10px !important;
-  font-weight: 700 !important;
-  box-shadow: 0 0 15px rgba(255, 107, 53, 0.2) !important;
-}
-.ai-quick-chip {
-  backdrop-filter: blur(10px) !important;
-  background: rgba(255, 107, 53, 0.15) !important;
-  border: 1px solid rgba(255, 107, 53, 0.3) !important;
-  color: #fff !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  border-radius: 999px !important;
-  padding: 6px 12px !important;
-}
-.ai-quick-chip:hover {
-  background: rgba(255, 107, 53, 0.35) !important;
-  color: #fff !important;
-  border-color: rgba(255, 107, 53, 0.6) !important;
-}
-.ai-itinerary-day {
-  backdrop-filter: blur(10px) !important;
-  background: rgba(255, 107, 53, 0.1) !important;
-  border: 1px solid rgba(255, 107, 53, 0.2) !important;
-  border-radius: 10px !important;
-  padding: 12px 14px !important;
-}
-.ai-itinerary-day h4 { color: rgba(255, 107, 53, 0.9) !important; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-.ai-footer-note { color: rgba(255, 255, 255, 0.5) !important; font-size: 13px !important; }
+
 
 /* ── Groq / Menu analyzer ───────────────────────────────────────── */
 .groq-panel {
@@ -1156,13 +1084,7 @@ nav.bottom button.active {
   font-size: 12px !important;
   font-weight: 700 !important;
 }
-.groq-api-setup {
-  backdrop-filter: blur(10px) !important;
-  background: rgba(255, 107, 53, 0.1) !important;
-  border: 1px solid rgba(255, 107, 53, 0.2) !important;
-  border-radius: 12px !important;
-  padding: 14px 16px !important;
-}
+
 .groq-api-setup p { color: rgba(255, 255, 255, 0.6) !important; font-size: 12px !important; }
 .groq-analyze-btn {
   backdrop-filter: blur(10px) !important;
@@ -1268,14 +1190,7 @@ nav.bottom button.active {
   border: 1.5px solid #C8BDFF !important;
 }
 .gf-empty-state { color: var(--y2k-muted) !important; }
-.tag-chip {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  color: #fff !important;
-  border-radius: 5px !important;
-  padding: 4px 9px !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-}
+
 
 /* ── Do/Don't lists ─────────────────────────────────────────────── */
 .do-list li::before   { color: #009944 !important; }
@@ -1304,14 +1219,6 @@ nav.bottom button.active {
   padding: 20px !important;
 }
 
-/* ── Notification permission banner ────────────────────────────── */
-.notif-perm-banner {
-  background: rgba(45,59,125,0.08) !important;
-  border: 2px solid #C8BDFF !important;
-  border-radius: 10px !important;
-  padding: 14px 16px !important;
-}
-.notif-perm-banner p { color: var(--y2k-ink) !important; }
 
 /* ── Toast ──────────────────────────────────────────────────────── */
 #toast-container {
@@ -1325,65 +1232,6 @@ nav.bottom button.active {
   box-shadow: var(--y2k-glow-p) !important;
 }
 
-/* ── Leaflet popup ──────────────────────────────────────────────── */
-.leaflet-popup-content-wrapper {
-  background: linear-gradient(135deg, #FFFDF0, #FFF8DC) !important;
-  border: 2px solid var(--y2k-pink) !important;
-  border-radius: 10px !important;
-  color: var(--y2k-ink) !important;
-  box-shadow: var(--y2k-glow-p) !important;
-}
-.leaflet-popup-tip  { background: #FFFDF0 !important; }
-.popup-title        { color: var(--y2k-ink) !important; font-family: 'Courier New', monospace !important; font-weight: 700 !important; }
-.popup-btn {
-  background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: 7px !important;
-  font-weight: 700 !important;
-  font-family: 'Comic Sans MS', cursive !important;
-  padding: 8px 14px !important;
-  box-shadow: var(--y2k-glow-p) !important;
-}
-
-/* ── City labels sulla mappa ────────────────────────────────────── */
-.city-label {
-  background: rgba(45,59,125,0.92) !important;
-  color: var(--y2k-gold) !important;
-  border: 1.5px solid var(--y2k-gold) !important;
-  font-family: 'Courier New', monospace !important;
-  font-weight: 700 !important;
-  border-radius: 5px !important;
-  padding: 2px 7px !important;
-  font-size: 11px !important;
-}
-
-/* ── Marcatori POI ──────────────────────────────────────────────── */
-.poi-marker { border: 2px solid #fff !important; box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important; }
-.poi-marker.gf { box-shadow: 0 0 0 3px var(--y2k-green), 0 2px 8px rgba(0,0,0,0.4) !important; }
-
-/* ── Indirizzo POI — riga compatta con copy button ────────────── */
-.poi-address-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
-  padding: 10px 12px !important;
-  border-radius: 10px !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  margin: 12px 16px !important;
-}
-
-.poi-address-text {
-  flex: 1 !important;
-  font-size: 14px !important;
-  color: rgba(255, 255, 255, 0.85) !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  min-width: 0 !important;
-}
 
 .copy-address-btn {
   width: 32px !important;
@@ -1410,41 +1258,6 @@ nav.bottom button.active {
   transform: scale(0.95) !important;
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   NAV ACTIVE STATE RESET — JS snippet
-   Incolla questo <script> in fondo al <body> del tuo index.html
-   per ripristinare il bottone a blu quando la finestra si chiude:
-
-   <script>
-   (function(){
-     var firstNav = document.querySelector('nav.bottom button');
-     function resetNav(){
-       document.querySelectorAll('nav.bottom button').forEach(function(b,i){
-         b.classList.toggle('active', i===0);
-       });
-     }
-     // Chiusura tramite sheet-close o click fuori
-     document.addEventListener('click', function(e){
-       if(e.target.closest('#sheet-close') ||
-         (e.target.closest('.sheet') && !e.target.closest('.sheet-inner'))){
-         setTimeout(resetNav, 50);
-       }
-     });
-     // Chiusura programmatica (rimozione classe .open)
-     var obs = new MutationObserver(function(muts){
-       muts.forEach(function(m){
-         if(m.target.classList.contains('sheet') &&
-           !m.target.classList.contains('open')){
-           setTimeout(resetNav, 50);
-         }
-       });
-     });
-     document.querySelectorAll('.sheet').forEach(function(s){
-       obs.observe(s,{attributes:true,attributeFilter:['class']});
-     });
-   })();
-   </script>
-══════════════════════════════════════════════════════════════════ */
 
 /* ── Animazioni ─────────────────────────────────────────────────── */
 @keyframes floatIn {
@@ -2063,10 +1876,7 @@ div[class*="weather-day"][style*="background"] {
 }
 
 /* Version badge */
-.badge-version {
-  background: var(--y2k-green) !important;
-  font-size: 9px !important;
-}
+
 
 /* Main layout */
 main {
@@ -2853,9 +2663,7 @@ main {
   }
 
   /* ── CARD PADDING ────────────────────────────────────────────── */
-  .card, [class*="card"], .item-card {
-    padding: 14px 16px !important;
-  }
+  .card, [class*="card"], 
 
   /* ── TESTO GENERALE ──────────────────────────────────────────── */
   body {
