@@ -273,15 +273,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function _trimStateForQuota(s) {
+    // Strip large base64 avatar blobs from group members — regenerated from initials on next load
+    if (s.group?.members) {
+      s.group.members = s.group.members.map(m => {
+        if (m.avatar?.startsWith('data:')) return { ...m, avatar: null };
+        return m;
+      });
+    }
+    if (s.group?.myAvatar?.startsWith('data:')) s.group.myAvatar = null;
+    // Reduce GPS trace further
+    if (s.gpsTraces?.length > 100) s.gpsTraces = s.gpsTraces.slice(-100);
+  }
+
   function saveState(){
-    // console.log('[State] Save state', { group: state.group }); // Disabled: too verbose
     try{
-      // Pulisci traccia GPS prima di salvare
       cleanupGPSTraces();
 
-      const serialized = JSON.stringify(state);
+      let serialized = JSON.stringify(state);
       if (serialized.length > 4_500_000) {
-        console.warn('[Giappone2027] localStorage quota warning: ' + Math.round(serialized.length/1024) + 'KB — considera di ridurre la traccia GPS o gli avatar.');
+        console.warn('[Giappone2027] localStorage quota warning: ' + Math.round(serialized.length/1024) + 'KB — trimming large fields');
+        const trimmed = JSON.parse(serialized);
+        _trimStateForQuota(trimmed);
+        serialized = JSON.stringify(trimmed);
+        // Apply trim back to live state too
+        _trimStateForQuota(state);
         toast(T('toast.storageWarning', '⚠️ Dati quasi al limite (4.3MB). Cancella la traccia GPS se necessario.'));
       }
       localStorage.setItem(STATE_KEY, serialized);
@@ -10996,6 +11012,8 @@ window.renderGFList = renderGFList; // esposto per js/views/gf-view.js
   window.updateItinerary = updateItinerary;
   window.isInItinerary = isInItinerary;
   window.renderItineraryView = renderItineraryView;
+  window.renderWeatherView = renderWeatherView;
+  window.renderGFView = renderGFView;
   window.peerGPS = peerGPS;
   // Phase 2: P2P Sync exports (already added above)
   // window.computeItineraryHash, window.simpleHash, window.broadcastItinerary

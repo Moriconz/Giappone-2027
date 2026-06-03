@@ -165,5 +165,61 @@ R.checks.offlineBanner = await page.evaluate(() => {
   return { exists: !!b, i18n: b?.getAttribute('data-i18n') === 'banner.offline' };
 });
 
+// ── FLUSSO 8: Meteo (non deve lanciare) ──────────────────────────────
+R.checks.weatherRender = await page.evaluate(() => {
+  try {
+    if (typeof window.renderWeatherView === 'function') {
+      window.renderWeatherView();
+      const body = document.querySelector('.y2k-win .y2k-win-body');
+      return { ok: true, hasContent: !!(body && body.textContent.trim().length > 0) };
+    }
+    return { skipped: 'renderWeatherView not found' };
+  } catch (e) { return { error: e.message }; }
+});
+
+// ── FLUSSO 9: Gruppo (renderGroupView non deve lanciare) ──────────────
+R.checks.groupRender = await page.evaluate(() => {
+  try {
+    window.y2kWindows?.closeAll();
+    if (typeof window.renderGroupView === 'function') {
+      window.renderGroupView();
+      const body = document.querySelector('.y2k-win .y2k-win-body');
+      return { ok: true, hasContent: !!(body && body.textContent.trim().length > 0) };
+    }
+    return { skipped: 'renderGroupView not found' };
+  } catch (e) { return { error: e.message }; }
+});
+
+// ── FLUSSO 10: GF Guide (renderGFView non deve lanciare) ─────────────
+R.checks.gfRender = await page.evaluate(() => {
+  try {
+    window.y2kWindows?.closeAll();
+    if (typeof window.renderGFView === 'function') {
+      window.renderGFView();
+      const body = document.querySelector('.y2k-win .y2k-win-body');
+      return { ok: true, hasContent: !!(body && body.textContent.trim().length > 0) };
+    }
+    return { skipped: 'renderGFView not found' };
+  } catch (e) { return { error: e.message }; }
+});
+
+// ── FLUSSO 11: Backup system ──────────────────────────────────────────
+R.checks.backupSystem = await page.evaluate(() => {
+  return {
+    exportFn: typeof window.BackupRestore?.export === 'function',
+    importFn: typeof window.BackupRestore?.import === 'function',
+    openPanelFn: typeof window.openBackupPanel === 'function',
+  };
+});
+
+// ── FLUSSO 12: ErrorCollector ─────────────────────────────────────────
+R.checks.errorCollector = await page.evaluate(() => {
+  return {
+    exists: !!window.ErrorCollector,
+    count: typeof window.ErrorCollector?.count === 'function',
+    openPanel: typeof window.ErrorCollector?.openPanel === 'function',
+  };
+});
+
 await browser.close();
 console.log(JSON.stringify(R, null, 2));
