@@ -83,7 +83,7 @@ const ROUTING = {
    * Uses cache first, falls back to estimation
    */
   async calculateRoute(lat1, lng1, lat2, lng2) {
-    if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) {
+    if (!lat1 || !lng1 || !lat2 || !lng2) {
       console.warn('[Routing] Missing coordinates for route calculation');
       return null;
     }
@@ -195,12 +195,9 @@ const ROUTING = {
     const days = tripProfile.days || 8;
 
     console.log('[Routing] Starting background routing calculation for all days...');
-    // Parallelize routing calculations for all days
-    const dayPromises = [];
     for (let d = 0; d < days; d++) {
-      dayPromises.push(this.calculateDayRouting(d));
+      await this.calculateDayRouting(d);
     }
-    await Promise.all(dayPromises);
 
     window.saveState?.();
     console.log('[Routing] ✅ All routing complete, state saved');
