@@ -267,7 +267,7 @@ window.groupChat = (() => {
       console.log(`[GroupChat] Message ${idx}:`, { from: messageFrom, text: messageText, isOwn, color: senderColor });
 
       const avatarHtml = avatar ? `
-            <img src="${avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: ${senderColor};" />
+            <img src="${avatar}" loading="lazy" decoding="async" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: ${senderColor};" />
           ` : `
             <div style="
               width: 32px;

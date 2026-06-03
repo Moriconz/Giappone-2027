@@ -161,7 +161,7 @@ function renderStep1(state) {
         gap:16px;
       ">
         ${state.poiPhoto ? `
-          <img src="${state.poiPhoto}" style="
+          <img src="${state.poiPhoto}" loading="lazy" decoding="async" style="
             width:80px;
             height:80px;
             border-radius:8px;

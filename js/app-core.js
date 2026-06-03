@@ -5911,32 +5911,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Capture displayName here for use in async functions
     const displayName = getPoiDisplayName(p);
 
+    // Show skeleton immediately so the user sees feedback on tap
+    openSheet(displayName, '<div class="skeleton-poi"><div class="skeleton-block sk-photo"></div><div class="skeleton-block sk-title"></div><div class="skeleton-block sk-badge"></div><div class="skeleton-block sk-line"></div><div class="skeleton-block sk-line-s"></div><div class="skeleton-block sk-line"></div><div class="skeleton-block sk-btn"></div></div>');
+
     // Syncronizza con Google Places se non ancora verificato
     (async () => {
       const verified = await window.POISync?.ensurePOIVerified?.(p);
       if (verified) {
-        console.log('[openPOI] ✅ POI verified, using Google data');
         p = { ...p, ...verified };
-      } else {
-        console.warn('[openPOI] ⚠️ POI verification failed, using local data');
       }
 
       // NEW: Enrich con Google Places Details API
       if (window.GooglePlacesDetailsClient && p.googlePlaceId) {
-        console.log('[openPOI] Enriching with Places Details API...');
         const enriched = await window.GooglePlacesDetailsClient.enrichPOI(p);
-        if (enriched._details) {
-          p = enriched;
-          console.log('[openPOI] ✅ POI enriched with full details');
-        }
+        if (enriched._details) p = enriched;
       }
 
-      console.log('[openPOI] Calling openSheet with:', displayName);
       const html = poiDetailHTML(p);
-      window.openSheet(displayName, html);
-      console.log('[openPOI] ✅ openSheet called');
-      console.log('[WIZARD] sheet opened');
-
+      // Update sheet body in-place (sheet is already open)
+      const _sb = document.getElementById('sheet-body');
+      if (_sb && document.getElementById('sheet')?.classList.contains('open')) {
+        _sb.innerHTML = html;
+      } else {
+        openSheet(displayName, html);
+      }
       // ===== SETUP ADD-TO-ITINERARY BUTTON (MOVED INTO ASYNC BLOCK) =====
       setTimeout(() => {
         const addToItineraryBtn = document.getElementById('add-to-itinerary-btn');

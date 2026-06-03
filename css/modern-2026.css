@@ -645,3 +645,34 @@ header {
   box-shadow: 0 0 0 2px rgba(16, 20, 30, 0.9);
   pointer-events: none;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   SKELETON LOADER — shimmer placeholder while async data loads
+   ══════════════════════════════════════════════════════════════════ */
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-block {
+  background: linear-gradient(
+    90deg,
+    var(--m-surface-2) 25%,
+    var(--m-surface-3) 50%,
+    var(--m-surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--m-r-sm);
+}
+.skeleton-poi {
+  padding: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.skeleton-poi .sk-photo  { height: 180px; border-radius: var(--m-r-md) var(--m-r-md) 0 0; }
+.skeleton-poi .sk-title  { height: 22px;  width: 60%; }
+.skeleton-poi .sk-badge  { height: 16px;  width: 35%; }
+.skeleton-poi .sk-line   { height: 13px; }
+.skeleton-poi .sk-line-s { height: 13px;  width: 70%; }
+.skeleton-poi .sk-btn    { height: 44px;  border-radius: var(--m-r-md); margin-top: 6px; }
