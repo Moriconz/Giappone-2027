@@ -2033,69 +2033,6 @@ main {
   cursor: pointer !important;
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   UNIFORM TAB STYLING — Align all tab content to 'Gruppo' style
-══════════════════════════════════════════════════════════════════ */
-
-/* Titoli uniformi in tutte le tab */
-.sheet-body h1,
-.sheet-body h2,
-.sheet-body h3,
-.sheet-body h4,
-.sheet-body h5,
-.sheet-body h6,
-.sheet-inner h1,
-.sheet-inner h2,
-.sheet-inner h3,
-.sheet-inner h4,
-.sheet-inner h5,
-.sheet-inner h6 {
-  color: #A8005A !important;
-  font-family: 'Comic Sans MS', cursive !important;
-  font-weight: 700 !important;
-  margin: 0 0 10px 0 !important;
-}
-
-/* Label uniformi */
-.sheet-body label,
-.sheet-inner label {
-  color: var(--y2k-muted) !important;
-  font-family: 'Courier New', monospace !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  margin-bottom: 5px !important;
-  display: block !important;
-}
-
-/* Paragrafi uniformi */
-.sheet-body p,
-.sheet-inner p {
-  color: var(--y2k-ink) !important;
-  font-size: 14px !important;
-  line-height: 1.6 !important;
-  margin-bottom: 8px !important;
-}
-
-/* List items uniformi */
-.sheet-body li,
-.sheet-inner li {
-  color: var(--y2k-ink) !important;
-  font-size: 14px !important;
-  line-height: 1.6 !important;
-}
-
-/* Div text uniformi */
-.sheet-body div:not(.poi-row):not(.chip):not(.tag):not(.btn):not(.section):not(.category-items):not(.body):not(.name):not(.sub),
-.sheet-inner div:not(.poi-row):not(.chip):not(.tag):not(.btn):not(.section):not(.category-items):not(.body):not(.name):not(.sub) {
-  color: var(--y2k-ink) !important;
-}
-
-/* Spacing uniforme nei container */
-.sheet-body > div,
-.sheet-inner > div {
-  margin-bottom: 12px !important;
-}
-
 /* ── Print ──────────────────────────────────────────────────────── */
 @media print {
   header, nav.bottom, #filters { display: none !important; }
@@ -2192,28 +2129,6 @@ main {
    BUDGET & CURRENCY — Complete styling for Budget view
 ══════════════════════════════════════════════════════════════════ */
 
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
 .stat-label {
   color: var(--y2k-muted) !important;
   font-family: 'Courier New', monospace !important;
@@ -2230,8 +2145,6 @@ main {
   font-size: 14px !important;
   font-weight: 700 !important;
 }
-
-/* COMMENTED OUT: Budget CSS rules */
 
 .category-row {
   display: flex !important;
@@ -2252,18 +2165,6 @@ main {
   flex-shrink: 0 !important;
   box-shadow: 0 0 4px rgba(0,0,0,0.2) !important;
 }
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
-
-/* COMMENTED OUT: Budget CSS rules */
 
 .expense-item {
   display: flex !important;

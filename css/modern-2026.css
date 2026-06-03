@@ -489,6 +489,20 @@ header {
 .y2k-win-body p, .y2k-win-body li, .y2k-win-body div,
 .y2k-win-body span, .y2k-win-body label { color: var(--m-text-2) !important; }
 .y2k-win-body strong { color: var(--m-text) !important; }
+/* same overrides for legacy .sheet-body / .sheet-inner containers */
+.sheet-body h1, .sheet-inner h1,
+.sheet-body h2, .sheet-inner h2,
+.sheet-body h3, .sheet-inner h3,
+.sheet-body h4, .sheet-inner h4,
+.sheet-body h5, .sheet-inner h5,
+.sheet-body h6, .sheet-inner h6 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif !important;
+  color: var(--m-text) !important;
+}
+.sheet-body h3, .sheet-inner h3 { font-size: 14px !important; color: var(--m-accent) !important; }
+.sheet-body label, .sheet-inner label { font-family: inherit !important; color: var(--m-text-2) !important; }
+.sheet-body p, .sheet-inner p,
+.sheet-body li, .sheet-inner li { color: var(--m-text-2) !important; }
 
 /* ── Weather widget floating ────────────────────────────────────── */
 #weather-floating #weather-card,
