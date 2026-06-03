@@ -202,7 +202,8 @@ window.groupPanel = (() => {
     if (inviteLinkBtn) inviteLinkBtn.onclick = () => window.copyGroupInviteLink?.();
 
     const auditLogBtn = document.getElementById('btn-open-audit-log');
-    if (auditLogBtn) auditLogBtn.onclick = () => window.openGroupAuditLog?.();
+    if (auditLogBtn) auditLogBtn.onclick = () =>
+      window.loadScript('./js/audit-log-viewer.js').then(() => window.openGroupAuditLog?.());
 
     // Chat gruppo
     const chatBtn = document.getElementById('open-group-chat');

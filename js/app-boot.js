@@ -561,3 +561,23 @@
     document.body.appendChild(overlay);
   };
 })();
+
+// ── Lazy-load helper ──────────────────────────────────────────────────────────
+// window.loadScript(src) → Promise<void>
+// Loads a script on demand; resolves immediately if already loaded.
+(function() {
+  const _loaded = new Set();
+  window.loadScript = function(src) {
+    if (_loaded.has(src) || document.querySelector(`script[src="${src}"]`)) {
+      _loaded.add(src);
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload  = () => { _loaded.add(src); resolve(); };
+      s.onerror = () => reject(new Error('Failed to load: ' + src));
+      document.head.appendChild(s);
+    });
+  };
+})();

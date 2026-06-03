@@ -8590,10 +8590,12 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (view === 'gallery') { window.renderGalleryView?.(); }
             else if (view === 'tips') { window.renderTipsView?.(); }
             else if (view === 'gf-heatmap') {
-              // Toggle heatmap GF: passa alla mappa e accendi il layer
-              const mapBtn = document.querySelector('nav.bottom button[data-view="map"]');
-              if (mapBtn) mapBtn.click();
-              setTimeout(() => window.GFHeatmap?.toggle?.(), 150);
+              // Toggle heatmap GF: lazy-load module then switch to map
+              window.loadScript('./js/gf-heatmap.js').then(() => {
+                const mapBtn = document.querySelector('nav.bottom button[data-view="map"]');
+                if (mapBtn) mapBtn.click();
+                setTimeout(() => window.GFHeatmap?.toggle?.(), 150);
+              });
             }
             else if (view === 'reminders') { window.openItineraryReminders?.(); }
             else if (view === 'jr-pass') { window.openJRPassPanel?.(); }
