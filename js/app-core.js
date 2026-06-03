@@ -4744,7 +4744,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <button id="gps-toggle-btn" class="btn ${active?'success':''}" style="font-size:12px;padding:6px 10px">
         ${active?'⏹ Stop':'▶ Start GPS'}
       </button>
-      ${pts>0?`<button id="gps-clear-btn" class="btn" style="font-size:12px;padding:6px 10px">🗑️</button>`:''}
+      ${pts>0?`<button id="gps-clear-btn" class="btn" aria-label="Cancella traccia GPS" style="font-size:12px;padding:6px 10px">🗑️</button>`:''}
     </div>`;
   }
   function updateGPSStatusPanel(){
@@ -7433,7 +7433,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="name">${entry.name || (poi ? getPoiDisplayName(poi) : '?')}</div>
           <div class="sub">${entry.city || (poi ? poi.city : '?')}${distStr}${dayStr}${timeStr}${costStr}</div>
         </div>
-        <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:var(--danger);border-color:var(--danger);color:#fff" data-remove-itinerary="${entry.id}">✕</button>
+        <button class="btn" aria-label="Rimuovi tappa" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:var(--danger);border-color:var(--danger);color:#fff" data-remove-itinerary="${entry.id}">✕</button>
       </div>`;
     }).join('') : '<p style="color:var(--muted);font-size:13px;padding:12px">📋 L\'itinerario del gruppo è vuoto. Seleziona tappe dalla lista sottostante per aggiungerle!</p>';
 
@@ -9336,8 +9336,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:600;color:#FF1493">Il codice della tua stanza</label>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap;">
             <div id="room-code-display" style="padding:16px 12px;background:#FFF0F8;border:2px solid #FF1493;border-radius:8px;font-size:24px;font-weight:700;letter-spacing:6px;color:#FF1493;text-align:center;font-family:monospace;cursor:default;user-select:all;min-width:160px;flex-shrink:0;">------</div>
-            <button id="copy-code-btn" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Copia codice">📋</button>
-            <button id="regen-code-btn" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Genera nuovo codice">🔄</button>
+            <button id="copy-code-btn" aria-label="Copia codice stanza" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Copia codice">📋</button>
+            <button id="regen-code-btn" aria-label="Genera nuovo codice stanza" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Genera nuovo codice">🔄</button>
           </div>
           <div style="font-size:11px;color:#888;margin-top:6px;">Condividi questo codice con chi vuoi far entrare. Solo chi lo ha può entrare.</div>
         </div>
