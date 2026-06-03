@@ -5165,17 +5165,17 @@ document.addEventListener('DOMContentLoaded', () => {
       // Fallback for views accessed from menu drawer
       if (view === 'list') { renderItineraryUnified(); return; }
       if (view === 'weather') { renderWeatherView(); return; }
-      if (view === 'bookings') { window.renderBookingsView?.(); return; }
+      if (view === 'bookings') { window.loadScript('./js/views/bookings-view.js').then(() => window.renderBookingsView?.()); return; }
       if (view === 'shopping') { renderShoppingView(); return; }
       if (view === 'group') { renderGroupView(); return; }
       if (view === 'budget') { renderBudgetView(); return; }
       if (view === 'gallery') { window.renderGalleryView?.(); return; }
-      if (view === 'sos') { window.renderSOSPanel?.(); return; }
+      if (view === 'sos') { window.loadScript('./js/views/sos-view.js').then(() => window.renderSOSPanel?.()); return; }
       if (view === 'groq-menu') { window.openGroqPanel(); return; }
       if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
       if (view === 'gf-suggest') { window.openGFSuggestionPanel(); return; }
       if (view === 'reminders') { window.loadScript('./js/itinerary-reminders.js').then(() => window.openItineraryReminders?.()); return; }
-      if (view === 'jr-pass') { window.openJRPassPanel?.(); return; }
+      if (view === 'jr-pass') { window.loadScript('./js/jr-pass-calculator.js').then(() => window.openJRPassPanel?.()); return; }
       if (view === 'japan-cal') { window.JapanCalendarHints?.openPanel?.(); return; }
     });
   }
@@ -8583,14 +8583,13 @@ document.addEventListener('DOMContentLoaded', () => {
           } else {
             // Fallback: trigger view directly
             if (view === 'list') { renderListView(); }
-            else if (view === 'bookings') { window.renderBookingsView?.(); }
+            else if (view === 'bookings') { window.loadScript('./js/views/bookings-view.js').then(() => window.renderBookingsView?.()); }
             else if (view === 'shopping') { renderShoppingView(); }
             else if (view === 'group') { renderGroupView(); }
             else if (view === 'budget') { renderBudgetView(); }
             else if (view === 'gallery') { window.renderGalleryView?.(); }
-            else if (view === 'tips') { window.renderTipsView?.(); }
+            else if (view === 'tips') { window.loadScript('./js/views/tips-view.js').then(() => window.renderTipsView?.()); }
             else if (view === 'gf-heatmap') {
-              // Toggle heatmap GF: lazy-load module then switch to map
               window.loadScript('./js/gf-heatmap.js').then(() => {
                 const mapBtn = document.querySelector('nav.bottom button[data-view="map"]');
                 if (mapBtn) mapBtn.click();
@@ -8598,11 +8597,11 @@ document.addEventListener('DOMContentLoaded', () => {
               });
             }
             else if (view === 'reminders') { window.loadScript('./js/itinerary-reminders.js').then(() => window.openItineraryReminders?.()); }
-            else if (view === 'jr-pass') { window.openJRPassPanel?.(); }
+            else if (view === 'jr-pass') { window.loadScript('./js/jr-pass-calculator.js').then(() => window.openJRPassPanel?.()); }
             else if (view === 'japan-cal') { window.JapanCalendarHints?.openPanel?.(); }
             else if (view === 'groq-menu') { window.openGroqPanel(); }
             else if (view === 'gf-suggest') { window.openGFSuggestionPanel(); }
-            else if (view === 'sos') { window.renderSOSPanel?.(); }
+            else if (view === 'sos') { window.loadScript('./js/views/sos-view.js').then(() => window.renderSOSPanel?.()); }
             else if (view === 'backup') { window.openBackupPanel?.(); }
             else if (view === 'errors') { window.ErrorCollector?.openPanel?.(); }
           }
