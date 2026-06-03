@@ -5174,6 +5174,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (view === 'groq-menu') { window.openGroqPanel(); return; }
       if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
       if (view === 'gf-suggest') { window.openGFSuggestionPanel(); return; }
+      if (view === 'reminders') { window.openItineraryReminders?.(); return; }
       if (view === 'jr-pass') { window.openJRPassPanel?.(); return; }
       if (view === 'japan-cal') { window.JapanCalendarHints?.openPanel?.(); return; }
     });
@@ -8515,6 +8516,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { label: T('menu.gallery', 'Galleria'), icon: '📸', view: 'gallery' },
       { label: T('menu.tips', 'Tips Viaggio 2027'), icon: '🌸', view: 'tips' },
       { label: T('menu.gfHeatmap', 'Heatmap GF'), icon: '🔥', view: 'gf-heatmap' },
+      { label: T('menu.reminders', '🔔 Promemoria Tappe'), icon: '🔔', view: 'reminders' },
       { label: T('menu.jrpass', '🚄 Conviene il JR Pass?'), icon: '🚄', view: 'jr-pass' },
       { label: T('menu.japanCal', '📅 Calendario Giappone'), icon: '📅', view: 'japan-cal' },
       { label: T('menu.groqai', 'Groq AI'), icon: '🤖', view: 'groq-menu' },
@@ -8595,6 +8597,7 @@ document.addEventListener('DOMContentLoaded', () => {
               if (mapBtn) mapBtn.click();
               setTimeout(() => window.GFHeatmap?.toggle?.(), 150);
             }
+            else if (view === 'reminders') { window.openItineraryReminders?.(); }
             else if (view === 'jr-pass') { window.openJRPassPanel?.(); }
             else if (view === 'japan-cal') { window.JapanCalendarHints?.openPanel?.(); }
             else if (view === 'groq-menu') { window.openGroqPanel(); }

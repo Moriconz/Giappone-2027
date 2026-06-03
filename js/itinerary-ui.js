@@ -3,7 +3,7 @@
  * Renders the accordion-based itinerary view for day-by-day POI management
  */
 
-function renderItineraryViewNew() {
+function window.renderItineraryUnified?.() {
   console.log('[ItineraryUI] Rendering new accordion-based itinerary...');
 
   if (!window.ITINERARY) {
@@ -240,7 +240,7 @@ function setupItineraryEventHandlers() {
       if (fromDay !== toDay && poiId) {
         window.ITINERARY?.moveToDay(poiId, toDay);
         window.saveState?.();
-        renderItineraryViewNew(); // Refresh
+        window.renderItineraryUnified?.(); // Refresh
       }
     });
   });
@@ -322,15 +322,15 @@ function handlePOIMenuAction(poiId, action) {
   switch (action) {
     case 'remove':
       (window.modalConfirm || ((m) => Promise.resolve(confirm(m))))('Rimuovere questo POI dall\'itinerario?', { danger: true, confirmText: 'Rimuovi' })
-        .then(ok => { if (ok) { window.ITINERARY?.removePOI(poiId); window.saveState?.(); renderItineraryViewNew(); window.toast('✓ Rimosso'); } });
+        .then(ok => { if (ok) { window.ITINERARY?.removePOI(poiId); window.saveState?.(); window.renderItineraryUnified?.(); window.toast('✓ Rimosso'); } });
       break;
     case 'edit_time':
       (window.modalPrompt || ((msg, o) => Promise.resolve(prompt(msg, o?.defaultValue || ''))))('Nuova ora (HH:MM):', { defaultValue: '10:00' })
-        .then(newTime => { if (newTime) { window.ITINERARY?.updateTime(poiId, newTime); window.saveState?.(); renderItineraryViewNew(); window.toast('✓ Orario aggiornato'); } });
+        .then(newTime => { if (newTime) { window.ITINERARY?.updateTime(poiId, newTime); window.saveState?.(); window.renderItineraryUnified?.(); window.toast('✓ Orario aggiornato'); } });
       break;
     case 'edit_notes':
       (window.modalPrompt || ((msg, o) => Promise.resolve(prompt(msg, o?.defaultValue || ''))))('Note:', { defaultValue: '' })
-        .then(newNotes => { if (newNotes !== null) { window.ITINERARY?.updateNotes(poiId, newNotes); window.saveState?.(); renderItineraryViewNew(); window.toast('✓ Note aggiornate'); } });
+        .then(newNotes => { if (newNotes !== null) { window.ITINERARY?.updateNotes(poiId, newNotes); window.saveState?.(); window.renderItineraryUnified?.(); window.toast('✓ Note aggiornate'); } });
       break;
     // TODO: implement other actions
     default:
@@ -339,5 +339,5 @@ function handlePOIMenuAction(poiId, action) {
 }
 
 // Expose to window
-window.renderItineraryViewNew = renderItineraryViewNew;
+window.renderItineraryViewNew = () => window.renderItineraryUnified?.();
 window.setupItineraryEventHandlers = setupItineraryEventHandlers;
