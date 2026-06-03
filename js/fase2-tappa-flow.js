@@ -6,6 +6,8 @@
  * Step 3: Transport mode (walking, metro, bus, taxi, train) with Google Directions
  */
 
+const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+
 class TappaFlowModal {
   constructor() {
     this.currentStep = 1;
@@ -155,7 +157,7 @@ class TappaFlowModal {
 
     document.getElementById('tappa-flow-next').addEventListener('click', () => {
       if (!this.data.day) {
-        (window.modalAlert || alert)('Seleziona un giorno');
+        (window.modalAlert || alert)(T('tappa.selectDay', 'Seleziona un giorno'));
         return;
       }
       this.showStep2(poi);
@@ -277,7 +279,7 @@ class TappaFlowModal {
     document.getElementById('tappa-back-2').addEventListener('click', () => this.showStep1(poi));
     document.getElementById('tappa-flow-next-2').addEventListener('click', () => {
       if (!this.data.time) {
-        (window.modalAlert || alert)('Seleziona un orario');
+        (window.modalAlert || alert)(T('tappa.selectTime', 'Seleziona un orario'));
         return;
       }
       this.showStep3(poi);
@@ -424,12 +426,12 @@ class TappaFlowModal {
     if (window.addToItinerary) {
       const success = window.addToItinerary(entry);
       if (success) {
-        window.toast?.(`✅ Aggiunto al giorno ${this.data.day}`);
+        window.toast?.(`${T('tappa.added', '✅ Aggiunto al giorno')} ${this.data.day}`);
         this.closeModal();
         // Close the POI detail sheet as well
         window.closeSheet?.();
       } else {
-        window.toast?.('⚠️ Già presente nell\'itinerario');
+        window.toast?.(T('tappa.duplicate', "⚠️ Già presente nell'itinerario"));
       }
     } else {
       console.error('[TappaFlow] addToItinerary not available');

@@ -8,6 +8,8 @@
  * - No backend, no server — local browser sync only
  */
 
+const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+
 const GROUP_SYNC = {
   CHANNEL_NAME: 'safeeats-sync',
   channel: null,
@@ -102,7 +104,7 @@ const GROUP_SYNC = {
     if (changed) {
       window.saveState?.();
       if (typeof renderItineraryUnified === 'function') renderItineraryUnified();
-      if (window.toast) window.toast('📡 Itinerario aggiornato');
+      if (window.toast) window.toast(T('sync.itinUpdated', '📡 Itinerario aggiornato'));
     }
   },
 
@@ -141,7 +143,7 @@ GROUP_SYNC.exportItinerary = function() {
   a.download = 'itinerario-' + Date.now() + '.json';
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 100);
-  if (window.toast) window.toast('✅ Itinerario esportato');
+  if (window.toast) window.toast(T('sync.itinExported', '✅ Itinerario esportato'));
 };
 
 GROUP_SYNC.importItinerary = function() {
@@ -157,7 +159,7 @@ GROUP_SYNC.importItinerary = function() {
         const data = JSON.parse(evt.target.result);
         if (!data.itineraryByDay) throw new Error('File non valido');
         GROUP_SYNC.mergeItinerary(data.itineraryByDay);
-        if (window.toast) window.toast('✅ Itinerario importato');
+        if (window.toast) window.toast(T('sync.itinImported', '✅ Itinerario importato'));
       } catch (err) {
         if (window.toast) window.toast('❌ Errore import: ' + err.message);
       }

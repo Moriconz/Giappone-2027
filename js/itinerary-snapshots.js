@@ -27,6 +27,8 @@
 (function () {
   'use strict';
 
+  const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+
   const STORAGE_KEY = 'giappone2027_snapshots_v1';
   const AUTO_STORAGE_KEY = 'giappone2027_auto_snapshots_v1';
   const MAX_SNAPSHOTS = 10;
@@ -49,7 +51,7 @@
       return true;
     } catch (e) {
       console.error('[snapshots] write failed:', e);
-      if (typeof window.toast === 'function') window.toast('❌ Spazio esaurito, impossibile salvare');
+      if (typeof window.toast === 'function') window.toast(T('snap.storageFull', '❌ Spazio esaurito, impossibile salvare'));
       return false;
     }
   }
@@ -79,7 +81,7 @@
   function save(name) {
     const ibd = window.state?.itineraryByDay || {};
     if (_countPOIs(ibd) === 0) {
-      if (typeof window.toast === 'function') window.toast('⚠️ Itinerario vuoto, nulla da salvare');
+      if (typeof window.toast === 'function') window.toast(T('snap.emptyItin', '⚠️ Itinerario vuoto, nulla da salvare'));
       return null;
     }
 
@@ -186,7 +188,7 @@
   function restore(id) {
     const found = _findById(id);
     if (!found) {
-      if (typeof window.toast === 'function') window.toast('❌ Snapshot non trovato');
+      if (typeof window.toast === 'function') window.toast(T('snap.notFound', '❌ Snapshot non trovato'));
       return false;
     }
     if (!window.state) return false;
@@ -206,7 +208,7 @@
       return true;
     } catch (e) {
       console.error('[snapshots] restore failed:', e);
-      if (typeof window.toast === 'function') window.toast('❌ Ripristino fallito');
+      if (typeof window.toast === 'function') window.toast(T('snap.restoreFailed', '❌ Ripristino fallito'));
       return false;
     }
   }
@@ -217,14 +219,14 @@
     const fmanuals = manuals.filter(s => s.id !== id);
     if (fmanuals.length !== manuals.length) {
       _writeAll(fmanuals);
-      if (typeof window.toast === 'function') window.toast('🗑️ Snapshot eliminato');
+      if (typeof window.toast === 'function') window.toast(T('snap.deleted', '🗑️ Snapshot eliminato'));
       return true;
     }
     const autos = _readAuto();
     const fautos = autos.filter(s => s.id !== id);
     if (fautos.length !== autos.length) {
       _writeAuto(fautos);
-      if (typeof window.toast === 'function') window.toast('🗑️ Auto-snapshot eliminato');
+      if (typeof window.toast === 'function') window.toast(T('snap.autoDeleted', '🗑️ Auto-snapshot eliminato'));
       return true;
     }
     return false;

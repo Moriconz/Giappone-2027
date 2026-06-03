@@ -26,6 +26,8 @@
 (function () {
   'use strict';
 
+  const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+
   // RFC 5545: escape sequences nel TEXT
   function escIcs(s) {
     if (s == null) return '';
@@ -132,7 +134,7 @@
   function handleExportICal() {
     const result = buildIcs();
     if (!result || result.eventCount === 0) {
-      if (typeof window.toast === 'function') window.toast('⚠️ Itinerario vuoto');
+      if (typeof window.toast === 'function') window.toast(T('ical.emptyItin', '⚠️ Itinerario vuoto'));
       return;
     }
     try {
@@ -152,7 +154,7 @@
       }
     } catch (err) {
       console.error('[itinerary-ical] export failed:', err);
-      if (typeof window.toast === 'function') window.toast('❌ Export iCal fallito');
+      if (typeof window.toast === 'function') window.toast(T('ical.exportFailed', '❌ Export iCal fallito'));
     }
   }
 

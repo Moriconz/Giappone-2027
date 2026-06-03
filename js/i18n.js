@@ -85,7 +85,14 @@
       'group.toastUpdated': "ha aggiornato l'itinerario del gruppo",
       'group.toastUnshareReq': 'ha richiesto di smettere di condividere',
       'group.toastUnshared': "ha smesso di condividere l'itinerario",
-      'group.toastDeleted': "ha eliminato l'itinerario condiviso"
+      'group.toastDeleted': "ha eliminato l'itinerario condiviso",
+      'tappa.selectDay': 'Seleziona un giorno', 'tappa.selectTime': 'Seleziona un orario',
+      'tappa.added': '✅ Aggiunto al giorno', 'tappa.duplicate': "⚠️ Già presente nell'itinerario",
+      'sync.itinUpdated': '📡 Itinerario aggiornato', 'sync.itinExported': '✅ Itinerario esportato', 'sync.itinImported': '✅ Itinerario importato',
+      'snap.storageFull': '❌ Spazio esaurito, impossibile salvare', 'snap.emptyItin': '⚠️ Itinerario vuoto, nulla da salvare',
+      'snap.notFound': '❌ Snapshot non trovato', 'snap.restoreFailed': '❌ Ripristino fallito',
+      'snap.deleted': '🗑️ Snapshot eliminato', 'snap.autoDeleted': '🗑️ Auto-snapshot eliminato',
+      'ical.emptyItin': '⚠️ Itinerario vuoto', 'ical.exportFailed': '❌ Export iCal fallito'
     },
     en: {
       'header.brand': '🌸 SafeEats',
@@ -165,7 +172,14 @@
       'group.toastUpdated': 'updated the group itinerary',
       'group.toastUnshareReq': 'requested to stop sharing',
       'group.toastUnshared': 'stopped sharing the itinerary',
-      'group.toastDeleted': 'deleted the shared itinerary'
+      'group.toastDeleted': 'deleted the shared itinerary',
+      'tappa.selectDay': 'Select a day', 'tappa.selectTime': 'Select a time',
+      'tappa.added': '✅ Added to day', 'tappa.duplicate': '⚠️ Already in the itinerary',
+      'sync.itinUpdated': '📡 Itinerary updated', 'sync.itinExported': '✅ Itinerary exported', 'sync.itinImported': '✅ Itinerary imported',
+      'snap.storageFull': '❌ Storage full, cannot save', 'snap.emptyItin': '⚠️ Empty itinerary, nothing to save',
+      'snap.notFound': '❌ Snapshot not found', 'snap.restoreFailed': '❌ Restore failed',
+      'snap.deleted': '🗑️ Snapshot deleted', 'snap.autoDeleted': '🗑️ Auto-snapshot deleted',
+      'ical.emptyItin': '⚠️ Empty itinerary', 'ical.exportFailed': '❌ iCal export failed'
     },
     ja: {
       'header.brand': '🌸 SafeEats',
@@ -245,7 +259,14 @@
       'group.toastUpdated': 'がグループの旅程を更新しました',
       'group.toastUnshareReq': 'が共有停止を要求しました',
       'group.toastUnshared': 'が旅程の共有を停止しました',
-      'group.toastDeleted': 'が共有旅程を削除しました'
+      'group.toastDeleted': 'が共有旅程を削除しました',
+      'tappa.selectDay': '日を選択してください', 'tappa.selectTime': '時間を選択してください',
+      'tappa.added': '✅ 追加しました：Day', 'tappa.duplicate': '⚠️ すでに旅程にあります',
+      'sync.itinUpdated': '📡 旅程が更新されました', 'sync.itinExported': '✅ 旅程をエクスポートしました', 'sync.itinImported': '✅ 旅程をインポートしました',
+      'snap.storageFull': '❌ 保存できません：ストレージ容量不足', 'snap.emptyItin': '⚠️ 旅程が空です、保存するものがありません',
+      'snap.notFound': '❌ スナップショットが見つかりません', 'snap.restoreFailed': '❌ 復元に失敗しました',
+      'snap.deleted': '🗑️ スナップショット削除済み', 'snap.autoDeleted': '🗑️ 自動スナップショット削除済み',
+      'ical.emptyItin': '⚠️ 旅程が空です', 'ical.exportFailed': '❌ iCalエクスポートに失敗しました'
     }
   };
 
