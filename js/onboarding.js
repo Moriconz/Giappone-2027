@@ -776,7 +776,8 @@ function initOnboardingForm() {
     const interests = Array.from(formData.getAll('interests'));
 
     if (interests.length === 0) {
-      alert('Seleziona almeno un interesse');
+      if (window.toast) window.toast('⚠️ Seleziona almeno un interesse');
+      else alert('Seleziona almeno un interesse');
       return;
     }
 

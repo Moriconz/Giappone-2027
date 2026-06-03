@@ -321,30 +321,16 @@ function handlePOIMenuAction(poiId, action) {
   console.log('[ItineraryUI] Action:', action, 'for POI:', poiId);
   switch (action) {
     case 'remove':
-      if (confirm('Rimuovere questo POI dall\'itinerario?')) {
-        window.ITINERARY?.removePOI(poiId);
-        window.saveState?.();
-        renderItineraryViewNew();
-        window.toast('✓ Rimosso');
-      }
+      (window.modalConfirm || ((m) => Promise.resolve(confirm(m))))('Rimuovere questo POI dall\'itinerario?', { danger: true, confirmText: 'Rimuovi' })
+        .then(ok => { if (ok) { window.ITINERARY?.removePOI(poiId); window.saveState?.(); renderItineraryViewNew(); window.toast('✓ Rimosso'); } });
       break;
     case 'edit_time':
-      const newTime = prompt('Nuova ora (HH:MM):', '10:00');
-      if (newTime) {
-        window.ITINERARY?.updateTime(poiId, newTime);
-        window.saveState?.();
-        renderItineraryViewNew();
-        window.toast('✓ Orario aggiornato');
-      }
+      (window.modalPrompt || ((msg, o) => Promise.resolve(prompt(msg, o?.defaultValue || ''))))('Nuova ora (HH:MM):', { defaultValue: '10:00' })
+        .then(newTime => { if (newTime) { window.ITINERARY?.updateTime(poiId, newTime); window.saveState?.(); renderItineraryViewNew(); window.toast('✓ Orario aggiornato'); } });
       break;
     case 'edit_notes':
-      const newNotes = prompt('Note:', '');
-      if (newNotes !== null) {
-        window.ITINERARY?.updateNotes(poiId, newNotes);
-        window.saveState?.();
-        renderItineraryViewNew();
-        window.toast('✓ Note aggiornate');
-      }
+      (window.modalPrompt || ((msg, o) => Promise.resolve(prompt(msg, o?.defaultValue || ''))))('Note:', { defaultValue: '' })
+        .then(newNotes => { if (newNotes !== null) { window.ITINERARY?.updateNotes(poiId, newNotes); window.saveState?.(); renderItineraryViewNew(); window.toast('✓ Note aggiornate'); } });
       break;
     // TODO: implement other actions
     default:

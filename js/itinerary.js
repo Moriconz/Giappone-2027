@@ -355,14 +355,19 @@ const ITINERARY_SYSTEM = {
 
         // When marking as visited without cost, prompt for actual cost
         if (!wasVisited && entry.status === 'visited' && (!entry.cost || entry.cost === 0)) {
-          const costInput = prompt(`💰 Costo effettivo di "${entry.poi_name}" in ¥\n(Inserisci 0 se gratuito o non ancora pagato)`);
-          if (costInput !== null) {
-            const actualCost = parseFloat(costInput) || 0;
-            if (actualCost >= 0) {
-              entry.cost = actualCost;
-              console.log('[Itinerary] Updated cost for visited POI:', entry.poi_name, '→', actualCost);
+          (window.modalPrompt || ((msg, o) => Promise.resolve(prompt(msg, o?.defaultValue || ''))))(
+            `💰 Costo effettivo di "${entry.poi_name}" in ¥`,
+            { defaultValue: '0', placeholder: '0', label: 'Inserisci 0 se gratuito' }
+          ).then(costInput => {
+            if (costInput !== null) {
+              const actualCost = parseFloat(costInput) || 0;
+              if (actualCost >= 0) {
+                entry.cost = actualCost;
+                window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
+                if (typeof renderItineraryUnified === 'function') renderItineraryUnified();
+              }
             }
-          }
+          });
         }
 
         window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();

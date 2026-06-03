@@ -300,12 +300,10 @@ function renderItineraryUnified() {
 
       <!-- SECTION 1: YOUR ITINERARY -->
       <div>
-        <h3 style="
-          font-size: 14px;
-          font-weight: 700;
-          color: rgba(255,255,255,0.95);
-          margin: 0 0 12px 0;
-        ">📅 Il Tuo Itinerario</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 12px 0;">
+          <h3 style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.95);margin:0;">📅 Il Tuo Itinerario</h3>
+          ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="padding:5px 12px;background:rgba(255,107,53,0.15);border:1.5px solid rgba(255,107,53,0.5);border-radius:20px;color:#FF8A5B;font-size:12px;font-weight:600;cursor:pointer;" title="Riorganizza le tappe per zone geografiche, minimizzando gli spostamenti">🧭 Ottimizza viaggio</button>` : ''}
+        </div>
         <div class="itinerary-accordion">${accordionHTML}</div>
       </div>
 
@@ -705,17 +703,19 @@ function setupGlobalEventDelegation() {
     if (!btn) return;
 
     const entryId = btn.dataset.removeItinerary;
-    if (confirm('Rimuovere questa tappa dal gruppo?')) {
-      if (window.state?.itinerary) {
-        const idx = window.state.itinerary.findIndex(e => e.id === entryId);
-        if (idx !== -1) {
-          window.state.itinerary.splice(idx, 1);
-          window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
-          renderItineraryUnified();
-          if (window.toast) window.toast('✓ Tappa rimossa');
+    (window.modalConfirm || ((m) => Promise.resolve(confirm(m))))('Rimuovere questa tappa dal gruppo?', { danger: true, confirmText: 'Rimuovi' })
+      .then(ok => {
+        if (!ok) return;
+        if (window.state?.itinerary) {
+          const idx = window.state.itinerary.findIndex(e => e.id === entryId);
+          if (idx !== -1) {
+            window.state.itinerary.splice(idx, 1);
+            window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
+            renderItineraryUnified();
+            if (window.toast) window.toast('✓ Tappa rimossa');
+          }
         }
-      }
-    }
+      });
   }, false);
 
   console.log('[ItineraryUnified] ✅ Global event delegation setup complete');
@@ -1150,13 +1150,15 @@ function showItineraryPOIMenu(poiId) {
 
     if (deleteBtn) {
       deleteBtn.onclick = () => {
-        if (confirm(`Rimuovere "${poiName}" dall'itinerario?`)) {
-          window.ITINERARY?.removePOI(poiId);
-          window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
-          window.renderItineraryUnified?.();
-          window.closeSheet();
-          if (window.toast) window.toast('✓ POI rimosso');
-        }
+        (window.modalConfirm || ((m) => Promise.resolve(confirm(m))))(`Rimuovere "${poiName}" dall'itinerario?`, { danger: true, confirmText: 'Rimuovi' })
+          .then(ok => {
+            if (!ok) return;
+            window.ITINERARY?.removePOI(poiId);
+            window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
+            window.renderItineraryUnified?.();
+            window.closeSheet();
+            if (window.toast) window.toast('✓ POI rimosso');
+          });
       };
     }
 
