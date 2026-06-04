@@ -48,8 +48,8 @@ function renderItineraryUnified() {
     const poiListHTML = dayPOIs.length ? dayPOIs.map((entry, idx) => {
       // Get POI name: first try entry.poi_name, then search allPOIs, fallback to ID
       let poiNameDisplay = entry.poi_name;
-      if (!poiNameDisplay && typeof allPOIs === 'function') {
-        const poi = allPOIs().find(p => p.id === entry.poi_id);
+      if (!poiNameDisplay && typeof window.allPOIs === 'function') {
+        const poi = window.allPOIs().find(p => p.id === entry.poi_id);
         poiNameDisplay = poi ? (poi.name || poi.title || 'Luogo sconosciuto') : `POI #${entry.poi_id.substring(0, 8)}`;
       }
       if (!poiNameDisplay) {
@@ -701,9 +701,7 @@ function setupGlobalEventDelegation() {
 
     e.stopPropagation();
     const poiId = btn.dataset.poiId;
-    if (typeof showItineraryPOIMenu === 'function') {
-      showItineraryPOIMenu(poiId);
-    }
+    window.showItineraryPOIMenu?.(poiId);
   }, false);
 
   // Remove from shared itinerary

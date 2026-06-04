@@ -282,16 +282,7 @@ document.addEventListener('click', (e) => {
  * PRIMARY CTA + SECONDARY BUTTONS
  */
 document.addEventListener('click', (e) => {
-  // Primary CTA: Add to Itinerary
-  if (e.target.id === 'add-to-itinerary-btn' || e.target.closest('#add-to-itinerary-btn')) {
-    console.debug('[Primary CTA] Aggiungi all\'itinerario');
-    // Open the add-to-itinerary wizard
-    if (typeof handleOpenWizardFromDetail === 'function') {
-      handleOpenWizardFromDetail();
-    } else if (typeof window.handleOpenWizardFromDetail === 'function') {
-      window.handleOpenWizardFromDetail();
-    }
-  }
+  // #add-to-itinerary-btn handled by .onclick set in poi-detail-view.js openPOI()
 
   // Secondary: Save POI
   if (e.target.id === 'save-poi') {
