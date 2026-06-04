@@ -23,9 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })();
   console.log('[giappone2027] Device tier:', tier);
 
-  // CATS + CITY_COORDS + CITIES defined in js/config.js (window.CATS / window.CITY_COORDS / window.CITIES)
-  const CATS = window.CATS;
-  const CITY_COORDS = window.CITY_COORDS;
+  // CATS + CITY_COORDS + CITIES → js/config.js (window.CATS, window.CITY_COORDS, window.CITIES)
 
   // State loaded + saved by js/state.js (window.state, window.saveState)
   const state = window.state;

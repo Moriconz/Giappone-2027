@@ -13,6 +13,11 @@
     const state = window.state || {};
     console.log('[Group] renderGroupView', { roomId: state.group?.roomId, myName: state.group?.myName, isCreator: state.group?.isCreator });
 
+    // Run soft-delete cleanup on open (removes POIs deleted >30 days ago)
+    if (state.groupItineraries) {
+      Object.keys(state.groupItineraries).forEach(id => { window.cleanupSoftDeletedPOIs?.(id); });
+    }
+
     // Hide weather widget when opening group panel
     const weatherWidget = document.getElementById('weather-floating');
     if (weatherWidget) weatherWidget.classList.remove('show');
