@@ -28,13 +28,14 @@ function _collect() {
 }
 
 function _summarize(payload) {
-  const itin = payload.itinerary || [];
+  const ibd = payload.itineraryByDay || {};
+  const itinCount = Object.values(ibd).flat().length || (payload.itinerary || []).length;
   const saved = payload.savedPOIs || [];
   const notes = Object.keys(payload.notes || {});
   const groups = Object.keys(payload.groupItineraries || {});
   const custom = (payload.customEvents || []).length;
   const lines = [];
-  if (itin.length) lines.push(`${itin.length} tappe nell'itinerario personale`);
+  if (itinCount) lines.push(`${itinCount} tappe nell'itinerario personale`);
   if (groups.length) lines.push(`${groups.length} itinerari di gruppo`);
   if (saved.length) lines.push(`${saved.length} POI salvati`);
   if (notes.length) lines.push(`${notes.length} note`);
