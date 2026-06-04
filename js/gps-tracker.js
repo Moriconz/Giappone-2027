@@ -141,4 +141,85 @@
   window.updateAgendaDistances = updateAgendaDistances;
   window.buildGPSPanelHTML = buildGPSPanelHTML;
   window.updateGPSStatusPanel = updateGPSStatusPanel;
+
+  // ── GPS marker drawing — extracted from app-core.js ──────────────────────
+  // Deps: window.gpsSource, window.remotePeersSource, window.state, ol.*
+
+  function buildGPSStyle(avatarDataUrl, initials) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 36; canvas.height = 36;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#2196F3';
+    ctx.beginPath();
+    ctx.arc(18, 18, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(initials || '?', 18, 18);
+    return new ol.style.Style({
+      image: new ol.style.Icon({ img: canvas, imgSize: [36, 36] })
+    });
+  }
+
+  function updateGPSMarker(lat, lng) {
+    window.gpsSource.clear();
+    if (lat == null || lng == null) return;
+    const feature = new ol.Feature({
+      geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat]))
+    });
+    const avatar = window.state.group?.myAvatar || null;
+    const initials = window.state.group?.myName ? window.state.group.myName.substring(0, 2).toUpperCase() : '?';
+    feature.setStyle(buildGPSStyle(null, initials));
+    window.gpsSource.addFeature(feature);
+    if (avatar) {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 36; canvas.height = 36;
+        const ctx = canvas.getContext('2d');
+        ctx.beginPath();
+        ctx.arc(18, 18, 16, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(img, 2, 2, 32, 32);
+        ctx.beginPath();
+        ctx.arc(18, 18, 16, 0, Math.PI * 2);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        feature.setStyle(new ol.style.Style({
+          image: new ol.style.Icon({ img: canvas, imgSize: [36, 36] })
+        }));
+      };
+      img.onerror = () => {};
+      img.src = avatar;
+    }
+  }
+
+  function updateMapMarkers() {
+    const t0 = performance.now();
+    window.remotePeersSource.clear();
+    const remoteMarkers = window.state?.gpsRemoteMarkers || {};
+    const count = Object.keys(remoteMarkers).length;
+    console.log(`%c[updateMapMarkers] 📍 Updating ${count} remote markers`, 'background:#FF69B4;color:white;padding:4px 8px;border-radius:3px');
+    for (const [name, marker] of Object.entries(remoteMarkers)) {
+      if (!marker.lat || !marker.lng) continue;
+      const feature = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([marker.lng, marker.lat]))
+      });
+      feature.setStyle(buildGPSStyle(null, name ? name.substring(0, 2).toUpperCase() : '?'));
+      window.remotePeersSource.addFeature(feature);
+      console.log(`  ✓ ${name}: (${marker.lat.toFixed(4)}, ${marker.lng.toFixed(4)})`);
+    }
+    const t1 = performance.now();
+    console.log(`%c[updateMapMarkers] ✅ DONE in ${(t1-t0).toFixed(1)}ms`, 'background:#FF69B4;color:white;padding:4px 8px;border-radius:3px');
+  }
+
+  window.buildGPSStyle = buildGPSStyle;
+  window.updateGPSMarker = updateGPSMarker;
+  window.updateMapMarkers = updateMapMarkers;
 })();

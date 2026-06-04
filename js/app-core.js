@@ -30,16 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let POIS_LOADED = false;
   // REMOVED: CHUNK_LOAD_LIMIT
   // REMOVED: loadedChunkRegions
-  // Raggio GPS dinamico basato su zoom level
-  function getGpsRadiusKm(zoom) {
-    if (zoom < 5) return 25;   // Molto zoomato out → largo raggio
-    if (zoom < 8) return 15;
-    if (zoom < 10) return 8;
-    if (zoom < 12) return 5;
-    if (zoom < 14) return 3;
-    return 2;                   // Molto zoomato in → raggio stretto
-  }
-  // REMOVED: CHUNK_FILES 
+  // getGpsRadiusKm moved to js/map-markers.js
+  // REMOVED: CHUNK_FILES
   // REMOVED: CHUNK_REGION_MAP
   // REMOVED: CHUNK_REGION_BOUNDS
   // REMOVED: CHUNK_CATEGORY_MAP
@@ -374,44 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   // Rendi globale per accesso da altri script
   window.allPOIs = allPOIs;
-  // ---- Filter logic ----
-  function filtered(){
-    return allPOIs().filter(p => {
-      if (state.activeCat !== 'all' && p.cat !== state.activeCat) return false;
-      const foodCats = ['food','market'];
-      if (state.onlyGF && foodCats.includes(p.cat) && !(p.gf && (p.gf.lvl === 'full' || p.gf.lvl === 'partial'))) return false;
-      if (state.onlyLocal && !p.local) return false;
-      
-      // Advanced filters
-      const minRating = state.minRating || 0;
-      const rating = state.ratings?.[p.id] || 0;
-      if (rating < minRating) return false;
-      
-      const maxBudget = state.maxBudget || 999999;
-      if (p.ticket) {
-        const match = p.ticket.match(/(\d+)/);
-        if (match && parseInt(match[1], 10) > maxBudget) return false;
-      }
-      // Group accommodation filter
-      const accomFilter = state.groupAccomFilter;
-      if (accomFilter && accomFilter !== 'all') {
-        const desc = (p.desc || '').toLowerCase();
-        const name = (p.name || '').toLowerCase();
-        const filterMap = {
-          ryokan: ['ryokan', 'minshuku', 'tatami', 'inn'],
-          apartment: ['apartment', 'appartamento', 'villa', 'airbnb'],
-          guesthouse: ['guesthouse', 'guest house', 'hostel', 'pension']
-        };
-        const keywords = filterMap[accomFilter] || [];
-        const matchesAccom = keywords.some(kw => desc.includes(kw) || name.includes(kw));
-        // Only filter if the POI is an accommodation type; other types always pass
-        const accomCats = ['experience', 'onsen'];
-        if (accomCats.includes(p.cat) && !matchesAccom) return false;
-      }
-      
-      return true;
-    });
-  }
+  // filtered() moved to js/map-markers.js (window.filtered)
   // ---- Collaborative Itinerary Helpers ----
   function addToItinerary(entry) {
     // entry: { id, name, city, type?, lat?, lng?, date? }
@@ -589,6 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
     zIndex: 999
   });
   map.addLayer(gpsLayer);
+  window.gpsSource = gpsSource;
   // ---- Layer marker GPS remoti (altri membri del gruppo) ----
   const remotePeersSource = new ol.source.Vector();
   const remotePeersLayer = new ol.layer.Vector({
@@ -596,6 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
     zIndex: 998
   });
   map.addLayer(remotePeersLayer);
+  window.remotePeersSource = remotePeersSource;
 
   // ===== GLUTEN-FREE PLACES LAYER =====
   const gfPlacesSource = new ol.source.Vector();
@@ -749,93 +706,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
-  // buildGPSStyle: restituisce SOLO stile iniziali (sincrono, sempre visibile).
-  // updateGPSMarker gestisce direttamente il caso avatar con img.onload.
-  function buildGPSStyle(avatarDataUrl, initials) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 36; canvas.height = 36;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#2196F3';
-    ctx.beginPath();
-    ctx.arc(18, 18, 16, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(initials || '?', 18, 18);
-    return new ol.style.Style({
-      image: new ol.style.Icon({ img: canvas, imgSize: [36, 36] })
-    });
-  }
-  function updateGPSMarker(lat, lng) {
-    gpsSource.clear();
-    if (lat == null || lng == null) return;
-    const feature = new ol.Feature({
-      geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat]))
-    });
-    const avatar = state.group?.myAvatar || null;
-    const initials = state.group?.myName ? state.group.myName.substring(0, 2).toUpperCase() : '?';
-    // Mostra subito le iniziali (blu = marker locale), poi sovrascrive con avatar se presente
-    feature.setStyle(buildGPSStyle(null, initials));
-    gpsSource.addFeature(feature);
-    if (avatar) {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 36; canvas.height = 36;
-        const ctx = canvas.getContext('2d');
-        ctx.beginPath();
-        ctx.arc(18, 18, 16, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(img, 2, 2, 32, 32);
-        ctx.beginPath();
-        ctx.arc(18, 18, 16, 0, Math.PI * 2);
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        feature.setStyle(new ol.style.Style({
-          image: new ol.style.Icon({ img: canvas, imgSize: [36, 36] })
-        }));
-      };
-      img.onerror = () => {}; // mantieni iniziali
-      img.src = avatar;
-    }
-  }
-
-  // ============================================================
-  // UPDATE REMOTE GPS MARKERS — Mostra marker degli altri utenti
-  // ============================================================
-  function updateMapMarkers() {
-    const t0 = performance.now();
-    remotePeersSource.clear();
-
-    const remoteMarkers = window.state?.gpsRemoteMarkers || {};
-    const count = Object.keys(remoteMarkers).length;
-    console.log(`%c[updateMapMarkers] 📍 Updating ${count} remote markers`, 'background:#FF69B4;color:white;padding:4px 8px;border-radius:3px');
-
-    for (const [name, marker] of Object.entries(remoteMarkers)) {
-      if (!marker.lat || !marker.lng) continue;
-
-      const feature = new ol.Feature({
-        geometry: new ol.geom.Point(ol.proj.fromLonLat([marker.lng, marker.lat]))
-      });
-
-      // Use same style as local marker for consistency (with peer's initials)
-      const initials = name ? name.substring(0, 2).toUpperCase() : '?';
-      feature.setStyle(buildGPSStyle(null, initials));
-      remotePeersSource.addFeature(feature);
-
-      console.log(`  ✓ ${name}: (${marker.lat.toFixed(4)}, ${marker.lng.toFixed(4)})`);
-    }
-
-    const t1 = performance.now();
-    console.log(`%c[updateMapMarkers] ✅ DONE in ${(t1-t0).toFixed(1)}ms`, 'background:#FF69B4;color:white;padding:4px 8px;border-radius:3px');
-  }
-  window.updateMapMarkers = updateMapMarkers;
+  // buildGPSStyle, updateGPSMarker, updateMapMarkers extracted to js/gps-tracker.js
+  // (window.gpsSource + window.remotePeersSource exposed above for gps-tracker.js)
 
   // Listen for map marker updates
   document.addEventListener('map_markers_updated', () => {
@@ -850,254 +722,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
   }
 
-  // Track fake POIs (not found on Google Places)
-  let FAKE_POI_IDS = new Set();
-
-  async function updateFakePOIList() {
-    const allPOIs = window.allPOIs?.() || [];
-    let newFakesFound = 0;
-
-    for (const poi of allPOIs) {
-      const status = await window.POIVerifiedDB?.getVerificationStatus?.(poi.id);
-      if (status === 'not_found') {
-        if (!FAKE_POI_IDS.has(poi.id)) {
-          newFakesFound++;
-          console.log(`[renderMarkers] Marking as fake: ${poi.name} (${poi.id})`);
-        }
-        FAKE_POI_IDS.add(poi.id);
-      }
-    }
-
-    if (newFakesFound > 0) {
-      console.log(`[renderMarkers] Found ${newFakesFound} new fake POIs, re-rendering map...`);
-      renderMarkers(); // Re-render to hide fake POIs
-    }
-  }
-
-  // Periodically update fake POI list
-  setInterval(updateFakePOIList, 3000);
-
-  // Listen for sync progress events
-  window.addEventListener('poi-sync-progress', (e) => {
-    // Check for new fake POIs after each sync batch
-    setTimeout(updateFakePOIList, 500);
-  });
-
-  function renderMarkers(){
-    const t0 = performance.now();
-    console.log(`%c[renderMarkers] START - Rendering markers on map`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
-    // CRITICAL FIX: Invalidate cache to ensure openPOI() gets fresh POI list
-    window.invalidatePOIsCache?.();
-    console.log('[renderMarkers] 🔄 Cache invalidated for fresh POI lookup');
-    vectorSource.clear();
-    const zoom = map.getView().getZoom() || 5;
-
-    // maxPOI dinamico: se filtro attivo, carica TUTTI; altrimenti limita per performance
-    let maxPOI;
-    if (state.activeCat !== 'all') {
-      // Categoria filtrata → carica TUTTI i POI di quella categoria
-      maxPOI = Infinity;
-      console.log('[renderMarkers] Categoria filtrata:', state.activeCat, '→ carica tutti');
-    } else {
-      // Nessun filtro → limita dinamicamente per zoom
-      maxPOI = zoom < 5 ? 150 : zoom < 8 ? 400 : zoom < 11 ? 2000 : zoom < 13 ? 8000 : Infinity;
-    }
-    console.log('[renderMarkers] zoom=' + zoom + ', maxPOI=' + maxPOI + ', vectorLayer exists=' + (vectorLayer ? 'YES' : 'NO'));
-
-    let visibleFilter = () => true;
-    if (state.gpsEnabled && state.gpsCurrentLat && state.gpsCurrentLng) {
-      const radiusKm = getGpsRadiusKm(zoom);
-      // Don't filter Google Places POIs by GPS radius (they're real locations to explore)
-      // Only filter local POIs by proximity
-      visibleFilter = p => p.fromGooglePlaces || haversineKm(state.gpsCurrentLat, state.gpsCurrentLng, p.lat, p.lng) <= radiusKm;
-      console.log('[renderMarkers] GPS filter active (local POIs only, Google Places POIs shown always)');
-    } else {
-      const size = map.getSize();
-      if (size) {
-        const extent = map.getView().calculateExtent(size);
-        const [minX, minY, maxX, maxY] = ol.proj.transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
-        const dLat = (maxY - minY) * 0.2;
-        const dLng = (maxX - minX) * 0.2;
-        visibleFilter = p =>
-          p.lat >= minY - dLat && p.lat <= maxY + dLat &&
-          p.lng >= minX - dLng && p.lng <= maxX + dLng;
-        console.log('[renderMarkers] viewport bounds set');
-      } else {
-        console.log('[renderMarkers] WARNING: getSize()=null');
-      }
-    }
-
-    const allFiltered = filtered();
-    console.log('[renderMarkers] filtered():', allFiltered.length);
-    const pois = allFiltered.filter(visibleFilter);
-    console.log('[renderMarkers] after visibleFilter:', pois.length);
-
-    // FILTER OUT FAKE POIs (not found on Google Places)
-    const realPOIs = pois.filter(p => !FAKE_POI_IDS.has(p.id));
-    console.log(`[renderMarkers] Filtered fake POIs: ${pois.length} → ${realPOIs.length}`);
-
-    const toRender = maxPOI === Infinity ? realPOIs : realPOIs.slice(0, maxPOI);
-    console.log('[renderMarkers] toRender:', toRender.length);
-
-    let added = 0;
-    toRender.forEach((p, idx) => {
-      try {
-        // Validate coordinates
-        if (!p.lat || !p.lng || typeof p.lat !== 'number' || typeof p.lng !== 'number') {
-          console.warn(`[renderMarkers] Invalid coords for ${p.name}: lat=${p.lat}, lng=${p.lng}`);
-          return;
-        }
-
-        const feature = new ol.Feature({
-          geometry: new ol.geom.Point(ol.proj.fromLonLat([p.lng, p.lat])),
-          name: getPoiDisplayName(p),
-          id: p.id,
-          cat: p.cat || 'poi',
-          lat: p.lat,
-          lng: p.lng,
-          isGF: p.gf?.lvl === 'full',
-          gf: p.gf || {},
-          paid: p.paid === true ? true : false, // paid=false means free/gratis
-          indoor: p.indoor === true,
-          family_friendly: p.family_friendly === true
-        });
-        vectorSource.addFeature(feature);
-        added++;
-
-        // Log first few POIs for debugging
-        if (idx < 3) {
-          console.log(`[renderMarkers] Sample POI #${idx+1}: ${p.name} at (${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}), cat=${p.cat}, fromGoogle=${p.fromGooglePlaces}`);
-        }
-      } catch(e) {
-        console.error('[renderMarkers] Error adding feature:', p.id, e);
-      }
-    });
-    const t1 = performance.now();
-    console.log(`%c[renderMarkers] ✅ DONE: added ${added} markers in ${(t1-t0).toFixed(1)}ms | total on map: ${vectorSource.getFeatures().length}`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px');
-
-    // Show/hide empty state overlay
-    const emptyStateOverlay = document.getElementById('map-empty-state');
-    if (added === 0) {
-      if (emptyStateOverlay) {
-        emptyStateOverlay.style.display = 'flex';
-      } else {
-        // Create overlay if doesn't exist
-        const overlay = document.createElement('div');
-        overlay.id = 'map-empty-state';
-        overlay.style.cssText = `
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(180deg, rgba(10,8,5,0.85), rgba(15,12,8,0.85));
-          backdrop-filter: blur(3px);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          z-index: 100;
-          padding: 20px;
-          border-radius: 12px;
-          pointer-events: none;
-        `;
-        overlay.innerHTML = `
-          <div style="text-align: center; pointer-events: auto;">
-            <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
-            <h2 style="
-              font-size: 18px;
-              font-weight: 700;
-              color: rgba(255,255,255,0.95);
-              margin: 0 0 8px 0;
-            ">Nessun POI trovato</h2>
-            <p style="
-              font-size: 14px;
-              color: rgba(255,255,255,0.6);
-              margin: 0 0 16px 0;
-              line-height: 1.5;
-              max-width: 240px;
-            ">Prova a cambiare i filtri o a zoomare fuori per vedere più posti.</p>
-            <button id="map-empty-reset-filters" style="
-              padding: 10px 20px;
-              background: rgba(99,102,241,0.3);
-              border: 1.5px solid rgba(99,102,241,0.6);
-              border-radius: 20px;
-              color: rgba(255,255,255,0.9);
-              font-size: 13px;
-              font-weight: 600;
-              cursor: pointer;
-              font-family: inherit;
-            ">Resetta filtri</button>
-          </div>
-        `;
-        const mapHost = document.getElementById('view-map') || document.getElementById('map');
-        if (mapHost) {
-          mapHost.appendChild(overlay);
-          overlay.querySelector('#map-empty-reset-filters')?.addEventListener('click', () => {
-            state.activeFilter = 'all';
-            state.onlyLocal = false;
-            state.showGFPlaces = false;
-            renderFilters();
-            renderMarkers();
-          });
-        }
-      }
-    } else if (emptyStateOverlay) {
-      emptyStateOverlay.style.display = 'none';
-    }
-  }
-
-  function getPoiDisplayName(p) { return window.getPoiDisplayName?.(p) ?? p?.name ?? 'Punto di interesse'; }
+  // FAKE_POI_IDS, updateFakePOIList, filtered, renderMarkers extracted to js/map-markers.js
 
   // Aggiorna marker al cambio vista (debounced 250ms)
-  const debouncedRender = debounce(renderMarkers, 250);
-  // FEATURE 6 — SHOPPING DATASET
-  // ===================================================================
-  const SHOPPING_DB = [
-    // FASHION
-    {id:'shop-001', name:'Shibuya 109', city:'Tokyo', cat:'shopping', coords:[35.6595, 139.7004], rating:4.8, hours:'10:00–21:00', budget_jpy:50000, items:['clothing','accessories'], notes:'Fashion hub multi-brand'},
-    {id:'shop-002', name:'Ginza Six', city:'Tokyo', cat:'shopping', coords:[35.6730, 139.7625], rating:4.9, hours:'10:30–20:30', budget_jpy:80000, items:['luxury','fashion','accessories'], notes:'Luxury shopping complex'},
-    {id:'shop-003', name:'Takeshita Street', city:'Tokyo', cat:'shopping', coords:[35.6653, 139.7014], rating:4.7, hours:'10:00–19:00', budget_jpy:30000, items:'casual,trendy', notes:'Youth fashion street'},
-    // FOOD / SOUVENIRS
-    {id:'shop-004', name:'Kyoto Nishiki Market', city:'Kyoto', cat:'food', coords:[35.0051, 135.7703], rating:4.8, hours:'10:00–18:00', budget_jpy:15000, items:['food','souvenirs','gf-aware'], notes:'Food market, many GF snacks'},
-    {id:'shop-005', name:'Arashiyama Bamboo Market', city:'Kyoto', cat:'food', coords:[35.0162, 135.7588], rating:4.6, hours:'8:00–17:00', budget_jpy:10000, items:['crafts','souvenirs'], notes:'Artisan bamboo & local goods'},
-    {id:'shop-006', name:'Dotonbori Street Market', city:'Osaka', cat:'food', coords:[34.6694, 135.5015], rating:4.7, hours:'10:00–23:00', budget_jpy:20000, items:['food','snacks'], notes:'Street food & takoyaki'},
-    // ELECTRONICS / CAMERAS
-    {id:'shop-007', name:'Yodabashi Camera Tokyo', city:'Tokyo', cat:'electronics', coords:[35.7625, 139.7380], rating:4.6, hours:'09:30–21:00', budget_jpy:100000, items:['cameras','electronics'], notes:'Major camera & electronics'},
-    {id:'shop-008', name:'Akihabara Electronics', city:'Tokyo', cat:'electronics', coords:[35.7011, 139.7723], rating:4.5, hours:'10:00–20:00', budget_jpy:150000, items:['gaming','electronics'], notes:'Tech & gaming hub'},
-    // BOOKS / STATIONERY
-    {id:'shop-009', name:'Bookoff Tokyo', city:'Tokyo', cat:'books', coords:[35.6895, 139.7011], rating:4.4, hours:'10:00–21:00', budget_jpy:5000, items:['books','manga'], notes:'Used books & manga'},
-    {id:'shop-010', name:'Kyoto Kawachikaido Books', city:'Kyoto', cat:'books', coords:[35.0068, 135.7712], rating:4.3, hours:'10:00–19:00', budget_jpy:3000, items:['books','local-authors'], notes:'Local & traditional books'},
-    // BEAUTY / SKINCARE
-    {id:'shop-011', name:'Shibuya Hands', city:'Tokyo', cat:'beauty', coords:[35.6585, 139.7029], rating:4.7, hours:'10:00–21:00', budget_jpy:20000, items:['skincare','cosmetics'], notes:'Japanese beauty products'},
-    {id:'shop-012', name:'Kyoto Ginza Tanaka', city:'Kyoto', cat:'beauty', coords:[35.0071, 135.7733], rating:4.5, hours:'10:00–19:00', budget_jpy:15000, items:['cosmetics','wellness'], notes:'Premium skincare'},
-    // VINTAGE — Tokyo
-    {id:'vint-001', name:'Shimokitazawa Flamingo', city:'Tokyo', cat:'vintage', coords:[35.6612, 139.6688], rating:4.8, hours:'12:00–21:00', budget_jpy:15000, items:['vintage','abbigliamento anni 70-90'], notes:'Icona vintage di Shimokita. 3 negozi in 100m. Prezzi onesti, merce giapponese.'},
-    {id:'vint-002', name:'New York Joe Exchange', city:'Tokyo', cat:'vintage', coords:[35.6598, 139.6691], rating:4.7, hours:'12:00–21:00', budget_jpy:12000, items:['vintage','scambio','abbigliamento'], notes:'Compra e vende vintage. Ottimo per capi anni 80-90 a prezzi bassi.'},
-    {id:'vint-003', name:'Chicago Shimokitazawa', city:'Tokyo', cat:'vintage', coords:[35.6601, 139.6695], rating:4.6, hours:'11:00–20:00', budget_jpy:20000, items:['vintage','cappotti','accessori'], notes:'Catena vintage storica di Tokyo. Selezione ampia.'},
-    {id:'vint-004', name:'Koenji Don Don Down', city:'Tokyo', cat:'vintage', coords:[35.7054, 139.6498], rating:4.7, hours:'11:00–20:00', budget_jpy:8000, items:['vintage','scontato','abbigliamento'], notes:'Mercoledì sconti massivi. Prezzo cala ogni settimana se rimane invenduto.'},
-    {id:'vint-005', name:'Haight & Ashbury', city:'Tokyo', cat:'vintage', coords:[35.6610, 139.6690], rating:4.5, hours:'12:00–21:00', budget_jpy:25000, items:['vintage','american casual','denim'], notes:'Specializzato vintage americano: Levi\'s, college jackets, western.'},
-    {id:'vint-006', name:'Ragtag Tokyo', city:'Tokyo', cat:'vintage', coords:[35.6590, 139.6685], rating:4.6, hours:'11:00–20:00', budget_jpy:30000, items:['vintage','designer','luxury resell'], notes:'Vintage di lusso e designer di seconda mano. Qualità garantita.'},
-    {id:'vint-007', name:'Kinji Harajuku', city:'Tokyo', cat:'vintage', coords:[35.6695, 139.7043], rating:4.5, hours:'11:00–20:00', budget_jpy:10000, items:['vintage','harajuku','moda giovane'], notes:'Vintage e usato economico a Harajuku. 3 piani stracolmi.'},
-    {id:'vint-008', name:'Treasure Factory Koenji', city:'Tokyo', cat:'vintage', coords:[35.7058, 139.6501], rating:4.4, hours:'10:00–21:00', budget_jpy:6000, items:['vintage','usato','casa'], notes:'Catena acquisto/vendita. Anche oggetti casa, vinili, fumetti.'},
-    // VINTAGE — Kyoto
-    {id:'vint-009', name:'Furugi no Mise Shichifuku', city:'Kyoto', cat:'vintage', coords:[35.0045, 135.7618], rating:4.6, hours:'11:00–19:00', budget_jpy:18000, items:['vintage','kimono','furugi'], notes:'Furugi (usato) con selezione kimono e haori. Zona Nishiki.'},
-    {id:'vint-010', name:'Hinaya Kimono Vintage', city:'Kyoto', cat:'vintage', coords:[35.0058, 135.7701], rating:4.7, hours:'10:00–18:00', budget_jpy:25000, items:['kimono','vintage','obi'], notes:'Kimono vintage di seconda mano. Prezzi da 3.000¥. Anche seta.'},
-    {id:'vint-011', name:'Usagi Gion Vintage', city:'Kyoto', cat:'vintage', coords:[35.0038, 135.7742], rating:4.5, hours:'12:00–19:00', budget_jpy:20000, items:['vintage','moda','accessori'], notes:'Piccolo negozio vintage vicino a Gion. Capi giapponesi anni 80.'},
-    // VINTAGE — Osaka
-    {id:'vint-012', name:'Amerika Mura Vintage Row', city:'Osaka', cat:'vintage', coords:[34.6703, 135.5022], rating:4.7, hours:'11:00–21:00', budget_jpy:20000, items:['vintage','american','streetwear'], notes:'America-mura (Amemura) è il distretto vintage di Osaka. 20+ negozi in 3 isolati.'},
-    {id:'vint-013', name:'Ragtag Osaka', city:'Osaka', cat:'vintage', coords:[34.6695, 135.5015], rating:4.5, hours:'11:00–20:00', budget_jpy:28000, items:['vintage','designer','resell'], notes:'Filiale Osaka di Ragtag. Designer e vintage pregiato.'},
-    {id:'vint-014', name:'Namba Bears Vintage', city:'Osaka', cat:'vintage', coords:[34.6674, 135.5014], rating:4.4, hours:'12:00–21:00', budget_jpy:12000, items:['vintage','punk','rock'], notes:'Vintage con taglio punk/rock. Giacche, band tees, accessori.'},
-    // VINTAGE — Kanazawa
-    {id:'vint-015', name:'Furugi Higashi Chaya', city:'Kanazawa', cat:'vintage', coords:[36.5708, 136.6678], rating:4.5, hours:'10:00–18:00', budget_jpy:15000, items:['vintage','kimono','artigianato'], notes:'Negozio furugi nel quartiere geisha. Kimono e yukata vintage.'},
-    // VINTAGE — Hiroshima
-    {id:'vint-016', name:'Nagarekawa Vintage', city:'Hiroshima', cat:'vintage', coords:[34.3970, 132.4580], rating:4.3, hours:'11:00–20:00', budget_jpy:10000, items:['vintage','usato','abbigliamento'], notes:'Zona Nagarekawa. Piccolo ma ben selezionato.'},
-    // VINTAGE — Fukuoka
-    {id:'vint-017', name:'Daimyo Vintage Street', city:'Fukuoka', cat:'vintage', coords:[33.5892, 130.3983], rating:4.5, hours:'11:00–21:00', budget_jpy:15000, items:['vintage','streetwear','moda'], notes:'Daimyo è il quartiere hip di Fukuoka. 10+ negozi vintage in una via.'},
-    {id:'vint-018', name:'2nd Street Tenjin', city:'Fukuoka', cat:'vintage', coords:[33.5896, 130.3984], rating:4.4, hours:'10:00–21:00', budget_jpy:8000, items:['vintage','usato catena','abbigliamento'], notes:'Catena 2nd Street — prezzi bassi, grande selezione.'},
-    // VINTAGE — Takayama
-    {id:'vint-019', name:'Sanmachi Antique Shops', city:'Takayama', cat:'vintage', coords:[36.1450, 137.2542], rating:4.6, hours:'9:00–17:00', budget_jpy:30000, items:['antichi','lacca','ceramica','folk art'], notes:'Diverse botteghe di antiquariato Hida nella via storica. Pezzi unici.'},
-  ];
+  const debouncedRender = debounce(() => window.renderMarkers?.(), 250);
+  // SHOPPING_DB moved to js/views/shopping-layer.js (window.SHOPPING_DB)
   // Dedicated source/layer for shopping markers (not cleared by renderMarkers)
   const shoppingSource = new ol.source.Vector();
   const shoppingLayer = new ol.layer.Vector({
@@ -1140,7 +769,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateGPSStatusPanel() { window.updateGPSStatusPanel?.(); }
   if(state.gpsEnabled&&!window.gpsWatchId) window.startGPS?.();
   // Restore last known GPS position on map immediately
-  if(state.gpsCurrentLat && state.gpsCurrentLng) updateGPSMarker(state.gpsCurrentLat, state.gpsCurrentLng);
+  if(state.gpsCurrentLat && state.gpsCurrentLng) window.updateGPSMarker?.(state.gpsCurrentLat, state.gpsCurrentLng);
 
   // Listener: Quando nuovi membri entrano nel gruppo, manda subito la posizione GPS attuale
   window.addEventListener('force-gps-broadcast', (e) => {
@@ -1397,7 +1026,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function poiDetailHTML(p) { return window.poiDetailHTML?.(p) ?? ''; }
   function loadPOIPhotos(p) { window.loadPOIPhotos?.(p); }
   function openPOI(id) { window.openPOI?.(id); }
-  window.renderMarkers = renderMarkers;
+  // window.renderMarkers set by js/map-markers.js
   // analyzeGlutenFreeStatus exposed by gf-analysis.js
   // ---- Calendar (.ics) ----
   // Calendar/export cluster extracted to js/itinerary-export.js (2026-06-03)
@@ -1562,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Re-render map with updated POIs
     if (uniqueNewPois.length > 0) {
       console.log('[App] Rendering markers with new POIs');
-      renderMarkers();
+      window.renderMarkers?.();
       try { renderFilters(); } catch (e) {} // aggiorna i chip alle categorie ora presenti
     } else {
       console.log('[App] No new POIs to add, skipping render');
@@ -1586,7 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   renderFilters();
-  renderMarkers();
+  window.renderMarkers?.();
 
   // ═══════════════════════════════════════════════════════════════════
   // FLEXIBLE LAYOUT — Calculate header + filters height dynamically
@@ -1690,10 +1319,10 @@ document.addEventListener('DOMContentLoaded', () => {
   window.renderWeatherView = renderWeatherView;
   window.renderGFView = renderGFView;
   window.peerGPS = peerGPS;
-  window.SHOPPING_DB = SHOPPING_DB;
+  // window.SHOPPING_DB set by js/views/shopping-layer.js
   // fetchWeatherData/Hourly, getWeatherIcon/Color/Condition exposed by weather-view.js
   window.generateRoomCode = generateRoomCode;
-  window.updateGPSMarker = updateGPSMarker;
+  // window.updateGPSMarker set by js/gps-tracker.js
   // Phase 2: P2P Sync exports (already added above)
   // window.computeItineraryHash, window.simpleHash, window.broadcastItinerary
   console.log('[Giappone2027] Itinerary helpers and peerGPS exposed to window');
