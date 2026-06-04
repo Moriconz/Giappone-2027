@@ -595,6 +595,8 @@ window.handleShareLink = function() {
 window.importSharedItinerary = function(payload) {
   try {
     if (!payload || !Array.isArray(payload.items)) return;
+    // Auto-snapshot before overwriting (recoverable via Snapshots panel)
+    window.ItinerarySnapshots?.saveAuto?.('import-shared-link');
     payload.items.forEach(it => window.ITINERARY?.addPOIToDay?.(it.p, it.n, it.d, it.t || '10:00', it.dur || 60, '', it.c || 0, 'altro', it.lat ?? null, it.lng ?? null));
     window.saveState?.();
     if (window.toast) window.toast(_T('itin.imported', '✅ Itinerario importato'));
@@ -608,7 +610,7 @@ window.openSharedItineraryPreview = function(payload) {
     <p style="color:#fff;font-size:14px;margin:0 0 14px">Qualcuno ha condiviso un itinerario con <strong>${count}</strong> tappe.</p>
     <button onclick="window.importSharedItinerary(window.__sharedPayload); window.closeSheet&&window.closeSheet();" class="btn primary" style="width:100%;padding:13px;font-weight:700">📥 Importa nel mio itinerario</button>
   </div>`;
-  window.openSheet && window.openSheet('🔗 Itinerario condiviso', html);
+  window.openSheet?.('🔗 Itinerario condiviso', html);
 };
 (function detectShareLink() {
   function check() {

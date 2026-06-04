@@ -336,6 +336,8 @@ const ITINERARY_SYSTEM = {
       cur += dur + travel;
     }
 
+    // Auto-snapshot before reordering (recoverable via Snapshots panel)
+    window.ItinerarySnapshots?.saveAuto?.('optimize-day-' + dayIdx);
     window.state.itineraryByDay[dayIdx] = [...ordered, ...withoutCoords];
     window.saveState?.();
     window.GROUP_SYNC?.broadcastItinerary?.();
