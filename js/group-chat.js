@@ -132,11 +132,10 @@ window.groupChat = (() => {
 
     // Invia via MQTT (affidabile, funziona attraverso firewall)
     window.rtdbBroadcast?.({
-        type: 'groupchat',
-        payload: message
-      });
-      console.log('[GroupChat] ✓ Sent via MQTT to room:', group.roomId);
-    }
+      type: 'groupchat',
+      payload: message
+    });
+    console.log('[GroupChat] ✓ Sent via MQTT to room:', group.roomId);
 
     // Also try P2P for backward compatibility (if peers are connected)
     const peerConnections = window.peerGPS?.getPeerConnections?.() || {};

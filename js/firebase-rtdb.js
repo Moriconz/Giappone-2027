@@ -228,6 +228,7 @@ console.log('[RTDB] Loading MQTT transport...');
 
           // Show toast
           window.toast?.(`📤 ${data.from} ` + T('group.toastShared', 'ha condiviso un itinerario con il gruppo'));
+        }
         break;
 
       case 'itinerary_edit':
@@ -349,6 +350,7 @@ console.log('[RTDB] Loading MQTT transport...');
             }));
 
             window.toast?.(`✅ ${fromMember} ` + T('group.toastUpdated', "ha aggiornato l'itinerario del gruppo"));
+          }
         }
         break;
 

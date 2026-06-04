@@ -3,6 +3,9 @@
 // Protects against localStorage loss (phone change, browser data wipe)
 // ============================================================================
 
+(function () {
+  'use strict';
+
 const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
 
 const BACKUP_VERSION = 1;
@@ -217,3 +220,5 @@ function openBackupPanel() {
 
 window.BackupRestore = { export: exportBackup, import: importBackup, openPanel: openBackupPanel };
 window.openBackupPanel = openBackupPanel;
+
+})();

@@ -8,6 +8,9 @@
  * - No backend, no server — local browser sync only
  */
 
+(function () {
+  'use strict';
+
 const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
 
 const GROUP_SYNC = {
@@ -170,3 +173,5 @@ GROUP_SYNC.importItinerary = function() {
 };
 
 window.GROUP_SYNC = GROUP_SYNC;
+
+})();

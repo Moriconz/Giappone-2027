@@ -105,13 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const vectorSource = new ol.source.Vector();
   const clusterSource = new ol.source.Cluster({ source: vectorSource, distance: 50, minDistance: 20 });
 
-  // Style helpers delegated to poi-styles.js
-  function getCategoryColor(cat) { return window.getCategoryColor?.(cat) ?? '#C85C3B'; }
-  function getCategoryEmoji(cat) { return window.getCategoryEmoji?.(cat) ?? '📍'; }
+  // Style helpers delegated to poi-styles.js (which sets window.getCategoryColor
+  // etc.). Do NOT re-export local delegating stubs to window — that would
+  // overwrite poi-styles.js's real impl and cause infinite recursion.
   function makePoiStyle(cat, isGF) { return window.makePoiStyle?.(cat, isGF) ?? null; }
   function _makeClusterStyle(count) { return window._makeClusterStyle?.(count) ?? null; }
-  window.getCategoryColor = getCategoryColor;
-  window.getCategoryEmoji = getCategoryEmoji;
 
   const vectorLayer = new ol.layer.Vector({
     source: clusterSource,

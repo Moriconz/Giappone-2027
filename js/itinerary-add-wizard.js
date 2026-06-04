@@ -38,6 +38,7 @@ function openAddToItineraryWizard(poiData) {
   console.log('[AddWizard] ✅ Wizard state initialized with name:', wizardState.poiName);
   window.addWizardState = wizardState;
   renderWizardStep(1, wizardState);
+}
 
 /**
  * Get the suggested day (next day or day with fewest POIs)
