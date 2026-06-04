@@ -10,7 +10,11 @@
 
   function renderWeatherView() {
     const state = window.state || {};
-    const itinerary = state.itinerary || [];
+    // Use itineraryByDay (new) with flat fallback to state.itinerary (legacy)
+    const itinerary = Object.values(state.itineraryByDay || {}).flat()
+      .map(e => ({ id: e.poi_id, city: null, lat: e.lat, lng: e.lng, name: e.poi_name }))
+      .concat(state.itinerary || [])
+      .filter((e, i, a) => a.findIndex(x => (x.id || x.poi_id) === (e.id || e.poi_id)) === i);
 
     window.openSheet('🌤️ Meteo', `
       <div class="weather-container" style="text-align:center;padding:40px 20px;">

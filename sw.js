@@ -30,7 +30,7 @@ const PREDICTIVE_PREFETCH = [
 
 // Install with predictive prefetching
 self.addEventListener('install', (event) => {
-  console.log('[SW] 📦 Installing Service Worker v5 (2026)...');
+  console.log('[SW] 📦 Installing Service Worker v7...');
   event.waitUntil(
     (async () => {
       try {

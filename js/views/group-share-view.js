@@ -70,7 +70,9 @@ function showNoGroupModal() {
 function showShareItineraryModal() {
   console.log('[ShareItin] ========== FUNCTION CALLED ==========');
   console.log('[ShareItin] window.state.group:', window.state.group);
-  console.log('[ShareItin] window.state.itinerary length:', window.state.itinerary?.length);
+  const _ibd = window.state?.itineraryByDay || {};
+  const _allPOIs = Object.values(_ibd).flat();
+  console.log('[ShareItin] itineraryByDay POIs:', _allPOIs.length);
 
   if (!window.state.group || !window.state.group.roomId) {
     console.error('[ShareItin] ERROR: Non sei in nessun gruppo');
@@ -78,7 +80,7 @@ function showShareItineraryModal() {
     return;
   }
 
-  if (!window.state.itinerary || window.state.itinerary.length === 0) {
+  if (!_allPOIs.length) {
     console.error('[ShareItin] ERROR: L\'itinerario personale è vuoto');
     window.toast(T('toast.itinEmpty', '⚠️ L\'itinerario personale è vuoto'));
     return;
@@ -99,7 +101,7 @@ function showShareItineraryModal() {
 
         <div style="background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;padding:12px;margin-bottom:12px;">
           <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:14px">Stanza: ${escapeHtml(roomId)}</p>
-          <p style="margin:0;color:#666;font-size:12px">Tappe: <strong>${window.state.itinerary.length}</strong></p>
+          <p style="margin:0;color:#666;font-size:12px">Tappe: <strong>${_allPOIs.length}</strong></p>
         </div>
 
         <div style="display:flex;gap:8px">
@@ -143,7 +145,9 @@ function showShareItineraryModal() {
 function sharePersonalItineraryToGroup(roomId) {
   console.log('[ShareItin] Sharing personal itinerary to group:', roomId);
 
-  if (!window.state.itinerary || window.state.itinerary.length === 0) {
+  const ibd = window.state?.itineraryByDay || {};
+  const allEntries = Object.values(ibd).flat();
+  if (!allEntries.length) {
     console.warn('[ShareItin] Personal itinerary is empty');
     return;
   }
@@ -152,17 +156,16 @@ function sharePersonalItineraryToGroup(roomId) {
   const myPeerId = window.makePeerId?.(roomId, window.state.group.myName) ||
                    `${roomId}_${window.state.group.myName}`;
 
-  // Create group itinerary from personal itinerary
+  // Create group itinerary from itineraryByDay (flat)
   const groupItinerary = {
     id: itineraryId,
     roomId: roomId,
     name: { value: `Itinerario - ${window.state.group.myName}`, timestamp: Date.now(), peerId: myPeerId },
     version: 1,
-    pois: window.state.itinerary.map(entry => ({
-      googlePlaceId: entry.id,
-      // Use poi_name if available (from itineraryByDay entries), fallback to name
+    pois: allEntries.map(entry => ({
+      googlePlaceId: entry.poi_id || entry.id,
       name: { value: entry.poi_name || entry.name || 'Luogo', timestamp: Date.now(), peerId: myPeerId },
-      category: { value: entry.type || 'poi', timestamp: Date.now(), peerId: myPeerId },
+      category: { value: entry.tag || entry.type || 'poi', timestamp: Date.now(), peerId: myPeerId },
       notes: { value: entry.notes || '', timestamp: Date.now(), peerId: myPeerId },
       lat: entry.lat,
       lng: entry.lng,

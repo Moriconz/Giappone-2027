@@ -136,9 +136,7 @@
     };
 
     // Giorni: usa itinerary unificato se disponibile
-    const daysCount = window.state?.itinerary
-      ? window.state.itinerary.length
-      : Object.keys(window.state?.itineraryByDay || {}).length || '?';
+    const daysCount = Object.keys(window.state?.itineraryByDay || {}).filter(d => (window.state.itineraryByDay[d]?.length || 0) > 0).length || '?';
 
     const html = `
       <div class="budget-container">
