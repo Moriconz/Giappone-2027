@@ -84,6 +84,13 @@
     window.dispatchEvent(new CustomEvent('queue_status_changed', {
       detail: { queueDepth: syncState.metrics.queueDepth }
     }));
+
+    // Register Background Sync so the SW wakes the app when connectivity returns
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready
+        .then(reg => reg.sync?.register('replay-queue'))
+        .catch(() => {}); // Browser may not support BackgroundSync
+    }
   }
 
   function replayOfflineQueue() {

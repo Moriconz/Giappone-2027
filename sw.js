@@ -6,7 +6,7 @@
  * ✓ Offline-first strategy
  */
 
-const CACHE_NAME = 'giappone-2027-v6';
+const CACHE_NAME = 'giappone-2027-v7';
 const CACHE_API = 'giappone-2027-api-v1';
 const CACHE_IMG = 'giappone-2027-img-v1';
 const OFFLINE_URL = '../index.html';
@@ -258,6 +258,19 @@ self.addEventListener('notificationclick', (event) => {
 // Notification close
 self.addEventListener('notificationclose', (event) => {
   console.log('[SW] Notification closed');
+});
+
+// Background Sync — triggered by browser when connectivity returns
+// Client registers 'replay-queue' tag via navigator.serviceWorker.ready.then(r => r.sync.register(...))
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'replay-queue') {
+    console.log('[SW] Background sync: replay-queue');
+    event.waitUntil(
+      self.clients.matchAll({ type: 'window' }).then(clientList => {
+        clientList.forEach(client => client.postMessage({ type: 'REPLAY_QUEUE' }));
+      })
+    );
+  }
 });
 
 // Page-triggered update: apply waiting SW immediately

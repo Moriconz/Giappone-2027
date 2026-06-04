@@ -185,6 +185,10 @@ navigator.serviceWorker?.addEventListener('message', (event) => {
     console.log('[App] Opening chat from notification');
     window.renderGroupView?.();
   }
+  if (event.data.type === 'REPLAY_QUEUE') {
+    console.log('[App] Background sync: replaying offline queue');
+    window.replayOfflineQueue?.();
+  }
 });
 
 // ===== DEEP LINKING HANDLER =====

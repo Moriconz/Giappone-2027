@@ -584,6 +584,23 @@
   }, 2500);
 })();
 
+// ── iOS Safari install hint ───────────────────────────────────────────────────
+// Show a one-time toast for iOS users not running in standalone mode
+(function () {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isSafari = /safari/i.test(navigator.userAgent) && !/chrome|crios|fxios/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true;
+  const dismissed = localStorage.getItem('gj2027_ios_hint_dismissed');
+  if (!isIOS || !isSafari || isStandalone || dismissed) return;
+
+  // Show hint 3s after load so the user has seen the app first
+  setTimeout(() => {
+    if (!window.toast) return;
+    window.toast('📲 Aggiungi alla schermata Home: tocca 𝖀 → "Aggiungi a Home"');
+    localStorage.setItem('gj2027_ios_hint_dismissed', '1');
+  }, 3000);
+})();
+
 // ── Lazy-load helper ──────────────────────────────────────────────────────────
 // window.loadScript(src) → Promise<void>
 // Loads a script on demand; resolves immediately if already loaded.
