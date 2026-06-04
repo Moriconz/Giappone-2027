@@ -52,6 +52,7 @@ console.log('[RTDB] Loading MQTT transport...');
     pub(roomTopic(myRoomId), msg);
   }
   window.rtdbBroadcast = rtdbBroadcast;
+  window.broadcastToPeers = rtdbBroadcast; // alias used by gf-places-panel.js
 
   // ── Gestisce messaggi in arrivo ───────────────────────────────────────────────
   function handleIncoming(raw) {
@@ -417,6 +418,36 @@ console.log('[RTDB] Loading MQTT transport...');
 
       case 'heartbeat':
         if (window.onPeerMessage) window.onPeerMessage(data);
+        break;
+
+      // GF custom places sync (from gf-places-panel.js via broadcastToPeers)
+      case 'gf_place_add':
+        if (data.place && window.GFPlacesDB) {
+          const existing = window.GFPlacesDB.getAll().find(p => p.id === data.place.id);
+          if (!existing) {
+            const places = window.GFPlacesDB.getAll();
+            places.push(data.place);
+            window.GFPlacesDB._save(places);
+            window.refreshGFPlacesLayer?.();
+          }
+        }
+        break;
+      case 'gf_place_edit':
+        if (data.id && data.updates && window.GFPlacesDB) {
+          const places = window.GFPlacesDB.getAll();
+          const idx = places.findIndex(p => p.id === data.id);
+          if (idx >= 0) {
+            places[idx] = { ...places[idx], ...data.updates, updatedAt: new Date().toISOString() };
+            window.GFPlacesDB._save(places);
+            window.refreshGFPlacesLayer?.();
+          }
+        }
+        break;
+      case 'gf_place_delete':
+        if (data.id && window.GFPlacesDB) {
+          window.GFPlacesDB._save(window.GFPlacesDB.getAll().filter(p => p.id !== data.id));
+          window.refreshGFPlacesLayer?.();
+        }
         break;
 
       default:
