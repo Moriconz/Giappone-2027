@@ -595,10 +595,10 @@ window.handleShareLink = function() {
 window.importSharedItinerary = function(payload) {
   try {
     if (!payload || !Array.isArray(payload.items)) return;
-    payload.items.forEach(it => window.ITINERARY?.addPOIToDay?.(it.p, it.n, it.d, it.t || '10:00', it.dur || 60, '', it.c || 0, 'altro'));
+    payload.items.forEach(it => window.ITINERARY?.addPOIToDay?.(it.p, it.n, it.d, it.t || '10:00', it.dur || 60, '', it.c || 0, 'altro', it.lat ?? null, it.lng ?? null));
     window.saveState?.();
     if (window.toast) window.toast(_T('itin.imported', '✅ Itinerario importato'));
-    if (typeof renderItineraryUnified === 'function') renderItineraryUnified();
+    window.renderItineraryUnified?.();
   } catch (e) { if (window.toast) window.toast('❌ Errore import'); }
 };
 window.openSharedItineraryPreview = function(payload) {

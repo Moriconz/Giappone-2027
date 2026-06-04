@@ -366,7 +366,7 @@ const ITINERARY_SYSTEM = {
               if (actualCost >= 0) {
                 entry.cost = actualCost;
                 window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
-                if (typeof renderItineraryUnified === 'function') renderItineraryUnified();
+                window.renderItineraryUnified?.();
               }
             }
           });
@@ -374,7 +374,7 @@ const ITINERARY_SYSTEM = {
 
         window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
         window.GROUP_SYNC?.broadcastItinerary?.();
-        if (typeof renderItineraryUnified === 'function') renderItineraryUnified();
+        window.renderItineraryUnified?.();
 
         // Update budget tab if POI has cost
         if (entry.cost > 0) {

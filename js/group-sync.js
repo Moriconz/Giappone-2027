@@ -121,7 +121,7 @@ const GROUP_SYNC = {
     if (!exists) {
       window.state.group.messages.push(message);
       window.saveState?.();
-      if (typeof renderGroupChat === 'function') renderGroupChat();
+      window.groupChat?.renderChatPanel?.();
     }
   }
 };
