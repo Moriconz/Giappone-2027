@@ -94,13 +94,13 @@ window.exitGroup = async function() {
     return;
   }
   console.log('[exitGroup] Exiting group...');
-  state.group = null;
-  saveState();
+  window.state.group = null;
+  window.saveState?.();
   if (window.groupChat) {
     window.groupChat.getHistory().messages = [];
   }
   if (peerGPS) {
-    peerGPS.stop();
+    window.peerGPS?.stop();
   }
   window.toast(T('toast.groupLeft', '❌ Uscito dal gruppo'));
   // Aggiorna il contenuto dello sheet in-place (non chiudere/riaprire)
@@ -115,13 +115,13 @@ window.deleteGroup = async function() {
   }
   const room = state.group?.roomId;
   console.log('[deleteGroup] Deleting room:', room);
-  state.group = null;
-  saveState();
+  window.state.group = null;
+  window.saveState?.();
   if (window.groupChat) {
     window.groupChat.getHistory().messages = [];
   }
   if (peerGPS) {
-    peerGPS.stop();
+    window.peerGPS?.stop();
   }
   window.toast('🗑️ Stanza eliminata: ' + room);
   // renderGroupView() chiuderà gli sheet aperti e aprirà il form di setup
