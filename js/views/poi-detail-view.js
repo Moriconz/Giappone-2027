@@ -608,80 +608,30 @@ function loadPOIPhotos(p){
   })();
 }
 
-// ===== POI VALIDATION CACHE (IndexedDB) =====
-const POI_VALIDATION_DB = 'giappone2027_poi_validation';
-const POI_VALIDATION_STORE = 'validated_pois';
-
-async function getValidatedPOI(poiId) {
-  return new Promise((resolve) => {
-    if (!window.indexedDB) {
-      resolve(null);
-      return;
-    }
-    const req = indexedDB.open(POI_VALIDATION_DB, 1);
-    req.onupgradeneeded = (e) => {
-      e.target.result.createObjectStore(POI_VALIDATION_STORE, { keyPath: 'id' });
-    };
-    req.onsuccess = (e) => {
-      const db = e.target.result;
-      const tx = db.transaction(POI_VALIDATION_STORE, 'readonly');
-      const store = tx.objectStore(POI_VALIDATION_STORE);
-      const query = store.get(poiId);
-      query.onsuccess = () => resolve(query.result || null);
-      query.onerror = () => resolve(null);
-    };
-    req.onerror = () => resolve(null);
-  });
-}
-
-async function saveValidatedPOI(poiData) {
-  return new Promise((resolve) => {
-    if (!window.indexedDB) {
-      resolve(false);
-      return;
-    }
-    const req = indexedDB.open(POI_VALIDATION_DB, 1);
-    req.onupgradeneeded = (e) => {
-      e.target.result.createObjectStore(POI_VALIDATION_STORE, { keyPath: 'id' });
-    };
-    req.onsuccess = (e) => {
-      const db = e.target.result;
-      const tx = db.transaction(POI_VALIDATION_STORE, 'readwrite');
-      const store = tx.objectStore(POI_VALIDATION_STORE);
-      const query = store.put(poiData);
-      query.onsuccess = () => resolve(true);
-      query.onerror = () => resolve(false);
-    };
-    req.onerror = () => resolve(false);
-  });
-}
+// POI validation cache → js/poi-validation-cache.js (window.POIVerifiedDB)
 
 async function enrichPOIData(p) {
-  // Controlla se è già validato in cache
-  let validated = await getValidatedPOI(p.id);
-  if (validated) {
+  const cached = await window.POIVerifiedDB?.getVerifiedPOI?.(p.id);
+  if (cached && !cached._notFound) {
     console.log('[enrichPOI] Using cached validation for', p.id);
-    return Object.assign({}, p, validated);
+    return Object.assign({}, p, cached);
   }
-
-  // Se non cachato, chiedi a Google Places in background
   try {
     const response = await fetch(
       `/api/enrichPOI?id=${encodeURIComponent(p.id)}&name=${encodeURIComponent(p.name || p.jp || p.id)}&lat=${p.lat}&lng=${p.lng}`
     );
     const data = await response.json();
-
     if (data.poi && data.poi.validated) {
-      // Salva in cache
-      await saveValidatedPOI(data.poi);
+      await window.POIVerifiedDB?.saveVerifiedPOI?.(data.poi);
       console.log('[enrichPOI] ✅ Validated & cached:', p.id);
       return Object.assign({}, p, data.poi);
+    }
+    if (data.notFound) {
+      await window.POIVerifiedDB?.saveNotFound?.(p.id);
     }
   } catch (err) {
     console.warn('[enrichPOI] Error enriching POI:', err.message);
   }
-
-  // Se fallisce, ritorna il POI originale
   return p;
 }
 

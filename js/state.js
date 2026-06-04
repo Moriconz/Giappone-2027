@@ -1,60 +1,50 @@
 // ============================================================================
-// STATE.JS — Global state initialization
-// DEVE essere caricato PRIMA di ogni altro script
+// STATE.JS — Global state: load, migrate, save (authoritative)
+// Loaded before every other script.
 // ============================================================================
 
 window.STATE_KEY = 'giappone2027_state_v1';
 
-// Create global state object from localStorage
-window.state = Object.assign({
-  activeCat: 'all',
-  onlyGF: false,
-  onlyLocal: false,
-  savedPOIs: [],
-  notes: {},
-  customEvents: [],
-  dismissInstall: false,
-  // Personal itinerary (legacy)
-  itinerary: [],
-  // GROUP ITINERARIES (NEW - CRDT based)
-  groupItineraries: {},
-  // UNDO/REDO STACK (NEW)
-  undoRedo: { stack: [], currentIndex: -1, maxSize: 100 },
-  // Collaborative features
-  group: { name: 'Giappone 2027', members: [], myAvatar: null, myName: '' },
-  // AI Features
-  ai: {},
-  aiQuotaDate: null,
-  aiCallsToday: 0,
-  // GPS Features
-  gpsEnabled: false,
-  gpsCurrentLat: undefined,
-  gpsCurrentLng: undefined,
-  gpsRemoteMarkers: {},
-  wakeLockEnabled: false,
-  // Group sync
-  knownMembers: []
-}, (() => {
+// ── Load + guard against corrupt localStorage fields ─────────────────────────
+(function _initState() {
+  let raw = {};
   try {
-    return JSON.parse(localStorage.getItem(window.STATE_KEY) || '{}');
+    raw = JSON.parse(localStorage.getItem(window.STATE_KEY) || '{}');
   } catch (e) {
-    console.warn('[State] localStorage parse error, using empty state:', e.message);
-    return {};
+    console.warn('[State] Parse error — starting fresh:', e.message);
   }
-})());
 
-// Ensure critical objects are initialized (fallback if localStorage corrupted them)
-if (!window.state.groupItineraries || typeof window.state.groupItineraries !== 'object') {
-  window.state.groupItineraries = {};
-}
-if (!window.state.undoRedo || typeof window.state.undoRedo !== 'object') {
-  window.state.undoRedo = { stack: [], currentIndex: -1, maxSize: 100 };
-}
-if (!window.state.group || typeof window.state.group !== 'object') {
-  window.state.group = { name: 'Giappone 2027', members: [], myAvatar: null, myName: '' };
-}
+  // Reset any field whose type is wrong (corrupted by old code / crash)
+  const arrays  = ['savedPOIs', 'itinerary', 'customEvents', 'customPOIs', 'gpsTraces'];
+  const objects = ['notes', 'gfReports', 'userCategoryOverrides', 'itinerarySharing', 'groupItineraries', 'itineraryByDay'];
+  arrays.forEach(k => {
+    if (raw[k] !== undefined && !Array.isArray(raw[k])) { console.warn('[State] Corrupt array reset:', k); delete raw[k]; }
+  });
+  objects.forEach(k => {
+    if (raw[k] !== undefined && (typeof raw[k] !== 'object' || Array.isArray(raw[k]) || raw[k] === null)) { console.warn('[State] Corrupt object reset:', k); delete raw[k]; }
+  });
+  if (raw.group !== undefined && (typeof raw.group !== 'object' || Array.isArray(raw.group) || raw.group === null)) {
+    console.warn('[State] Corrupt group reset'); delete raw.group;
+  }
 
-// ── Schema versioning & migration (evita crash su cambi di schema) ──
+  window.state = Object.assign({
+    activeCat: 'all', onlyGF: false, onlyLocal: false, showGFPlaces: false,
+    savedPOIs: [], notes: {}, customEvents: [], customPOIs: [], gfReports: {}, dismissInstall: false,
+    itinerary: [],
+    itineraryByDay: {},
+    userCategoryOverrides: {},
+    group: { name: 'Giappone 2027', members: [], myAvatar: null, myName: '', createdBy: null, createdByName: null, isCreator: false },
+    itinerarySharing: {},
+    groupItineraries: {},
+    undoRedo: { stack: [], currentIndex: -1, maxSize: 100 },
+    ai: {}, aiQuotaDate: null, aiCallsToday: 0,
+    gpsEnabled: false, gpsCurrentLat: 35.6762, gpsCurrentLng: 139.6503,
+    gpsRemoteMarkers: {}, wakeLockEnabled: false,
+    knownMembers: []
+  }, raw);
+})();
+
+// ── Schema versioning & migration ─────────────────────────────────────────────
 window.STATE_VERSION = 2;
 (function migrateState() {
   const s = window.state;
@@ -62,49 +52,63 @@ window.STATE_VERSION = 2;
   if (from === window.STATE_VERSION) return;
   try {
     if (from < 2) {
-      // v1 → v2: normalizza le strutture chiave
       if (!s.itineraryByDay || typeof s.itineraryByDay !== 'object' || Array.isArray(s.itineraryByDay)) s.itineraryByDay = {};
       if (!Array.isArray(s.savedPOIs)) s.savedPOIs = [];
       if (!s.notes || typeof s.notes !== 'object') s.notes = {};
       if (s.group && !Array.isArray(s.group.messages)) s.group.messages = s.group.messages || [];
     }
-    // Migrazioni future: if (from < 3) { ... }
     s._schemaVersion = window.STATE_VERSION;
-    console.log('[State] Schema migrato', from, '→', window.STATE_VERSION);
+    console.log('[State] Schema migrated', from, '→', window.STATE_VERSION);
   } catch (e) {
-    console.error('[State] Errore migrazione schema:', e);
+    console.error('[State] Migration error:', e);
   }
 })();
 
-// Global save function
-window.saveState = function() {
+// ── Save helpers ──────────────────────────────────────────────────────────────
+function _cleanupGPSTraces() {
+  const s = window.state;
+  if (Array.isArray(s.gpsTraces) && s.gpsTraces.length > 500) {
+    s.gpsTraces = s.gpsTraces.slice(-500);
+  }
+}
+
+function _trimStateForQuota(s) {
+  if (s.group?.members) {
+    s.group.members = s.group.members.map(m => m.avatar?.startsWith('data:') ? { ...m, avatar: null } : m);
+  }
+  if (s.group?.myAvatar?.startsWith('data:')) s.group.myAvatar = null;
+  if (s.gpsTraces?.length > 100) s.gpsTraces = s.gpsTraces.slice(-100);
+}
+
+window.saveState = function () {
   try {
-    const serialized = JSON.stringify(window.state);
+    _cleanupGPSTraces();
+    let serialized = JSON.stringify(window.state);
     if (serialized.length > 4_500_000) {
-      console.warn('[State] localStorage quota warning: ' + Math.round(serialized.length / 1024) + 'KB');
-      if (window.toast) window.toast('⚠️ Dati quasi al limite (4.3MB).');
+      console.warn('[State] Quota warning:', Math.round(serialized.length / 1024) + 'KB — trimming');
+      const trimmed = JSON.parse(serialized);
+      _trimStateForQuota(trimmed);
+      serialized = JSON.stringify(trimmed);
+      _trimStateForQuota(window.state);
+      window.toast?.(window.t?.('toast.storageWarning', '⚠️ Dati quasi al limite (4.3MB).'));
     }
     localStorage.setItem(window.STATE_KEY, serialized);
   } catch (e) {
     console.error('[State] Save error:', e);
-    if (window.toast) window.toast('⚠️ Impossibile salvare: storage pieno.');
+    window.toast?.(window.t?.('toast.storageFull', '⚠️ Impossibile salvare: storage pieno.'));
   }
 };
 
-// Helper: Initialize sub-objects if missing
-function ensureStateObject(path) {
+// ── Utility: ensure nested sub-objects exist ─────────────────────────────────
+window.ensureStateObject = function (path) {
   const parts = path.split('.');
   let obj = window.state;
   for (let i = 0; i < parts.length - 1; i++) {
-    const part = parts[i];
-    if (!obj[part] || typeof obj[part] !== 'object') {
-      obj[part] = {};
-    }
-    obj = obj[part];
+    const p = parts[i];
+    if (!obj[p] || typeof obj[p] !== 'object') obj[p] = {};
+    obj = obj[p];
   }
   return obj;
-}
-
-window.ensureStateObject = ensureStateObject;
+};
 
 console.log('[State] Initialized. Keys:', Object.keys(window.state).length);
