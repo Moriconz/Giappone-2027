@@ -163,7 +163,8 @@
    * Call this after editing personal itinerary
    */
   function syncPersonalToSharedGroups() {
-    if (!window.state.itinerary || window.state.itinerary.length === 0) return;
+    const _personalPOIs = Object.values(window.state?.itineraryByDay || {}).flat();
+    if (!_personalPOIs.length) return;
 
     const sharedGroups = getSharedGroups('personal_itinerary') || [];
     if (sharedGroups.length === 0) return;
@@ -181,7 +182,7 @@
         groupId: groupId,
         owner: window.state.group?.myName || 'Unknown',
         originItineraryId: 'personal_itinerary',
-        pois: JSON.parse(JSON.stringify(window.state.itinerary)), // Deep copy
+        pois: JSON.parse(JSON.stringify(_personalPOIs)), // Deep copy from itineraryByDay
         syncStatus: 'syncing',
         lastSyncAt: Date.now(),
         lastSyncedBy: window.state.group?.myName || 'Unknown',
