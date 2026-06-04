@@ -183,7 +183,7 @@ navigator.serviceWorker?.addEventListener('message', (event) => {
   console.log('[App] Message from SW:', event.data);
   if (event.data.type === 'OPEN_CHAT') {
     console.log('[App] Opening chat from notification');
-    renderGroupView();
+    window.renderGroupView?.();
   }
 });
 
