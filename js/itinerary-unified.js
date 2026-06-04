@@ -534,8 +534,7 @@ window.handleExportHTML = function() {
   newTab.document.close();
 
   window.toast?.(_T('itin.exported', '✅ Itinerario esportato'));
-  console.log('[ItineraryUnified] ✅ HTML export complete');
-};
+  console.log('[ItineraryUnified] ✅ HTML export complete');;
 
 window.handleExportWhatsApp = function() {
   console.log('[ItineraryUnified] 📤 WhatsApp export button clicked');
@@ -561,7 +560,6 @@ window.handleExportWhatsApp = function() {
     } catch (err) {
       console.error('[ItineraryUnified] ❌ Error:', err);
       window.toast?.('❌ Errore: ' + err.message);
-    }
   }
 };
 
@@ -588,10 +586,10 @@ window.handleShareLink = function() {
   if (url.length > 8000) { window.toast?.(_T('itin.tooLargeForLink', '⚠️ Itinerario troppo grande per un link')); return; }
   if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(url).then(
-      () => { window.toast?.(_T('itin.linkCopied', '🔗 Link copiato! Incollalo dove vuoi')); },
-      () => { window.toast?.('⚠️ Copia manuale: ' + url.substring(0, 60) + '…'); }
+      () => { window.toast?.(_T('itin.linkCopied', '🔗 Link copiato! Incollalo dove vuoi'));,
+      () => { window.toast?.('⚠️ Copia manuale: ' + url.substring(0, 60) + '…');
     );
-  } else { window.toast?.('⚠️ Clipboard non disponibile'); }
+  } else { window.toast?.('⚠️ Clipboard non disponibile');
 };
 window.importSharedItinerary = function(payload) {
   try {
@@ -601,8 +599,7 @@ window.importSharedItinerary = function(payload) {
     payload.items.forEach(it => window.ITINERARY?.addPOIToDay?.(it.p, it.n, it.d, it.t || '10:00', it.dur || 60, '', it.c || 0, 'altro', it.lat ?? null, it.lng ?? null));
     window.saveState?.();
     window.toast?.(_T('itin.imported', '✅ Itinerario importato'));
-    window.renderItineraryUnified?.();
-  } catch (e) { window.toast?.('❌ Errore import'); }
+    window.renderItineraryUnified?.(); catch (e) { window.toast?.('❌ Errore import');
 };
 window.openSharedItineraryPreview = function(payload) {
   const count = (payload && payload.items && payload.items.length) || 0;
@@ -649,7 +646,6 @@ window.handleShareGroup = function() {
     } catch (err) {
       console.error('[ItineraryUnified] ❌ Error:', err);
       window.toast?.('❌ Errore: ' + err.message);
-    }
   }
 };
 
@@ -691,10 +687,8 @@ function setupGlobalEventDelegation() {
     const ok = window.ITINERARY?.optimizeDay?.(dayIdx);
     if (ok) {
       renderItineraryUnified();
-      window.toast?.(_T('itin.optimized', '🧭 Giro ottimizzato'));
-    } else if (window.toast) {
-      window.toast(_T('itin.need3', '⚠️ Servono almeno 3 tappe con posizione nota'));
-    }
+      window.toast?.(_T('itin.optimized', '🧭 Giro ottimizzato')); else {
+      window.toast?.(_T('itin.need3', '⚠️ Servono almeno 3 tappe con posizione nota'));
   }, false);
 
   // Menu button (modifica, sposta, cancella)
@@ -723,7 +717,6 @@ function setupGlobalEventDelegation() {
             window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
             renderItineraryUnified();
             window.toast?.(_T('itin.poiRemoved', '✓ Tappa rimossa'));
-          }
         }
       });
   }, false);
@@ -849,7 +842,6 @@ function showEmptyItineraryModal() {
         if (mapBtn) {
           mapBtn.click();
           window.toast?.('📍 Clicca un luogo sulla mappa per aggiungerlo');
-        }
       };
     }
   }, 50);
@@ -921,9 +913,7 @@ function setupAccordionAndDragDrop() {
   addBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       const dayIndex = parseInt(btn.dataset.day);
-      if (window.toast) {
-        window.toast(_T('itin.tapMapHint', '📍 Tap un POI sulla mappa per aggiungerlo a Day ') + (dayIndex + 1));
-      }
+      window.toast?.(_T('itin.tapMapHint', '📍 Tap un POI sulla mappa per aggiungerlo a Day ') + (dayIndex + 1));
     });
   });
 
@@ -1135,8 +1125,7 @@ function showItineraryPOIMenu(poiId) {
         window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
         window.renderItineraryUnified?.();
         window.closeSheet();
-        window.toast?.('✓ Modifiche salvate');
-      };
+        window.toast?.('✓ Modifiche salvate');;
     }
 
     if (deleteBtn) {
@@ -1148,8 +1137,7 @@ function showItineraryPOIMenu(poiId) {
             window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
             window.renderItineraryUnified?.();
             window.closeSheet();
-            window.toast?.('✓ POI rimosso');
-          });
+            window.toast?.('✓ POI rimosso'););
       };
     }
 
@@ -1160,8 +1148,7 @@ function showItineraryPOIMenu(poiId) {
         window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
         window.renderItineraryUnified?.();
         window.closeSheet();
-        window.toast?.(`✓ Spostato al Day ${targetDay + 1}`);
-      };
+        window.toast?.(`✓ Spostato al Day ${targetDay + 1}`);;
     });
   }, 50);
 }

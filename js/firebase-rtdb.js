@@ -228,7 +228,6 @@ console.log('[RTDB] Loading MQTT transport...');
 
           // Show toast
           window.toast?.(`📤 ${data.from} ` + T('group.toastShared', 'ha condiviso un itinerario con il gruppo'));
-        }
         break;
 
       case 'itinerary_edit':
@@ -350,7 +349,6 @@ console.log('[RTDB] Loading MQTT transport...');
             }));
 
             window.toast?.(`✅ ${fromMember} ` + T('group.toastUpdated', "ha aggiornato l'itinerario del gruppo"));
-          }
         }
         break;
 
@@ -361,9 +359,7 @@ console.log('[RTDB] Loading MQTT transport...');
           console.log(`%c[RTDB] 📨 Unshare request from ${requestedBy} for group ${groupId}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
 
           // Notify owner with toast
-          if (window.toast) {
-            window.toast(`📨 ${requestedBy} ` + T('group.toastUnshareReq', 'ha richiesto di smettere di condividere'));
-          }
+          window.toast?.(`📨 ${requestedBy} ` + T('group.toastUnshareReq', 'ha richiesto di smettere di condividere'));
 
           // Could trigger a modal asking owner to accept/deny
           // For now, log it
@@ -386,9 +382,7 @@ console.log('[RTDB] Loading MQTT transport...');
             window.saveState?.();
           }
 
-          if (window.toast) {
-            window.toast(`🚫 ${unsharedBy} ` + T('group.toastUnshared', "ha smesso di condividere l'itinerario"));
-          }
+          window.toast?.(`🚫 ${unsharedBy} ` + T('group.toastUnshared', "ha smesso di condividere l'itinerario"));
 
           document.dispatchEvent(new CustomEvent('itinerary_unshared', {
             detail: { groupId, unsharedBy }
@@ -407,9 +401,7 @@ console.log('[RTDB] Loading MQTT transport...');
             window.saveState?.();
           }
 
-          if (window.toast) {
-            window.toast(`🗑️ ${deletedBy} ` + T('group.toastDeleted', "ha eliminato l'itinerario condiviso"));
-          }
+          window.toast?.(`🗑️ ${deletedBy} ` + T('group.toastDeleted', "ha eliminato l'itinerario condiviso"));
 
           document.dispatchEvent(new CustomEvent('itinerary_deleted', {
             detail: { itineraryId, groupId: data.payload.groupId, deletedBy }

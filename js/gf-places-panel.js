@@ -500,7 +500,7 @@ window.openGFPlacesPanel = function(prefillData = null, editId = null) {
       }
 
       // Update button text if in edit mode
-      if (window.gfEditMode && window.gfEditMode.enabled) {
+      if (window.gfEditMode?.enabled) {
         const saveBtn = document.getElementById('gf-save-button');
         if (saveBtn) {
           saveBtn.innerHTML = '✏️ Aggiorna';
@@ -590,7 +590,7 @@ window.saveGFPlace = function() {
 
   // Salva o aggiorna nel database
   let saved;
-  const isEdit = window.gfEditMode && window.gfEditMode.enabled;
+  const isEdit = window.gfEditMode?.enabled;
 
   if (isEdit) {
     console.log('[saveGFPlace] Edit mode - updating place:', window.gfEditMode.placeId);
@@ -663,11 +663,7 @@ window.handleDeepLink = function() {
     console.log('[handleDeepLink] Opening GF Places panel from shared data:', prefillData);
 
     // Show confirmation toast
-    if (window.toast && typeof window.toast === 'function') {
-      window.toast('📲 Ristorante importato da Find Me GF!');
-    } else {
-      console.log('[handleDeepLink] Toast function not available');
-    }
+    window.toast?.('📲 Ristorante importato da Find Me GF!');
 
     // Open panel after a brief delay
     setTimeout(() => {

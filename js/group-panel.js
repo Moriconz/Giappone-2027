@@ -219,9 +219,7 @@ window.groupPanel = (() => {
         const roomId = window.state?.group?.roomId;
         if (!roomId) return;
         window.groupChat?.clearHistory(roomId);
-        if (window.toast) {
-          window.toast(T('chat.cleared', '🧹 Cronologia chat cancellata.'));
-        }
+        window.toast?.(T('chat.cleared', '🧹 Cronologia chat cancellata.'));
       });
     }
 
@@ -233,9 +231,7 @@ window.groupPanel = (() => {
         if (success) {
           updateGroupItinerariesList();
           updateUndoRedoButtons();
-          if (window.toast) {
-            window.toast(T('undo.undone', '⬅️ Cambio annullato'));
-          }
+          window.toast?.(T('undo.undone', '⬅️ Cambio annullato'));
         }
       });
     }
@@ -247,9 +243,7 @@ window.groupPanel = (() => {
         if (success) {
           updateGroupItinerariesList();
           updateUndoRedoButtons();
-          if (window.toast) {
-            window.toast(T('undo.redone', '➡️ Cambio ripetuto'));
-          }
+          window.toast?.(T('undo.redone', '➡️ Cambio ripetuto'));
         }
       });
     }
@@ -393,9 +387,7 @@ window.groupPanel = (() => {
             delete window.state.groupItineraries[itinId];
             window.saveState();
             updateGroupItinerariesList();
-            if (window.toast) {
-              window.toast(T('toast.itinDeleted', '🗑️ Itinerario eliminato'));
-            }
+            window.toast?.(T('toast.itinDeleted', '🗑️ Itinerario eliminato'));
           }
         }
       });

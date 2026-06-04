@@ -38,7 +38,6 @@ function openAddToItineraryWizard(poiData) {
   console.log('[AddWizard] ✅ Wizard state initialized with name:', wizardState.poiName);
   window.addWizardState = wizardState;
   renderWizardStep(1, wizardState);
-}
 
 /**
  * Get the suggested day (next day or day with fewest POIs)
@@ -658,9 +657,7 @@ function finishAddToItinerary(state) {
   if (window.ITINERARY?.hasDuplicatePOI) {
     if (window.ITINERARY.hasDuplicatePOI(state.poiId, state.selectedDay)) {
       console.warn('[AddWizard] ⚠️ Duplicate POI in day');
-      if (window.toast) {
-        window.toast(_Tw('wizard.duplicate', '⚠️ Questo luogo è già stato aggiunto a questo giorno'));
-      }
+      window.toast?.(_Tw('wizard.duplicate', '⚠️ Questo luogo è già stato aggiunto a questo giorno'));
       return;
     }
   }
@@ -695,9 +692,7 @@ function finishAddToItinerary(state) {
       window.closeSheet?.();
 
       // Show success toast
-      if (window.toast) {
-        window.toast(`✅ ${state.poiName} aggiunto al Day ${state.selectedDay + 1} alle ${state.selectedTime}`);
-      }
+      window.toast?.(`✅ ${state.poiName} aggiunto al Day ${state.selectedDay + 1} alle ${state.selectedTime}`);
 
       // Refresh itinerary view if it's open
       if (typeof window.renderItineraryUnified === 'function') {
@@ -710,15 +705,11 @@ function finishAddToItinerary(state) {
       window.addWizardState = null;
     } else {
       console.error('[AddWizard] ❌ Failed to add POI');
-      if (window.toast) {
-        window.toast(_Tw('wizard.addError', '❌ Errore: impossibile aggiungere il POI'));
-      }
+      window.toast?.(_Tw('wizard.addError', '❌ Errore: impossibile aggiungere il POI'));
     }
   } else {
     console.error('[AddWizard] ITINERARY system not available');
-    if (window.toast) {
-      window.toast(_Tw('wizard.systemNA', '❌ Sistema itinerario non disponibile'));
-    }
+    window.toast?.(_Tw('wizard.systemNA', '❌ Sistema itinerario non disponibile'));
   }
 }
 
