@@ -231,17 +231,18 @@
   }
 
 .budget-container {
-  background: rgba(0,200,255,0.12) !important;
+  background: rgba(255,255,255,0.04) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   border-radius: 16px;
   padding: 24px !important;
-  border: 1px solid rgba(0,200,255,0.3) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
 }
 
+/* Modern dark budget cards (was cyan/pink tinted — neutralized 2026-06) */
 .budget-header {
-  background: rgba(0,200,255,0.12) !important;
+  background: rgba(255,255,255,0.04) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(0,200,255,0.3) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
   color: #fff !important;
 }
 
@@ -251,55 +252,56 @@
 }
 
 .budget-progress-bar {
-  background: rgba(0,200,255,0.2) !important;
-  border: 1px solid #00C8FF !important;
+  background: rgba(255,255,255,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
 }
 
 .budget-progress-fill {
-  background: linear-gradient(90deg, #FF1493, #00FF88) !important;
+  background: linear-gradient(90deg, var(--m-accent, #ff7a45), #4ade80) !important;
 }
 
 .budget-setup-banner {
-  background: rgba(255,20,147,0.12) !important;
+  background: rgba(255,255,255,0.04) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255,20,147,0.3) !important;
-  color: #FF1493 !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  color: rgba(255,255,255,0.85) !important;
 }
 
 .budget-stats {
   background: transparent !important;
 }
 
+/* Modern dark stat cards (was cyan/neon "terminal" look — toned down 2026-06) */
 .stat-card {
-  background: rgba(0,200,255,0.12) !important;
-  border: 2px solid #00C8FF !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
   border-radius: 10px !important;
-  color: #00FF88 !important;
+  color: #fff !important;
 }
 
 .stat-card .stat-label {
-  color: #00FF88 !important;
+  color: rgba(255,255,255,0.6) !important;
 }
 
 .stat-card .stat-value {
-  color: #00FF88 !important;
+  color: #fff !important;
 }
 
 .budget-categories {
-  background: rgba(0,200,255,0.12) !important;
+  background: rgba(255,255,255,0.04) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(0,200,255,0.3) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
 }
 
 .budget-categories h3 {
-  color: #FF1493 !important;
+  color: var(--m-accent, #ff7a45) !important;
 }
 
 .budget-form-section,
 .budget-expenses-section {
-  background: rgba(0,200,255,0.12) !important;
+  background: rgba(255,255,255,0.04) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(0,200,255,0.3) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
 }
 
 .budget-form-section h3,
@@ -308,8 +310,8 @@
 }
 
 .expense-item {
-  background: rgba(0,200,255,0.12) !important;
-  border-left: 2px solid #00FF88 !important;
+  background: rgba(255,255,255,0.04) !important;
+  border-left: 2px solid var(--m-accent, #ff7a45) !important;
   padding: 12px !important;
   border-radius: 8px !important;
 }
@@ -388,7 +390,7 @@
 
 .budget-info-value {
   font-weight: 700 !important;
-  color: #00FF88 !important;
+  color: #fff !important;
   text-align: right !important;
 }
 
@@ -446,8 +448,8 @@
 .budget-total {
   margin-top: 20px !important;
   padding: 16px !important;
-  background: rgba(0, 255, 136, 0.12) !important;
-  border: 2px solid #00FF88 !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
   border-radius: 10px !important;
   text-align: center !important;
 }
@@ -464,7 +466,7 @@
 .budget-total-value {
   font-size: 28px !important;
   font-weight: 800 !important;
-  color: #00FF88 !important;
+  color: #fff !important;
   letter-spacing: 1px !important;
 }
 
@@ -530,7 +532,7 @@
   justify-content: space-between !important;
   align-items: center !important;
   gap: 10px !important;
-  background: rgba(0,200,255,0.1) !important;
+  background: rgba(255,255,255,0.04) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   line-height: 1.4 !important;
 }

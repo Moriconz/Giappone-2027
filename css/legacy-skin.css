@@ -2131,7 +2131,6 @@ main {
 
 .stat-label {
   color: var(--y2k-muted) !important;
-  font-family: 'Courier New', monospace !important;
   font-size: 11px !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
@@ -2141,7 +2140,6 @@ main {
 
 .stat-value {
   color: var(--y2k-ink) !important;
-  font-family: 'Courier New', monospace !important;
   font-size: 14px !important;
   font-weight: 700 !important;
 }

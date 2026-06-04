@@ -692,10 +692,10 @@
 
     if (!navigator.geolocation) {
       console.warn('[Weather] Geolocation not supported - using fallback');
-      window.fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
+      window.fetchWeatherHourly(35.6762, 139.7674, '🗼 Tokyo')
         .then(data => {
           if (data) {
-            buildAndShowWeatherModal(data, 'Aprilia', false);
+            buildAndShowWeatherModal(data, '🗼 Tokyo', false);
           }
         });
       return;
@@ -725,17 +725,25 @@
           // Now search for high-accuracy GPS in background
           searchHighAccuracyGPSInBackground();
         } else {
-          console.log('[Weather] ⚠️ Fast GPS fetch failed, using Aprilia');
-          const data = await window.fetchWeatherHourly(41.4667, 12.5833, 'Aprilia');
+          console.log('[Weather] ⚠️ Fast GPS fetch failed, using Tokyo fallback');
+          const data = await window.fetchWeatherHourly(35.6762, 139.7674, '🗼 Tokyo');
           if (data) {
             currentModalLocation = 'fallback';
-            buildAndShowWeatherModal(data, 'Aprilia', false);
+            buildAndShowWeatherModal(data, '🗼 Tokyo', false);
           }
         }
       },
       (error) => {
-        // Fast attempt failed, try high-accuracy GPS
+        // Fast attempt failed/denied → show Tokyo immediately so the user
+        // isn't stuck on "Acquisendo posizione...". Then keep trying high-accuracy
+        // GPS in the background to upgrade if it succeeds.
         console.warn('[Weather] Fast GPS attempt failed:', error.code, error.message);
+        if (currentModalLocation === null) {
+          currentModalLocation = 'fallback';
+          window.fetchWeatherHourly(35.6762, 139.7674, '🗼 Tokyo').then(data => {
+            if (data && currentModalLocation === 'fallback') buildAndShowWeatherModal(data, '🗼 Tokyo', false);
+          });
+        }
         searchHighAccuracyGPSInBackground();
       },
       { enableHighAccuracy: false, timeout: 5000, maximumAge: 0 }
@@ -753,21 +761,23 @@
           console.log('[Weather] ✅ HIGH ACCURACY GPS acquired:', { latitude, longitude });
 
           const weatherData = await window.fetchWeatherHourly(latitude, longitude, 'La tua posizione');
-          if (weatherData && currentModalLocation === 'gps-fast') {
+          // Upgrade whether we were showing fast GPS OR the Tokyo fallback
+          if (weatherData && (currentModalLocation === 'gps-fast' || currentModalLocation === 'fallback')) {
             console.log('[Weather] ✅ Updating modal with HIGH ACCURACY data');
+            currentModalLocation = 'gps-fast';
             buildAndShowWeatherModal(weatherData, 'La tua posizione', true);
           }
         },
         (error) => {
           console.warn('[Weather] ❌ HIGH ACCURACY GPS failed:', error.code, error.message);
-          // If no fast GPS was acquired, fall back to Aprilia
+          // If no fast GPS was acquired, fall back to Tokyo
           if (currentModalLocation === null) {
-            console.log('[Weather] No fast GPS, using Aprilia fallback');
-            window.fetchWeatherHourly(41.4667, 12.5833, 'Aprilia')
+            console.log('[Weather] No fast GPS, using Tokyo fallback fallback');
+            window.fetchWeatherHourly(35.6762, 139.7674, '🗼 Tokyo')
               .then(data => {
                 if (data) {
                   currentModalLocation = 'fallback';
-                  buildAndShowWeatherModal(data, 'Aprilia', false);
+                  buildAndShowWeatherModal(data, '🗼 Tokyo', false);
                 }
               });
           }
