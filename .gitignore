@@ -33,3 +33,4 @@ viz.html
 # Editor
 .idea/
 *.swp
+.github/workflows/
