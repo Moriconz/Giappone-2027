@@ -801,12 +801,22 @@ function openPOI(id){
 
             if (wizardState.step === 1) {
               // STEP 1: Day selection
+              const _tp = window.state?.tripProfile || {};
+              const _start = _tp.startDate ? new Date(_tp.startDate) : new Date(2027, 3, 10);
+              const _weekdayHours = window.currentPOI?.currentOpeningHours?.weekdayDescriptions || null;
+              const _jsToGoogleDay = (d) => (d + 6) % 7; // Sun=6, Mon=0, ..., Sat=5
               html = `
                 <div style="padding: 16px;">
                   <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step1') : '📅 STEP 1/4 — Scegli il giorno'}</p>
                   <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
                     ${Array.from({length: days}, (_, i) => {
                       const isSelected = wizardState.selectedDay === i;
+                      const dayDate = new Date(_start); dayDate.setDate(dayDate.getDate() + i);
+                      let closedBadge = '';
+                      if (_weekdayHours) {
+                        const gIdx = _jsToGoogleDay(dayDate.getDay());
+                        if (/chiuso|closed/i.test(_weekdayHours[gIdx] || '')) closedBadge = ' ⚠️';
+                      }
                       return `
                         <button class="wizard-day-btn" data-day="${i}" style="
                           padding: 12px;
@@ -818,7 +828,7 @@ function openPOI(id){
                           cursor: pointer;
                           transition: all 0.2s;
                         " onmouseover="this.style.background='rgba(255, 107, 53, 0.3)'" onmouseout="this.style.background='${isSelected ? 'rgba(255, 107, 53, 0.4)' : 'rgba(255, 107, 53, 0.15)'}'">
-                          Day ${i + 1}
+                          Day ${i + 1}${closedBadge}
                         </button>
                       `;
                     }).join('')}
@@ -961,7 +971,9 @@ function openPOI(id){
               `;
             } else if (wizardState.step === 4) {
               // STEP 4: Summary & Confirm
-              const dayDate = new Date(2027, 3, 10 + wizardState.selectedDay);
+              const _tp4 = window.state?.tripProfile || {};
+              const _start4 = _tp4.startDate ? new Date(_tp4.startDate) : new Date(2027, 3, 10);
+              const dayDate = new Date(_start4); dayDate.setDate(dayDate.getDate() + wizardState.selectedDay);
               const dayLabel = dayDate.toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
               html = `
                 <div style="padding: 16px;">

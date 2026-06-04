@@ -67,8 +67,8 @@
       try {
         new Notification(title, {
           body,
-          icon: './icons/icon-192.png',
-          badge: './icons/icon-192.png',
+          icon: './icon-192.png',
+          badge: './icon-192.png',
           tag: 'gj-reminder',
           renotify: true,
         });

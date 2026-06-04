@@ -86,7 +86,7 @@ function setupPeerHandlersWithRelay(peer, amIHub) {
           }
         }
 
-        if (window.updateMapMarkers) window.updateMapMarkers();
+        window.updateMapMarkers?.();
       }
 
       // ===== GROUPSYNC MESSAGE =====
@@ -231,7 +231,7 @@ function startGPSBroadcast() {
       });
     }
 
-    if (window.updateMapMarkers) window.updateMapMarkers();
+    window.updateMapMarkers?.();
 
   }, 5000);
 
@@ -345,8 +345,8 @@ function startHeartbeatMonitoring() {
       });
 
       if (aliveBefore !== window.state.group.members.length) {
-        if (window.broadcastGroupSync) window.broadcastGroupSync();
-        if (window.updateMapMarkers) window.updateMapMarkers();
+        window.broadcastGroupSync?.();
+        window.updateMapMarkers?.();
         window.saveState();
       }
     }
@@ -411,7 +411,7 @@ document.addEventListener('visibilitychange', () => {
     if (window.state?.group && window.state.gpsEnabled) {
       setTimeout(() => {
         ensureHubAndMembersConnected();
-        if (window.startHeartbeatSender) window.startHeartbeatSender();
+        window.startHeartbeatSender?.();
         console.log('[GPS] Reconnected ✓');
       }, 500);
     }

@@ -89,7 +89,7 @@ console.log('[RTDB] Loading MQTT transport...');
             role: 'member',
             lastHeartbeat: Date.now(),
           });
-          if (window.saveState) window.saveState();
+          window.saveState?.();
           // Il creatore aggiorna tutti con la lista completa
           if (window.state.group.createdByName === myName) {
             setTimeout(() => window.peerGPS?.broadcastGroupSync?.(), 300);
@@ -153,7 +153,7 @@ console.log('[RTDB] Loading MQTT transport...');
             window.state.group.createdByName = data.createdByName;
             window.state.group.createdBy     = data.createdByName;
           }
-          if (window.saveState) window.saveState();
+          window.saveState?.();
 
           // NUOVO MEMBRO RILEVATO? Forza broadcast GPS istantaneo
           let hasNewMembers = false;
@@ -188,7 +188,7 @@ console.log('[RTDB] Loading MQTT transport...');
           const merged = window.mergeGroupItinerary(local, data.payload);
           window.state.groupItineraries = window.state.groupItineraries || {};
           window.state.groupItineraries[data.itineraryId] = merged;
-          if (window.saveState) window.saveState();
+          window.saveState?.();
           window.dispatchEvent(new CustomEvent('itinerary_updated', {
             detail: { itineraryId: data.itineraryId, itinerary: merged },
           }));
@@ -219,7 +219,7 @@ console.log('[RTDB] Loading MQTT transport...');
             vectorClock: itinerary.vectorClock || { [data.from]: 1 }
           };
 
-          if (window.saveState) window.saveState();
+          window.saveState?.();
 
           // Notify UI
           window.dispatchEvent(new CustomEvent('itinerary_shared_received', {
@@ -227,7 +227,7 @@ console.log('[RTDB] Loading MQTT transport...');
           }));
 
           // Show toast
-          if (window.toast) window.toast(`📤 ${data.from} ` + T('group.toastShared', 'ha condiviso un itinerario con il gruppo'));
+          window.toast?.(`📤 ${data.from} ` + T('group.toastShared', 'ha condiviso un itinerario con il gruppo'));
         }
         break;
 
@@ -306,7 +306,7 @@ console.log('[RTDB] Loading MQTT transport...');
             groupItin.lastSyncedBy = data.from;
             groupItin.syncStatus = 'synced';
 
-            if (window.saveState) window.saveState();
+            window.saveState?.();
 
             // Notify UI
             window.dispatchEvent(new CustomEvent('itinerary_edited', {
@@ -342,14 +342,14 @@ console.log('[RTDB] Loading MQTT transport...');
               window.state.itinerary = itinerary.pois || [];
             }
 
-            if (window.saveState) window.saveState();
+            window.saveState?.();
 
             // Notify UI
             window.dispatchEvent(new CustomEvent('personal_itinerary_synced', {
               detail: { groupId, fromMember, itinerary: window.state.itinerary }
             }));
 
-            if (window.toast) window.toast(`✅ ${fromMember} ` + T('group.toastUpdated', "ha aggiornato l'itinerario del gruppo"));
+            window.toast?.(`✅ ${fromMember} ` + T('group.toastUpdated', "ha aggiornato l'itinerario del gruppo"));
           }
         }
         break;
@@ -383,7 +383,7 @@ console.log('[RTDB] Loading MQTT transport...');
           const groupItinId = `group_${groupId}_shared`;
           if (window.state?.groupItineraries?.[groupItinId]) {
             delete window.state.groupItineraries[groupItinId];
-            if (window.saveState) window.saveState();
+            window.saveState?.();
           }
 
           if (window.toast) {
@@ -404,7 +404,7 @@ console.log('[RTDB] Loading MQTT transport...');
 
           if (window.state?.groupItineraries?.[itineraryId]) {
             delete window.state.groupItineraries[itineraryId];
-            if (window.saveState) window.saveState();
+            window.saveState?.();
           }
 
           if (window.toast) {
@@ -418,7 +418,7 @@ console.log('[RTDB] Loading MQTT transport...');
         break;
 
       case 'heartbeat':
-        if (window.onPeerMessage) window.onPeerMessage(data);
+        window.onPeerMessage?.(data);
         break;
 
       // GF suggestion sync

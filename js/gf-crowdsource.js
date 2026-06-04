@@ -68,7 +68,7 @@
     // Broadcast (se in gruppo)
     if (window.state?.group?.roomId) {
       const payload = { poiId, poiName: poiName || '', report };
-      if (window.rtdbBroadcast) window.rtdbBroadcast({ type: 'gf_report', payload });
+      window.rtdbBroadcast?.({ type: 'gf_report', payload });
       const peerConnections = window.peerGPS?.getPeerConnections?.() || {};
       Object.values(peerConnections).forEach(conn => {
         if (conn && conn.open) { try { conn.send({ type: 'gf_report', payload }); } catch (_) {} }
