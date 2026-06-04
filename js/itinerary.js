@@ -42,7 +42,7 @@ const ITINERARY_SYSTEM = {
    * @param {number} cost - Cost in local currency (default 0)
    * @param {string} tag - Budget category: "cibo", "trasporti", "ingressi", "shopping", "altro" (default "altro")
    */
-  addPOIToDay(poiId, poiName, dayIndex, time = "10:00", duration = 60, notes = "", cost = 0, tag = "altro") {
+  addPOIToDay(poiId, poiName, dayIndex, time = "10:00", duration = 60, notes = "", cost = 0, tag = "altro", lat = null, lng = null) {
     if (!window.state?.itineraryByDay) {
       this.initState();
     }
@@ -75,6 +75,8 @@ const ITINERARY_SYSTEM = {
       notes: notes,
       cost: cost,
       tag: tag,
+      lat: lat,
+      lng: lng,
       status: "proposed",
       addedBy: window.state?.group?.myName || 'Sconosciuto',
       lastModified: Date.now(),

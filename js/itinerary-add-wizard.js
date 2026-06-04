@@ -673,9 +673,12 @@ function finishAddToItinerary(state) {
       state.poiName,
       state.selectedDay,
       state.selectedTime,
-      60, // Default duration (minutes)
+      60,          // Default duration (minutes)
       state.notes,
-      0 // Default cost (not set in this wizard)
+      0,           // Default cost (not set in this wizard)
+      null,        // tag
+      state.poiLat,
+      state.poiLng
     );
 
     if (success) {
