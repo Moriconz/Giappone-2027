@@ -816,13 +816,13 @@ function initOnboardingForm() {
 
     const tripProfile = {
       name: formData.get('tripName'),
-      days: parseInt(formData.get('days')),
+      days: parseInt(formData.get('days')) || 8,
       startDate: formData.get('startDate') || '2027-04-10',
       groupSize: formData.get('groupSize'),
       interests: interests,
       diet: formData.get('diet'),
-      budget_daily: parseInt(formData.get('budget')),
-      budget_total: parseInt(formData.get('budget')) * parseInt(formData.get('days')),
+      budget_daily: parseInt(formData.get('budget')) || 50000,
+      budget_total: (parseInt(formData.get('budget')) || 50000) * (parseInt(formData.get('days')) || 8),
       created_at: new Date().toISOString(),
     };
 

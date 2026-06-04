@@ -621,12 +621,12 @@ async function enrichPOIData(p) {
       `/api/enrichPOI?id=${encodeURIComponent(p.id)}&name=${encodeURIComponent(p.name || p.jp || p.id)}&lat=${p.lat}&lng=${p.lng}`
     );
     const data = await response.json();
-    if (data.poi && data.poi.validated) {
+    if (data.poi?.validated === true) {
       await window.POIVerifiedDB?.saveVerifiedPOI?.(data.poi);
       console.log('[enrichPOI] ✅ Validated & cached:', p.id);
       return Object.assign({}, p, data.poi);
     }
-    if (data.notFound) {
+    if (data.poi && data.poi.error === 'Place not found on Google Maps') {
       await window.POIVerifiedDB?.saveNotFound?.(p.id);
     }
   } catch (err) {
