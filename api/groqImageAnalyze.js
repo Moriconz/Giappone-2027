@@ -68,7 +68,7 @@ ${menuText ? `Testo menu aggiuntivo: ${menuText}` : ''}`;
         'Authorization': `Bearer ${GRO_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'mixtral-8x7b-32768',
+        model: 'llama-3.1-8b-instant',
         messages: [
           { role: 'system', content: 'You are a gluten-free food expert who can reason about dishes from image labels.' },
           { role: 'user', content: prompt }
