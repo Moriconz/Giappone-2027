@@ -377,9 +377,9 @@ const ITINERARY_SYSTEM = {
         if (typeof renderItineraryUnified === 'function') renderItineraryUnified();
 
         // Update budget tab if POI has cost
-        if (entry.cost > 0 && typeof renderBudgetView === 'function') {
+        if (entry.cost > 0) {
           console.log('[Itinerary] Auto-updating budget view, cost:', entry.cost);
-          renderBudgetView();
+          window.renderBudgetView?.();
         }
 
         return true;

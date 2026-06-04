@@ -103,7 +103,7 @@ const GROUP_SYNC = {
 
     if (changed) {
       window.saveState?.();
-      if (typeof renderItineraryUnified === 'function') renderItineraryUnified();
+      window.renderItineraryUnified?.();
       if (window.toast) window.toast(T('sync.itinUpdated', '📡 Itinerario aggiornato'));
     }
   },
