@@ -300,7 +300,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Override allPOIs() to use Google Places as primary source
+  // Override allPOIs() to use Google Places as primary source.
+  // NB: state.customPOIs (long-press POIs) are intentionally NOT merged here —
+  // they render via custom-poi.js's own OL layer, and their coordinates are
+  // stored directly in itinerary entries (entry.lat/lng), so routing resolves
+  // them without an allPOIs() lookup. Merging would double-render markers.
   const _origAllPOIs = window.allPOIs;
   window.allPOIs = function () {
     const gp = window.GOOGLE_PLACES_POIS || [];
