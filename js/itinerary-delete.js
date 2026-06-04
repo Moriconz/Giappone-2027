@@ -57,7 +57,7 @@
 
     // Delete personal itinerary
     window.state.itinerary = [];
-    window.saveState();
+    window.saveState?.();
     console.log('[Delete] Deleted personal itinerary');
     window.toast(T('toast.itinDeleted', '🗑️ Itinerario eliminato'));
     return true;
@@ -103,7 +103,7 @@
       delete window.state.groupItineraries[groupItinId];
     }
 
-    window.saveState();
+    window.saveState?.();
 
     // Notify group
     if (window.rtdbBroadcast) {

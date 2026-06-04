@@ -200,7 +200,7 @@
         createdByName: isCreating ? name : null,
         members: [{ name, role: isCreating ? 'hub' : 'member', lastHeartbeat: Date.now() }],
       };
-      window.saveState();
+      window.saveState?.();
 
       window.groupChat?.init(room);
 
@@ -223,7 +223,7 @@
             }
             window.sharePersonalItineraryToGroup(state.group.roomId);
             state.pendingShareItinerary = false;
-            window.saveState();
+            window.saveState?.();
             window.toast(T('toast.itinShared', '✅ Itinerario condiviso con il gruppo!'));
           }
         }, 500);
@@ -256,7 +256,7 @@
             if (peerGPS?.getRole && peerGPS.getRole() === 'hub' && state.group.isCreator !== false) {
               state.group.isCreator = true;
             }
-            window.saveState();
+            window.saveState?.();
             window.renderGroupView();
           }, 900);
         }, 100);

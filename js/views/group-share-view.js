@@ -177,7 +177,7 @@ function sharePersonalItineraryToGroup(roomId) {
   // Save to state
   if (!window.state.groupItineraries) window.state.groupItineraries = {};
   window.state.groupItineraries[itineraryId] = groupItinerary;
-  window.saveState();
+  window.saveState?.();
 
   console.log('[ShareItin] ✓ Shared. POIs:', groupItinerary.pois.length);
 
@@ -366,7 +366,7 @@ function attachEditorEvents(itineraryId, originalItinerary) {
       };
 
       window.state.groupItineraries[itineraryId] = updatedItin;
-      window.saveState();
+      window.saveState?.();
 
       // Broadcast changes
       window.broadcastItinerary?.(itineraryId);

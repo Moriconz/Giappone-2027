@@ -47,9 +47,7 @@ const PERF_UTILS = {
 
       pendingSave = true;
       requestAnimationFrame(() => {
-        if (window.saveState) {
-          window.saveState();
-        }
+        window.saveState?.();
         pendingSave = false;
       });
     };

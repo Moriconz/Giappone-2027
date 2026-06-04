@@ -130,7 +130,7 @@
 
     // Update state
     window.state.groupItineraries[itineraryId] = itinerary;
-    window.saveState();
+    window.saveState?.();
 
     console.log('[GroupItin] ✓ POI added. Version:', itinerary.version, '| POIs:', itinerary.pois.length);
 
@@ -170,7 +170,7 @@
     window.pushUndoState?.('delete_poi', itineraryId, googlePlaceId, { poi: removedPOI });
 
     window.state.groupItineraries[itineraryId] = itinerary;
-    window.saveState();
+    window.saveState?.();
 
     console.log('[GroupItin] ✓ POI removed. Version:', itinerary.version);
 
@@ -229,7 +229,7 @@
     });
 
     window.state.groupItineraries[itineraryId] = itinerary;
-    window.saveState();
+    window.saveState?.();
 
     console.log('[GroupItin] ✓ Field updated. Version:', itinerary.version);
 

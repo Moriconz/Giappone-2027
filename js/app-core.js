@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state.itinerary.find(e => e.id === entry.id)) return false;
     state.itinerary.push(entry);
     addTappaAuditEntry(state.itinerary[state.itinerary.length - 1], 'added', state.group?.myName || 'Unknown');
-    window.saveState();
+    window.saveState?.();
     if (window.peerGPS?.broadcastItinerary) window.peerGPS.broadcastItinerary();
     return true;
   }
@@ -72,11 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (idx === -1) return false;
     addTappaAuditEntry(state.itinerary[idx], 'removed', state.group?.myName || 'Unknown');
     state.itinerary.splice(idx, 1);
-    window.saveState();
+    window.saveState?.();
     if (window.peerGPS?.broadcastItinerary) window.peerGPS.broadcastItinerary();
     return true;
   }
-  function updateItinerary(entries) { state.itinerary = entries || []; saveState(); }
+  function updateItinerary(entries) { state.itinerary = entries || []; window.saveState?.(); }
   function isInItinerary(id) { return !!(state.itinerary?.some(e => e.id === id)); }
 
   function cloneItinerary(itinerary) {

@@ -40,7 +40,7 @@
     window.pushUndoState?.('soft_delete_poi', itineraryId, googlePlaceId, { poi });
 
     window.state.groupItineraries[itineraryId] = itinerary;
-    window.saveState();
+    window.saveState?.();
 
     console.log('[SoftDelete] ✓ POI marked as deleted. Version:', itinerary.version);
 
@@ -74,7 +74,7 @@
     if (removed > 0) {
       itinerary.version++;
       window.state.groupItineraries[itineraryId] = itinerary;
-      window.saveState();
+      window.saveState?.();
       console.log('[Cleanup] ✓ Removed', removed, 'permanently deleted POIs');
     }
 
@@ -158,7 +158,7 @@
       details: conflicts || []
     };
 
-    window.saveState();
+    window.saveState?.();
   }
 
   window.softDeletePOI = softDeletePOI;

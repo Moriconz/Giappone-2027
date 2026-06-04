@@ -385,7 +385,7 @@ window.groupPanel = (() => {
         if (ok) {
           if (window.state.groupItineraries[itinId]) {
             delete window.state.groupItineraries[itinId];
-            window.saveState();
+            window.saveState?.();
             updateGroupItinerariesList();
             window.toast?.(T('toast.itinDeleted', '🗑️ Itinerario eliminato'));
           }

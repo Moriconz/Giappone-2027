@@ -107,6 +107,9 @@ function importBackup() {
     );
     if (!ok) return;
 
+    // Auto-snapshot current state before overwriting
+    window.ItinerarySnapshots?.saveAuto?.('pre-backup-restore');
+
     // Apply backup
     BACKUP_FIELDS.forEach(k => {
       if (payload[k] !== undefined) {

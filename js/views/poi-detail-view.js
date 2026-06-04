@@ -1539,7 +1539,7 @@ function openPOI(id){
             const newCat = btn.dataset.cat;
             if (!window.state.userCategoryOverrides) window.state.userCategoryOverrides = {};
             window.state.userCategoryOverrides[id] = newCat;
-            window.saveState();
+            window.saveState?.();
             window.toast(`✏️ Categoria cambiata a ${window.CATS[newCat]?.label || newCat}`);
             catSelector.style.display = 'none';
             openPOI(id);
@@ -1711,7 +1711,7 @@ function openPOI(id){
       const n = parseInt(s.dataset.star,10);
       if (!window.state.ratings) window.state.ratings = {};
       window.state.ratings[id] = n;
-      window.saveState();
+      window.saveState?.();
       starsEl.querySelectorAll('.star').forEach(x => x.classList.toggle('on', parseInt(x.dataset.star,10)<=n));
       window.toast(T('toast.ratingSaved', 'Voto salvato ⭐'));
     };
@@ -1720,12 +1720,12 @@ function openPOI(id){
   if (savePoiBtn) savePoiBtn.onclick = () => {
     const i = window.state.savedPOIs.indexOf(id);
     if (i>=0) window.state.savedPOIs.splice(i,1); else window.state.savedPOIs.push(id);
-    window.saveState(); openPOI(id); window.toast(i>=0 ? (window.t ? window.t('poi.unsaved','Rimosso') : 'Rimosso') : (window.t ? window.t('poi.saved','Salvato ★') : 'Salvato ★'));
+    window.saveState?.(); openPOI(id); window.toast(i>=0 ? (window.t ? window.t('poi.unsaved','Rimosso') : 'Rimosso') : (window.t ? window.t('poi.saved','Salvato ★') : 'Salvato ★'));
   };
   const noteEl = document.getElementById('poi-note');
   if (noteEl) {
     noteEl.addEventListener('input', e => {
-      window.state.notes[id] = e.target.value; window.saveState();
+      window.state.notes[id] = e.target.value; window.saveState?.();
     });
   }
   const addCalBtn = document.getElementById('add-cal');

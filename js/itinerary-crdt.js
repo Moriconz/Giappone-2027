@@ -253,7 +253,7 @@
 
     console.log('[Undo] Pushed:', action, '| Stack size:', undoRedo.stack.length, '| Index:', undoRedo.currentIndex);
 
-    window.saveState();
+    window.saveState?.();
   }
 
   /**
@@ -273,7 +273,7 @@
       const itineraryId = targetState.itineraryId;
       window.state.groupItineraries[itineraryId] = JSON.parse(JSON.stringify(targetState.snapshot));
       console.log('[Undo] Restored to index:', undoRedo.currentIndex);
-      window.saveState();
+      window.saveState?.();
       return true;
     }
     return false;
@@ -296,7 +296,7 @@
       const itineraryId = targetState.itineraryId;
       window.state.groupItineraries[itineraryId] = JSON.parse(JSON.stringify(targetState.snapshot));
       console.log('[Redo] Restored to index:', undoRedo.currentIndex);
-      window.saveState();
+      window.saveState?.();
       return true;
     }
     return false;

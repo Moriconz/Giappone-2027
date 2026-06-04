@@ -96,7 +96,7 @@
     window.pushUndoState?.('modify_opening_hours', itineraryId, googlePlaceId, { openingHours: openingHoursData });
 
     window.state.groupItineraries[itineraryId] = itinerary;
-    window.saveState();
+    window.saveState?.();
 
     console.log('[OpeningHours] ✓ Hours set. Source:', openingHoursData.source);
 

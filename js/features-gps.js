@@ -99,7 +99,7 @@ function setupPeerHandlersWithRelay(peer, amIHub) {
 
           console.log('[GROUP] Synced members:', window.state.knownMembers);
           ensureHubAndMembersConnected();
-          window.saveState();
+          window.saveState?.();
         }
 
         // Se sei hub, riemetti (broadcast a tutti)
@@ -138,7 +138,7 @@ function setupPeerHandlersWithRelay(peer, amIHub) {
           // Update state
           window.state.groupItineraries = window.state.groupItineraries || {};
           window.state.groupItineraries[data.itineraryId] = merged;
-          window.saveState();
+          window.saveState?.();
 
           console.log('[SYNC] ✓ Merged. New version:', merged.version, '| POIs:', merged.pois?.length);
 
@@ -287,7 +287,7 @@ function setupWakeLockToggle() {
   toggleEl.addEventListener('change', (e) => {
     toggleWakeLock(e.target.checked);
     window.state.wakeLockEnabled = e.target.checked;
-    window.saveState();
+    window.saveState?.();
   });
 
   if (window.state.wakeLockEnabled) {
@@ -347,7 +347,7 @@ function startHeartbeatMonitoring() {
       if (aliveBefore !== window.state.group.members.length) {
         window.broadcastGroupSync?.();
         window.updateMapMarkers?.();
-        window.saveState();
+        window.saveState?.();
       }
     }
   }, 15 * 1000);

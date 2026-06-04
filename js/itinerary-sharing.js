@@ -196,7 +196,7 @@
       console.log('[Sync] ✅ Synced personal itinerary to group:', groupId);
     });
 
-    window.saveState();
+    window.saveState?.();
   }
 
   /**
@@ -219,7 +219,7 @@
       window.state.itinerary = JSON.parse(JSON.stringify(groupItin.pois));
     }
 
-    window.saveState();
+    window.saveState?.();
     console.log('[Sync] ✅ Synced group changes back to personal itinerary');
 
     // Notify UI
