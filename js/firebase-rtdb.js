@@ -420,6 +420,19 @@ console.log('[RTDB] Loading MQTT transport...');
         if (window.onPeerMessage) window.onPeerMessage(data);
         break;
 
+      // GF suggestion sync
+      case 'gf_suggestion_add':
+        if (data.suggestion && window.GFSuggestionsDB) {
+          const sug = data.suggestion;
+          const exists = window.GFSuggestionsDB.getAll().some(s => s.id === sug.id);
+          if (!exists) {
+            const list = window.GFSuggestionsDB.getAll();
+            list.push(sug);
+            window.GFSuggestionsDB._save(list);
+          }
+        }
+        break;
+
       // GF custom places sync (from gf-places-panel.js via broadcastToPeers)
       case 'gf_place_add':
         if (data.place && window.GFPlacesDB) {
