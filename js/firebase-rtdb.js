@@ -248,6 +248,7 @@ console.log('[RTDB] Loading MQTT transport...');
           }
 
           const groupItin = window.state.groupItineraries[groupItinId];
+          if (!Array.isArray(groupItin.pois)) groupItin.pois = [];
           let modified = false;
 
           // Apply the edit action
