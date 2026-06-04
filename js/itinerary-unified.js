@@ -734,25 +734,6 @@ function setupGlobalEventDelegation() {
  * CHECK if itinerary is shareable (has at least one POI)
  * Returns true only if there's at least one POI across all days
  */
-function hasShareableItinerary() {
-  const tripProfile = window.state?.tripProfile || {};
-  const days = tripProfile.days || 8;
-  let totalPOIs = 0;
-
-  for (let d = 0; d < days; d++) {
-    const dayPOIs = window.state?.itineraryByDay?.[d] || [];
-    totalPOIs += dayPOIs.length;
-  }
-
-  const isShareable = totalPOIs > 0;
-  console.log('[ItineraryUnified] 🔍 hasShareableItinerary():', {
-    totalPOIs,
-    isShareable,
-    message: isShareable ? '✅ share allowed: itinerary has POIs' : '🚫 share blocked: empty itinerary'
-  });
-
-  return isShareable;
-}
 
 /**
  * ELEGANT EMPTY SHARE MODAL
