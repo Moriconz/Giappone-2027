@@ -426,6 +426,8 @@ window.addEventListener('online', () => {
       console.log('[GPS] Reconnected to mesh');
     }, 500);
   }
+  // Replay any messages queued while offline
+  setTimeout(() => { window.replayOfflineQueue?.(); }, 1500);
 });
 
 // Banner offline: mostra/nascondi in base alla connessione (POI restano da cache IndexedDB)
