@@ -25,6 +25,10 @@ function openAddToItineraryWizard(poiData) {
     poiCity: poiData.city || 'Città sconosciuta',
     poiType: poiData.type || 'restaurant',
     poiPhoto: poiData.photo || null,
+    poiLat: poiData.lat ?? null,
+    poiLng: poiData.lng ?? null,
+    // Opening hours for closed-day warnings in step 2
+    poiWeekdayHours: poiData.currentOpeningHours?.weekdayDescriptions || null,
     selectedDay: getSuggestedDay(),
     selectedTime: getSuggestedTime(getSuggestedDay()),
     notes: '',
@@ -260,14 +264,26 @@ function renderStep1(state) {
 function renderStep2(state) {
   const tripProfile = window.state?.tripProfile || {};
   const days = tripProfile.days || 8;
-  const startDate = new Date(2027, 3, 10); // April 10, 2027
+  const startDate = tripProfile.startDate ? new Date(tripProfile.startDate) : new Date(2027, 3, 10);
+
+  // Google weekdayDescriptions: index 0=Monday, 6=Sunday
+  // JS Date.getDay(): 0=Sunday, 1=Monday, ..., 6=Saturday
+  const _jsToGoogleDay = (jsDay) => (jsDay + 6) % 7; // Sun→6, Mon→0, ..., Sat→5
+  const weekdayHours = state.poiWeekdayHours || null;
 
   const dayOptions = Array.from({ length: days }, (_, d) => {
     const date = new Date(startDate);
     date.setDate(date.getDate() + d);
     const dayLabel = date.toLocaleDateString('it-IT', { weekday: 'short', month: 'short', day: 'numeric' });
     const dayPOIs = window.state?.itineraryByDay?.[d] || [];
-    return { d, dayLabel, poiCount: dayPOIs.length };
+    // Check if POI is closed on this weekday (only if hours data available)
+    let closedWarning = '';
+    if (weekdayHours) {
+      const googleIdx = _jsToGoogleDay(date.getDay());
+      const hoursStr = weekdayHours[googleIdx] || '';
+      if (/chiuso|closed/i.test(hoursStr)) closedWarning = ' ⚠️ chiuso';
+    }
+    return { d, dayLabel, poiCount: dayPOIs.length, closedWarning };
   });
 
   const times = generateTimeSlots();
@@ -321,10 +337,16 @@ function renderStep2(state) {
         " onchange="this.style.borderColor='rgba(255,107,53,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
           ${dayOptions.map(opt => `
             <option value="${opt.d}" ${opt.d === state.selectedDay ? 'selected' : ''}>
-              Day ${opt.d + 1} — ${opt.dayLabel} (${opt.poiCount} POI)
+              Day ${opt.d + 1} — ${opt.dayLabel} (${opt.poiCount} POI)${opt.closedWarning}
             </option>
           `).join('')}
         </select>
+        ${(() => {
+          const sel = dayOptions.find(o => o.d === state.selectedDay);
+          return sel?.closedWarning
+            ? `<div style="margin-top:8px;padding:8px 12px;background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);border-radius:8px;font-size:12px;color:#ffd166;">⚠️ Questo posto risulta <b>chiuso</b> il giorno selezionato — verifica gli orari aggiornati prima di andare.</div>`
+            : '';
+        })()}
       </div>
 
       <!-- Time Selection -->
