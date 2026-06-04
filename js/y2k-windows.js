@@ -144,6 +144,9 @@
     if (typeof origOpen === 'function') {
       window.openSheet = function (title, html) {
         const id = String(title).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20) || 'win';
+        // Single-panel mode: close any OTHER open panel first so navigating
+        // between views (itinerario → GF → menu) replaces instead of stacking.
+        Object.keys(wins).forEach(k => { if (k !== id) closeWin(k); });
         openWin(id, title, html, window.activeTabView || 'map');
       };
     }
