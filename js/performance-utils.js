@@ -92,3 +92,5 @@ const PERF_UTILS = {
 };
 
 window.PERF_UTILS = PERF_UTILS;
+window.debounce = PERF_UTILS.debounce.bind(PERF_UTILS);
+window.throttle = PERF_UTILS.throttle.bind(PERF_UTILS);

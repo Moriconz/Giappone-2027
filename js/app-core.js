@@ -223,53 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.saveState = saveState;
   console.log('[State] Init', { group: state.group });
 
-  // ========== DEBUG PANEL: Mostra log visibili sul telefono ==========
-  const debugLogs = [];
-  const origLog = console.log;
-  const origError = console.error;
-  const origWarn = console.warn;
-  let _debugUpdatePending = false;
-
-  function addDebugLog(msg, type = 'log') {
-    if (debugLogs.length > 20) debugLogs.shift();
-    debugLogs.push({ msg, type, time: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) });
-    // Debounce updateDebugPanel to prevent excessive DOM updates
-    if (!_debugUpdatePending) {
-      _debugUpdatePending = true;
-      requestAnimationFrame(() => {
-        updateDebugPanel();
-        _debugUpdatePending = false;
-      });
-    }
-  }
-
-  function updateDebugPanel() {
-    const panel = document.getElementById('debug-panel');
-    const contentEl = document.getElementById('debug-content');
-    if (!panel || !contentEl) return;
-
-    // Mostra se: errori, log Firebase/RTDB/Group, o GPS attivo
-    const hasErrors = debugLogs.some(l => l.type === 'error');
-    const hasRelevant = debugLogs.some(l =>
-      l.msg.includes('[RTDB]') || l.msg.includes('[Group]') ||
-      l.msg.includes('[FirebaseRTDB]') || l.msg.includes('[GPS]')
-    );
-    const gpsActive = window.state?.gpsEnabled || window.state?.group;
-    panel.style.display = (hasErrors || hasRelevant || gpsActive) ? 'block' : 'none';
-
-    contentEl.innerHTML = debugLogs
-      .filter(l =>
-        l.msg.includes('[RTDB]') || l.msg.includes('[Group]') ||
-        l.msg.includes('[FirebaseRTDB]') || l.msg.includes('[GPS]') ||
-        l.type === 'error'
-      )
-      .map(l => `<div style="color:${l.type==='error'?'#FF6B6B':'#00FF88'};margin:2px 0;word-break:break-all">[${l.time}] ${l.msg.substring(0, 150)}</div>`)
-      .join('');
-  }
-
-  console.log = function(...args) { origLog(...args); addDebugLog(args.join(' ')); };
-  console.error = function(...args) { origError(...args); addDebugLog(args.join(' '), 'error'); };
-  console.warn = function(...args) { origWarn(...args); addDebugLog(args.join(' '), 'warn'); };
+  // Debug panel extracted to js/debug-panel.js
 
   function cleanupGPSTraces() {
     // Mantieni solo gli ultimi 500 punti GPS per evitare overflow localStorage
@@ -716,16 +670,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   setTimeout(() => { map.updateSize(); }, 100);
-  // Debounce utility
-  function debounce(fn, ms) {
-    let t;
-    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-  }
-
   // FAKE_POI_IDS, updateFakePOIList, filtered, renderMarkers extracted to js/map-markers.js
 
-  // Aggiorna marker al cambio vista (debounced 250ms)
-  const debouncedRender = debounce(() => window.renderMarkers?.(), 250);
+  // Aggiorna marker al cambio vista (debounced 250ms) — debounce via window.debounce (performance-utils.js)
+  const debouncedRender = window.debounce(() => window.renderMarkers?.(), 250);
   // SHOPPING_DB moved to js/views/shopping-layer.js (window.SHOPPING_DB)
   // Dedicated source/layer for shopping markers (not cleared by renderMarkers)
   const shoppingSource = new ol.source.Vector();
@@ -800,224 +748,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // REMOVED: loadChunkData() call
   });
 
-  map.on('click', (e) => {
-    console.log('%c[MAP CLICK]', 'background: #1A3C5E; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold');
-    let handled = false;
-    let featuresFound = 0;
-    map.forEachFeatureAtPixel(e.pixel, (clusterFeature, layer) => {
-      featuresFound++;
-      if (handled) return;
-
-      // Unwrap cluster features
-      const clusterMembers = clusterFeature.get('features');
-      let feature;
-      if (clusterMembers && clusterMembers.length > 1) {
-        // Zoom into cluster
-        const extent = ol.extent.createEmpty();
-        clusterMembers.forEach(f => ol.extent.extend(extent, f.getGeometry().getExtent()));
-        map.getView().fit(extent, { padding: [80, 80, 80, 80], duration: 400, maxZoom: 16 });
-        handled = true;
-        return;
-      } else if (clusterMembers && clusterMembers.length === 1) {
-        feature = clusterMembers[0];
-      } else {
-        feature = clusterFeature;
-      }
-
-      const id = feature.get('id');
-      const type = feature.get('type');
-      const peerName = feature.get('peerName');
-      const name = feature.get('name');
-      const safetyLevel = feature.get('safety_level');
-
-      console.log(`%c[MAP CLICK] Feature ${featuresFound}:`, 'background:#FF9800;color:white;padding:4px 8px;border-radius:3px', { id, type, name, peerName });
-
-      if (peerName) {
-        console.log('[MAP CLICK] → Peer location');
-        toast('Posizione rilevata ' + peerName);
-        handled = true;
-      } else if (safetyLevel) {
-        console.log('[MAP CLICK] → Opening GF Place:', name, safetyLevel);
-        const safetyIcon = safetyLevel === 'GREEN' ? '🟢' : safetyLevel === 'RED' ? '🔴' : '🟡';
-        toast(`${safetyIcon} ${name} (${feature.get('city')})`);
-        handled = true;
-      } else if (type === 'shopping') {
-        console.log('[MAP CLICK] → Opening shop:', id);
-        window.__openShop(id);
-        handled = true;
-      } else if (id) {
-        console.log('%c[MAP CLICK] → Opening POI:', 'background:#FF6B6B;color:white;padding:4px 8px;border-radius:3px', id, 'Type:', type);
-        openPOI(id);
-        handled = true;
-      }
-    });
-    console.log('[MAP CLICK] Features found:', featuresFound, 'Handled:', handled);
-  });
+  // map.on('click') extracted to js/app-navigation.js
   // ---- Filter bar UI — renderFilters + listener → js/views/filter-bar.js ----
   function renderFilters() { window.renderFilters?.(); }
-  // ---- Sheet — openSheet/closeSheet → js/sheet-manager.js ----
-  // ============================================================================
-  // PERFORMANCE UTILITIES - Debounce, Throttle, Lazy Loading
-  // ============================================================================
-  function debounce(fn, delay) {
-    let timeoutId;
-    return function(...args) {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => fn(...args), delay);
-    };
-  }
-  window.debounce = debounce; // esposto per js/views/
-
-  function throttle(fn, limit) {
-    let inThrottle;
-    return function(...args) {
-      if (!inThrottle) {
-        fn(...args);
-        inThrottle = true;
-        setTimeout(() => inThrottle = false, limit);
-      }
-    };
-  }
-  window.throttle = throttle; // esposto per js/views/
-
-  // Lazy load images with IntersectionObserver
-  function setupLazyLoadImages() {
-    if ('IntersectionObserver' in window) {
-      const imageObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const img = entry.target;
-            if (img.dataset.src) {
-              img.src = img.dataset.src;
-              img.removeAttribute('data-src');
-              observer.unobserve(img);
-            }
-          }
-        });
-      }, { rootMargin: '50px' });
-
-      document.querySelectorAll('img[data-src]').forEach(img => imageObserver.observe(img));
-    }
-  }
-
-  // Call lazy load setup periodically
-  setInterval(setupLazyLoadImages, 2000);
-
-  // openSheet/closeSheet are set by sheet-manager.js (loaded before DOMContentLoaded)
+  // debounce/throttle/lazy-load, weather init, bottom nav, refresh btn → js/app-navigation.js
+  // openSheet/closeSheet set by sheet-manager.js
   function openSheet(title, html) { window.openSheet?.(title, html); }
   function closeSheet() { window.closeSheet?.(); }
-
-  // Initialize weather widget as visible on page load
-  const initWeatherWidget = document.getElementById('weather-floating');
-  if (initWeatherWidget) {
-    initWeatherWidget.classList.add('show');
-    console.log('[Init] ✅ Weather widget initialized as visible');
-  }
-
-  // Track active tab to avoid resetting it when opening POI details (GLOBAL per y2k-windows.js)
-  window.activeTabView = 'map';
-
-  const bottomNav = document.querySelector('nav.bottom');
-  if (bottomNav) {
-    bottomNav.addEventListener('click', e => {
-      const btn = e.target.closest('button[data-view]');
-      if (!btn) return;
-      bottomNav.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
-      const view = btn.dataset.view;
-      window.activeTabView = view; // Traccia quale tab è attivo (GLOBAL per y2k-windows.js)
-      console.log('[BottomNav] Clicked view:', view);
-
-      // Hide weather widget when opening any tab
-      const weatherWidget = document.getElementById('weather-floating');
-      if (weatherWidget && view !== 'map') {
-        weatherWidget.classList.remove('show');
-        console.log('[BottomNav] Removed .show from weather widget (non-map tab)');
-      }
-
-      if (view === 'map') {
-        console.log('[BottomNav] Map tab clicked, showing weather widget');
-        // Show weather widget when returning to map
-        if (weatherWidget) {
-          weatherWidget.classList.add('show');
-          console.log('[BottomNav] ✅ Added .show to weather widget');
-        } else {
-          console.error('[BottomNav] ❌ Weather widget element not found!');
-        }
-        closeSheet();
-        // Center map on user's GPS location if active, otherwise on last known position
-        setTimeout(() => {
-          if (state.gpsCurrentLat && state.gpsCurrentLng) {
-            map.getView().animate({
-              center: ol.proj.fromLonLat([state.gpsCurrentLng, state.gpsCurrentLat]),
-              zoom: 14,
-              duration: 500
-            });
-            console.log('[Map] Centered on current GPS:', state.gpsCurrentLat, state.gpsCurrentLng);
-          } else if (state.group?.lastKnownLat && state.group?.lastKnownLng) {
-            map.getView().animate({
-              center: ol.proj.fromLonLat([state.group.lastKnownLng, state.group.lastKnownLat]),
-              zoom: 12,
-              duration: 500
-            });
-            console.log('[Map] Centered on last known position:', state.group.lastKnownLat, state.group.lastKnownLng);
-          }
-          map.updateSize();
-        }, 100);
-        return;
-      }
-      if (view === 'itinerary') { renderItineraryUnified(); return; }
-      if (view === 'gf') { renderGFView(); return; }
-      if (view === 'menu') { showMenuDrawer(); return; }
-
-      // Fallback for views accessed from menu drawer
-      if (view === 'list') { renderItineraryUnified(); return; }
-      if (view === 'weather') { renderWeatherView(); return; }
-      if (view === 'bookings') { window.loadScript('./js/views/bookings-view.js').then(() => window.renderBookingsView?.()); return; }
-      if (view === 'shopping') { renderShoppingView(); return; }
-      if (view === 'group') { renderGroupView(); return; }
-      if (view === 'budget') { renderBudgetView(); return; }
-      if (view === 'gallery') { window.renderGalleryView?.(); return; }
-      if (view === 'sos') { window.loadScript('./js/views/sos-view.js').then(() => window.renderSOSPanel?.()); return; }
-      if (view === 'tips') { window.loadScript('./js/views/tips-view.js').then(() => window.renderTipsView?.()); return; }
-      if (view === 'groq-menu') { window.openGroqPanel(); return; }
-      if (view === 'gf-places') { window.openGFPlacesPanel(); return; }
-      if (view === 'gf-suggest') { window.openGFSuggestionPanel(); return; }
-      if (view === 'reminders') { window.loadScript('./js/itinerary-reminders.js').then(() => window.openItineraryReminders?.()); return; }
-      if (view === 'jr-pass') { window.loadScript('./js/jr-pass-calculator.js').then(() => window.openJRPassPanel?.()); return; }
-      if (view === 'japan-cal') { window.JapanCalendarHints?.openPanel?.(); return; }
-    });
-  }
-
-  // Refresh POIs button handler
-  const refreshBtn = document.getElementById('refresh-pois-btn');
-  if (refreshBtn) {
-    refreshBtn.addEventListener('click', async () => {
-      refreshBtn.style.opacity = '0.5';
-      refreshBtn.style.cursor = 'wait';
-
-      try {
-        const view = map.getView();
-        const center = ol.proj.transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326');
-        const lat = center[1];
-        const lng = center[0];
-
-        console.log(`[App] Manual refresh clicked - reloading POIs from ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-
-        // Force reload by clearing cache and reloading
-        if (window.GooglePlacesLoader?.reloadArea) {
-          await window.GooglePlacesLoader.reloadArea(lat, lng);
-          console.log('[App] POI reload complete');
-        } else {
-          console.warn('[App] GooglePlacesLoader not available');
-        }
-      } catch (err) {
-        console.error('[App] Refresh error:', err);
-      } finally {
-        refreshBtn.style.opacity = '1';
-        refreshBtn.style.cursor = 'pointer';
-      }
-    });
-  }
 
   // POI detail cluster extracted to js/views/poi-detail-view.js (2026-06-03)
   // gfTag, renderEnhancedPoiSections, poiDetailHTML, loadPOIPhotos, openPOI
