@@ -163,7 +163,7 @@ function openAllergyCard(lang = null) {
   `;
   closeBtn.onclick = () => {
     modal.remove();
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
   };
   modal.appendChild(closeBtn);
 

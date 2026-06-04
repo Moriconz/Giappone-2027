@@ -251,7 +251,7 @@
         const note = document.getElementById('cpoi-note')?.value.trim() || '';
         const entry = add({ name, lat, lng, note, cat: chosenCat });
         window.closeSheet?.();
-        if (window.toast) window.toast('📌 ' + (entry?.name || '') + ' ' + T('cpoi.created', 'creato'));
+        window.toast?.('📌 ' + (entry?.name || '') + ' ' + T('cpoi.created', 'creato'));
       };
     }, 40);
   }
@@ -295,7 +295,7 @@
         } else if (typeof window.ITINERARY?.addPOIToDay === 'function') {
           window.ITINERARY.addPOIToDay(poi.id, poi.name, 0, '10:00', 60, poi.note || '', 0, 'altro', poi.lat, poi.lng);
           window.closeSheet?.();
-          if (window.toast) window.toast('✅ ' + T('cpoi.addedItin', 'Aggiunto al Day 1'));
+          window.toast?.('✅ ' + T('cpoi.addedItin', 'Aggiunto al Day 1'));
         }
       };
       const delBtn = document.getElementById('cpoi-delete');
@@ -304,7 +304,7 @@
         if (ok) {
           remove(poi.id);
           window.closeSheet?.();
-          if (window.toast) window.toast('🗑️ ' + T('cpoi.deleted', 'Posto eliminato'));
+          window.toast?.('🗑️ ' + T('cpoi.deleted', 'Posto eliminato'));
         }
       };
     }, 40);

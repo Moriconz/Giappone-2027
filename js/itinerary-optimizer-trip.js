@@ -277,7 +277,7 @@
       if (applyBtn) applyBtn.onclick = () => {
         if (apply(result)) {
           window.closeSheet?.();
-          if (window.toast) window.toast('🧭 ' + T('topt.done', 'Viaggio ottimizzato') + (stats.saved > 0 ? ` (−${stats.saved}km)` : ''));
+          window.toast?.('🧭 ' + T('topt.done', 'Viaggio ottimizzato') + (stats.saved > 0 ? ` (−${stats.saved}km)` : ''));
         }
       };
       const cancelBtn = document.getElementById('topt-cancel');

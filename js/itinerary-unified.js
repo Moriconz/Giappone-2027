@@ -19,6 +19,7 @@ function renderItineraryUnified() {
   ITINERARY.initState();
   const tripProfile = window.state?.tripProfile || {};
   const days = tripProfile.days || 8;
+  const _tripStart = tripProfile.startDate ? new Date(tripProfile.startDate) : new Date(2027, 3, 10);
 
   // Load shared itinerary from state
   const sharedItinerary = window.state?.itinerary || [];
@@ -42,7 +43,7 @@ function renderItineraryUnified() {
   // ===== SECTION 1: PERSONAL ITINERARY (ACCORDION) =====
   const accordionHTML = Array.from({ length: days }, (_, dayIndex) => {
     const dayPOIs = window.state.itineraryByDay[dayIndex] || [];
-    const dayDate = new Date(2027, 3, 10 + dayIndex);
+    const dayDate = new Date(_tripStart); dayDate.setDate(dayDate.getDate() + dayIndex);
     const dayLabel = `Day ${dayIndex + 1} — ${dayDate.toLocaleDateString('it-IT', { weekday: 'short', month: 'short', day: 'numeric' })}`;
     const dayDuration = ITINERARY.getDayDuration(dayIndex);
     const poiListHTML = dayPOIs.length ? dayPOIs.map((entry, idx) => {
@@ -455,7 +456,7 @@ window.handleExportHTML = function() {
 
   if (totalPOIs === 0) {
     console.log('[ItineraryUnified] ⚠️ Itinerary empty');
-    if (window.toast) window.toast(_T('itin.noPOI', '⚠️ Nessun POI aggiunto'));
+    window.toast?.(_T('itin.noPOI', '⚠️ Nessun POI aggiunto'));
     return;
   }
 
@@ -484,7 +485,7 @@ window.handleExportHTML = function() {
       ${Array.from({ length: days }, (_, d) => {
         const dayPOIs = window.state?.itineraryByDay?.[d] || [];
         if (dayPOIs.length === 0) return '';
-        const dayDate = new Date(2027, 3, 10 + d);
+        const dayDate = new Date(_tripStart); dayDate.setDate(dayDate.getDate() + d);
         const dayLabel = dayDate.toLocaleDateString('it-IT', { weekday: 'long', month: 'long', day: 'numeric' });
         const dayCost = dayPOIs.reduce((sum, e) => sum + (e.cost || 0), 0);
         return `
@@ -532,7 +533,7 @@ window.handleExportHTML = function() {
   newTab.document.write(html);
   newTab.document.close();
 
-  if (window.toast) window.toast(_T('itin.exported', '✅ Itinerario esportato'));
+  window.toast?.(_T('itin.exported', '✅ Itinerario esportato'));
   console.log('[ItineraryUnified] ✅ HTML export complete');
 };
 
@@ -559,7 +560,7 @@ window.handleExportWhatsApp = function() {
       window.exportItineraryWhatsApp();
     } catch (err) {
       console.error('[ItineraryUnified] ❌ Error:', err);
-      if (window.toast) window.toast('❌ Errore: ' + err.message);
+      window.toast?.('❌ Errore: ' + err.message);
     }
   }
 };
@@ -582,15 +583,15 @@ function _decodeShare(s) {
 }
 window.handleShareLink = function() {
   const payload = _buildSharePayload();
-  if (!payload.items.length) { if (window.toast) window.toast(_T('toast.addStopsFirst', '⚠️ Aggiungi tappe prima di condividere')); return; }
+  if (!payload.items.length) { window.toast?.(_T('toast.addStopsFirst', '⚠️ Aggiungi tappe prima di condividere')); return; }
   const url = location.origin + location.pathname + '?share=' + _encodeShare(payload);
-  if (url.length > 8000) { if (window.toast) window.toast(_T('itin.tooLargeForLink', '⚠️ Itinerario troppo grande per un link')); return; }
+  if (url.length > 8000) { window.toast?.(_T('itin.tooLargeForLink', '⚠️ Itinerario troppo grande per un link')); return; }
   if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(url).then(
-      () => { if (window.toast) window.toast(_T('itin.linkCopied', '🔗 Link copiato! Incollalo dove vuoi')); },
-      () => { if (window.toast) window.toast('⚠️ Copia manuale: ' + url.substring(0, 60) + '…'); }
+      () => { window.toast?.(_T('itin.linkCopied', '🔗 Link copiato! Incollalo dove vuoi')); },
+      () => { window.toast?.('⚠️ Copia manuale: ' + url.substring(0, 60) + '…'); }
     );
-  } else { if (window.toast) window.toast('⚠️ Clipboard non disponibile'); }
+  } else { window.toast?.('⚠️ Clipboard non disponibile'); }
 };
 window.importSharedItinerary = function(payload) {
   try {
@@ -599,9 +600,9 @@ window.importSharedItinerary = function(payload) {
     window.ItinerarySnapshots?.saveAuto?.('import-shared-link');
     payload.items.forEach(it => window.ITINERARY?.addPOIToDay?.(it.p, it.n, it.d, it.t || '10:00', it.dur || 60, '', it.c || 0, 'altro', it.lat ?? null, it.lng ?? null));
     window.saveState?.();
-    if (window.toast) window.toast(_T('itin.imported', '✅ Itinerario importato'));
+    window.toast?.(_T('itin.imported', '✅ Itinerario importato'));
     window.renderItineraryUnified?.();
-  } catch (e) { if (window.toast) window.toast('❌ Errore import'); }
+  } catch (e) { window.toast?.('❌ Errore import'); }
 };
 window.openSharedItineraryPreview = function(payload) {
   const count = (payload && payload.items && payload.items.length) || 0;
@@ -647,7 +648,7 @@ window.handleShareGroup = function() {
       window.showShareItineraryModal();
     } catch (err) {
       console.error('[ItineraryUnified] ❌ Error:', err);
-      if (window.toast) window.toast('❌ Errore: ' + err.message);
+      window.toast?.('❌ Errore: ' + err.message);
     }
   }
 };
@@ -690,7 +691,7 @@ function setupGlobalEventDelegation() {
     const ok = window.ITINERARY?.optimizeDay?.(dayIdx);
     if (ok) {
       renderItineraryUnified();
-      if (window.toast) window.toast(_T('itin.optimized', '🧭 Giro ottimizzato'));
+      window.toast?.(_T('itin.optimized', '🧭 Giro ottimizzato'));
     } else if (window.toast) {
       window.toast(_T('itin.need3', '⚠️ Servono almeno 3 tappe con posizione nota'));
     }
@@ -721,7 +722,7 @@ function setupGlobalEventDelegation() {
             window.state.itinerary.splice(idx, 1);
             window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
             renderItineraryUnified();
-            if (window.toast) window.toast(_T('itin.poiRemoved', '✓ Tappa rimossa'));
+            window.toast?.(_T('itin.poiRemoved', '✓ Tappa rimossa'));
           }
         }
       });
@@ -847,7 +848,7 @@ function showEmptyItineraryModal() {
         const mapBtn = document.querySelector('nav.bottom button[data-view="map"]');
         if (mapBtn) {
           mapBtn.click();
-          if (window.toast) window.toast('📍 Clicca un luogo sulla mappa per aggiungerlo');
+          window.toast?.('📍 Clicca un luogo sulla mappa per aggiungerlo');
         }
       };
     }
@@ -1109,19 +1110,19 @@ function showItineraryPOIMenu(poiId) {
         if (window.ITINERARY_VALIDATION) {
           const timeVal = window.ITINERARY_VALIDATION.validateTime(newTime);
           if (!timeVal.valid) {
-            if (window.toast) window.toast('⚠️ ' + timeVal.error);
+            window.toast?.('⚠️ ' + timeVal.error);
             return;
           }
 
           const durationVal = window.ITINERARY_VALIDATION.validateDuration(newDuration);
           if (!durationVal.valid) {
-            if (window.toast) window.toast('⚠️ ' + durationVal.error);
+            window.toast?.('⚠️ ' + durationVal.error);
             return;
           }
 
           const costVal = window.ITINERARY_VALIDATION.validateCost(newCost);
           if (!costVal.valid) {
-            if (window.toast) window.toast('⚠️ ' + costVal.error);
+            window.toast?.('⚠️ ' + costVal.error);
             return;
           }
         }
@@ -1134,7 +1135,7 @@ function showItineraryPOIMenu(poiId) {
         window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
         window.renderItineraryUnified?.();
         window.closeSheet();
-        if (window.toast) window.toast('✓ Modifiche salvate');
+        window.toast?.('✓ Modifiche salvate');
       };
     }
 
@@ -1147,7 +1148,7 @@ function showItineraryPOIMenu(poiId) {
             window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
             window.renderItineraryUnified?.();
             window.closeSheet();
-            if (window.toast) window.toast('✓ POI rimosso');
+            window.toast?.('✓ POI rimosso');
           });
       };
     }
@@ -1159,7 +1160,7 @@ function showItineraryPOIMenu(poiId) {
         window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
         window.renderItineraryUnified?.();
         window.closeSheet();
-        if (window.toast) window.toast(`✓ Spostato al Day ${targetDay + 1}`);
+        window.toast?.(`✓ Spostato al Day ${targetDay + 1}`);
       };
     });
   }, 50);

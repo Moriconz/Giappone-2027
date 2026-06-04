@@ -14,7 +14,7 @@ function openAddToItineraryWizard(poiData) {
 
   if (!poiData || !poiData.googlePlaceId) {
     console.error('[AddWizard] ❌ Invalid POI data - googlePlaceId missing');
-    if (window.toast) window.toast(_Tw('wizard.invalidPOI', '❌ Errore: POI non valido'));
+    window.toast?.(_Tw('wizard.invalidPOI', '❌ Errore: POI non valido'));
     return;
   }
 

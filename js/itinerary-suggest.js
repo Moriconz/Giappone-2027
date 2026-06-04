@@ -211,7 +211,7 @@
               isNaN(lat) ? null : lat, isNaN(lng) ? null : lng);
             if (ok) {
               window.saveState?.();
-              if (window.toast) window.toast('✅ ' + name + ' → Day ' + (dayIdx + 1));
+              window.toast?.('✅ ' + name + ' → Day ' + (dayIdx + 1));
               btn.textContent = '✓';
               btn.disabled = true;
               btn.style.opacity = '0.6';

@@ -79,7 +79,7 @@
     const label = type === 'safe' ? T('gfc.thanksSafe', 'Grazie! Riscontro GF registrato')
       : type === 'warning' ? T('gfc.thanksWarn', 'Segnalazione registrata')
       : T('gfc.thanksNote', 'Nota aggiunta');
-    if (window.toast) window.toast('✅ ' + label);
+    window.toast?.('✅ ' + label);
     return report;
   }
 

@@ -103,19 +103,19 @@
     _ensureLayer();
     const n = refresh();
     if (n === 0) {
-      if (window.toast) window.toast('⚠️ ' + T('heat.noData', 'Nessun dato GF da mostrare ancora. Apri la GF Guide per caricarli.'));
+      window.toast?.('⚠️ ' + T('heat.noData', 'Nessun dato GF da mostrare ancora. Apri la GF Guide per caricarli.'));
       return false;
     }
     heatLayer.setVisible(true);
     visible = true;
-    if (window.toast) window.toast('🔥 ' + T('heat.on', 'Heatmap GF attiva') + ` (${n})`);
+    window.toast?.('🔥 ' + T('heat.on', 'Heatmap GF attiva') + ` (${n})`);
     return true;
   }
 
   function hide() {
     if (heatLayer) heatLayer.setVisible(false);
     visible = false;
-    if (window.toast) window.toast(T('heat.off', 'Heatmap GF disattivata'));
+    window.toast?.(T('heat.off', 'Heatmap GF disattivata'));
   }
 
   function toggle() {

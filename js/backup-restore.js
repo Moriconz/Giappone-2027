@@ -61,7 +61,7 @@ function exportBackup() {
   a.click();
   setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
 
-  if (window.toast) window.toast(T('backup.exported', '📦 Backup scaricato') + ' — ' + summary);
+  window.toast?.(T('backup.exported', '📦 Backup scaricato') + ' — ' + summary);
   console.log('[Backup] Exported:', filename, summary);
 }
 
@@ -116,7 +116,7 @@ function importBackup() {
 
     window.saveState?.();
 
-    if (window.toast) window.toast(T('backup.restored', '✅ Backup ripristinato — ricarica l\'app per vedere le modifiche'));
+    window.toast?.(T('backup.restored', '✅ Backup ripristinato — ricarica l\'app per vedere le modifiche'));
 
     // Show reload prompt
     const reload = await (window.modalConfirm || confirm)(
