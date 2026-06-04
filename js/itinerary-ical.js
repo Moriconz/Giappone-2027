@@ -73,7 +73,7 @@
     if (!days.length) return null;
 
     const start = getTripStartDate();
-    const tripName = window.state?.tripProfile?.tripName || 'Giappone 2027';
+    const tripName = window.state?.tripProfile?.name || window.state?.tripProfile?.tripName || 'Giappone 2027';
     const lines = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
@@ -141,7 +141,7 @@
       const blob = new Blob([result.ics], { type: 'text/calendar;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      const tripName = (window.state?.tripProfile?.tripName || 'giappone-2027')
+      const tripName = (window.state?.tripProfile?.name || window.state?.tripProfile?.tripName || 'giappone-2027')
         .toLowerCase().replace(/[^a-z0-9]+/g, '-');
       a.href = url;
       a.download = `${tripName}-${new Date().toISOString().split('T')[0]}.ics`;
