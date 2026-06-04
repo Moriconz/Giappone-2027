@@ -142,6 +142,7 @@ Data di creazione (Date Created): ${new Date().toLocaleDateString()}
               <button onclick="showWaiterCard('${jp}')" style="flex:1;padding:8px 14px;background:linear-gradient(180deg,#FF1493,#FF69B4);color:#fff;border:2px solid #FF1493;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 0 12px rgba(255,20,147,0.3);">🗣️ Mostra al Cameriere</button>
               <button onclick="copyToClipboard('${jp}')" style="flex:1;padding:8px 14px;background:rgba(255,255,255,0.1);color:#fff;border:1.5px solid rgba(255,255,255,0.3);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;backdrop-filter:blur(10px);">📋 Copia</button>
             </div>
+            <button onclick="window.loadScript('./js/allergy-cards.js').then(() => window.openAllergyCard?.(window.I18N?.lang || 'ja'))" style="width:100%;margin-top:8px;padding:8px 14px;background:rgba(37,99,235,0.25);color:#fff;border:1.5px solid rgba(37,99,235,0.5);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;">🌐 Carta Allergie Multilingua (JA/EN/IT/ZH/KO)</button>
           </div>
         </div>
 
