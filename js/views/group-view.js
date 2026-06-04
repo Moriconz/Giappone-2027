@@ -202,7 +202,7 @@
       };
       window.saveState();
 
-      if (window.groupChat) window.groupChat.init(room);
+      window.groupChat?.init(room);
 
       window.toast(T('toast.groupConnected', '✅ Connesso a: ') + room);
       window.closeSheet();
