@@ -263,6 +263,8 @@ function renderItineraryUnified() {
   const html = `
     <div style="padding:0;display:flex;flex-direction:column;gap:24px;">
 
+      <div data-live-presence="itinerary">${(function(){ try { return window.LivePresence?.badgeHTML?.('itinerary') || ''; } catch(_){ return ''; } })()}</div>
+
       ${weatherAlertsHTML}
 
       ${(function(){ try { return window.JapanCalendarHints?.renderHintsHTML?.() || ''; } catch(_){ return ''; } })()}
@@ -411,6 +413,8 @@ function renderItineraryUnified() {
     html: document.getElementById('sheet-body')?.innerHTML?.substring(0, 100)
   });
   window.openSheet('📅 Itinerario', html);
+  // Segnala la mia presenza sull'itinerario (chi sta guardando ora)
+  try { window.LivePresence?.enter?.('itinerary'); } catch (_) {}
   setTimeout(() => {
     console.log('[DEBUG] sheetBody AFTER openSheet:', {
       exists: !!document.getElementById('sheet-body'),

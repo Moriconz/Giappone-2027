@@ -412,6 +412,11 @@ console.log('[RTDB] Loading MQTT transport...');
         if (data.payload) window.GFWishlist?.receive?.(data.payload);
         break;
 
+      // Live presence (chi sta guardando una vista) sync
+      case 'live_presence':
+        if (data.payload) window.LivePresence?.receive?.(data.payload);
+        break;
+
       // Shared GF menu photos sync
       case 'gf_menu_photo':
         if (data.payload) window.GFMenuPhotos?.receive?.(data.payload);
