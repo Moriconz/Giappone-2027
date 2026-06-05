@@ -365,6 +365,7 @@ function poiDetailHTML(p){
 
     <!-- 5b. GF CROWDSOURCE (riscontri del gruppo, auto-iniettato da gf-crowdsource.js) -->
     <div data-gf-crowd="${p.id}" data-gf-crowd-name="${(displayName||'').replace(/"/g,'&quot;')}"></div>
+    <div data-gf-menu="${p.id}" data-gf-menu-name="${(displayName||'').replace(/"/g,'&quot;')}"></div>
 
     <!-- 6. PRACTICAL INFO (hours, entry fee, duration, info chips) -->
     ${openingHoursHtml}

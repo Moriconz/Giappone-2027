@@ -412,6 +412,11 @@ console.log('[RTDB] Loading MQTT transport...');
         if (data.payload) window.GFWishlist?.receive?.(data.payload);
         break;
 
+      // Shared GF menu photos sync
+      case 'gf_menu_photo':
+        if (data.payload) window.GFMenuPhotos?.receive?.(data.payload);
+        break;
+
       // Group checklist (add/toggle/remove) sync
       case 'group_checklist':
         if (data.payload) window.GroupChecklist?.receive?.(data.payload);
