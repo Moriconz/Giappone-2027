@@ -19,6 +19,7 @@
       { label: T('menu.group', 'Gruppo'), icon: '👥', view: 'group' },
       { label: T('menu.budget', 'Budget'), icon: '💰', view: 'budget' },
       { label: T('menu.expenses', 'Spese di gruppo'), icon: '💴', view: 'group-expenses' },
+      { label: T('menu.checklist', 'Checklist del gruppo'), icon: '📋', view: 'group-checklist' },
       { label: T('menu.gallery', 'Galleria'), icon: '📸', view: 'gallery' },
       { label: T('menu.tips', 'Tips Viaggio 2027'), icon: '🌸', view: 'tips' },
       { label: T('menu.gfHeatmap', 'Heatmap GF'), icon: '🔥', view: 'gf-heatmap' },
@@ -93,6 +94,7 @@
             if (view === 'list') { window.renderListView?.(); }
             else if (view === 'gf-wishlist') { window.GFWishlist?.openPanel?.(); }
             else if (view === 'group-expenses') { window.GroupExpenses?.openPanel?.(); }
+            else if (view === 'group-checklist') { window.GroupChecklist?.openPanel?.(); }
             else if (view === 'bookings') { window.loadScript('./js/views/bookings-view.js').then(() => window.renderBookingsView?.()); }
             else if (view === 'shopping') { window.renderShoppingView?.(); }
             else if (view === 'group') { window.renderGroupView?.(); }
