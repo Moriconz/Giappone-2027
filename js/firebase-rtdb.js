@@ -412,6 +412,11 @@ console.log('[RTDB] Loading MQTT transport...');
         if (data.payload) window.GFWishlist?.receive?.(data.payload);
         break;
 
+      // Group expenses (add/remove) sync
+      case 'group_expense':
+        if (data.payload) window.GroupExpenses?.receive?.(data.payload);
+        break;
+
       // GF crowdsource reports (safe/warning/note) sync
       case 'gf_report':
         if (data.payload) window.GFCrowd?.receiveReport?.(data.payload);
