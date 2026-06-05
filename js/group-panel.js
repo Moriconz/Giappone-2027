@@ -33,8 +33,9 @@ window.groupPanel = (() => {
     const connStatus = (() => {
       const st = window.peerGPS?.getStatus?.() || 'disconnected';
       const peers = window.peerGPS?.getPeerCount?.() ?? 0;
-      if (st === 'connected') return `<span style="color:#7FFF7F;font-weight:700">🟢 Connesso</span> <span style="color:rgba(255,255,255,0.7)">· ${peers} ${peers === 1 ? 'membro' : 'membri'} online</span>`;
-      if (st === 'connecting') return `<span style="color:#FFD700;font-weight:700">🟡 Connessione in corso…</span>`;
+      const lock = window.RoomCrypto?.ready?.() ? ` <span style="color:#4ade80;font-weight:700" title="${T('group.encrypted', 'Messaggi cifrati end-to-end col codice stanza')}">🔒 ${T('group.e2ee', 'E2EE')}</span>` : '';
+      if (st === 'connected') return `<span style="color:#7FFF7F;font-weight:700">🟢 Connesso</span> <span style="color:rgba(255,255,255,0.7)">· ${peers} ${peers === 1 ? 'membro' : 'membri'} online</span>${lock}`;
+      if (st === 'connecting') return `<span style="color:#FFD700;font-weight:700">🟡 Connessione in corso…</span>${lock}`;
       return `<span style="color:#FF6B6B;font-weight:700">🔴 Non connesso</span>`;
     })();
     const membersList = members.map(m => {

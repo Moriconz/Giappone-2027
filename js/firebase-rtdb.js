@@ -46,22 +46,37 @@ console.log('[RTDB] Loading MQTT transport...');
   }
 
   // ── Broadcast generico (usato dall'esterno via window.rtdbBroadcast) ─────────
-  function rtdbBroadcast(data) {
+  // Cifra il messaggio se la chiave stanza è pronta (E2EE), altrimenti in chiaro.
+  // I chiamanti non attendono la Promise (fire-and-forget): l'ordine è preservato
+  // perché ogni seal è veloce (AES-GCM su chiave cachata).
+  async function rtdbBroadcast(data) {
     if (!isStarted || !myRoomId) return;
     const msg = { ...data, from: myName, ts: Date.now() };
-    pub(roomTopic(myRoomId), msg);
+    if (window.RoomCrypto?.ready?.()) {
+      const sealed = await window.RoomCrypto.seal(msg);
+      if (sealed) { pub(roomTopic(myRoomId), { e: sealed }); return; }
+    }
+    pub(roomTopic(myRoomId), msg); // fallback: in chiaro
   }
   window.rtdbBroadcast = rtdbBroadcast;
   window.broadcastToPeers = rtdbBroadcast; // alias used by gf-places-panel.js
 
   // ── Gestisce messaggi in arrivo ───────────────────────────────────────────────
-  function handleIncoming(raw) {
+  async function handleIncoming(raw) {
     let data;
     try { data = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch(e) {
       console.warn('[RTDB] handleIncoming parse fail:', e.message);
       return;
     }
     if (!data) return;
+    // E2EE: se il messaggio è cifrato ({ e: <base64> }), decifralo con la chiave
+    // stanza. Se non riusciamo (chiave diversa/assente) lo scartiamo. I messaggi
+    // in chiaro (senza `.e`) passano invariati → retrocompatibile.
+    if (typeof data.e === 'string') {
+      const opened = window.RoomCrypto ? await window.RoomCrypto.open(data.e) : null;
+      if (!opened) return; // non decifrabile → non per noi
+      data = opened;
+    }
     if (data.from === myName) return; // echo proprio
 
     console.log('[RTDB] ← ricevuto da', data.from, '| tipo:', data.type);
@@ -537,6 +552,10 @@ console.log('[RTDB] Loading MQTT transport...');
       myRoomId = room;
       myName   = name;
       statusCb = onStatus || (() => {});
+
+      // E2EE: deriva e cacha la chiave dal codice stanza (async, fire-and-forget).
+      // Finché non è pronta i messaggi viaggiano in chiaro (finestra di ~istanti).
+      window.RoomCrypto?.init?.(room);
       isStarted = true;
 
       window.peer.id           = `giap27_${room}_${name}`;
@@ -566,7 +585,7 @@ console.log('[RTDB] Loading MQTT transport...');
 
       mqttClient.on('message', (topic, msgBuf) => {
         const raw = msgBuf.toString();
-        handleIncoming(raw);
+        handleIncoming(raw).catch(e => console.warn('[RTDB] handleIncoming error:', e?.message));
       });
 
       mqttClient.on('error', (err) => {
