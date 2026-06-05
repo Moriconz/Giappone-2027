@@ -127,7 +127,8 @@ try {
   console.error('[Weather] Error initializing:', err);
 }
 
-// Track message count for notifications
+// Track message count for notifications (3s: le notifiche non richiedono
+// precisione al secondo; alleggerisce il main thread vs il vecchio 1s)
 let lastMessageCount = 0;
 setInterval(() => {
   try {
@@ -176,7 +177,7 @@ setInterval(() => {
   } catch (err) {
     console.warn('[Push] Message tracking error:', err);
   }
-}, 1000);
+}, 3000);
 
 // Listen for messages from SW
 navigator.serviceWorker?.addEventListener('message', (event) => {

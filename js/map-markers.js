@@ -75,7 +75,9 @@
     }
   }
 
-  setInterval(updateFakePOIList, 3000);
+  // Solo event-driven: i POI "fake" emergono durante il sync, quindi basta
+  // ricontrollare dopo ogni batch. Rimosso il polling ogni 3s che faceva
+  // centinaia di letture IndexedDB in continuo (spreco CPU/batteria).
   window.addEventListener('poi-sync-progress', () => { setTimeout(updateFakePOIList, 500); });
 
   function renderMarkers() {
