@@ -330,23 +330,15 @@ console.log('[RTDB] Loading MQTT transport...');
 
           console.log(`%c[RTDB] 🔄 Personal itinerary synced from group by ${fromMember}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
 
-          // Update personal itinerary if we're the owner
-          if (originItineraryId && window.state.itinerary) {
-            const personalItin = window.state.itinerary;
-
-            // Use CRDT merge to avoid conflicts
-            if (window.mergeGroupItinerary) {
-              const merged = window.mergeGroupItinerary(personalItin, itinerary);
-              window.state.itinerary = merged;
-            } else {
-              window.state.itinerary = itinerary.pois || [];
-            }
-
+          // Rebuild personal day-by-day itinerary from the synced group pois
+          if (originItineraryId && itinerary?.pois && window.groupPoisToItineraryByDay) {
+            window.ItinerarySnapshots?.saveAuto?.('group-sync-incoming');
+            window.state.itineraryByDay = window.groupPoisToItineraryByDay(itinerary.pois);
             window.saveState?.();
+            window.renderItineraryUnified?.();
 
-            // Notify UI
             window.dispatchEvent(new CustomEvent('personal_itinerary_synced', {
-              detail: { groupId, fromMember, itinerary: window.state.itinerary }
+              detail: { groupId, fromMember, itinerary: window.state.itineraryByDay }
             }));
 
             window.toast?.(`✅ ${fromMember} ` + T('group.toastUpdated', "ha aggiornato l'itinerario del gruppo"));

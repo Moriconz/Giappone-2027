@@ -146,7 +146,10 @@ function sharePersonalItineraryToGroup(roomId) {
   console.log('[ShareItin] Sharing personal itinerary to group:', roomId);
 
   const ibd = window.state?.itineraryByDay || {};
-  const allEntries = Object.values(ibd).flat();
+  // Flatten preserving the day index + time/duration/cost so the group itinerary
+  // round-trips back into the day-by-day personal view (see groupPoisToItineraryByDay).
+  const allEntries = [];
+  Object.keys(ibd).forEach(d => (ibd[d] || []).forEach(e => allEntries.push({ ...e, _day: Number(d) })));
   if (!allEntries.length) {
     console.warn('[ShareItin] Personal itinerary is empty');
     return;
@@ -156,7 +159,7 @@ function sharePersonalItineraryToGroup(roomId) {
   const myPeerId = window.makePeerId?.(roomId, window.state.group.myName) ||
                    `${roomId}_${window.state.group.myName}`;
 
-  // Create group itinerary from itineraryByDay (flat)
+  // Create group itinerary from itineraryByDay (flat, with day/time/duration/cost preserved)
   const groupItinerary = {
     id: itineraryId,
     roomId: roomId,
@@ -169,6 +172,10 @@ function sharePersonalItineraryToGroup(roomId) {
       notes: { value: entry.notes || '', timestamp: Date.now(), peerId: myPeerId },
       lat: entry.lat,
       lng: entry.lng,
+      day: entry._day,
+      time: entry.time || '10:00',
+      duration: entry.duration || 60,
+      cost: entry.cost || 0,
       timestamp: Date.now(),
       addedByPeerId: myPeerId,
       addedAt: Date.now()

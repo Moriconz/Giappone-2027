@@ -116,6 +116,12 @@
       notes: { value: '', timestamp: Date.now(), peerId: myPeerId },
       lat: poi.lat,
       lng: poi.lng,
+      // Position fields so the POI round-trips into the day-by-day personal view.
+      // New group POIs default to the last existing day (or day 0).
+      day: Number.isInteger(poi.day) ? poi.day : itinerary.pois.reduce((m, p) => Math.max(m, Number.isInteger(p.day) ? p.day : 0), 0),
+      time: poi.time || '10:00',
+      duration: poi.duration || 60,
+      cost: poi.cost || 0,
       timestamp: Date.now(),
       addedByPeerId: myPeerId,
       addedAt: Date.now()

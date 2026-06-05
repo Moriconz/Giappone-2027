@@ -201,27 +201,66 @@
   }
 
   /**
-   * Sync group itinerary back to personal (call this when group members edit)
+   * Convert a group itinerary's pois (CRDT-ish, with day/time/duration/cost)
+   * back into the personal `itineraryByDay` shape ({ dayIndex: [entry, …] }).
+   * Skips soft-deleted POIs. Used by the group→personal sync-back.
+   */
+  function groupPoisToItineraryByDay(pois) {
+    const ibd = {};
+    (pois || []).forEach(poi => {
+      if (poi._deleted || poi.deletionTimestamp) return; // skip soft-deleted
+      const day = Number.isInteger(poi.day) ? poi.day : 0;
+      if (!ibd[day]) ibd[day] = [];
+      const val = (f) => (f && typeof f === 'object' && 'value' in f) ? f.value : f;
+      ibd[day].push({
+        poi_id: poi.googlePlaceId || poi.poi_id || poi.id,
+        poi_name: val(poi.name) || poi.poi_name || 'Luogo',
+        time: poi.time || '10:00',
+        duration: poi.duration || 60,
+        cost: poi.cost || 0,
+        notes: val(poi.notes) || '',
+        tag: val(poi.category) || poi.tag || 'altro',
+        lat: poi.lat ?? null,
+        lng: poi.lng ?? null,
+        status: 'proposed',
+        addedBy: poi.addedByPeerId || 'Gruppo',
+        lastModified: poi.timestamp || Date.now()
+      });
+    });
+    // Sort each day by time for a clean view
+    Object.keys(ibd).forEach(d => ibd[d].sort((a, b) => (a.time || '').localeCompare(b.time || '')));
+    return ibd;
+  }
+  window.groupPoisToItineraryByDay = groupPoisToItineraryByDay;
+
+  /**
+   * Sync group itinerary back to personal (call this when group members edit).
+   * Rebuilds `state.itineraryByDay` from the group pois so the owner sees the
+   * group's additions/edits in their own day-by-day view.
    */
   function syncGroupToPersonal(originItineraryId, groupId) {
     if (originItineraryId !== 'personal_itinerary') return; // Only sync if origin is personal
 
-    const groupItinId = `group_${groupId}_shared`;
-    const groupItin = window.state.groupItineraries?.[groupItinId];
+    // Find the group itinerary robustly: there are two historical id schemes
+    // (`group_${groupId}_shared` and `group_itin_${roomId}`). Try both, then
+    // fall back to any group itinerary owned by me in the current room.
+    const gis = window.state.groupItineraries || {};
+    const roomId = window.state?.group?.roomId;
+    const myName = window.state?.group?.myName;
+    let groupItin = gis[`group_${groupId}_shared`]
+      || gis[`group_itin_${roomId}`]
+      || Object.values(gis).find(g => g && Array.isArray(g.pois) && (g.roomId === roomId) && (g.createdBy === myName || g.owner === myName));
     if (!groupItin || !groupItin.pois) return;
 
     console.log('[Sync] Syncing group itinerary back to personal from group:', groupId);
 
-    // Merge group changes into personal itinerary using CRDT
-    if (window.mergeGroupItinerary) {
-      const merged = window.mergeGroupItinerary(window.state.itinerary, groupItin);
-      window.state.itinerary = merged;
-    } else {
-      window.state.itinerary = JSON.parse(JSON.stringify(groupItin.pois));
-    }
+    // Auto-snapshot before overwriting the personal itinerary (recoverable)
+    window.ItinerarySnapshots?.saveAuto?.('group-sync-' + groupId);
 
+    window.state.itineraryByDay = groupPoisToItineraryByDay(groupItin.pois);
     window.saveState?.();
-    console.log('[Sync] ✅ Synced group changes back to personal itinerary');
+    window.renderItineraryUnified?.();
+    console.log('[Sync] ✅ Synced group changes back to personal day-by-day itinerary');
 
     // Notify UI
     window.dispatchEvent(new CustomEvent('personal_itinerary_updated', {
