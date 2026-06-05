@@ -395,6 +395,7 @@ function poiDetailHTML(p){
     <!-- 10. MAIN CTA: ADD TO ITINERARY (prominent, ruggine saturo) -->
     <div style="padding:0 16px;margin:16px 0">
       <button id="add-to-itinerary-btn" class="btn-cta">${window.t ? window.t('poi.addToItinerary') : "📅 Aggiungi all'itinerario"}</button>
+      <button id="propose-to-group-btn" style="width:100%;margin-top:8px;padding:12px;background:rgba(74,222,128,0.15);border:1.5px solid rgba(74,222,128,0.4);border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">🗳️ ${window.t ? window.t('poi.proposeGroup', 'Proponi al gruppo') : 'Proponi al gruppo'}</button>
     </div>
 
     <!-- 11. PERSONAL NOTES (collapsible by default) -->
@@ -682,6 +683,17 @@ function openPOI(id){
     }
     // ===== SETUP ADD-TO-ITINERARY BUTTON (MOVED INTO ASYNC BLOCK) =====
     setTimeout(() => {
+      // "Proponi al gruppo" → aggiunge il locale alla wishlist GF condivisa
+      const proposeBtn = document.getElementById('propose-to-group-btn');
+      if (proposeBtn) {
+        proposeBtn.onclick = () => {
+          window.GFWishlist?.propose?.({
+            id: p.id, name: window.getPoiDisplayName?.(p) || p.name,
+            city: p.city, lat: p.lat, lng: p.lng, gf: p.gf
+          });
+        };
+      }
+
       const addToItineraryBtn = document.getElementById('add-to-itinerary-btn');
       console.log('[WIZARD] add-to-itinerary button found:', !!addToItineraryBtn);
 

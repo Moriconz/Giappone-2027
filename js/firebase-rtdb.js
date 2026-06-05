@@ -407,6 +407,16 @@ console.log('[RTDB] Loading MQTT transport...');
         window.onPeerMessage?.(data);
         break;
 
+      // GF group wishlist (propose/vote/remove) sync
+      case 'gf_wishlist':
+        if (data.payload) window.GFWishlist?.receive?.(data.payload);
+        break;
+
+      // GF crowdsource reports (safe/warning/note) sync
+      case 'gf_report':
+        if (data.payload) window.GFCrowd?.receiveReport?.(data.payload);
+        break;
+
       // GF suggestion sync
       case 'gf_suggestion_add':
         if (data.suggestion && window.GFSuggestionsDB) {

@@ -13,6 +13,7 @@
   function showMenuDrawer() {
     const T = window.t || ((k, f) => f || k);
     const menuItems = [
+      { label: T('menu.wishlist', 'Wishlist GF del gruppo'), icon: '🗳️', view: 'gf-wishlist', style: 'color: #4ade80; background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.3);' },
       { label: T('menu.bookings', 'Prenota'), icon: '📅', view: 'bookings' },
       { label: T('menu.shopping', 'Shopping'), icon: '🛍️', view: 'shopping' },
       { label: T('menu.group', 'Gruppo'), icon: '👥', view: 'group' },
@@ -89,6 +90,7 @@
           } else {
             // Fallback: trigger view directly
             if (view === 'list') { window.renderListView?.(); }
+            else if (view === 'gf-wishlist') { window.GFWishlist?.openPanel?.(); }
             else if (view === 'bookings') { window.loadScript('./js/views/bookings-view.js').then(() => window.renderBookingsView?.()); }
             else if (view === 'shopping') { window.renderShoppingView?.(); }
             else if (view === 'group') { window.renderGroupView?.(); }
