@@ -226,7 +226,7 @@ function showOnboarding() {
             color: rgba(255,165,100,0.8);
             letter-spacing: 0.5px;
             text-transform: uppercase;
-          ">Passo 1 di 5</div>
+          ">${_To('ob.stepOf','Passo')} 1 ${_To('ob.of','di')} 5</div>
           <div style="
             height: 1px;
             flex: 1;
@@ -267,11 +267,11 @@ function showOnboarding() {
                 color: rgba(255,255,255,0.7);
                 margin-bottom: 10px;
                 letter-spacing: 0.3px;
-              ">Nome del viaggio</label>
+              ">${_To('ob.tripName','Nome del viaggio')}</label>
               <input
                 type="text"
                 name="tripName"
-                placeholder="Es: Giappone 2027"
+                placeholder="${_To('ob.tripNamePh','Es: Giappone 2027')}"
                 class="form-input"
                 value="Giappone 2027"
                 style="
@@ -299,11 +299,11 @@ function showOnboarding() {
                 color: rgba(255,255,255,0.7);
                 margin-bottom: 10px;
                 letter-spacing: 0.3px;
-              ">Quanti giorni?</label>
+              ">${_To('ob.daysLabel','Quanti giorni?')}</label>
               <input
                 type="number"
                 name="days"
-                placeholder="Es: 8"
+                placeholder="${_To('ob.daysPh','Es: 8')}"
                 class="form-input"
                 min="1"
                 max="30"
@@ -333,7 +333,7 @@ function showOnboarding() {
                 color: rgba(255,255,255,0.7);
                 margin-bottom: 10px;
                 letter-spacing: 0.3px;
-              ">Data di inizio</label>
+              ">${_To('ob.startDateLabel','Data di inizio')}</label>
               <input
                 type="date"
                 name="startDate"
@@ -367,7 +367,7 @@ function showOnboarding() {
               color: rgba(255,255,255,0.7);
               margin-bottom: 16px;
               letter-spacing: 0.3px;
-            ">Con chi viaggi?</label>
+            ">${_To('ob.groupSizeLabel','Con chi viaggi?')}</label>
             <div style="display: flex; flex-direction: column; gap: 12px;">
               <label style="
                 display: flex;
@@ -393,7 +393,7 @@ function showOnboarding() {
                     accent-color: var(--m-accent);
                   "
                 >
-                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Solo</span>
+                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">${_To('ob.solo','Solo')}</span>
               </label>
 
               <label style="
@@ -420,7 +420,7 @@ function showOnboarding() {
                     accent-color: var(--m-accent);
                   "
                 >
-                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Partner/Coppia</span>
+                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">${_To('ob.couple','Partner/Coppia')}</span>
               </label>
 
               <label style="
@@ -448,7 +448,7 @@ function showOnboarding() {
                     accent-color: var(--m-accent);
                   "
                 >
-                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Gruppo (3+)</span>
+                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">${_To('ob.group3','Gruppo (3+)')}</span>
               </label>
             </div>
           </div>
@@ -462,7 +462,7 @@ function showOnboarding() {
               color: rgba(255,255,255,0.7);
               margin-bottom: 16px;
               letter-spacing: 0.3px;
-            ">Cosa ti interessa? (scegli almeno 1)</label>
+            ">${_To('ob.interestsLabel','Cosa ti interessa? (scegli almeno 1)')}</label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
               ${['Cultura', 'Food', 'Relax', 'Shopping', 'Avventura', 'Natura'].map(interest => `
                 <label style="
@@ -489,7 +489,7 @@ function showOnboarding() {
                       accent-color: var(--m-accent);
                     "
                   >
-                  <span style="font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 500;">${interest}</span>
+                  <span style="font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 500;">${_To('ob.int.'+interest.toLowerCase(), interest)}</span>
                 </label>
               `).join('')}
             </div>
@@ -504,7 +504,7 @@ function showOnboarding() {
               color: rgba(255,255,255,0.7);
               margin-bottom: 16px;
               letter-spacing: 0.3px;
-            ">Vincoli alimentari</label>
+            ">${_To('ob.dietLabel','Vincoli alimentari')}</label>
             <div style="display: flex; flex-direction: column; gap: 12px;">
               <label style="
                 display: flex;
@@ -531,7 +531,7 @@ function showOnboarding() {
                     accent-color: var(--m-accent);
                   "
                 >
-                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Nessuno</span>
+                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">${_To('ob.dietNone','Nessuno')}</span>
               </label>
 
               <label style="
@@ -558,7 +558,7 @@ function showOnboarding() {
                     accent-color: var(--m-accent);
                   "
                 >
-                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Vegetariano</span>
+                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">${_To('ob.dietVeg','Vegetariano')}</span>
               </label>
 
               <label style="
@@ -585,7 +585,7 @@ function showOnboarding() {
                     accent-color: var(--m-accent);
                   "
                 >
-                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">Vegano</span>
+                <span style="color: rgba(255,255,255,0.85); font-size: 15px; font-weight: 500;">${_To('ob.dietVegan','Vegano')}</span>
               </label>
 
               <label style="
@@ -627,11 +627,11 @@ function showOnboarding() {
                 color: rgba(255,255,255,0.7);
                 margin-bottom: 10px;
                 letter-spacing: 0.3px;
-              ">Budget giornaliero (€)</label>
+              ">${_To('ob.budgetLabel','Budget giornaliero (€)')}</label>
               <input
                 type="number"
                 name="budget"
-                placeholder="Es: 50"
+                placeholder="${_To('ob.budgetPh','Es: 50')}"
                 class="form-input"
                 min="10"
                 max="500"
@@ -659,7 +659,7 @@ function showOnboarding() {
               border: 1px solid rgba(255,165,100,0.2);
               border-radius: 10px;
             ">
-              <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 4px;">Budget totale</div>
+              <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 4px;">${_To('ob.budgetTotal','Budget totale')}</div>
               <div style="font-size: 24px; color: var(--m-accent); font-weight: 700;">€<span id="budget-total">400</span></div>
             </div>
           </div>
