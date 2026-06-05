@@ -185,6 +185,17 @@ window.groupChat = (() => {
     console.log('[GroupChat] ✓ Message normalized:', normalizedMessage);
 
     chatHistory.messages = chatHistory.messages || [];
+    // Dedup: MQTT echo, hub relay and MQTT+P2P dual-send can deliver the same
+    // message multiple times. Skip if we already have this id (or same
+    // from+timestamp+text when id is missing from a legacy peer).
+    const isDup = chatHistory.messages.some(m =>
+      (normalizedMessage.id && m.id === normalizedMessage.id) ||
+      (m.from === normalizedMessage.from && m.timestamp === normalizedMessage.timestamp && m.text === normalizedMessage.text)
+    );
+    if (isDup) {
+      console.log('[GroupChat] Duplicate message ignored:', normalizedMessage.id || normalizedMessage.text);
+      return;
+    }
     chatHistory.messages.push(normalizedMessage);
     console.log('[GroupChat] ✓ Message added to history. Total:', chatHistory.messages.length);
     saveChat(group.roomId);

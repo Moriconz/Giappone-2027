@@ -629,9 +629,11 @@ console.log('[RTDB] Loading MQTT transport...');
     },
 
     broadcastItineraryShare(itineraryId, groupId) {
-      // Share a personal itinerary with a group
-      const personalItin = window.state?.itinerary;
-      if (!personalItin || !groupId) return;
+      // Share the personal itinerary with a group.
+      // Source: itineraryByDay (flattened) — state.itinerary is the legacy
+      // empty array and must NOT be used here.
+      const personalItin = Object.values(window.state?.itineraryByDay || {}).flat();
+      if (!personalItin.length || !groupId) return;
 
       rtdbBroadcast({
         type: 'itinerary_share',
