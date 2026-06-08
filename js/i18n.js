@@ -8,7 +8,7 @@
 
   const DICT = {
     it: {
-      'header.brand': '🌸 SafeEats',
+      'header.brand': '🧭 Tabi',
       'nav.map': 'Mappa', 'nav.itinerary': 'Itinerario', 'nav.gf': 'GF Guide', 'nav.menu': 'Menu',
       'banner.offline': '📶 Offline — dati in cache',
       'weather.more': 'altro', 'weather.title': 'Previsioni Meteo', 'weather.cached': '📍 Dati in cache',
@@ -141,7 +141,7 @@
       'gfp.synced': '🔄 Posti GF sincronizzati dal peer'
     },
     en: {
-      'header.brand': '🌸 SafeEats',
+      'header.brand': '🧭 Tabi',
       'nav.map': 'Map', 'nav.itinerary': 'Itinerary', 'nav.gf': 'GF Guide', 'nav.menu': 'Menu',
       'banner.offline': '📶 Offline — cached data',
       'weather.more': 'more', 'weather.title': 'Weather Forecast', 'weather.cached': '📍 Cached data',
@@ -274,7 +274,7 @@
       'gfp.synced': '🔄 GF places synced from peer'
     },
     ja: {
-      'header.brand': '🌸 SafeEats',
+      'header.brand': '🧭 Tabi',
       'nav.map': '地図', 'nav.itinerary': '旅程', 'nav.gf': 'GFガイド', 'nav.menu': 'メニュー',
       'banner.offline': '📶 オフライン — キャッシュ',
       'weather.more': '詳細', 'weather.title': '天気予報', 'weather.cached': '📍 キャッシュ',

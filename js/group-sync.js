@@ -14,7 +14,7 @@
 const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
 
 const GROUP_SYNC = {
-  CHANNEL_NAME: 'safeeats-sync',
+  CHANNEL_NAME: 'tabi-sync',
   channel: null,
 
   /**

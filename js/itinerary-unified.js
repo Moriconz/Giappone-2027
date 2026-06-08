@@ -527,7 +527,7 @@ window.handleExportHTML = function() {
         <strong>Rimasto:</strong> ¥${(tripProfile.budget_total || 500000) - (window.ITINERARY?.calculateBudgetSpent?.() || 0)}
       </div>
       <div class="footer">
-        <p>Generato da SafeEats Giappone 2027</p>
+        <p>Generato da Tabi Giappone 2027</p>
       </div>
     </body>
     </html>

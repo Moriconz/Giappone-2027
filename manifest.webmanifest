@@ -1,6 +1,6 @@
 {
-  "name": "SafeEats - Giappone 2027",
-  "short_name": "SafeEats",
+  "name": "Tabi - Giappone 2027",
+  "short_name": "Tabi",
   "description": "Travel companion - mappa interattiva, gluten-free, itinerario, offline",
   "start_url": "./index.html",
   "scope": "./",

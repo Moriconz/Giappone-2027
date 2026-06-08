@@ -110,7 +110,7 @@ Data di creazione (Date Created): ${new Date().toLocaleDateString()}
     const blob = new Blob([cardText], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'SafeEats-Medical-Card-' + new Date().toISOString().split('T')[0] + '.txt';
+    link.download = 'Tabi-Medical-Card-' + new Date().toISOString().split('T')[0] + '.txt';
     link.click();
     _toast(T('sos.cardDownloaded', '✅ Tessera medica scaricata'));
   }
