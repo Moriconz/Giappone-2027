@@ -6,7 +6,7 @@
  * ✓ Offline-first strategy
  */
 
-const CACHE_NAME = 'giappone-2027-v7';
+const CACHE_NAME = 'giappone-2027-v8';
 const CACHE_API = 'giappone-2027-api-v1';
 const CACHE_IMG = 'giappone-2027-img-v1';
 const OFFLINE_URL = '../index.html';
@@ -30,7 +30,10 @@ const PREDICTIVE_PREFETCH = [
 
 // Install with predictive prefetching
 self.addEventListener('install', (event) => {
-  console.log('[SW] 📦 Installing Service Worker v7...');
+  console.log('[SW] 📦 Installing Service Worker v8...');
+  // Attiva subito la nuova versione (no attesa): con network-first la pagina
+  // prende comunque sempre l'ultima versione online, quindi è sicuro.
+  self.skipWaiting();
   event.waitUntil(
     (async () => {
       try {
@@ -118,10 +121,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets (HTML, CSS, JS) — Cache-first with network fallback
+  // App shell (HTML, CSS, JS, manifest) — NETWORK-FIRST.
+  // Garantisce che online si veda SEMPRE l'ultima versione (no UI/codice stale);
+  // la cache è solo il fallback offline. Evita il classico "ho aggiornato ma
+  // vedo ancora la versione vecchia" senza dover bumpare la cache ogni volta.
   if (url.match(/\.(html|css|js|json|webmanifest)$/i) ||
       url.startsWith(self.location.origin)) {
-    event.respondWith(cacheFirstStrategy(event.request, CACHE_NAME));
+    event.respondWith(networkFirstStrategy(event.request, CACHE_NAME));
     return;
   }
 });
