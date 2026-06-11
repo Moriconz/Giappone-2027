@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Debug SafeEats List</title>
+  <style>
+    body { background: #1a1a1a; color: #fff; font-family: monospace; padding: 20px; }
+    .poi { background: #333; padding: 10px; margin: 5px 0; border-radius: 4px; }
+    .poi.bad { background: #553333; }
+    .field { margin: 3px 0; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h2>SafeEats POI Debug Report</h2>
+  <div id="report"></div>
+
+  <script>
+    // Simula caricamento da IndexedDB (o mock)
+    async function debugPoiData() {
+      // Test: controlla se la cache ha dati
+      if (!window.GooglePlacesCache) {
+        document.getElementById('report').innerHTML = '<p style="color:red">❌ GooglePlacesCache non trovato. Carica index.html prima.</p>';
+        return;
+      }
+
+      const allPois = await window.GooglePlacesCache.getAllCached();
+      console.log('Total POIs:', allPois.length);
+
+      let report = `<p>Total POIs: ${allPois.length}</p>`;
+      let missingName = 0;
+      let missingSearchCity = 0;
+      let sampleTokyo = [];
+
+      allPois.forEach((p, idx) => {
+        const displayName = (p.name_en || p.name || p.bestname || '(no name)').trim();
+        const hasName = displayName && displayName !== '(no name)';
+        const hasSearchCity = (p.searchCity || '').trim().length > 0;
+        const isTokyo = (p.searchCity || '').toLowerCase().includes('tokyo');
+
+        if (!hasName) missingName++;
+        if (!hasSearchCity) missingSearchCity++;
+        if (isTokyo && sampleTokyo.length < 3) {
+          sampleTokyo.push({
+            name: displayName,
+            searchCity: p.searchCity,
+            cat: p.cat,
+            lat: p.lat,
+            lng: p.lng
+          });
+        }
+      });
+
+      report += `
+        <p>Missing name: <strong style="color: ${missingName > 0 ? 'red' : 'green'}">${missingName}</strong></p>
+        <p>Missing searchCity: <strong style="color: ${missingSearchCity > 0 ? 'red' : 'green'}">${missingSearchCity}</strong></p>
+        <h3>Sample Tokyo POIs:</h3>
+        ${sampleTokyo.map(p => `
+          <div class="poi ${!p.name || p.name === '(no name)' ? 'bad' : ''}">
+            <div class="field">Name: ${p.name}</div>
+            <div class="field">SearchCity: ${p.searchCity || '(missing)'}</div>
+            <div class="field">Cat: ${p.cat}</div>
+            <div class="field">Coords: ${p.lat}, ${p.lng}</div>
+          </div>
+        `).join('')}
+      `;
+
+      document.getElementById('report').innerHTML = report;
+    }
+
+    // Carica in ritardo per permettere al DOM di inizializzare
+    setTimeout(debugPoiData, 2000);
+  </script>
+</body>
+</html>

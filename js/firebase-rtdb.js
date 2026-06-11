@@ -12,7 +12,15 @@ console.log('[RTDB] Loading MQTT transport...');
 
   const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
 
-  const MQTT_BROKER  = 'wss://broker.emqx.io:8084/mqtt';
+  // Broker pubblici, in ordine di preferenza. Tutti i client usano la stessa
+  // lista: se il primo è giù per tutti, tutti convergono sul secondo, ecc.
+  // (Se è giù solo per alcuni c'è una finestra di split — accettato, app tra amici.)
+  const MQTT_BROKERS = [
+    'wss://broker.emqx.io:8084/mqtt',
+    'wss://broker.hivemq.com:8884/mqtt',
+    'wss://test.mosquitto.org:8081/mqtt',
+  ];
+  const CONNECT_GRACE_MS = 12000;       // tempo max per connettersi prima del broker successivo
   const TOPIC_PFX    = 'giap2027v2/';   // prefisso topic MQTT
   const HB_INTERVAL  = 20000;           // ms tra heartbeat (20s)
 
@@ -564,42 +572,60 @@ console.log('[RTDB] Loading MQTT transport...');
       statusCb('waiting', 0);
       console.log('[RTDB] Connessione MQTT a stanza:', room, '| utente:', name);
 
-      // ── Connetti al broker MQTT ───────────────────────────────────────────────
-      const clientId = 'giap27_' + Math.random().toString(16).substring(2, 10);
-      mqttClient = mqtt.connect(MQTT_BROKER, {
-        clientId,
-        clean    : true,
-        reconnectPeriod: 3000,
-        connectTimeout : 10000,
-      });
+      // ── Connetti al broker MQTT (con fallback automatico tra broker) ─────────
+      let brokerIdx = 0;
 
-      mqttClient.on('connect', () => {
-        console.log('[RTDB] ✅ MQTT connesso al broker | stanza:', room);
-        mqttClient.subscribe(roomTopic(room), { qos: 0 }, (err) => {
-          if (err) { console.error('[RTDB] subscribe error:', err.message); return; }
-          console.log('[RTDB] ✅ Iscritto a topic:', roomTopic(room));
-          // Annuncia subito la presenza
-          pub(roomTopic(room), { type: 'presence', from: name, ts: Date.now() });
+      const connectBroker = () => {
+        const brokerUrl = MQTT_BROKERS[brokerIdx % MQTT_BROKERS.length];
+        console.log('[RTDB] Connessione a broker:', brokerUrl);
+        const clientId = 'giap27_' + Math.random().toString(16).substring(2, 10);
+        mqttClient = mqtt.connect(brokerUrl, {
+          clientId,
+          clean    : true,
+          reconnectPeriod: 3000,
+          connectTimeout : 10000,
         });
-      });
 
-      mqttClient.on('message', (topic, msgBuf) => {
-        const raw = msgBuf.toString();
-        handleIncoming(raw).catch(e => console.warn('[RTDB] handleIncoming error:', e?.message));
-      });
+        // Se entro CONNECT_GRACE_MS non siamo connessi → prova il broker successivo
+        const graceTimer = setTimeout(() => {
+          if (!isStarted || mqttClient?.connected) return;
+          console.warn('[RTDB] ⏱️ Broker irraggiungibile, provo il successivo:', brokerUrl);
+          try { mqttClient.end(true); } catch (e) {}
+          brokerIdx++;
+          connectBroker();
+        }, CONNECT_GRACE_MS);
 
-      mqttClient.on('error', (err) => {
-        console.error('[RTDB] ❌ MQTT error:', err.message);
-      });
+        mqttClient.on('connect', () => {
+          clearTimeout(graceTimer);
+          console.log('[RTDB] ✅ MQTT connesso a', brokerUrl, '| stanza:', room);
+          mqttClient.subscribe(roomTopic(room), { qos: 0 }, (err) => {
+            if (err) { console.error('[RTDB] subscribe error:', err.message); return; }
+            console.log('[RTDB] ✅ Iscritto a topic:', roomTopic(room));
+            // Annuncia subito la presenza
+            pub(roomTopic(room), { type: 'presence', from: name, ts: Date.now() });
+          });
+        });
 
-      mqttClient.on('reconnect', () => {
-        console.log('[RTDB] MQTT reconnecting...');
-      });
+        mqttClient.on('message', (topic, msgBuf) => {
+          const raw = msgBuf.toString();
+          handleIncoming(raw).catch(e => console.warn('[RTDB] handleIncoming error:', e?.message));
+        });
 
-      mqttClient.on('offline', () => {
-        console.warn('[RTDB] MQTT offline');
-        statusCb('waiting', onlineCount);
-      });
+        mqttClient.on('error', (err) => {
+          console.error('[RTDB] ❌ MQTT error:', err.message);
+        });
+
+        mqttClient.on('reconnect', () => {
+          console.log('[RTDB] MQTT reconnecting...');
+        });
+
+        mqttClient.on('offline', () => {
+          console.warn('[RTDB] MQTT offline');
+          statusCb('waiting', onlineCount);
+        });
+      };
+
+      connectBroker();
 
       // ── Heartbeat presenza ogni 20s ──────────────────────────────────────────
       hbTimer = setInterval(() => {

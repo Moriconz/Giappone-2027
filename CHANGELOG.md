@@ -1,6 +1,21 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.2 — Chunk Parts + Group Panel + Chat (Attuale)
+## v3.3 — Fix strutturali + Timeline, Ricerca globale, Risparmio batteria (2026-06-11, Attuale)
+
+### ✅ Aggiunte
+- **🗓️ Timeline viaggio** (`js/views/timeline-view.js`, lazy) — panoramica verticale multi-giorno con tappe in ordine orario, date reali da `tripProfile.startDate`, click → apre il POI. Voce nel menu.
+- **🔍 Ricerca globale** (`js/global-search.js`, lazy) — cerca tra POI caricati e tappe itinerario; bottone 🔍 in header + voce menu.
+- **🔋 Risparmio batteria** (`js/battery-saver.js` + CSS) — toggle dal menu: disattiva blur/animazioni/ombre (GPU), preferenza persistita.
+- **MQTT broker fallback** (`firebase-rtdb.js`) — se broker.emqx.io è irraggiungibile entro 12s, passa automaticamente a HiveMQ → Mosquitto.
+- **Icone PWA reali** — torii + sole rosso (192/512 + varianti maskable nel manifest); prima erano placeholder da 300B.
+
+### 🔧 Fix
+- `index.html`: rimossi 2 `</main>` orfani (HTML non valido) → ora un unico `<main>` corretto; rimosso meta `viewport-fit` non standard; CSP `<meta>` allineata a `vercel.json`.
+- `sw.js`: rimosso prefetch di `../js/sw.js` (404), path `../` → `./`, tutti i CSS nelle risorse critiche, cache v9.
+- **Performance boot**: `defer` su tutti gli 89 script esterni (prima bloccavano il parse: ~1.1MB).
+- i18n: +16 chiavi (it/en/ja) per le nuove feature, lint OK.
+
+## v3.2 — Chunk Parts + Group Panel + Chat
 
 ### ✅ Aggiunte
 

@@ -8,6 +8,10 @@
 
   const DICT = {
     it: {
+      'menu.timeline': 'Timeline viaggio', 'menu.search': 'Cerca ovunque', 'menu.battery': 'Risparmio batteria',
+      'tl.title': '🗓️ Timeline viaggio', 'tl.empty': 'Nessuna tappa in itinerario. Aggiungi tappe dai POI sulla mappa!', 'tl.day': 'Giorno', 'tl.stops': 'tappe', 'tl.min': 'min', 'tl.unknown': 'Tappa',
+      'gs.placeholder': 'Cerca luoghi, ristoranti GF, tappe…', 'gs.typeMore': 'Digita almeno 2 caratteri…', 'gs.noResults': 'Nessun risultato', 'gs.pois': 'Luoghi', 'gs.itinerary': 'Itinerario',
+      'batt.on': '🔋 Risparmio batteria ATTIVO — effetti grafici ridotti', 'batt.off': '🔋 Risparmio batteria disattivato',
       'header.brand': '🧭 Tabi',
       'nav.map': 'Mappa', 'nav.itinerary': 'Itinerario', 'nav.gf': 'GF Guide', 'nav.menu': 'Menu',
       'banner.offline': '📶 Offline — dati in cache',
@@ -141,6 +145,10 @@
       'gfp.synced': '🔄 Posti GF sincronizzati dal peer'
     },
     en: {
+      'menu.timeline': 'Trip timeline', 'menu.search': 'Search everywhere', 'menu.battery': 'Battery saver',
+      'tl.title': '🗓️ Trip timeline', 'tl.empty': 'No stops in your itinerary. Add stops from POIs on the map!', 'tl.day': 'Day', 'tl.stops': 'stops', 'tl.min': 'min', 'tl.unknown': 'Stop',
+      'gs.placeholder': 'Search places, GF restaurants, stops…', 'gs.typeMore': 'Type at least 2 characters…', 'gs.noResults': 'No results', 'gs.pois': 'Places', 'gs.itinerary': 'Itinerary',
+      'batt.on': '🔋 Battery saver ON — visual effects reduced', 'batt.off': '🔋 Battery saver off',
       'header.brand': '🧭 Tabi',
       'nav.map': 'Map', 'nav.itinerary': 'Itinerary', 'nav.gf': 'GF Guide', 'nav.menu': 'Menu',
       'banner.offline': '📶 Offline — cached data',
@@ -274,6 +282,10 @@
       'gfp.synced': '🔄 GF places synced from peer'
     },
     ja: {
+      'menu.timeline': '旅のタイムライン', 'menu.search': '全体検索', 'menu.battery': 'バッテリーセーバー',
+      'tl.title': '🗓️ 旅のタイムライン', 'tl.empty': '旅程にまだスポットがありません。地図のPOIから追加してください！', 'tl.day': '日目', 'tl.stops': 'か所', 'tl.min': '分', 'tl.unknown': 'スポット',
+      'gs.placeholder': '場所・GFレストラン・旅程を検索…', 'gs.typeMore': '2文字以上入力してください…', 'gs.noResults': '結果なし', 'gs.pois': '場所', 'gs.itinerary': '旅程',
+      'batt.on': '🔋 バッテリーセーバーON — 視覚効果を削減', 'batt.off': '🔋 バッテリーセーバーOFF',
       'header.brand': '🧭 Tabi',
       'nav.map': '地図', 'nav.itinerary': '旅程', 'nav.gf': 'GFガイド', 'nav.menu': 'メニュー',
       'banner.offline': '📶 オフライン — キャッシュ',

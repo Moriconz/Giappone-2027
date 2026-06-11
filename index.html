@@ -4,17 +4,17 @@
 <meta charset="UTF-8" />
 <!-- Content Security Policy: 'unsafe-inline' necessario per gli onclick/style inline diffusi.
      connect/img permissivi (https:/wss:) per Google Places, open-meteo, Nominatim, broker MQTT, foto. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://vercel-analytics.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'; base-uri 'self'; form-action 'self'" />
+<!-- NB: tenere ALLINEATA alla CSP in vercel.json (questa serve per hosting statici senza header) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://vercel-analytics.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'; base-uri 'self'; form-action 'self'" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5, user-scalable=yes" />
-<meta name="viewport-fit" content="cover" />
 <!-- Debug log gating: silence console.log/debug/info unless localStorage.DEBUG='1' or ?debug -->
 <script>
 (function(){try{var on=location.search.indexOf('debug')>-1||localStorage.getItem('DEBUG')==='1';window.DEBUG=on;if(!on){var noop=function(){};['log','debug','info','trace'].forEach(function(m){console[m]=noop;});}}catch(e){}})();
 </script>
 <!-- Error collector locale (cattura errori di boot, nessun invio esterno) -->
-<script src="./js/error-collector.js"></script>
+<script defer src="./js/error-collector.js"></script>
 <!-- Quota guard: primo script JS — intercetta fetch() prima di tutti gli altri moduli -->
-<script src="./js/api-quota.js"></script>
+<script defer src="./js/api-quota.js"></script>
 <!-- 2026 Core Web Vitals Optimization -->
 <meta name="supported-color-schemes" content="light dark" />
 <meta name="color-scheme" content="dark" />
@@ -52,37 +52,38 @@
 <!-- ============================================================================ -->
 <!-- EARLY INITIALIZATION — PWA Install (supports all browsers) -->
 <!-- ============================================================================ -->
-<script src="./js/app-boot.js"></script>
+<script defer src="./js/app-boot.js"></script>
 <!-- ============================================================================ -->
 <!-- CDN DEPENDENCIES — All external scripts -->
 <!-- ============================================================================ -->
-<script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
 <!-- P2P via MQTT (broker.emqx.io) — zero config, nessun limite di messaggi -->
-<script src="https://unpkg.com/mqtt@5.3.4/dist/mqtt.min.js"></script>
+<script defer src="https://unpkg.com/mqtt@5.3.4/dist/mqtt.min.js"></script>
 <!-- TensorFlow.js + MobileNet (~1.5MB) are lazy-loaded on first use in js/features-ai.js -->
 
 <!-- ============================================================================ -->
 <!-- APP MODULES — Phase 1: load order: encryption → config → state → features    -->
 <!-- ============================================================================ -->
-<script src="js/encryption.js"></script>
-<script src="js/config.js"></script>
+<script defer src="js/encryption.js"></script>
+<script defer src="js/config.js"></script>
 <!-- REMOVED: poi-loader.js, pois_dataset.js (using Google Places instead) -->
-<script src="js/state.js"></script>
-<script src="js/i18n.js"></script>
-<script src="js/ui-helpers.js"></script>
-<script src="js/backup-restore.js"></script>
-<script src="js/features-ai.js"></script>
-<script src="js/features-gps.js"></script>
+<script defer src="js/state.js"></script>
+<script defer src="js/i18n.js"></script>
+<script defer src="js/ui-helpers.js"></script>
+<script defer src="js/battery-saver.js"></script>
+<script defer src="js/backup-restore.js"></script>
+<script defer src="js/features-ai.js"></script>
+<script defer src="js/features-gps.js"></script>
 <!-- ntfy.sh P2P transport: sync GPS, chat, itinerari — zero config -->
-<script src="js/room-crypto.js"></script>
-<script src="js/firebase-rtdb.js"></script>
-<script src="js/features-photos.js"></script>
+<script defer src="js/room-crypto.js"></script>
+<script defer src="js/firebase-rtdb.js"></script>
+<script defer src="js/features-photos.js"></script>
 
 <!-- Google Places direct loading -->
-<script src="js/google-places-cache.js"></script>
-<script src="js/google-places-loader.js"></script>
-<script src="js/google-places-multitype.js"></script>
-<script src="js/google-places-details.js"></script>
+<script defer src="js/google-places-cache.js"></script>
+<script defer src="js/google-places-loader.js"></script>
+<script defer src="js/google-places-multitype.js"></script>
+<script defer src="js/google-places-details.js"></script>
 <!-- google-places-debug.js: caricato solo se ?debug=1 nell'URL (console helper, 343 LOC) -->
 <script>
   if (/[?&]debug=1\b/.test(location.search)) {
@@ -92,12 +93,12 @@
   }
 </script>
 <!-- POI Detail UI Components -->
-<script src="js/poi-photo-gallery.js"></script>
-<script src="js/poi-section-builders.js"></script>
-<script src="js/services/gfDetector.js"></script>
-<script src="js/poi-detail-events.js"></script>
-<script src="js/group-chat.js"></script>
-<script src="js/group-panel.js"></script>
+<script defer src="js/poi-photo-gallery.js"></script>
+<script defer src="js/poi-section-builders.js"></script>
+<script defer src="js/services/gfDetector.js"></script>
+<script defer src="js/poi-detail-events.js"></script>
+<script defer src="js/group-chat.js"></script>
+<script defer src="js/group-panel.js"></script>
 <!-- fase2-tappa-flow.js rimosso: window.TappaFlow non chiamato da nessuno (verificato) -->
 </head>
 <body>
@@ -106,6 +107,8 @@
   <div id="offline-banner" data-i18n="banner.offline">📶 Offline — dati in cache</div>
   <header>
     <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px;">🧭 Tabi</h1>
+    <button id="global-search-btn" aria-label="Cerca" data-i18n-title="menu.search" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:16px;padding:4px 10px;cursor:pointer;margin-left:auto;margin-right:8px;"
+      onclick="window.loadScript?.('./js/global-search.js').then(()=>window.openGlobalSearch?.())">🔍</button>
     <select id="lang-switcher" aria-label="Lingua" data-i18n-title="lang.label">
       <option value="it">🇮🇹 IT</option>
       <option value="en">🇬🇧 EN</option>
@@ -115,6 +118,7 @@
   <!-- Filters Tab Bar — FIXED below header -->
   <div id="filters" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 100; display: flex; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; gap: 8px; padding: 8px 14px; background: transparent; border-bottom: none; height: 56px; align-items: center; scrollbar-width: none;"></div>
 
+  <main>
     <!-- WEATHER MODAL — Full forecast detail (opens on "Dettagli" click) -->
     <div id="weather-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; padding: 20px; font-family: 'Segoe UI', sans-serif;">
       <div style="max-width: 100%; margin: 0 auto;">
@@ -132,8 +136,6 @@
     </div>
 
     <div id="map"></div>
-  </main>
-
 
     <!-- DEBUG PANEL: Mostra errori e log PeerGPS sul telefono -->
     <div id="debug-panel" style="position:fixed;bottom:80px;right:10px;width:280px;max-height:200px;background:rgba(0,0,0,0.9);color:#00FF88;font-size:12px;padding:8px;border-radius:6px;overflow-y:auto;font-family:monospace;z-index:9999;border:1px solid #FF1493;display:none">
@@ -197,75 +199,75 @@
   </div>
 </div>
 
-<script src="./js/app-core.js"></script>
-<script src="./js/poi-styles.js"></script>
-<script src="./js/itinerary-export.js"></script>
-<script src="./js/performance-utils.js"></script>
-<script src="./js/itinerary.js"></script>
-<script src="./js/itinerary-validation.js"></script>
-<script src="./js/budget-widget-helper.js"></script>
-<script src="./js/poi-enrichment.js"></script>
-<script src="./js/routing.js"></script>
+<script defer src="./js/app-core.js"></script>
+<script defer src="./js/poi-styles.js"></script>
+<script defer src="./js/itinerary-export.js"></script>
+<script defer src="./js/performance-utils.js"></script>
+<script defer src="./js/itinerary.js"></script>
+<script defer src="./js/itinerary-validation.js"></script>
+<script defer src="./js/budget-widget-helper.js"></script>
+<script defer src="./js/poi-enrichment.js"></script>
+<script defer src="./js/routing.js"></script>
 <!-- itinerary-ui.js rimosso: renderItineraryViewNew chiamato solo da se stesso (verificato). Renderer canonical = itinerary-unified.js -->
-<script src="./js/itinerary-unified.js"></script>
-<script src="./js/itinerary-ical.js"></script>
-<script src="./js/itinerary-snapshots.js"></script>
-<script src="./js/itinerary-undo-redo.js"></script>
+<script defer src="./js/itinerary-unified.js"></script>
+<script defer src="./js/itinerary-ical.js"></script>
+<script defer src="./js/itinerary-snapshots.js"></script>
+<script defer src="./js/itinerary-undo-redo.js"></script>
 <!-- Lazy-loaded on demand: itinerary-optimizer-trip.js, itinerary-suggest.js, itinerary-reminders.js, jr-pass-calculator.js -->
-<script src="./js/itinerary-add-wizard.js"></script>
-<script src="./js/test-helpers.js"></script>
-<script src="./js/onboarding.js"></script>
+<script defer src="./js/itinerary-add-wizard.js"></script>
+<script defer src="./js/test-helpers.js"></script>
+<script defer src="./js/onboarding.js"></script>
 <!-- filter-system.js (seconda barra filtri viaggio) rimossa: ridondante con la barra categorie. Riattivabile riaggiungendo lo <script>. -->
 <!-- Panel manager (modern): provides window.y2kWindows API + patches openSheet -->
-<script src="./js/y2k-windows.js"></script>
-<script src="./js/gf-places-loader.js"></script>
-<script src="./js/features-weather.js"></script>
-<script src="./js/group-sync.js"></script>
-<script src="./js/group-invite.js"></script>
-<script src="./js/japan-calendar-hints.js"></script>
-<script src="./js/conflict-resolver-ui.js"></script>
-<script src="./js/custom-poi.js"></script>
-<script src="./js/gf-crowdsource.js"></script>
-<script src="./js/gf-wishlist.js"></script>
-<script src="./js/group-expenses.js"></script>
-<script src="./js/group-checklist.js"></script>
-<script src="./js/gf-menu-photos.js"></script>
-<script src="./js/live-presence.js"></script>
+<script defer src="./js/y2k-windows.js"></script>
+<script defer src="./js/gf-places-loader.js"></script>
+<script defer src="./js/features-weather.js"></script>
+<script defer src="./js/group-sync.js"></script>
+<script defer src="./js/group-invite.js"></script>
+<script defer src="./js/japan-calendar-hints.js"></script>
+<script defer src="./js/conflict-resolver-ui.js"></script>
+<script defer src="./js/custom-poi.js"></script>
+<script defer src="./js/gf-crowdsource.js"></script>
+<script defer src="./js/gf-wishlist.js"></script>
+<script defer src="./js/group-expenses.js"></script>
+<script defer src="./js/group-checklist.js"></script>
+<script defer src="./js/gf-menu-photos.js"></script>
+<script defer src="./js/live-presence.js"></script>
 <!-- Lazy-loaded on demand: gf-heatmap.js, audit-log-viewer.js, allergy-cards.js -->
 <!-- Lazy-loaded on demand: sos-view.js, tips-view.js, bookings-view.js -->
 <!-- Viste estratte da app-core.js (vedi STATO_APP.md §8.5) -->
-<script src="./js/views/gallery-view.js"></script>
-<script src="./js/views/budget-view.js"></script>
-<script src="./js/views/filter-bar.js"></script>
-<script src="./js/views/shopping-layer.js"></script>
-<script src="./js/views/shopping-view.js"></script>
-<script src="./js/views/weather-view.js"></script>
-<script src="./js/views/group-view.js"></script>
-<script src="./js/views/group-share-view.js"></script>
-<script src="./js/views/group-poi-view.js"></script>
-<script src="./js/opening-hours.js"></script>
-<script src="./js/itinerary-phase4.js"></script>
-<script src="./js/itinerary-sharing.js"></script>
-<script src="./js/itinerary-delete.js"></script>
-<script src="./js/itinerary-crdt.js"></script>
-<script src="./js/itinerary-sync.js"></script>
-<script src="./js/itinerary-phase5.js"></script>
-<script src="./js/poi-display-name.js"></script>
-<script src="./js/views/gf-restaurants.js"></script>
-<script src="./js/views/list-view.js"></script>
-<script src="./js/views/gf-view.js"></script>
-<script src="./js/views/menu-drawer.js"></script>
-<script src="./js/poi-validation-cache.js"></script>
-<script src="./js/views/poi-detail-view.js"></script>
-<script src="./js/gf-places-panel.js"></script>
-<script src="./js/gf-analysis.js"></script>
-<script src="./js/sheet-manager.js"></script>
-<script src="./js/gps-tracker.js"></script>
-<script src="./js/map-markers.js"></script>
-<script src="./js/debug-panel.js"></script>
-<script src="./js/app-navigation.js"></script>
-<script src="./js/gesture-detector.js"></script>
-<script src="./js/app-startup.js"></script>
+<script defer src="./js/views/gallery-view.js"></script>
+<script defer src="./js/views/budget-view.js"></script>
+<script defer src="./js/views/filter-bar.js"></script>
+<script defer src="./js/views/shopping-layer.js"></script>
+<script defer src="./js/views/shopping-view.js"></script>
+<script defer src="./js/views/weather-view.js"></script>
+<script defer src="./js/views/group-view.js"></script>
+<script defer src="./js/views/group-share-view.js"></script>
+<script defer src="./js/views/group-poi-view.js"></script>
+<script defer src="./js/opening-hours.js"></script>
+<script defer src="./js/itinerary-phase4.js"></script>
+<script defer src="./js/itinerary-sharing.js"></script>
+<script defer src="./js/itinerary-delete.js"></script>
+<script defer src="./js/itinerary-crdt.js"></script>
+<script defer src="./js/itinerary-sync.js"></script>
+<script defer src="./js/itinerary-phase5.js"></script>
+<script defer src="./js/poi-display-name.js"></script>
+<script defer src="./js/views/gf-restaurants.js"></script>
+<script defer src="./js/views/list-view.js"></script>
+<script defer src="./js/views/gf-view.js"></script>
+<script defer src="./js/views/menu-drawer.js"></script>
+<script defer src="./js/poi-validation-cache.js"></script>
+<script defer src="./js/views/poi-detail-view.js"></script>
+<script defer src="./js/gf-places-panel.js"></script>
+<script defer src="./js/gf-analysis.js"></script>
+<script defer src="./js/sheet-manager.js"></script>
+<script defer src="./js/gps-tracker.js"></script>
+<script defer src="./js/map-markers.js"></script>
+<script defer src="./js/debug-panel.js"></script>
+<script defer src="./js/app-navigation.js"></script>
+<script defer src="./js/gesture-detector.js"></script>
+<script defer src="./js/app-startup.js"></script>
 <!-- Lazy-loaded on demand: itinerary-version-history.js (via ⏮ Storico button) -->
 
 <!-- Vercel Analytics - Performance Monitoring -->

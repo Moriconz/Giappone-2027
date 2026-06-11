@@ -880,3 +880,25 @@ nav.bottom button.active { transform: translateY(-1px); }
     scroll-behavior: auto !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   BATTERY SAVER MODE — html.battery-saver (toggle dal menu 🔋)
+   Disattiva blur, animazioni e ombre: i maggiori consumi GPU.
+   ═══════════════════════════════════════════════════════════════ */
+html.battery-saver *,
+html.battery-saver *::before,
+html.battery-saver *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+/* Le superfici glass diventano solide (leggibilità senza blur) */
+html.battery-saver .sheet-inner,
+html.battery-saver .glass,
+html.battery-saver [class*="glass"] {
+  background-color: rgba(18, 22, 30, 0.97) !important;
+}

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Giappone 2027 — PWA Installation Diagnostic</title>
+<style>
+  body {
+    font-family: 'Courier New', monospace;
+    background: #0F1923;
+    color: #E8EEF4;
+    padding: 20px;
+    margin: 0;
+  }
+  h1 { color: #FFD700; }
+  h2 { color: #FF1493; margin-top: 30px; }
+  .check {
+    padding: 12px;
+    margin: 10px 0;
+    border-left: 4px solid #999;
+    border-radius: 4px;
+  }
+  .check.pass {
+    background: rgba(0,200,100,0.15);
+    border-left-color: #00FF88;
+    color: #00FF88;
+  }
+  .check.fail {
+    background: rgba(200,0,0,0.15);
+    border-left-color: #FF1493;
+    color: #FF6B9D;
+  }
+  .check.info {
+    background: rgba(100,150,255,0.1);
+    border-left-color: #4A9EFF;
+    color: #4A9EFF;
+  }
+  code {
+    background: rgba(255,255,255,0.08);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .details {
+    background: rgba(0,0,0,0.3);
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  button {
+    background: #FF1493;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 10px 0;
+    font-family: monospace;
+    font-weight: bold;
+  }
+  button:hover { background: #FF69B4; }
+</style>
+</head>
+<body>
+
+<h1>🔍 Diagnostic: PWA Installation Ready?</h1>
+<p>Questa pagina verifica se l'app è pronta per il prompt di installazione.</p>
+
+<h2>Browser Capabilities</h2>
+<div id="checks"></div>
+
+<h2>Manual Test</h2>
+<p>Se tutti i check sono verdi, ma il prompt non appare su index.html, clicca qui per testare:</p>
+<button onclick="testInstallPrompt()">🧪 Simula beforeinstallprompt</button>
+
+<h2>Console Logs</h2>
+<p>Apri DevTools (F12) → Console per vedere i log di debug dettagliati.</p>
+
+<script>
+console.log('[Diagnostic] === PWA Installation Diagnostic Starting ===');
+
+const checks = [
+  {
+    name: 'HTTPS / Secure Protocol',
+    test: () => location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1',
+    info: () => `Current: ${location.protocol}//${location.hostname}`
+  },
+  {
+    name: 'Manifest Link Present',
+    test: () => document.querySelector('link[rel="manifest"]') !== null,
+    info: () => document.querySelector('link[rel="manifest"]')?.href || 'Not found'
+  },
+  {
+    name: 'Manifest Loads Successfully',
+    test: async () => {
+      try {
+        const link = document.querySelector('link[rel="manifest"]');
+        const href = link?.href || './manifest.webmanifest';
+        const response = await fetch(href);
+        const data = await response.json();
+        console.log('[Diagnostic] Manifest loaded:', data);
+        return response.ok && data.name;
+      } catch(e) {
+        console.error('[Diagnostic] Manifest load error:', e);
+        return false;
+      }
+    },
+    info: async () => {
+      try {
+        const link = document.querySelector('link[rel="manifest"]');
+        const href = link?.href || './manifest.webmanifest';
+        const response = await fetch(href);
+        const data = await response.json();
+        return `✓ ${data.name}`;
+      } catch(e) {
+        return `✗ Error: ${e.message}`;
+      }
+    }
+  },
+  {
+    name: 'Web App Manifest Meta Tags',
+    test: () => {
+      return document.querySelector('meta[name="apple-mobile-web-app-capable"]') !== null &&
+             document.querySelector('meta[name="mobile-web-app-capable"]') !== null;
+    },
+    info: () => 'apple-mobile-web-app-capable & mobile-web-app-capable'
+  },
+  {
+    name: 'Service Worker Support',
+    test: () => 'serviceWorker' in navigator,
+    info: () => 'ServiceWorker API available'
+  },
+  {
+    name: 'beforeinstallprompt Support',
+    test: () => 'onbeforeinstallprompt' in window,
+    info: () => 'Window.onbeforeinstallprompt available'
+  },
+  {
+    name: 'Installation Prompt Support',
+    test: () => {
+      return ('serviceWorker' in navigator) &&
+             (location.protocol === 'https:' || location.hostname === 'localhost');
+    },
+    info: () => 'Requirements met for installation prompt'
+  }
+];
+
+let deferredPrompt = null;
+let beforeinstallpromptFired = false;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('[Diagnostic] *** beforeinstallprompt EVENT FIRED! ***');
+  beforeinstallpromptFired = true;
+  e.preventDefault();
+  deferredPrompt = e;
+
+  const elem = document.getElementById('checks');
+  const check = document.createElement('div');
+  check.className = 'check pass';
+  check.innerHTML = `
+    <strong>✓ beforeinstallprompt Event</strong>
+    <div class="details">Evento rilevato! È possibile mostrare il prompt di installazione.</div>
+  `;
+  elem.insertBefore(check, elem.firstChild);
+});
+
+async function runChecks() {
+  console.log('[Diagnostic] Running all checks...');
+  const container = document.getElementById('checks');
+  container.innerHTML = '';
+
+  for (const check of checks) {
+    const isAsync = check.test.constructor.name === 'AsyncFunction';
+    let passed = false;
+
+    try {
+      passed = isAsync ? await check.test() : check.test();
+    } catch(e) {
+      console.error(`[Diagnostic] Check failed: ${check.name}`, e);
+      passed = false;
+    }
+
+    const div = document.createElement('div');
+    div.className = `check ${passed ? 'pass' : 'fail'}`;
+
+    let infoText = '';
+    try {
+      const info = check.info();
+      infoText = info.constructor.name === 'Promise' ? await info : info;
+    } catch(e) {
+      infoText = 'Info unavailable';
+    }
+
+    div.innerHTML = `
+      <strong>${passed ? '✓' : '✗'} ${check.name}</strong>
+      <div class="details">${infoText}</div>
+    `;
+    container.appendChild(div);
+  }
+
+  // Add beforeinstallprompt status
+  if (!beforeinstallpromptFired) {
+    const div = document.createElement('div');
+    div.className = 'check info';
+    div.innerHTML = `
+      <strong>⏳ beforeinstallprompt Event</strong>
+      <div class="details">Not fired yet. Will appear when browser is ready.</div>
+    `;
+    container.appendChild(div);
+  }
+}
+
+async function testInstallPrompt() {
+  if (deferredPrompt) {
+    console.log('[Diagnostic] Showing deferred install prompt...');
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    console.log('[Diagnostic] User choice:', result.outcome);
+  } else {
+    console.warn('[Diagnostic] No deferred prompt available');
+    alert('Nessun prompt di installazione disponibile.\nLe app potrebbero già essere installate o il browser non supporta PWA.');
+  }
+}
+
+// Run checks when page loads
+window.addEventListener('load', () => {
+  console.log('[Diagnostic] Page loaded, running checks...');
+  runChecks();
+});
+
+// Also run immediately in case page is already loaded
+if (document.readyState === 'complete') {
+  runChecks();
+}
+
+console.log('[Diagnostic] === Setup Complete ===');
+</script>
+
+</body>
+</html>

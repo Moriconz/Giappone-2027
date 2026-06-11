@@ -6,26 +6,28 @@
  * ✓ Offline-first strategy
  */
 
-const CACHE_NAME = 'giappone-2027-v8';
+const CACHE_NAME = 'giappone-2027-v9';
 const CACHE_API = 'giappone-2027-api-v1';
 const CACHE_IMG = 'giappone-2027-img-v1';
-const OFFLINE_URL = '../index.html';
+const OFFLINE_URL = './index.html';
 
-// Critical resources for install
+// Critical resources for install (path relativi alla root: sw.js è in root)
 const CRITICAL_RESOURCES = [
-  '../',
-  '../index.html',
-  '../manifest.webmanifest',
-  '../css/legacy-skin.css',
-  '../css/modern-2026.css',
-  '../css/base.css',
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './css/legacy-skin.css',
+  './css/glass.css',
+  './css/safety.css',
+  './css/components.css',
+  './css/base.css',
+  './css/modern-2026.css',
 ];
 
 // Resources to predictively prefetch
 const PREDICTIVE_PREFETCH = [
-  '../js/sw.js',
-  '../icon-192.png',
-  '../icon-512.png',
+  './icon-192.png',
+  './icon-512.png',
 ];
 
 // Install with predictive prefetching

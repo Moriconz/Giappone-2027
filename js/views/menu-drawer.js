@@ -23,6 +23,9 @@
       { label: T('menu.gallery', 'Galleria'), icon: '📸', view: 'gallery' },
       { label: T('menu.tips', 'Tips Viaggio 2027'), icon: '🌸', view: 'tips' },
       { label: T('menu.gfHeatmap', 'Heatmap GF'), icon: '🔥', view: 'gf-heatmap' },
+      { label: T('menu.timeline', 'Timeline viaggio'), icon: '🗓️', view: 'timeline' },
+      { label: T('menu.search', 'Cerca ovunque'), icon: '🔍', view: 'global-search' },
+      { label: T('menu.battery', 'Risparmio batteria') + (window.BatterySaver?.isOn?.() ? ' ✓' : ''), icon: '🔋', view: 'battery-saver' },
       { label: T('menu.reminders', 'Promemoria Tappe'), icon: '🔔', view: 'reminders' },
       { label: T('menu.jrpass', 'Conviene il JR Pass?'), icon: '🚄', view: 'jr-pass' },
       { label: T('menu.japanCal', 'Calendario Giappone'), icon: '📅', view: 'japan-cal' },
@@ -108,6 +111,9 @@
                 setTimeout(() => window.GFHeatmap?.toggle?.(), 150);
               });
             }
+            else if (view === 'timeline') { window.loadScript('./js/views/timeline-view.js').then(() => window.renderTimelineView?.()); }
+            else if (view === 'global-search') { window.loadScript('./js/global-search.js').then(() => window.openGlobalSearch?.()); }
+            else if (view === 'battery-saver') { window.BatterySaver?.toggle?.(); }
             else if (view === 'reminders') { window.loadScript('./js/itinerary-reminders.js').then(() => window.openItineraryReminders?.()); }
             else if (view === 'jr-pass') { window.loadScript('./js/jr-pass-calculator.js').then(() => window.openJRPassPanel?.()); }
             else if (view === 'japan-cal') { window.JapanCalendarHints?.openPanel?.(); }
