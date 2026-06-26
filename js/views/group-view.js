@@ -2,7 +2,7 @@
 // group-view.js — renderGroupView extracted from app-core.js
 // Deps (all window.*): state, saveState, openSheet, closeSheet, toast, t,
 //   groupPanel, groupChat, generateRoomCode, createAvatarDataUrl,
-//   sharePersonalItineraryToGroup, updateGPSMarker, peerGPS, rtdbBroadcast
+//   sharePersonalItineraryToGroup, updateGPSMarker, peerGPS, peerBroadcast
 // ============================================================================
 (function () {
   'use strict';
@@ -247,7 +247,7 @@
             }
             if (status === 'connected' && state.gpsCurrentLat && state.gpsCurrentLng && state.group?.myName) {
               const payload = { type: 'gps', lat: state.gpsCurrentLat, lng: state.gpsCurrentLng, name: state.group.myName, avatar: state.group?.myAvatar || null };
-              window.rtdbBroadcast?.(payload);
+              window.peerBroadcast?.(payload);
             }
           }, (state.group.members||[]).map(m => m.name).filter(n => n && n !== name));
 

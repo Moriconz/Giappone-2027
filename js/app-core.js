@@ -88,6 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // ═══════════════════════════════════════════════════════════════════════════
   // MAP (OpenLayers)
   // ═══════════════════════════════════════════════════════════════════════════
+  // ponytail: global-ready map view — restore last position (any country); Japan only as first-run default
+  let _mapCenter = [138.5, 36.2], _mapZoom = 10;
+  try {
+    const _sv = JSON.parse(localStorage.getItem('gj2027_map_view') || 'null');
+    if (_sv && Number.isFinite(_sv.lng) && Number.isFinite(_sv.lat)) { _mapCenter = [_sv.lng, _sv.lat]; _mapZoom = _sv.zoom || _mapZoom; }
+  } catch (_) {}
   const map = new ol.Map({
     target: 'map',
     layers: [
@@ -99,7 +105,15 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       })
     ],
-    view: new ol.View({ center: ol.proj.fromLonLat([138.5, 36.2]), zoom: 10, minZoom: 2, maxZoom: 19 })
+    view: new ol.View({ center: ol.proj.fromLonLat(_mapCenter), zoom: _mapZoom, minZoom: 2, maxZoom: 19 })
+  });
+
+  // ponytail: persist last view so the app reopens where you left off, anywhere in the world
+  map.on('moveend', () => {
+    try {
+      const _v = map.getView(); const _ll = ol.proj.toLonLat(_v.getCenter());
+      localStorage.setItem('gj2027_map_view', JSON.stringify({ lng: _ll[0], lat: _ll[1], zoom: Math.round(_v.getZoom() * 100) / 100 }));
+    } catch (_) {}
   });
 
   const vectorSource = new ol.source.Vector();
@@ -265,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const delayMs = e.detail?.delayMs || 100;
     setTimeout(() => {
       if (state.gpsCurrentLat && state.gpsCurrentLng && peerGPS.getStatus() !== 'disconnected') {
-        window.rtdbBroadcast({ type: 'gps', lat: state.gpsCurrentLat, lng: state.gpsCurrentLng, name: state.group?.myName || '?', avatar: state.group?.myAvatar || null });
+        window.peerBroadcast({ type: 'gps', lat: state.gpsCurrentLat, lng: state.gpsCurrentLng, name: state.group?.myName || '?', avatar: state.group?.myAvatar || null });
       }
     }, delayMs);
   });

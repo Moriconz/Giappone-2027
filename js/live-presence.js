@@ -25,7 +25,7 @@
   function _broadcast(state) {
     const me = _me();
     if (!me || !window.state?.group?.roomId) return;
-    window.rtdbBroadcast?.({
+    window.peerBroadcast?.({
       type: 'live_presence',
       payload: { name: me, avatar: window.state?.group?.myAvatar || null, view: _currentView, state }
     });

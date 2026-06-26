@@ -111,4 +111,22 @@ window.ensureStateObject = function (path) {
   return obj;
 };
 
+// ── GF layer toggle: gluten-free is a kept-but-optional layer (global planner) ─
+// ponytail: default ON preserves current behavior; users who don't need GF can hide it
+window.isGFEnabled = function () {
+  try { const v = localStorage.getItem('gfEnabled'); return v === null ? true : v === '1'; } catch (_) { return true; }
+};
+window.applyGFVisibility = function () {
+  const on = window.isGFEnabled();
+  const navBtn = document.querySelector('nav.bottom button[data-view="gf"]');
+  if (navBtn) navBtn.style.display = on ? '' : 'none';
+  if (window.gfPlacesLayer) window.gfPlacesLayer.setVisible(on);
+};
+window.setGFEnabled = function (on) {
+  try { localStorage.setItem('gfEnabled', on ? '1' : '0'); } catch (_) {}
+  window.applyGFVisibility();
+  // if the GF tab was active and we just hid it, fall back to the map
+  if (!on) document.querySelector('nav.bottom button[data-view="map"]')?.click?.();
+};
+
 console.log('[State] Initialized. Keys:', Object.keys(window.state).length);

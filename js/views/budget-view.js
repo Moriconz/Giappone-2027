@@ -40,11 +40,22 @@
      DATA LAYER
   ═══════════════════════════════════════════════════════════════ */
 
+  // ponytail: global — default display currency from saved pref / browser locale; JPY only for ja locale
+  function defaultDisplayCurrency() {
+    try {
+      const saved = localStorage.getItem('homeCurrency');
+      if (saved && CURRENCIES[saved]) return saved;
+      const loc = (navigator.language || 'en').toLowerCase();
+      const map = { 'en-gb': 'GBP', it: 'EUR', de: 'EUR', fr: 'EUR', es: 'EUR', pt: 'EUR', nl: 'EUR', ja: 'JPY', en: 'USD' };
+      return map[loc] || map[loc.split('-')[0]] || 'EUR';
+    } catch (_) { return 'EUR'; }
+  }
+
   function getBudgetDB() {
     const stored = localStorage.getItem('BudgetDB');
     return stored ? JSON.parse(stored) : {
       totalBudget: 300000,
-      currency: 'JPY',
+      currency: defaultDisplayCurrency(),
       expenses: [],
       categoryBudgets: {
         food:          100000,
@@ -179,8 +190,8 @@
             </div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
-            <input id="config-total-budget-inline" type="number" value="${db.totalBudget}" placeholder="300000" style="flex:2;padding:10px 12px;background:#fff;border:2px solid #FF1493;border-radius:8px;color:var(--y2k-ink);font-weight:700;font-size:14px;box-sizing:border-box" />
-            <span style="color:var(--y2k-muted);font-weight:700;font-size:14px">¥</span>
+            <input id="config-total-budget-inline" type="number" value="${convertCurrency(db.totalBudget, 'JPY', db.currency).toFixed(0)}" placeholder="${convertCurrency(300000, 'JPY', db.currency).toFixed(0)}" style="flex:2;padding:10px 12px;background:#fff;border:2px solid #FF1493;border-radius:8px;color:var(--y2k-ink);font-weight:700;font-size:14px;box-sizing:border-box" />
+            <span style="color:var(--y2k-muted);font-weight:700;font-size:14px">${curr.symbol}</span>
             <button id="config-save-inline" class="btn primary" style="padding:10px 20px;font-size:13px;flex:0.8">OK</button>
           </div>
         </div>
@@ -345,10 +356,10 @@
             window.toast('Inserisci un budget valido!');
             return;
           }
-          db.totalBudget = newBudget;
+          // ponytail: input is in display currency → store canonical JPY
+          db.totalBudget = convertCurrency(newBudget, db.currency, 'JPY');
           saveBudgetDB(db);
-          const displayAmount = convertCurrency(newBudget, 'JPY', db.currency);
-          window.toast('Budget: ' + curr.symbol + displayAmount.toFixed(0));
+          window.toast('Budget: ' + curr.symbol + newBudget.toFixed(0));
           renderBudgetView();
         };
       }

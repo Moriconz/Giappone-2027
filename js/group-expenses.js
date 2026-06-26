@@ -35,7 +35,7 @@
 
   function _broadcast(action, data) {
     const payload = { action, from: _me(), ...data };
-    window.rtdbBroadcast?.({ type: 'group_expense', payload });
+    window.peerBroadcast?.({ type: 'group_expense', payload });
     const conns = window.peerGPS?.getPeerConnections?.() || {};
     Object.values(conns).forEach(c => { if (c?.open) { try { c.send({ type: 'group_expense', payload }); } catch (_) {} } });
   }

@@ -1,7 +1,7 @@
 // ============================================================================
 // itinerary-sync.js — computeItineraryHash, simpleHash, broadcastItinerary
 // Extracted from app-core.js. Deps (all window.*):
-//   state, makePeerId, makeHubId, rtdbBroadcast, peer
+//   state, makePeerId, makeHubId, peerBroadcast, peer
 // ============================================================================
 (function () {
   'use strict';
@@ -64,8 +64,8 @@
 
     console.log('[SYNC] Broadcasting itinerary:', itineraryId, '| Hash:', hash, '| POIs:', itinerary.pois?.length);
 
-    if (window.rtdbBroadcast) {
-      window.rtdbBroadcast(message);
+    if (window.peerBroadcast) {
+      window.peerBroadcast(message);
       console.log('[SYNC] Broadcast itinerary via Firebase RTDB:', itineraryId);
     } else if (window.peer?.connections) {
       Object.values(window.peer.connections).forEach(conns => {

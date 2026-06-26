@@ -1,11 +1,11 @@
 // ============================================================================
-// FIREBASE-RTDB.JS — P2P Sync via MQTT (broker.emqx.io, zero config)
+// MQTT-TRANSPORT.JS — P2P Sync via MQTT (broker.emqx.io, zero config)
 // Transport: MQTT over WebSocket — nessun limite di messaggi, zero signup.
 // ntfy.sh aveva un limite di 250 msg/giorno per IP — incompatibile col testing.
 // API identica al vecchio PeerJS peerGPS — nessuna modifica al resto del codice.
 // ============================================================================
 
-console.log('[RTDB] Loading MQTT transport...');
+console.log('[MQTT] Loading MQTT transport...');
 
 (function () {
   'use strict';
@@ -42,22 +42,22 @@ console.log('[RTDB] Loading MQTT transport...');
   // ── Pubblica un messaggio MQTT ────────────────────────────────────────────────
   function pub(topicName, payload) {
     if (!mqttClient || !mqttClient.connected) {
-      console.warn('[RTDB] pub skipped — not connected');
+      console.warn('[MQTT] pub skipped — not connected');
       return;
     }
     try {
       mqttClient.publish(topicName, JSON.stringify(payload));
-      console.log('[RTDB] ✅ pub ok → type:', payload.type);
+      console.log('[MQTT] ✅ pub ok → type:', payload.type);
     } catch (e) {
-      console.error('[RTDB] ❌ pub error:', e.message);
+      console.error('[MQTT] ❌ pub error:', e.message);
     }
   }
 
-  // ── Broadcast generico (usato dall'esterno via window.rtdbBroadcast) ─────────
+  // ── Broadcast generico (usato dall'esterno via window.peerBroadcast) ─────────
   // Cifra il messaggio se la chiave stanza è pronta (E2EE), altrimenti in chiaro.
   // I chiamanti non attendono la Promise (fire-and-forget): l'ordine è preservato
   // perché ogni seal è veloce (AES-GCM su chiave cachata).
-  async function rtdbBroadcast(data) {
+  async function peerBroadcast(data) {
     if (!isStarted || !myRoomId) return;
     const msg = { ...data, from: myName, ts: Date.now() };
     if (window.RoomCrypto?.ready?.()) {
@@ -66,14 +66,14 @@ console.log('[RTDB] Loading MQTT transport...');
     }
     pub(roomTopic(myRoomId), msg); // fallback: in chiaro
   }
-  window.rtdbBroadcast = rtdbBroadcast;
-  window.broadcastToPeers = rtdbBroadcast; // alias used by gf-places-panel.js
+  window.peerBroadcast = peerBroadcast;
+  window.broadcastToPeers = peerBroadcast; // alias used by gf-places-panel.js
 
   // ── Gestisce messaggi in arrivo ───────────────────────────────────────────────
   async function handleIncoming(raw) {
     let data;
     try { data = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch(e) {
-      console.warn('[RTDB] handleIncoming parse fail:', e.message);
+      console.warn('[MQTT] handleIncoming parse fail:', e.message);
       return;
     }
     if (!data) return;
@@ -87,7 +87,7 @@ console.log('[RTDB] Loading MQTT transport...');
     }
     if (data.from === myName) return; // echo proprio
 
-    console.log('[RTDB] ← ricevuto da', data.from, '| tipo:', data.type);
+    console.log('[MQTT] ← ricevuto da', data.from, '| tipo:', data.type);
 
     // Aggiorna presenza
     if (data.from) {
@@ -139,7 +139,7 @@ console.log('[RTDB] Loading MQTT transport...');
           avatar: data.avatar || null,
           lastUpdate: data.ts || Date.now(),
         };
-        console.log(`%c[RTDB] 📍 GPS ricevuto da ${data.from}: (${data.lat.toFixed(4)}, ${data.lng.toFixed(4)})`, 'background:#FF69B4;color:white;padding:4px 8px;border-radius:3px;font-size:11px');
+        console.log(`%c[MQTT] 📍 GPS ricevuto da ${data.from}: (${data.lat.toFixed(4)}, ${data.lng.toFixed(4)})`, 'background:#FF69B4;color:white;padding:4px 8px;border-radius:3px;font-size:11px');
         // Emit event for map update
         document.dispatchEvent(new CustomEvent('map_markers_updated', {
           detail: { markers: window.state.gpsRemoteMarkers }
@@ -187,7 +187,7 @@ console.log('[RTDB] Loading MQTT transport...');
             }
           }
           if (hasNewMembers) {
-            console.log(`%c[RTDB] 👥 Nuovi membri rilevati - Broadcasting GPS istantaneo`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+            console.log(`%c[MQTT] 👥 Nuovi membri rilevati - Broadcasting GPS istantaneo`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
             // Forza broadcast della posizione GPS attuale entro 100ms
             window.dispatchEvent(new CustomEvent('force-gps-broadcast', { detail: { delayMs: 100 } }));
           }
@@ -224,7 +224,7 @@ console.log('[RTDB] Loading MQTT transport...');
           const { originItineraryId, groupId, itinerary } = data.payload;
           if (groupId !== myRoomId) return; // Not for our group
 
-          console.log(`%c[RTDB] 📤 Itinerary shared with us by ${data.from}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+          console.log(`%c[MQTT] 📤 Itinerary shared with us by ${data.from}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
 
           // Create group itinerary entry
           const groupItinId = `group_${groupId}_shared`;
@@ -260,13 +260,13 @@ console.log('[RTDB] Loading MQTT transport...');
           const { groupId, itineraryId, originItineraryId, action, tappId, data: actionData, vectorClock } = data.payload;
           if (groupId !== myRoomId) return; // Not for our group
 
-          console.log(`%c[RTDB] ✏️ Itinerary edit from ${data.from}: ${action}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+          console.log(`%c[MQTT] ✏️ Itinerary edit from ${data.from}: ${action}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
 
           // Get or create group itinerary
           const groupItinId = itineraryId || `group_${groupId}_shared`;
           if (!window.state?.groupItineraries) window.state.groupItineraries = {};
           if (!window.state.groupItineraries[groupItinId]) {
-            console.warn('[RTDB] Received edit for unknown itinerary:', groupItinId);
+            console.warn('[MQTT] Received edit for unknown itinerary:', groupItinId);
             return;
           }
 
@@ -351,7 +351,7 @@ console.log('[RTDB] Loading MQTT transport...');
         if (data.payload && window.state?.group?.myName) {
           const { originItineraryId, groupId, itinerary, fromMember } = data.payload;
 
-          console.log(`%c[RTDB] 🔄 Personal itinerary synced from group by ${fromMember}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+          console.log(`%c[MQTT] 🔄 Personal itinerary synced from group by ${fromMember}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
 
           // Rebuild personal day-by-day itinerary from the synced group pois
           if (originItineraryId && itinerary?.pois && window.groupPoisToItineraryByDay) {
@@ -373,7 +373,7 @@ console.log('[RTDB] Loading MQTT transport...');
         // Non-owner requesting to unshare
         if (data.payload && window.state?.group?.myName === window.state?.groupItineraries?.[`group_${data.payload.groupId}_shared`]?.owner) {
           const { requestedBy, groupId } = data.payload;
-          console.log(`%c[RTDB] 📨 Unshare request from ${requestedBy} for group ${groupId}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+          console.log(`%c[MQTT] 📨 Unshare request from ${requestedBy} for group ${groupId}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
 
           // Notify owner with toast
           window.toast?.(`📨 ${requestedBy} ` + T('group.toastUnshareReq', 'ha richiesto di smettere di condividere'));
@@ -390,7 +390,7 @@ console.log('[RTDB] Loading MQTT transport...');
         // Owner has unshared the itinerary
         if (data.payload && myRoomId === data.payload.groupId) {
           const { unsharedBy, groupId } = data.payload;
-          console.log(`%c[RTDB] 🚫 Itinerary unshared by ${unsharedBy}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+          console.log(`%c[MQTT] 🚫 Itinerary unshared by ${unsharedBy}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
 
           // Remove from our groupItineraries
           const groupItinId = `group_${groupId}_shared`;
@@ -411,7 +411,7 @@ console.log('[RTDB] Loading MQTT transport...');
         // Itinerary was deleted
         if (data.payload && myRoomId === data.payload.groupId) {
           const { itineraryId, deletedBy } = data.payload;
-          console.log(`%c[RTDB] 🗑️ Itinerary deleted by ${deletedBy}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
+          console.log(`%c[MQTT] 🗑️ Itinerary deleted by ${deletedBy}`, 'background:#FF1493;color:white;padding:4px 8px;border-radius:3px');
 
           if (window.state?.groupItineraries?.[itineraryId]) {
             delete window.state.groupItineraries[itineraryId];
@@ -510,7 +510,7 @@ console.log('[RTDB] Loading MQTT transport...');
 
   // ── Fake connection object (compatibilità window.peer) ───────────────────────
   function makeFakeConn() {
-    return { open: true, send: rtdbBroadcast, close() {} };
+    return { open: true, send: peerBroadcast, close() {} };
   }
 
   const fakeConns = new Proxy({}, {
@@ -570,14 +570,14 @@ console.log('[RTDB] Loading MQTT transport...');
       window.peer.disconnected = false;
 
       statusCb('waiting', 0);
-      console.log('[RTDB] Connessione MQTT a stanza:', room, '| utente:', name);
+      console.log('[MQTT] Connessione MQTT a stanza:', room, '| utente:', name);
 
       // ── Connetti al broker MQTT (con fallback automatico tra broker) ─────────
       let brokerIdx = 0;
 
       const connectBroker = () => {
         const brokerUrl = MQTT_BROKERS[brokerIdx % MQTT_BROKERS.length];
-        console.log('[RTDB] Connessione a broker:', brokerUrl);
+        console.log('[MQTT] Connessione a broker:', brokerUrl);
         const clientId = 'giap27_' + Math.random().toString(16).substring(2, 10);
         mqttClient = mqtt.connect(brokerUrl, {
           clientId,
@@ -589,7 +589,7 @@ console.log('[RTDB] Loading MQTT transport...');
         // Se entro CONNECT_GRACE_MS non siamo connessi → prova il broker successivo
         const graceTimer = setTimeout(() => {
           if (!isStarted || mqttClient?.connected) return;
-          console.warn('[RTDB] ⏱️ Broker irraggiungibile, provo il successivo:', brokerUrl);
+          console.warn('[MQTT] ⏱️ Broker irraggiungibile, provo il successivo:', brokerUrl);
           try { mqttClient.end(true); } catch (e) {}
           brokerIdx++;
           connectBroker();
@@ -597,10 +597,10 @@ console.log('[RTDB] Loading MQTT transport...');
 
         mqttClient.on('connect', () => {
           clearTimeout(graceTimer);
-          console.log('[RTDB] ✅ MQTT connesso a', brokerUrl, '| stanza:', room);
+          console.log('[MQTT] ✅ MQTT connesso a', brokerUrl, '| stanza:', room);
           mqttClient.subscribe(roomTopic(room), { qos: 0 }, (err) => {
-            if (err) { console.error('[RTDB] subscribe error:', err.message); return; }
-            console.log('[RTDB] ✅ Iscritto a topic:', roomTopic(room));
+            if (err) { console.error('[MQTT] subscribe error:', err.message); return; }
+            console.log('[MQTT] ✅ Iscritto a topic:', roomTopic(room));
             // Annuncia subito la presenza
             pub(roomTopic(room), { type: 'presence', from: name, ts: Date.now() });
           });
@@ -608,19 +608,19 @@ console.log('[RTDB] Loading MQTT transport...');
 
         mqttClient.on('message', (topic, msgBuf) => {
           const raw = msgBuf.toString();
-          handleIncoming(raw).catch(e => console.warn('[RTDB] handleIncoming error:', e?.message));
+          handleIncoming(raw).catch(e => console.warn('[MQTT] handleIncoming error:', e?.message));
         });
 
         mqttClient.on('error', (err) => {
-          console.error('[RTDB] ❌ MQTT error:', err.message);
+          console.error('[MQTT] ❌ MQTT error:', err.message);
         });
 
         mqttClient.on('reconnect', () => {
-          console.log('[RTDB] MQTT reconnecting...');
+          console.log('[MQTT] MQTT reconnecting...');
         });
 
         mqttClient.on('offline', () => {
-          console.warn('[RTDB] MQTT offline');
+          console.warn('[MQTT] MQTT offline');
           statusCb('waiting', onlineCount);
         });
       };
@@ -651,10 +651,10 @@ console.log('[RTDB] Loading MQTT transport...');
       myName    = null;
       onlineCount = 0;
       window.peer.disconnected = true;
-      console.log('[RTDB] Disconnesso');
+      console.log('[MQTT] Disconnesso');
     },
 
-    send(data)         { rtdbBroadcast(data); },
+    send(data)         { peerBroadcast(data); },
     getStatus()        { return isStarted ? (mqttClient?.connected ? 'connected' : 'connecting') : 'disconnected'; },
     getMyPeerId()      { return window.peer.id; },
     getPeerCount()     { return onlineCount; },
@@ -674,7 +674,7 @@ console.log('[RTDB] Loading MQTT transport...');
       if (!members.some(m => m.name === myName)) {
         members.unshift({ name: myName, role: g.createdByName === myName ? 'hub' : 'member' });
       }
-      rtdbBroadcast({
+      peerBroadcast({
         type          : 'group_sync',
         name          : g.name,
         roomId        : g.roomId,
@@ -686,7 +686,7 @@ console.log('[RTDB] Loading MQTT transport...');
     broadcastItinerary(itineraryId) {
       const itin = window.state?.groupItineraries?.[itineraryId];
       if (!itin) return;
-      rtdbBroadcast({
+      peerBroadcast({
         type        : 'itinerary_sync',
         itineraryId,
         payload     : itin,
@@ -702,7 +702,7 @@ console.log('[RTDB] Loading MQTT transport...');
       const personalItin = Object.values(window.state?.itineraryByDay || {}).flat();
       if (!personalItin.length || !groupId) return;
 
-      rtdbBroadcast({
+      peerBroadcast({
         type: 'itinerary_share',
         payload: {
           originItineraryId: itineraryId,
@@ -713,7 +713,7 @@ console.log('[RTDB] Loading MQTT transport...');
           }
         }
       });
-      console.log('[RTDB] 📤 Broadcasting itinerary share:', itineraryId, groupId);
+      console.log('[MQTT] 📤 Broadcasting itinerary share:', itineraryId, groupId);
     },
 
     broadcastItineraryEdit(groupId, itineraryId, action, tappId, data) {
@@ -724,7 +724,7 @@ console.log('[RTDB] Loading MQTT transport...');
       const vectorClock = groupItin?.vectorClock || {};
       vectorClock[myName] = (vectorClock[myName] || 0) + 1;
 
-      rtdbBroadcast({
+      peerBroadcast({
         type: 'itinerary_edit',
         payload: {
           groupId: groupId,
@@ -736,7 +736,7 @@ console.log('[RTDB] Loading MQTT transport...');
           vectorClock: vectorClock
         }
       });
-      console.log('[RTDB] ✏️ Broadcasting itinerary edit:', action, tappId);
+      console.log('[MQTT] ✏️ Broadcasting itinerary edit:', action, tappId);
     },
 
     broadcastPersonalItinerarySyncBack(originItineraryId, groupId) {
@@ -744,7 +744,7 @@ console.log('[RTDB] Loading MQTT transport...');
       const personalItin = window.state?.itinerary;
       if (!personalItin) return;
 
-      rtdbBroadcast({
+      peerBroadcast({
         type: 'itinerary_sync_personal',
         payload: {
           originItineraryId: originItineraryId,
@@ -756,7 +756,7 @@ console.log('[RTDB] Loading MQTT transport...');
           fromMember: myName
         }
       });
-      console.log('[RTDB] 🔄 Broadcasting personal itinerary sync back:', originItineraryId);
+      console.log('[MQTT] 🔄 Broadcasting personal itinerary sync back:', originItineraryId);
     },
 
     reconnectIfNeeded(room, name, onStatus) {
@@ -775,6 +775,6 @@ console.log('[RTDB] Loading MQTT transport...');
   };
 
   window.peerGPS = peerGPS;
-  console.log('[RTDB] ✓ peerGPS pronto (MQTT transport — zero config)');
+  console.log('[MQTT] ✓ peerGPS pronto (MQTT transport — zero config)');
 
 })();

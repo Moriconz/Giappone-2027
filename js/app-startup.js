@@ -6,7 +6,7 @@
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-// ── Refresh pannello gruppo — usato da firebase-rtdb.js ──────────────────────
+// ── Refresh pannello gruppo — usato da mqtt-transport.js ──────────────────────
 // NON chiama renderGroupView() per evitare ReferenceError su Safari.
 // y2k-windows.js sostituisce openSheet() con finestre floating (.y2k-win).
 // La finestra gruppo ha id "y2kwin-gruppo" (generato da "👥 Gruppo" → solo a-z0-9).
@@ -202,5 +202,8 @@ if (window.GROUP_SYNC) {
   console.log('[App] Initializing group sync...');
   window.GROUP_SYNC.init();
 }
+
+// ===== GF LAYER VISIBILITY (gluten-free is an optional kept layer) =====
+window.applyGFVisibility?.();
 
 });

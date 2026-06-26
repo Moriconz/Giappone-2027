@@ -3,7 +3,7 @@
  *
  * Risolve un gap UI documentato in STATO_APP.md §8.3: il codice di scrittura
  * dell'audit log esiste da tempo in app-core.js (`addTappaAuditEntry` chiamato
- * da firebase-rtdb.js su 4 eventi sync), ma le funzioni di visualizzazione
+ * da mqtt-transport.js su 4 eventi sync), ma le funzioni di visualizzazione
  * (`formatAuditLog`, `getLastModifiedInfo`) erano definite e mai chiamate.
  *
  * Questo modulo aggrega tutta la modificationHistory di tutte le tappe degli

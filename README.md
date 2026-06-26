@@ -1,303 +1,222 @@
-# 🗾 Giappone 2027 — Travel Companion v3.2
+# 🧭 Tabi (旅) — Travel Itinerary Planner
 
-**Travel companion offline-first per il viaggio in Giappone 2027** con mappa interattiva, **focus gluten-free**, GPS P2P live, chat di gruppo, e AI assistant.
+**PWA mobile-first, local-first, per pianificare itinerari di viaggio in qualsiasi parte del mondo** — con tempi e distanze reali tra le tappe, budget multi-valuta (preventivo vs consuntivo), collaborazione di gruppo in tempo reale, e una **guida gluten-free opzionale** (eredità del progetto, nato come app celiaci per il Giappone).
 
----
-
-## 📊 Status
-
-| Feature | Status | Note |
-|---------|--------|------|
-| **🗺️ Mappa interattiva** | ✅ Completa | 10,000+ POI, 37 città, zoom intelligente |
-| **🍜 Gluten-Free (GF)** | ✅ **FOCUS** | 150+ POI certificati, links FindMeGF, prenotazioni |
-| **📍 GPS P2P Live** | ✅ Completa | Star topology, real-time sync 5s |
-| **💬 Chat Gruppo** | ✅ Completa | P2P, notifiche push, storia locale |
-| **👥 Group Panel** | ✅ Completa | Membri, toggle GPS, exit/delete room |
-| **📦 Chunk Loader** | ✅ Completa | GitHub Releases, lazy-load, cache |
-| **⚡ Stabilità** | ✅ Completa | WakeLock, Heartbeat (anti-ghost) |
-| **🤖 AI Assistant** | ✅ Completa | Gemini API (quota 50/giorno), fallback offline |
-| **📅 Itinerario** | ✅ Base | Drag-drop POI, note |
+> Tabi tratta **tempo e denaro come quantità calcolate**, non come note: ti dice quando una giornata è troppo densa e quanto stai sforando il budget — non solo *cosa* vedere.
 
 ---
 
-## 🏗️ Architettura (rinnovata 2026)
+## Cos'è
 
-`index.html` è ora una **shell sottile (~205 righe)**: tutto il CSS e il JS inline
-è stato estratto in file dedicati. Vedi [ANALISI_2026.md](ANALISI_2026.md) per il dettaglio.
+Tabi non è una travel app generica. È un **planner**: costruisci itinerari giorno-per-giorno, e l'app calcola tempi/distanze tra le tappe, avvisa quando una giornata è irrealistica, e riconcilia costi preventivati e reali in multi-valuta. Funziona **offline** e gira **interamente lato client** (nessun account obbligatorio). La collaborazione di gruppo (chat, GPS live, spese condivise, editing itinerario) è P2P via MQTT.
+
+Heritage: il progetto è nato come **SafeEats** (guida ristoranti gluten-free in Giappone) ed è stato globalizzato. Il layer gluten-free e i moduli specifici-Giappone (JR Pass, calendario festività) restano disponibili ma sono **opzionali**.
+
+---
+
+## Feature principali
+
+### 🗺️ Itinerario
+- Struttura **trip → giorni → tappe**, drag-and-drop per riordinare.
+- **Tempi e distanze tra tappe** per mezzo (`routing.js`: Google Distance Matrix con fallback haversine + cache 24h), mostrati inline come riga "↳ spostamento".
+- **KPI visite vs spostamenti** + **warning "giornata troppo densa"** (carico > 12h) nell'intestazione di ogni giorno.
+- **Ottimizzatore del giro** (raggruppa per prossimità, meno spostamenti), per-giorno e per-trip.
+- **Snapshot** dell'itinerario personale (versioni con nome), **undo/redo** di sessione.
+- **Suggerimenti tempo libero**: POI vicini al baricentro del giorno non ancora in itinerario.
+
+### 💰 Budget
+- **Multi-valuta**: valuta di casa derivata dal locale del browser (it→EUR, en→USD, ja→JPY…), cambio live da `open.er-api.com` (free), unità canonica interna JPY.
+- **Preventivo vs consuntivo**: budget per categoria/totale vs speso reale, % e residuo, alert sforamento.
+- **Spese di gruppo** con split e settle-up.
+
+### 👥 Collaborazione realtime (P2P, zero backend)
+- **Transport MQTT** over WebSocket (`broker.emqx.io`, zero config) — `js/mqtt-transport.js`, API `window.peerGPS` / `window.peerBroadcast`.
+- **Chat di gruppo** con notifiche push e storia locale.
+- **GPS live** tra membri (star topology, sync ~5s, heartbeat anti-ghost, WakeLock).
+- **Pannello gruppo** (membri, toggle GPS, exit/delete room), **inviti via deep-link**.
+- **Editing itinerario condiviso** con merge **CRDT** (last-write-wins, vector clock) + UI di **review conflitti**.
+- **Presence live** ("chi sta guardando/editando ora").
+- **E2EE leggera** della stanza (AES-256-GCM, chiave derivata dal codice stanza — `room-crypto.js`).
+- Sync cross-tab locale via **BroadcastChannel** (`group-sync.js`).
+
+### 🌾 Guida Gluten-Free (layer opzionale)
+- Ricerca shop/ristoranti GF **per città** (live, globale, via Google Places/Custom Search).
+- `gfDetector` (analisi safety GREEN/YELLOW/RED su qualsiasi POI), **heatmap**, **wishlist**, **crowdsource**, **foto menu**.
+- **Toggle on/off** dal menu (default ON, eredità del progetto): da spento nasconde tab e layer GF.
+
+### 🗺️ Mappa
+- OpenLayers 8 + tile **ArcGIS World Street Map** (globali), cluster marker, route del giorno, layer GF/shopping/GPS.
+- **Vista globale persistente**: la mappa riapre dove l'hai lasciata, ovunque nel mondo (Giappone solo come default al primo avvio).
+
+### 🧰 Altro
+- Meteo (open-meteo), foto/galleria (IndexedDB), backup/restore JSON, POI custom, onboarding guidato, ricerca globale, risparmio batteria.
+- **Plugin Giappone**: calcolatore convenienza **JR Pass**, hint **calendario festività** giapponesi (lazy-load).
+- **AI** (Groq via serverless): analisi menu/foto per stima gluten-free.
+- **PWA**: installabile, offline-first (service worker network-first per l'app shell).
+- **i18n**: 🇮🇹 IT · 🇬🇧 EN · 🇯🇵 JA.
+
+---
+
+## Novità recenti (giugno 2026)
+
+| Area | Modifica |
+|---|---|
+| **Globalizzazione** | Mappa persiste worldwide (no più centro fisso Giappone); valuta default dal locale; gluten-free demoto a **layer opzionale** con toggle |
+| **Itinerario** | Nuovo **KPI visite/spostamenti** + badge **"giornata molto densa"** per giorno |
+| **Snellimento collab** | Rimosso `itinerary-phase5.js` (247 righe, sottosistema delta/batch/metrics mai cablato); trim di 3 funzioni morte in `itinerary-phase4.js`. **Zero funzioni perse.** |
+| **Pulizia nomi** | `firebase-rtdb.js` → **`mqtt-transport.js`**, `rtdbBroadcast` → **`peerBroadcast`**, log `[RTDB]` → `[MQTT]` (nessun Firebase: il transport è sempre stato MQTT) |
+
+---
+
+## Stack tecnico
+
+| Layer | Tecnologia | Note |
+|---|---|---|
+| Frontend | **Vanilla JS** (no framework, no build) | ~90 script `defer`, moduli pesanti lazy-loaded |
+| Mappa | **OpenLayers 8.2** + tile ArcGIS | global, free |
+| POI / ricerca | **Google Places** + Nominatim (reverse-geocoding fallback) | via serverless `api/` |
+| Routing tempi | Google Distance Matrix + **haversine fallback** | cache 24h |
+| Realtime | **MQTT/WebSocket** (`broker.emqx.io`) + BroadcastChannel | P2P, zero signup |
+| Storage | **localStorage** (stato) + **IndexedDB** (foto) | local-first, ~5MB quota |
+| Cambi valuta | open.er-api.com | free, no key |
+| Meteo | open-meteo | free |
+| AI | **Groq** (serverless) | analisi menu/immagini GF |
+| Cache server | Upstash Redis KV | `api/lib/kv-cache.js` |
+| Hosting | **Vercel** (statico + serverless `api/`) | CSP in `vercel.json` |
+
+---
+
+## Struttura del progetto
 
 ```
-index.html (~205 righe)          shell: meta, link CSS, tag <script>
-├─ css/
-│  ├─ legacy-skin.css            struttura componenti (ex y2k-override.css)
-│  ├─ base.css                   stili estratti dai <style> inline
-│  ├─ glass.css / safety.css     utility + UI gluten-free
-│  ├─ components.css             design tokens + componenti
-│  └─ modern-2026.css            ⭐ tema moderno (caricato per ultimo, vince)
-├─ js/
-│  ├─ app-boot.js                bootstrap PWA/install (ex 1° <script> inline)
-│  ├─ app-core.js                applicazione principale (ex <script> inline ~12.8k righe)
-│  ├─ state.js                   stato globale (localStorage, single source)
-│  ├─ y2k-windows.js             panel manager moderno (API window.y2kWindows)
-│  ├─ features-ai.js             AI + vision (TF.js/MobileNet lazy-loaded)
-│  ├─ itinerary*.js, routing.js  itinerario, budget, routing
-│  ├─ group-*.js                 gruppi realtime (MQTT) + chat
-│  └─ google-places-*.js         POI da Google Places
-├─ api/                          funzioni serverless Vercel (chiavi via process.env)
-├─ manifest.webmanifest          PWA config
-└─ sw.js                         service worker (offline)
-```
+index.html                  shell PWA (~278 righe): meta, CSP, link CSS, <script> defer
+sw.js                       service worker (offline, network-first app shell)
+manifest.webmanifest        config PWA
+vercel.json                 routing + header sicurezza + CSP
 
-> ⚠️ `app-core.js` (~12.800 righe) è il prossimo candidato a essere spezzato
-> in moduli di feature: refactor incrementale documentato in ANALISI_2026.md.
+css/
+  base.css components.css glass.css safety.css legacy-skin.css
+  modern-2026.css           tema moderno (caricato per ultimo)
+  apple-glass.css           skin liquid-glass (vince la cascade)
+
+js/
+  app-core.js               controller: dispatcher + init mappa + stato (432 righe)
+  app-boot.js               bootstrap install PWA
+  app-startup.js            polling pannelli, push, deep-link, sync init
+  app-navigation.js         routing viste
+  state.js                  stato globale (localStorage) + helper isGFEnabled/applyGFVisibility
+  i18n.js                   it/en/ja
+  mqtt-transport.js         ⭐ transport MQTT P2P (window.peerGPS / peerBroadcast)
+  room-crypto.js            E2EE AES-256-GCM stanza
+  group-*.js                chat, panel, sync, expenses, checklist, invite
+  live-presence.js          presence "chi è online/editando"
+  itinerary.js              dati itinerario (state.itineraryByDay)
+  itinerary-unified.js      vista itinerario (render giorni/tappe/KPI)
+  itinerary-crdt.js         merge CRDT del gruppo
+  conflict-resolver-ui.js   review conflitti CRDT
+  itinerary-snapshots.js    versioni personali
+  itinerary-undo-redo.js    undo/redo personale
+  routing.js                tempi/distanze tra tappe
+  google-places-*.js        POI da Google Places
+  gf-*.js / services/gfDetector.js   layer gluten-free
+  views/                    viste estratte (budget, list, gf, group, timeline, …)
+  jr-pass-calculator.js / japan-calendar-hints.js   plugin Giappone (lazy)
+
+api/                        serverless Vercel (chiavi via process.env)
+  googlePlacesNearby.js googlePlacesDetails.js placePhoto.js reverseGeocode.js
+  groqAnalyze.js groqImageAnalyze.js analyzeGlutenFree.js enrichPOI.js
+  searchGlutenFreeShops.js searchVintageShops.js searchGooglePlacesPhotos.js
+  lib/kv-cache.js           cache Upstash Redis
+```
 
 ---
 
-## 🚀 Quick Start
+## Modello dati (localStorage `state`)
 
-### Locale (Dev)
+```js
+state = {
+  itineraryByDay,      // { 0: [ {poi_id, poi_name, time, duration, cost, notes,
+                       //          route_from_prev:{distance_km,duration_min,mode,cost}} ] }
+  itinerary,           // itinerario condiviso (gruppo)
+  groupItineraries,    // itinerari CRDT del gruppo (versionati)
+  tripProfile,         // { days, startDate, groupSize, interests, diet, budget_total }
+  group,               // { roomId, myName, myAvatar, members, createdByName }
+  customEvents,        // POI custom
+  gpsTrack, gpsCurrentLat, gpsCurrentLng,
+  userCategoryOverrides, savedPOIs
+}
+// Chiavi separate: BudgetDB (budget+spese), gfEnabled, gj2027_map_view (vista mappa),
+//                  giappone2027_snapshots_v1 (snapshot), homeCurrency
+```
+
+---
+
+## Quick start
+
+### Locale (dev)
 ```bash
 git clone https://github.com/Moriconz/Giappone-2027.git
 cd Giappone-2027
-npx http-server . -p 5500
-# Apri http://localhost:5500
+python3 -m http.server 8080
+# apri http://localhost:8080
 ```
+> ⚠️ Le funzioni `api/` (Google Places, Groq) sono serverless Vercel: in locale con un server statico **non girano**, quindi ricerca POI / GF / AI degradano. Tutto il resto (itinerario, budget, mappa, gruppo, offline) funziona.
 
-### Mobile
-1. Apri su **HTTPS** (PWA richiede HTTPS)
-2. iOS: Share → "Aggiungi a Home"
-3. Android: Menu → "Installa app"
+### Deploy (Vercel)
+Deploy come progetto statico + serverless `api/`. Imposta le **env var**:
 
----
+| Variabile | Uso |
+|---|---|
+| `GOOGLE_MAPS_API_KEY` | Places, Distance Matrix, foto |
+| `GOOGLE_CUSTOM_SEARCH_API_KEY` + `GOOGLE_CUSTOM_SEARCH_CX` | ricerca shop GF / vintage |
+| `GRO_API_KEY` | Groq AI (analisi menu/foto) |
+| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | cache Upstash Redis |
 
-## 📱 Features Dettaglio
-
-### 🍜 **Gluten-Free (FOCUS)**
-
-**Perché?** Il Giappone per chi è celiaco è complesso: il grano è in quasi tutto (tamari, panko, roux). Questa app risolve il problema.
-
-#### ✅ Cosa puoi fare:
-- **Filtro "Solo GF"** su mappa → 150+ ristoranti certificati
-- **Links diretti a FindMeGF** → verifica in real-time se un locale è GF
-- **Badge GF full / GF partial** su ogni POI ristorante
-- **Frasi essenziali italiano-giapponese** da mostrare al ristorante
-- **Informazioni di contatto** per prenotare in avanti
-
-#### 📍 Ristoranti inclusi:
-- **Tokyo**: Gluten Free T's Kitchen (100% GF), Gluten-free Izakaya SHION, Soranoiro Nippon (ramen GF)
-- **Kyoto**: Okomeya Cafe (100% GF), Mumokuteki Cafe (vegan + GF)
-- **Osaka**: Papachan (okonomiyaki GF)
-- **Altre città**: Link a FindMeGF per cercare in tempo reale
-
-#### 🔗 Integration:
-- **FindMeGF.com**: Click diretto dalla mappa al database mondiale GF
-- **Google Maps**: Link per directions e info recenti
-- **Prenotazioni**: Suggerimenti di contatti locali
+### Mobile (PWA)
+Apri su **HTTPS** → iOS: Condividi → "Aggiungi a Home"; Android: Menu → "Installa app".
 
 ---
 
-### 🗺️ **Mappa Interattiva + Chunk Loader**
+## Script & test
 
-- **10,000+ POI** da GitHub Releases (chunk divisi per città)
-- **Lazy-load**: Carica solo città visibili
-- **Cache**: localStorage persiste tra sessioni
-- **Zoom intelligente**: Parte a zoom 10, radius GPS scala con zoom
-- **Performance**: 150 marker a zoom totale (90% nascosti)
-
----
-
-### 📍 **GPS P2P Live**
-
-- **Star topology**: Hub distribuisce posizioni a membri
-- **Real-time sync**: Aggiornamenti ogni 5 secondi
-- **WakeLock**: Schermo sempre acceso durante tracking
-- **Heartbeat**: Rileva peer offline (45s timeout)
-- **Test mode**: GPS fake a Tokyo per testing (flag `FORCE_FAKE_GPS`)
-
----
-
-### 💬 **Chat Gruppo** (NEW)
-
-- **P2P tra membri**: Messaggi via PeerJS
-- **Notifiche push**: Browser notifications
-- **Storia locale**: localStorage salva chat
-- **Interfaccia fluida**: Auto-scroll, input focus
-
----
-
-### 👥 **Group Panel** (NEW)
-
-- **Lista membri**: Status online/offline
-- **Toggle GPS**: Condividi posizione in diretta
-- **Exit room**: Esci dal gruppo
-- **Delete room**: Elimina stanza (solo creator)
-- **Link diretto a chat**: Pulsante per aprire chat
-
----
-
-### 🤖 **AI Assistant**
-
-- **Gemini API**: Free tier (50 richieste/giorno)
-- **Fallback offline**: Risponde anche senza API key
-- **Suggerimenti GF**: "Ristoranti celiaci a Tokyo", "Alternative GF a Kyoto"
-- **Itinerari**: Costruisce itinerari basati su POI GF
-
----
-
-## 💾 Dati & Privacy
-
-- **Zero backend**: Tutto locale su device
-- **Offline-first**: Funziona senza connessione
-- **localStorage**: ~5-10MB quota
-- **Backup**: Export JSON istantaneo
-- **PWA**: Installabile home screen
-
-### Cosa si Salva
-```javascript
-state = {
-  // Filtri
-  activeCat, onlyGF, savedPOIs,
-  
-  // GPS
-  gpsTrack, gpsCurrentLat, gpsCurrentLng,
-  
-  // Gruppo
-  group, gpsRemoteMarkers,
-  
-  // Chat
-  groupchat_${roomId},
-  
-  // Cache
-  chunk_parts_${city}
-}
+```bash
+npm run smoke        # smoke test e2e (richiede server su :8080 → python3 -m http.server 8080)
+npm run lint:i18n    # verifica chiavi i18n
+npm run visual       # regressione visiva (puppeteer)
 ```
+Check rapido sintassi: `node --check js/<file>.js`.
 
 ---
 
-## 🧪 Testing
+## Limiti noti & note
 
-### Test Chunk Loader
-```javascript
-window.chunkPartsLoader.loadChunksForCity('tokyo')
-// → [ChunkLoader] Extracted 1250 POIs from tokyo
-```
-
-### Test Group Panel
-```javascript
-window.state.group = {
-  roomId: 'test',
-  myName: 'TestUser',
-  isCreator: true
-};
-console.log(window.groupPanel.render());
-```
-
-### Test GPS Fake
-```javascript
-// index.html linea 2502: USE_FAKE_GPS = true
-// Abilita GPS a Tokyo (35.6762, 139.6503)
-```
-
-### Test Chat
-```javascript
-window.groupChat.send('Ciao!');
-console.log(window.groupChat.getHistory());
-```
+- **"Free" parziale**: Google Places / Distance Matrix / Groq sono a pagamento (free-tier con quota, gestita da `api-quota.js` + cache Redis). Mappa, routing-fallback, budget, cambi, meteo e collaborazione MQTT sono invece davvero gratuiti.
+- **Routing transit reale** (orari mezzi pubblici): non disponibile gratis a livello globale → i tempi sono stime (Distance Matrix dove c'è quota, altrimenti haversine × velocità media).
+- **Broker MQTT pubblico**: dipende da `broker.emqx.io` (downtime esterno possibile; fallback HiveMQ/Mosquitto previsto in `mqtt-transport.js`).
+- **localStorage ~5MB**: con tanti dati può saturare → export/backup JSON consigliato.
 
 ---
 
-## 🛠️ Sviluppo
+## Roadmap / cosa manca
 
-### Aggiungere Feature
-1. Crea file `js/feature-name.js`
-2. Usa namespace: `window.featureName = (() => { ... })()`
-3. Aggiungi script tag nel `<head>`
-4. Esporta funzioni pubbliche
-
-### Debug
-```javascript
-window.state              // Stato globale
-window.chunkPartsLoader.getStatus()  // Chunk status
-window.groupChat.getHistory()        // Chat history
-window.state.group                   // Gruppo info
-```
+- [ ] **Vault biglietti completo**: stati (prenotato/pagato/usato/scaduto), file/PDF in IndexedDB, reminder legati alla tappa (oggi: solo link-prenotazione per POI + promemoria base).
+- [ ] **Cambio FX congelato per spesa** (oggi: un unico cambio live).
+- [ ] **Opzione gluten-free nell'onboarding** (oggi: toggle dal menu, default ON).
+- [ ] **Plugin destinazione gated**: caricare JR Pass / calendario Giappone solo se il viaggio è in Giappone.
+- [ ] **Consolidamento moduli itinerario** (oggi ~16 file per feature) — refactor a basso rischio, da fare con trace dei caller.
+- [ ] **Vista "Oggi" da campo** (in corso: `views/timeline-view.js`).
+- [ ] Migrazione ricerca → Nominatim/Overpass se si vuole un free-tier 100% (oggi Google Places).
 
 ---
 
-## 📚 Documentazione
+## Crediti
 
-- **[ANALISI_2026.md](ANALISI_2026.md)** — Analisi completa, criticità e piano (documento canonico)
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** — Architettura dettagliata
-- **[CHANGELOG.md](CHANGELOG.md)** — Release notes
-- **docs/archive/** — Documentazione storica (sprint, fix, analisi precedenti)
+OpenLayers · MQTT.js + EMQX · Google Places · Groq · Upstash · open-meteo · open.er-api.com · Nominatim/OpenStreetMap · FindMeGlutenFree · Service Workers.
 
----
+## Licenza & autore
 
-## 🐛 Troubleshooting
-
-| Problema | Soluzione |
-|----------|-----------|
-| "JSZip not defined" | Verifica JSZip CDN caricato prima di chunk-parts-loader.js |
-| Chunk 404 | Verifica URL GitHub Releases in chunk-parts-loader.js |
-| Chat non riceve messaggi | Verifica PeerJS connesso (F12 → Console) |
-| GPS non attivo in gruppo | Imposta `USE_FAKE_GPS = true` (linea 2502) |
-| localStorage pieno | Clear browser cache, riprova |
+MIT. **Moriconz** — riccardo.moriconz@gmail.com · 📸 [@riccardo_moricone](https://instagram.com/riccardo_moricone)
 
 ---
 
-## 📋 Checklist Implementazione
-
-- [x] Mappa interattiva (10,000+ POI)
-- [x] **Gluten-Free focus** (150+ POI, FindMeGF links)
-- [x] GPS P2P live
-- [x] Chat di gruppo
-- [x] Group panel
-- [x] Chunk loader
-- [x] WakeLock + Heartbeat
-- [x] AI Gemini
-- [x] Modular structure
-- [x] Offline-first
-- [x] PWA
-
----
-
-## 🚀 Roadmap
-
-- [ ] GF restaurant ratings (crowdsourced)
-- [ ] Booking sync P2P
-- [ ] Gemini Vision (photo POI)
-- [ ] Weather API per tappe
-- [ ] Multi-language (EN, JP)
-- [ ] Native app (iOS/Android)
-
----
-
-## 👤 Autore
-
-**Moriconz** — SAP Solution Consultant + Fotografo  
-📧 riccardo.moriconz@gmail.com  
-📸 [@riccardo_moricone](https://instagram.com/riccardo_moricone)
-
----
-
-## 📄 License
-
-MIT — Libero per uso personale/commerciale
-
----
-
-## 🙏 Crediti
-
-- **OpenLayers** — Mappa interattiva
-- **PeerJS** — P2P WebRTC
-- **Google Gemini API** — AI assistant
-- **JSZip** — Decompressione zip
-- **Service Workers** — Offline caching
-- **FindMeGF.com** — Database GF mondiale
-
----
-
-**Versione:** v3.3 (modernizzazione 2026)  
-**Status:** ✅ Produzione  
-**Ultima modifica:** 25 Maggio 2026  
-
-Made with ❤️ for gluten-free travellers in Japan 🇯🇵
+*Tabi 旅 — pianifica viaggi che stanno davvero in piedi.*

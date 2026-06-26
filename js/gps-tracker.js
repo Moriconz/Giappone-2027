@@ -3,7 +3,7 @@
 //   updateAgendaDistances, buildGPSPanelHTML, updateGPSStatusPanel
 // Extracted from app-core.js. Deps (all window.*):
 //   state, saveState, haversineKm, fmtDist, updateGPSMarker, peerGPS,
-//   rtdbBroadcast, toast, t
+//   peerBroadcast, toast, t
 // ============================================================================
 (function () {
   'use strict';
@@ -25,7 +25,7 @@
         name: window.state.group.myName,
         avatar: window.state.group?.myAvatar || null
       };
-      window.rtdbBroadcast(payload);
+      window.peerBroadcast(payload);
     }
 
     if (USE_FAKE_GPS) {
@@ -71,7 +71,7 @@
           const payload = { type:'gps', lat:pt.lat, lng:pt.lng,
             name: window.state.group?.myName||'?', avatar: window.state.group?.myAvatar||null };
           console.log(`%c[GPS] 📍 Trasmettendo posizione: (${pt.lat.toFixed(4)}, ${pt.lng.toFixed(4)}) - ${window.state.group?.myName}`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px;font-size:11px');
-          window.rtdbBroadcast(payload);
+          window.peerBroadcast(payload);
         } catch(e) {}
       }
       window.saveState?.(); updateAgendaDistances(); updateGPSStatusPanel();

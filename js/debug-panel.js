@@ -25,14 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!panel || !contentEl) return;
     const hasErrors = debugLogs.some(l => l.type === 'error');
     const hasRelevant = debugLogs.some(l =>
-      l.msg.includes('[RTDB]') || l.msg.includes('[Group]') ||
+      l.msg.includes('[MQTT]') || l.msg.includes('[Group]') ||
       l.msg.includes('[FirebaseRTDB]') || l.msg.includes('[GPS]')
     );
     const gpsActive = window.state?.gpsEnabled || window.state?.group;
     panel.style.display = (hasErrors || hasRelevant || gpsActive) ? 'block' : 'none';
     contentEl.innerHTML = debugLogs
       .filter(l =>
-        l.msg.includes('[RTDB]') || l.msg.includes('[Group]') ||
+        l.msg.includes('[MQTT]') || l.msg.includes('[Group]') ||
         l.msg.includes('[FirebaseRTDB]') || l.msg.includes('[GPS]') ||
         l.type === 'error'
       )

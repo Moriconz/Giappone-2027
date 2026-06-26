@@ -131,7 +131,7 @@ window.groupChat = (() => {
     saveChat(group.roomId);
 
     // Invia via MQTT (affidabile, funziona attraverso firewall)
-    window.rtdbBroadcast?.({
+    window.peerBroadcast?.({
       type: 'groupchat',
       payload: message
     });

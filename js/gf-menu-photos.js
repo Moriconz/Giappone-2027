@@ -43,7 +43,7 @@
 
   function _broadcast(action, data) {
     const payload = { action, from: _me(), ...data };
-    window.rtdbBroadcast?.({ type: 'gf_menu_photo', payload });
+    window.peerBroadcast?.({ type: 'gf_menu_photo', payload });
     const conns = window.peerGPS?.getPeerConnections?.() || {};
     Object.values(conns).forEach(c => { if (c?.open) { try { c.send({ type: 'gf_menu_photo', payload }); } catch (_) {} } });
   }

@@ -10,7 +10,7 @@
 //              votes: { [memberName]: 'yes'|'maybe'|'no' } }
 // }
 // API: window.GFWishlist = { propose, vote, remove, getAll, openPanel, receive, count }
-// Sync: window.rtdbBroadcast / MQTT type 'gf_wishlist'
+// Sync: window.peerBroadcast / MQTT type 'gf_wishlist'
 // ============================================================================
 (function () {
   'use strict';
@@ -38,7 +38,7 @@
 
   function _broadcast(action, data) {
     const payload = { action, from: _me(), ...data };
-    window.rtdbBroadcast?.({ type: 'gf_wishlist', payload });
+    window.peerBroadcast?.({ type: 'gf_wishlist', payload });
     // P2P fallback (allineato a chat/crowdsource)
     const conns = window.peerGPS?.getPeerConnections?.() || {};
     Object.values(conns).forEach(conn => { if (conn?.open) { try { conn.send({ type: 'gf_wishlist', payload }); } catch (_) {} } });

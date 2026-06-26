@@ -220,8 +220,8 @@ function startGPSBroadcast() {
     };
 
     // Firebase RTDB (primary) — scrive direttamente su rooms/{room}/gps/{name}
-    if (window.rtdbBroadcast) {
-      window.rtdbBroadcast(msg);
+    if (window.peerBroadcast) {
+      window.peerBroadcast(msg);
     } else if (window.peer?.connections) {
       // Fallback legacy PeerJS
       Object.values(window.peer.connections).forEach(conns => {
@@ -366,8 +366,8 @@ function startHeartbeatSender() {
     };
 
     // Firebase RTDB (primary)
-    if (window.rtdbBroadcast) {
-      window.rtdbBroadcast(msg);
+    if (window.peerBroadcast) {
+      window.peerBroadcast(msg);
     } else if (window.peer?.connections) {
       // Fallback legacy PeerJS
       const hubId = makeHubId(window.state.group.roomId);

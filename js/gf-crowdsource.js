@@ -22,7 +22,7 @@
  * Dipendenze (tutte su window):
  *   - window.state.gfReports, window.saveState
  *   - window.state.group (autore = myName)
- *   - window.rtdbBroadcast / window.peerGPS (sync)
+ *   - window.peerBroadcast / window.peerGPS (sync)
  *   - window.toast, window.t
  */
 (function () {
@@ -68,7 +68,7 @@
     // Broadcast (se in gruppo)
     if (window.state?.group?.roomId) {
       const payload = { poiId, poiName: poiName || '', report };
-      window.rtdbBroadcast?.({ type: 'gf_report', payload });
+      window.peerBroadcast?.({ type: 'gf_report', payload });
       const peerConnections = window.peerGPS?.getPeerConnections?.() || {};
       Object.values(peerConnections).forEach(conn => {
         if (conn && conn.open) { try { conn.send({ type: 'gf_report', payload }); } catch (_) {} }

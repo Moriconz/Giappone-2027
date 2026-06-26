@@ -2,7 +2,7 @@
 // itinerary-delete.js — deletePersonalItinerary, requestUnshare, acceptUnshareRequest
 // Extracted from app-core.js. Deps (all window.*):
 //   state, saveState, toast, getSharedGroups, unmarkItinerarySharedWithGroup,
-//   rtdbBroadcast, peerGPS, modalConfirm
+//   peerBroadcast, peerGPS, modalConfirm
 // ============================================================================
 (function () {
   'use strict';
@@ -40,8 +40,8 @@
         window.unmarkItinerarySharedWithGroup?.('personal_itinerary', share.groupId);
 
         // Broadcast deletion to group
-        if (window.peerGPS && window.rtdbBroadcast) {
-          window.rtdbBroadcast({
+        if (window.peerGPS && window.peerBroadcast) {
+          window.peerBroadcast({
             type: 'itinerary_deleted',
             payload: {
               itineraryId: groupItinId,
@@ -77,8 +77,8 @@
     }
 
     // Send request to owner
-    if (window.rtdbBroadcast) {
-      window.rtdbBroadcast({
+    if (window.peerBroadcast) {
+      window.peerBroadcast({
         type: 'itinerary_unshare_request',
         payload: {
           itineraryId: itineraryId,
@@ -106,8 +106,8 @@
     window.saveState?.();
 
     // Notify group
-    if (window.rtdbBroadcast) {
-      window.rtdbBroadcast({
+    if (window.peerBroadcast) {
+      window.peerBroadcast({
         type: 'itinerary_unshared',
         payload: {
           groupId: groupId,

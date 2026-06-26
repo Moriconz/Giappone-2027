@@ -30,6 +30,7 @@ function renderItineraryUnified() {
   let costByDay = {};
 
   let distanceByDay = {};
+  let transferMinByDay = {};
   for (let d = 0; d < days; d++) {
     // Calcola tratte (distanza/durata/modo/costo) tra tappe consecutive prima di leggerle
     window.ITINERARY?.computeDayRouting?.(d);
@@ -38,6 +39,8 @@ function renderItineraryUnified() {
     distanceByDay[d] = (dayPOIs || []).reduce((sum, entry) => {
       return sum + (entry.route_from_prev?.distance_km || 0);
     }, 0);
+    // ponytail: somma minuti di spostamento del giorno (per KPI visite/spostamenti + warning densità)
+    transferMinByDay[d] = (dayPOIs || []).reduce((sum, entry) => sum + (entry.route_from_prev?.duration_min || 0), 0);
   }
 
   // ===== SECTION 1: PERSONAL ITINERARY (ACCORDION) =====
@@ -46,6 +49,12 @@ function renderItineraryUnified() {
     const dayDate = new Date(_tripStart); dayDate.setDate(dayDate.getDate() + dayIndex);
     const dayLabel = `Day ${dayIndex + 1} — ${dayDate.toLocaleDateString('it-IT', { weekday: 'short', month: 'short', day: 'numeric' })}`;
     const dayDuration = ITINERARY.getDayDuration(dayIndex);
+    // ponytail: KPI visite vs spostamenti + densità giornata (riusa dati già su ogni entry)
+    const _visitMin = dayDuration;
+    const _transitMin = transferMinByDay[dayIndex] || 0;
+    const _loadMin = _visitMin + _transitMin;
+    const _dense = _loadMin > 12 * 60; // finestra attiva 12h (allineata a itinerary-suggest)
+    const _transitPct = _loadMin > 0 ? Math.round(_transitMin / _loadMin * 100) : 0;
     const poiListHTML = dayPOIs.length ? dayPOIs.map((entry, idx) => {
       // Get POI name: first try entry.poi_name, then search allPOIs, fallback to ID
       let poiNameDisplay = entry.poi_name;
@@ -176,6 +185,11 @@ function renderItineraryUnified() {
               ${costByDay[dayIndex] > 0 ? `<span style="background:rgba(100,200,255,0.25);color:#64c8ff;padding:3px 10px;border-radius:4px;font-weight:600">¥${costByDay[dayIndex]}</span>` : ''}
               ${distanceByDay[dayIndex] > 0 ? `<span style="background:rgba(100,180,200,0.25);color:#64b4c8;padding:3px 10px;border-radius:4px;font-weight:600">🚶 ${distanceByDay[dayIndex].toFixed(1)}km</span>` : ''}
             </span>
+            ${dayPOIs.length >= 2 ? `<span style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,0.6);font-weight:600">
+              <span title="visite vs spostamenti" style="display:inline-flex;height:6px;width:84px;border-radius:3px;overflow:hidden;background:rgba(255,107,53,0.5)"><span style="height:100%;width:${100 - _transitPct}%;background:#4ade80"></span></span>
+              <span>${(_visitMin / 60).toFixed(1)}h visite · ${(_transitMin / 60).toFixed(1)}h spost. (${_transitPct}%)</span>
+            </span>` : ''}
+            ${_dense ? `<span style="font-size:11px;color:#ffb454;font-weight:700;background:rgba(255,180,84,0.15);border:1px solid rgba(255,180,84,0.4);padding:2px 8px;border-radius:5px">⚠️ Giornata molto densa (${(_loadMin / 60).toFixed(1)}h)</span>` : ''}
           </div>
         </button>
         <div class="itinerary-day-content" data-day="${dayIndex}" style="
