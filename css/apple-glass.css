@@ -1,0 +1,311 @@
+/* ============================================================================
+   APPLE GLASS — skin "liquid glass" stile Apple (iOS/macOS dark)
+   Caricato DOPO modern-2026.css: ridefinisce token e superfici.
+   Accento: rosso hinomaru #D64550 (coerente con l'icona torii).
+   Intensità: MASSIMA (blur pesanti) — il Risparmio batteria li disattiva.
+   Solo proprietà di "pittura" (colori/blur/radius/ombre): zero layout.
+   ============================================================================ */
+
+:root {
+  /* ── Accento: rosso Giappone ──────────────────────────────────── */
+  --m-accent:        #d64550;
+  --m-accent-600:    #ba3641;
+  --m-accent-soft:   rgba(214, 69, 80, 0.16);
+  --m-accent-border: rgba(214, 69, 80, 0.52);
+  --m-on-accent:     #ffffff;
+
+  /* ── Materiale vetro (vibrancy alla Apple) ────────────────────── */
+  --m-glass:     rgba(24, 26, 32, 0.55);          /* pannelli */
+  --m-glass-2:   rgba(255, 255, 255, 0.06);       /* card sul vetro */
+  --m-glass-3:   rgba(255, 255, 255, 0.10);       /* hover / bottoni */
+  --m-glass-brd: rgba(255, 255, 255, 0.14);       /* hairline */
+  --m-glass-hi:  rgba(255, 255, 255, 0.22);       /* highlight bordo sup. */
+  --m-blur:      blur(36px) saturate(190%);
+  --m-blur-md:   blur(26px) saturate(180%);
+  --m-blur-sm:   blur(14px) saturate(160%);
+
+  /* ── Geometria più "continua" (Apple) ─────────────────────────── */
+  --m-r-sm: 10px;
+  --m-r-md: 14px;
+  --m-r-lg: 22px;
+  --m-r-sheet: 26px;
+
+  --m-shadow-md: 0 10px 30px rgba(0, 0, 0, 0.40);
+  --m-shadow-lg: 0 24px 70px rgba(0, 0, 0, 0.55);
+}
+
+/* ── Tipografia: tono SF Pro ──────────────────────────────────────── */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -0.01em;
+}
+h1, h2, h3, .y2k-win-title span { letter-spacing: -0.02em !important; }
+header h1 { font-size: 21px !important; font-weight: 800 !important; }
+
+/* ════════════════════════════════════════════════════════════════
+   CHROME — header, barra filtri, bottom nav (barre frosted iOS)
+   ════════════════════════════════════════════════════════════════ */
+header {
+  background: rgba(14, 16, 22, 0.42) !important;
+  -webkit-backdrop-filter: var(--m-blur-md) !important;
+  backdrop-filter: var(--m-blur-md) !important;
+  border-bottom: 0.5px solid var(--m-glass-brd) !important;
+  box-shadow: inset 0 -0.5px 0 rgba(255, 255, 255, 0.06) !important;
+}
+#filters {
+  background: rgba(14, 16, 22, 0.34) !important;
+  -webkit-backdrop-filter: var(--m-blur-md) !important;
+  backdrop-filter: var(--m-blur-md) !important;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.10) !important;
+}
+nav.bottom {
+  background: rgba(14, 16, 22, 0.45) !important;
+  -webkit-backdrop-filter: var(--m-blur) !important;
+  backdrop-filter: var(--m-blur) !important;
+  border-top: 0.5px solid var(--m-glass-brd) !important;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.08), 0 -8px 30px rgba(0, 0, 0, 0.35) !important;
+}
+/* Tab attivo: pill tinta hinomaru (stile tab bar iOS) */
+nav.bottom button {
+  border-radius: var(--m-r-lg) !important;
+  font-weight: 600 !important;
+}
+nav.bottom button.active {
+  color: var(--m-accent) !important;
+  background: var(--m-accent-soft) !important;
+  box-shadow: inset 0 0 0 0.5px var(--m-accent-border) !important;
+}
+
+/* Selettore lingua + bottone ricerca: pill frosted */
+#lang-switcher {
+  background: rgba(255, 255, 255, 0.09) !important;
+  border: 0.5px solid var(--m-glass-brd) !important;
+  border-radius: 999px !important;
+  padding: 6px 12px !important;
+  -webkit-backdrop-filter: var(--m-blur-sm) !important;
+  backdrop-filter: var(--m-blur-sm) !important;
+}
+#global-search-btn {
+  background: rgba(255, 255, 255, 0.09) !important;
+  border: 0.5px solid var(--m-glass-brd) !important;
+  border-radius: 999px !important;
+  padding: 6px 13px !important;
+  min-height: 36px !important;
+  -webkit-backdrop-filter: var(--m-blur-sm) !important;
+  backdrop-filter: var(--m-blur-sm) !important;
+  transition: background 0.15s var(--m-ease), transform 0.12s var(--m-ease) !important;
+}
+#global-search-btn:hover { background: var(--m-accent-soft) !important; }
+
+/* ════════════════════════════════════════════════════════════════
+   PANNELLI (.y2k-win) — sheet "liquid glass"
+   ════════════════════════════════════════════════════════════════ */
+.y2k-win {
+  background: var(--m-glass) !important;
+  -webkit-backdrop-filter: var(--m-blur) !important;
+  backdrop-filter: var(--m-blur) !important;
+  border: 0.5px solid var(--m-glass-brd) !important;
+  border-bottom: none !important;
+  border-radius: var(--m-r-sheet) var(--m-r-sheet) 0 0 !important;
+  box-shadow:
+    inset 0 1px 0 var(--m-glass-hi),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.04),
+    0 -18px 60px rgba(0, 0, 0, 0.55) !important;
+}
+@media (min-width: 680px) {
+  .y2k-win { border-radius: var(--m-r-lg) !important; border-bottom: 0.5px solid var(--m-glass-brd) !important; }
+}
+.y2k-win-title {
+  background: transparent !important;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.10) !important;
+}
+/* grabber iOS */
+.y2k-win-title::before {
+  width: 38px; height: 5px;
+  background: rgba(255, 255, 255, 0.30);
+}
+/* close: cerchietto materiale (stile iOS "xmark.circle.fill") */
+.y2k-win-close {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+.y2k-win-close:hover { background: var(--m-accent) !important; color: #fff !important; }
+
+/* backdrop più profondo, con leggero blur (depth alla Apple) */
+.panel-backdrop {
+  background: rgba(6, 8, 12, 0.45);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  backdrop-filter: blur(10px) saturate(120%);
+}
+/* mappa sotto il pannello: sfocata e desaturata appena */
+#map.blur { filter: blur(7px) brightness(0.62) saturate(115%); }
+
+/* ════════════════════════════════════════════════════════════════
+   CONTROLLI — bottoni, input, chip (linguaggio iOS)
+   ════════════════════════════════════════════════════════════════ */
+
+/* Bottoni standard nei pannelli: materiale traslucido */
+.btn,
+.y2k-win-body button:not(.btn-cta):not(.y2k-win-close),
+.sheet-body button {
+  background: rgba(255, 255, 255, 0.10) !important;
+  border: 0.5px solid var(--m-glass-brd) !important;
+  border-radius: var(--m-r-md) !important;
+  color: var(--m-text) !important;
+}
+.btn:hover,
+.y2k-win-body button:not(.btn-cta):not(.y2k-win-close):hover,
+.sheet-body button:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: none !important;
+}
+
+/* CTA primarie: hinomaru pieno, testo bianco (testo scuro era per il coral) */
+.btn.primary, .btn-primary, .btn-cta,
+.y2k-win-body .btn.primary,
+.y2k-win-body .btn-cta,
+#filters .chip.active {
+  background: var(--m-accent) !important;
+  border-color: var(--m-accent) !important;
+  color: var(--m-on-accent) !important;
+}
+.btn.primary:hover, .btn-primary:hover, .btn-cta:hover,
+.y2k-win-body .btn-cta:hover { background: var(--m-accent-600) !important; }
+.y2k-win-body .btn-cta { box-shadow: 0 6px 22px rgba(214, 69, 80, 0.35) !important; }
+.m-btn-cta { box-shadow: 0 6px 22px rgba(214, 69, 80, 0.30); }
+.m-btn-cta:hover { box-shadow: 0 10px 30px rgba(214, 69, 80, 0.45); }
+
+/* Input: campo "inset" iOS */
+.y2k-win-body input[type="text"],
+.y2k-win-body input[type="number"],
+.y2k-win-body input[type="email"],
+.y2k-win-body input[type="password"],
+.y2k-win-body input[type="search"],
+.y2k-win-body input[type="date"],
+.y2k-win-body input[type="time"],
+.y2k-win-body textarea,
+.y2k-win-body select,
+.sheet-body input, .sheet-body textarea, .sheet-body select {
+  background: rgba(118, 118, 128, 0.20) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: var(--m-r-md) !important;
+  min-height: 40px !important;
+}
+.y2k-win-body input:focus,
+.y2k-win-body textarea:focus,
+.y2k-win-body select:focus {
+  border-color: var(--m-accent-border) !important;
+  box-shadow: 0 0 0 3.5px var(--m-accent-soft) !important;
+}
+
+/* Chip filtri: pill frosted, attiva rossa piena */
+#filters .chip, .chip, .tag {
+  background: rgba(255, 255, 255, 0.09) !important;
+  border: 0.5px solid var(--m-glass-brd) !important;
+  -webkit-backdrop-filter: var(--m-blur-sm) !important;
+  backdrop-filter: var(--m-blur-sm) !important;
+}
+#filters .chip.active {
+  box-shadow: 0 3px 14px rgba(214, 69, 80, 0.40) !important;
+}
+.chip.active, .chip[aria-pressed="true"] {
+  background: var(--m-accent-soft) !important;
+  border-color: var(--m-accent-border) !important;
+  color: #ff8d96 !important;
+}
+
+/* Card sul vetro: traslucide con hairline (niente blur annidato) */
+.y2k-win-body .poi-row, .poi-row, .shop-card, .booking-card,
+.gallery-photo-card, .expense-item, .weather-forecast-card, .weather-day,
+.y2k-win-body .section, .section, .gf-box, .groq-panel, .m-card, .m-card-2 {
+  background: var(--m-glass-2) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.10) !important;
+  border-radius: var(--m-r-md) !important;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.07) !important;
+}
+.y2k-win-body .poi-row:hover, .poi-row:hover, .shop-card:hover, .booking-card:hover {
+  background: var(--m-glass-3) !important;
+}
+
+/* Voci del menu drawer (inline-styled in JS → serve !important) */
+.menu-drawer-item {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.10) !important;
+  border-radius: var(--m-r-md) !important;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.06) !important;
+}
+.menu-drawer-item:hover { background: rgba(255, 255, 255, 0.12) !important; }
+
+/* ════════════════════════════════════════════════════════════════
+   WIDGET — meteo, toast
+   ════════════════════════════════════════════════════════════════ */
+#weather-floating #weather-card {
+  background: rgba(24, 28, 38, 0.38) !important;
+  -webkit-backdrop-filter: var(--m-blur) !important;
+  backdrop-filter: var(--m-blur) !important;
+  border: 0.5px solid var(--m-glass-brd) !important;
+  border-radius: var(--m-r-lg) !important;
+  box-shadow: inset 0 1px 0 var(--m-glass-hi), var(--m-shadow-md) !important;
+}
+#toast-container.show {
+  background: rgba(34, 38, 46, 0.60) !important;
+  -webkit-backdrop-filter: var(--m-blur-md) !important;
+  backdrop-filter: var(--m-blur-md) !important;
+  border: 0.5px solid var(--m-glass-brd) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), var(--m-shadow-md) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MICRO-UX
+   ════════════════════════════════════════════════════════════════ */
+/* Press: scala leggera + niente flash blu su mobile */
+button:active, .chip:active, .menu-drawer-item:active, [role="button"]:active {
+  transform: scale(0.97);
+}
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Focus ring rosso coerente */
+:focus-visible {
+  outline: 2.5px solid var(--m-accent) !important;
+  outline-offset: 2px !important;
+}
+
+/* Scrollbar minimale */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18) !important; }
+
+/* ════════════════════════════════════════════════════════════════
+   FALLBACK & MODALITÀ
+   ════════════════════════════════════════════════════════════════ */
+/* Browser senza backdrop-filter: superfici quasi opache (leggibilità) */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .y2k-win { background: rgba(24, 26, 32, 0.97) !important; }
+  header, #filters, nav.bottom { background: rgba(14, 16, 22, 0.97) !important; }
+  #weather-floating #weather-card { background: rgba(24, 28, 38, 0.96) !important; }
+  #toast-container.show { background: rgba(34, 38, 46, 0.97) !important; }
+}
+
+/* RISPARMIO BATTERIA — deve vincere su tutto il vetro qui sopra.
+   (Ri-dichiarato qui in fondo: a parità di !important vince l'ultima regola.) */
+html.battery-saver *,
+html.battery-saver *::before,
+html.battery-saver *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+/* Senza blur le superfici diventano solide */
+html.battery-saver .y2k-win { background: rgba(20, 23, 30, 0.98) !important; }
+html.battery-saver header,
+html.battery-saver #filters,
+html.battery-saver nav.bottom { background: rgba(14, 16, 22, 0.97) !important; }
+html.battery-saver #weather-floating #weather-card { background: rgba(24, 28, 38, 0.97) !important; }
+html.battery-saver #toast-container.show { background: rgba(34, 38, 46, 0.98) !important; }
+html.battery-saver .panel-backdrop { background: rgba(6, 8, 12, 0.72); }
+
+/* prefers-reduced-motion: già coperto in modern-2026.css */
