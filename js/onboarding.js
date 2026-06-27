@@ -87,7 +87,7 @@ function showOnboardingChoiceModal() {
         <!-- OPTION 1: CREATE TRIP -->
         <button id="choice-create" style="
           padding: 18px 20px;
-          background: linear-gradient(135deg, var(--m-accent), #FF5E1F);
+          background: var(--m-accent);
           border: none;
           border-radius: 12px;
           color: #fff;

@@ -32,6 +32,21 @@
 
   --m-shadow-md: 0 10px 30px rgba(0, 0, 0, 0.40);
   --m-shadow-lg: 0 24px 70px rgba(0, 0, 0, 0.55);
+
+  /* ── Leggibilità: i token Y2K erano testo SCURO per card bianche.
+     La skin ha reso scure le superfici → il testo va CHIARO, o resta
+     invisibile (dark-on-dark). Apple-glass carica dopo modern-2026 → vince. ── */
+  --y2k-ink:   #e9edf4;   /* testo principale, ~14:1 sul vetro scuro */
+  --y2k-muted: #aab3c4;   /* testo secondario, ~7:1 */
+}
+
+/* Sicurezza: qualunque superficie ancora "bianca" inline nei pannelli
+   (input/select/banner Y2K) → vetro scuro, così il testo chiaro resta leggibile. */
+.y2k-win-body [style*="background:#fff"],
+.y2k-win-body [style*="background: #fff"],
+.y2k-win-body [style*="background:white"],
+.sheet-body [style*="background:#fff"] {
+  background: rgba(118, 118, 128, 0.20) !important;
 }
 
 /* ── Tipografia: tono SF Pro ──────────────────────────────────────── */

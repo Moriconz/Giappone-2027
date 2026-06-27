@@ -125,8 +125,8 @@
       btn.id = 'universal-install-btn';
       btn.textContent = '📱 Aggiungi';
       btn.style.cssText = `
-        background: linear-gradient(135deg, #ff7a45, #f5631f) !important;
-        color: #1a1207 !important;
+        background: #d64550 !important;
+        color: #ffffff !important;
         border: none !important;
         padding: 9px 14px !important;
         border-radius: 10px !important;
@@ -135,18 +135,18 @@
         cursor: pointer !important;
         flex-shrink: 0 !important;
         white-space: nowrap !important;
-        box-shadow: 0 2px 10px rgba(255,122,69,0.3) !important;
+        box-shadow: 0 2px 10px rgba(214,69,80,0.35) !important;
         transition: all 0.2s ease !important;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
       `;
 
       btn.onmouseenter = () => {
         btn.style.transform = 'scale(1.05)';
-        btn.style.boxShadow = '0 4px 14px rgba(255,122,69,0.45)';
+        btn.style.boxShadow = '0 4px 14px rgba(214,69,80,0.5)';
       };
       btn.onmouseleave = () => {
         btn.style.transform = 'scale(1)';
-        btn.style.boxShadow = '0 2px 10px rgba(255,122,69,0.3)';
+        btn.style.boxShadow = '0 2px 10px rgba(214,69,80,0.35)';
       };
 
       btn.onclick = () => this.handleInstall();
