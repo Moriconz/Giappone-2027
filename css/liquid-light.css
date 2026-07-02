@@ -82,8 +82,17 @@ header{
   -webkit-backdrop-filter:var(--l-blur) !important; backdrop-filter:var(--l-blur) !important;
   border-bottom:1px solid var(--l-hair) !important;
   box-shadow:none !important;
+  /* Notch/status-bar (mobile): header è position:relative (flow normale), quindi
+     aumentare il suo padding-top sposta correttamente tutto sotto senza rompere
+     nulla. #filters però ha "top:56px" hardcoded inline in index.html — va
+     esteso della stessa quantità qui sotto, altrimenti si sovrappone all'header
+     più alto sui device con notch. */
+  padding-top:calc(24px + env(safe-area-inset-top,0px)) !important;
 }
 header h1{ color:var(--l-ink) !important; }
+
+/* #filters: "top:56px" inline assume l'altezza header senza notch → estesa qui */
+#filters{ top:calc(56px + env(safe-area-inset-top,0px)) !important; }
 
 /* Ricerca + lingua: pill frosted chiare */
 #global-search-btn, #lang-switcher{
