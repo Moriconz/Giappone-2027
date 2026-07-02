@@ -98,9 +98,17 @@
   function closeWin(id) {
     const win = wins[id];
     if (!win) return;
-    win.remove();
     delete wins[id];
     delete winViews[id];
+    // Uscita animata (simmetrica all'entrata m-sheet-up, invertita via CSS):
+    // rinominare l'id evita collisioni se l'utente riapre subito lo stesso pannello
+    // mentre quello vecchio sta ancora sparendo. remove() dopo l'animazione;
+    // il setTimeout è solo una rete di sicurezza se animationend non scatta.
+    win.id = win.id + '-closing';
+    win.classList.add('y2k-win-closing');
+    const finish = () => win.remove();
+    win.addEventListener('animationend', finish, { once: true });
+    setTimeout(finish, 260);
     updateMapBlur();
     updateBackdrop();
 

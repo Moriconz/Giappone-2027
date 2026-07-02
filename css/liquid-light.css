@@ -319,3 +319,14 @@ nav.bottom button.active span{ color:var(--l-accent) !important; }
   #weather-floating #weather-card{ background:rgba(255,255,255,.97) !important; }
   .y2k-win, .sheet-inner{ background:rgba(248,250,253,.98) !important; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   USCITA PANNELLO — simmetrica all'entrata "m-sheet-up" (modern-2026.css),
+   riusata al contrario invece di una nuova keyframe: stessa curva, stesso
+   feeling, diff minimo. prefers-reduced-motion la azzera già globalmente
+   (regola universale in modern-2026.css), niente da aggiungere qui.
+   ════════════════════════════════════════════════════════════════ */
+.y2k-win-closing{
+  animation:m-sheet-up .22s var(--m-ease) reverse forwards !important;
+  pointer-events:none !important;
+}
