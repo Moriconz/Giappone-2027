@@ -174,41 +174,41 @@
 
     if (!r.ok) {
       window.openSheet(T('jrpass.title', '🚄 Conviene il JR Pass?'),
-        `<p style="color:#fff;padding:18px;">${T('jrpass.error', 'Sistema di routing non disponibile.')}</p>`);
+        `<p style="color:var(--l-ink);padding:18px;">${T('jrpass.error', 'Sistema di routing non disponibile.')}</p>`);
       return;
     }
 
     if (r.segmentsCount === 0) {
       window.openSheet(T('jrpass.title', '🚄 Conviene il JR Pass?'),
-        `<div style="padding:18px;color:rgba(255,255,255,0.8);font-size:13px;line-height:1.6;">
+        `<div style="padding:18px;color:var(--l-ink);font-size:13px;line-height:1.6;">
            <p>${T('jrpass.empty', 'L\'itinerario non ha ancora tratte tra POI consecutivi.')}</p>
-           <p style="margin-top:8px;color:rgba(255,255,255,0.55);font-size:12px;">${T('jrpass.emptyHint', 'Aggiungi almeno 2 POI in un giorno per vedere il calcolo.')}</p>
+           <p style="margin-top:8px;color:var(--l-muted);font-size:12px;">${T('jrpass.emptyHint', 'Aggiungi almeno 2 POI in un giorno per vedere il calcolo.')}</p>
          </div>`);
       return;
     }
 
     const recsHtml = r.recommendations.map(rec => {
-      const tone = rec.savings > 5000 ? 'rgba(100,200,150,0.18)'
-        : rec.savings > 0 ? 'rgba(255,200,80,0.18)'
-        : 'rgba(255,107,107,0.12)';
-      const tonebr = rec.savings > 5000 ? 'rgba(100,200,150,0.5)'
-        : rec.savings > 0 ? 'rgba(255,200,80,0.5)'
-        : 'rgba(255,107,107,0.35)';
+      const tone = rec.savings > 5000 ? 'rgba(22,163,74,0.14)'
+        : rec.savings > 0 ? 'rgba(180,83,9,0.14)'
+        : 'rgba(224,65,78,0.10)';
+      const tonebr = rec.savings > 5000 ? 'rgba(22,163,74,0.45)'
+        : rec.savings > 0 ? 'rgba(180,83,9,0.45)'
+        : 'rgba(224,65,78,0.35)';
       const verdict = rec.savings > 0
-        ? `<span style="color:#7fe2a9;font-weight:700;">${T('jrpass.worthIt', 'Conviene')}</span> · ${T('jrpass.savings', 'Risparmio')} ~${_fmtYen(rec.savings)}`
-        : `<span style="color:#ffb0b0;font-weight:700;">${T('jrpass.notWorth', 'Non conviene')}</span> · ${T('jrpass.extra', 'Costo extra')} ~${_fmtYen(-rec.savings)}`;
+        ? `<span style="color:#16a34a;font-weight:700;">${T('jrpass.worthIt', 'Conviene')}</span> · ${T('jrpass.savings', 'Risparmio')} ~${_fmtYen(rec.savings)}`
+        : `<span style="color:var(--l-accent-600);font-weight:700;">${T('jrpass.notWorth', 'Non conviene')}</span> · ${T('jrpass.extra', 'Costo extra')} ~${_fmtYen(-rec.savings)}`;
       const coverageNote = rec.coverageRatio < 1
-        ? `<div style="font-size:10.5px;color:rgba(255,255,255,0.5);margin-top:4px;">⚠️ ${T('jrpass.partialCoverage', 'Copre solo')} ${rec.days}/${r.tripDays} ${T('jrpass.dayUnit', 'giorni')} (${Math.round(rec.coverageRatio * 100)}%)</div>`
+        ? `<div style="font-size:10.5px;color:var(--l-muted);margin-top:4px;">⚠️ ${T('jrpass.partialCoverage', 'Copre solo')} ${rec.days}/${r.tripDays} ${T('jrpass.dayUnit', 'giorni')} (${Math.round(rec.coverageRatio * 100)}%)</div>`
         : '';
       return `
         <div style="
           padding:12px 14px;background:${tone};border:1.5px solid ${tonebr};
           border-radius:10px;display:flex;flex-direction:column;gap:6px;">
           <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;color:#fff;font-size:14px;">🎫 ${T('jrpass.pass', 'JR Pass')} ${_esc(rec.name)}</div>
-            <div style="font-size:13px;color:rgba(255,255,255,0.9);">${_fmtYen(rec.price)}</div>
+            <div style="font-weight:700;color:var(--l-ink);font-size:14px;">🎫 ${T('jrpass.pass', 'JR Pass')} ${_esc(rec.name)}</div>
+            <div style="font-size:13px;color:var(--l-ink);">${_fmtYen(rec.price)}</div>
           </div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.78);">${verdict}</div>
+          <div style="font-size:12px;color:var(--l-muted);">${verdict}</div>
           ${coverageNote}
         </div>
       `;
@@ -216,16 +216,16 @@
 
     const bestBanner = r.best && r.best.worthIt
       ? `<div style="
-          padding:14px 16px;background:linear-gradient(135deg,rgba(100,200,150,0.25),rgba(80,180,130,0.20));
-          border:1.5px solid rgba(100,200,150,0.5);border-radius:12px;
-          color:#fff;font-weight:600;font-size:13px;line-height:1.5;">
+          padding:14px 16px;background:linear-gradient(135deg,rgba(22,163,74,0.18),rgba(22,163,74,0.12));
+          border:1.5px solid rgba(22,163,74,0.45);border-radius:12px;
+          color:var(--l-ink);font-weight:600;font-size:13px;line-height:1.5;">
           ✅ ${T('jrpass.bestPrefix', 'Conviene il')} <strong>JR Pass ${_esc(r.best.name)}</strong>
           — ${T('jrpass.savings', 'Risparmio')} ~${_fmtYen(r.best.savings)}
          </div>`
       : `<div style="
-          padding:14px 16px;background:rgba(255,180,80,0.16);
-          border:1.5px solid rgba(255,180,80,0.4);border-radius:12px;
-          color:#fff;font-weight:600;font-size:13px;line-height:1.5;">
+          padding:14px 16px;background:rgba(180,83,9,0.12);
+          border:1.5px solid rgba(180,83,9,0.35);border-radius:12px;
+          color:var(--l-ink);font-weight:600;font-size:13px;line-height:1.5;">
           💡 ${T('jrpass.bestSingleTicket', 'Conviene comprare biglietti singoli.')}
           ${T('jrpass.bestSingleNote', 'Il JR Pass è troppo caro per le tratte di questo viaggio.')}
          </div>`;
@@ -237,24 +237,24 @@
 
         <div style="
           display:grid;grid-template-columns:1fr 1fr;gap:8px;
-          padding:12px;background:rgba(255,255,255,0.04);
-          border:1px solid rgba(255,255,255,0.08);border-radius:10px;
-          font-size:12px;color:rgba(255,255,255,0.85);">
+          padding:12px;background:rgba(20,30,60,0.04);
+          border:1px solid var(--l-hair);border-radius:10px;
+          font-size:12px;color:var(--l-ink);">
           <div><strong>${r.tripDays}</strong> ${T('jrpass.dayUnit', 'giorni')}</div>
           <div><strong>${r.segmentsCount}</strong> ${T('jrpass.segments', 'tratte')}</div>
           <div><strong>${r.totalKm}</strong> km ${T('jrpass.total', 'totali')}</div>
           <div><strong>${r.shinkansenKm}</strong> km ${T('jrpass.intercity', 'intercity')}</div>
-          <div style="grid-column:1/-1;border-top:1px solid rgba(255,255,255,0.10);padding-top:8px;margin-top:4px;display:flex;justify-content:space-between;">
+          <div style="grid-column:1/-1;border-top:1px solid var(--l-hair);padding-top:8px;margin-top:4px;display:flex;justify-content:space-between;">
             <span>${T('jrpass.totalFare', 'Spesa stimata trasporti')}:</span>
             <strong>${_fmtYen(r.totalFareYen)}</strong>
           </div>
           <div style="grid-column:1/-1;display:flex;justify-content:space-between;">
-            <span style="color:rgba(255,255,255,0.7);">${T('jrpass.jrShare', 'Di cui copribile da JR Pass')}:</span>
-            <strong style="color:#7fe2a9;">${_fmtYen(r.jrCoverableYen)}</strong>
+            <span style="color:var(--l-muted);">${T('jrpass.jrShare', 'Di cui copribile da JR Pass')}:</span>
+            <strong style="color:#16a34a;">${_fmtYen(r.jrCoverableYen)}</strong>
           </div>
           <div style="grid-column:1/-1;display:flex;justify-content:space-between;">
-            <span style="color:rgba(255,255,255,0.7);">${T('jrpass.nonJR', 'Trasporti urbani non-JR')}:</span>
-            <strong style="color:rgba(255,200,100,0.95);">${_fmtYen(r.nonJRYen)}</strong>
+            <span style="color:var(--l-muted);">${T('jrpass.nonJR', 'Trasporti urbani non-JR')}:</span>
+            <strong style="color:#b45309;">${_fmtYen(r.nonJRYen)}</strong>
           </div>
         </div>
 
@@ -262,7 +262,7 @@
           ${recsHtml}
         </div>
 
-        <p style="font-size:10.5px;color:rgba(255,255,255,0.42);text-align:center;line-height:1.5;margin:6px 0 0;">
+        <p style="font-size:10.5px;color:var(--l-faint);text-align:center;line-height:1.5;margin:6px 0 0;">
           ⚠️ ${T('jrpass.disclaimer', 'Stime approssimative ±20%. Per il calcolo ufficiale consulta jrpass.com / smartex.jp.')}<br>
           ${T('jrpass.priceNote', 'Prezzi JR Pass Ordinary, post-aumento ottobre 2023.')}
         </p>

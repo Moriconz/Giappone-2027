@@ -51,7 +51,7 @@ document.addEventListener('click', (e) => {
       const originalText = e.target.textContent;
       const originalColor = e.target.style.color;
       e.target.textContent = '✓';
-      e.target.style.color = '#4ade80';
+      e.target.style.color = '#16a34a';
       setTimeout(() => {
         e.target.textContent = originalText;
         e.target.style.color = originalColor;
@@ -225,12 +225,12 @@ document.addEventListener('click', (e) => {
     textarea.id = 'poi-note';
     textarea.placeholder = 'Es: Prenotare con 2 giorni di anticipo...';
     textarea.style.cssText = `
-      width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
-      border-radius:10px;font-size:13px;color:#fff;resize:vertical;min-height:70px;font-family:inherit;
+      width:100%;padding:12px;background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);
+      border-radius:10px;font-size:13px;color:var(--l-ink);resize:vertical;min-height:70px;font-family:inherit;
       box-sizing:border-box;transition:border-color 0.2s;margin-bottom:8px;
     `;
-    textarea.onmouseover = function() { this.style.borderColor = 'rgba(255,255,255,0.2)'; };
-    textarea.onmouseout = function() { this.style.borderColor = 'rgba(255,255,255,0.1)'; };
+    textarea.onmouseover = function() { this.style.borderColor = 'rgba(20,30,60,0.2)'; };
+    textarea.onmouseout = function() { this.style.borderColor = 'var(--l-hair)'; };
 
     section.appendChild(textarea);
     textarea.focus();
@@ -261,11 +261,11 @@ document.addEventListener('click', (e) => {
     const closeBtn = document.createElement('button');
     closeBtn.textContent = '✕ Chiudi';
     closeBtn.style.cssText = `
-      flex:1;padding:8px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:6px;
-      color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;transition:all 0.2s;
+      flex:1;padding:8px;background:transparent;border:1px solid var(--l-hair);border-radius:6px;
+      color:var(--l-muted);font-size:12px;cursor:pointer;transition:all 0.2s;
     `;
-    closeBtn.onmouseover = function() { this.style.borderColor = 'rgba(255,255,255,0.4)'; };
-    closeBtn.onmouseout = function() { this.style.borderColor = 'rgba(255,255,255,0.2)'; };
+    closeBtn.onmouseover = function() { this.style.borderColor = 'rgba(20,30,60,0.3)'; };
+    closeBtn.onmouseout = function() { this.style.borderColor = 'var(--l-hair)'; };
     closeBtn.onclick = () => {
       textarea.remove();
       btnContainer.remove();

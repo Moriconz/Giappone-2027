@@ -103,7 +103,7 @@
 
     if (entries.length === 0) {
       window.openSheet?.('📷 ' + T('vh.title', 'Versioni itinerario'), `
-        <div style="padding:32px 16px;text-align:center;color:rgba(255,255,255,0.55);">
+        <div style="padding:32px 16px;text-align:center;color:var(--l-muted);">
           <div style="font-size:40px;margin-bottom:14px;">🗄️</div>
           <p style="margin:0;font-size:14px;line-height:1.5;">
             ${T('vh.empty',
@@ -127,8 +127,8 @@
         <div style="
           display:flex;gap:10px;align-items:flex-start;
           padding:12px;
-          background:rgba(255,255,255,${isCurrent ? '0.1' : '0.04'});
-          border:1.5px solid rgba(255,255,255,${isCurrent ? '0.3' : '0.1'});
+          background:${isCurrent ? 'rgba(224,65,78,0.06)' : '#fff'};
+          border:1.5px solid ${isCurrent ? 'var(--l-accent-brd)' : 'var(--l-hair)'};
           border-radius:10px;margin-bottom:8px;
           transition:all 0.2s;
         ">
@@ -144,19 +144,19 @@
           <div style="flex:1;min-width:0;">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
               <span style="font-size:16px;">${icon}</span>
-              <span style="color:#fff;font-weight:600;font-size:13px;">${_esc(entry.peerId || 'sconosciuto')}</span>
+              <span style="color:var(--l-ink);font-weight:600;font-size:13px;">${_esc(entry.peerId || 'sconosciuto')}</span>
               ${isCurrent ? `
                 <span style="
-                  background:rgba(0,200,100,0.2);border:1px solid rgba(0,200,100,0.5);
+                  background:rgba(22,163,74,0.12);border:1px solid rgba(22,163,74,0.4);
                   border-radius:20px;padding:1px 8px;font-size:11px;
-                  color:#7FFF7F;font-weight:700;
+                  color:#16a34a;font-weight:700;
                 ">${T('vh.current', 'ATTUALE')}</span>` : ''}
             </div>
-            <div style="color:rgba(255,255,255,0.65);font-size:12px;margin-bottom:4px;">
+            <div style="color:var(--l-muted);font-size:12px;margin-bottom:4px;">
               ${desc}
               &nbsp;·&nbsp;${pois} ${T('vh.pois', 'tappe')}
             </div>
-            <div style="color:rgba(255,255,255,0.55);font-size:11px;">${when}</div>
+            <div style="color:var(--l-faint);font-size:11px;">${when}</div>
           </div>
 
           <!-- Ripristina -->
@@ -165,13 +165,13 @@
               onclick="window.ItineraryVersionHistory._restoreTo(${entry._idx})"
               style="
                 flex-shrink:0;padding:6px 10px;
-                background:rgba(100,180,255,0.15);
-                border:1px solid rgba(100,180,255,0.35);
-                border-radius:7px;color:#fff;font-size:12px;font-weight:600;
+                background:rgba(2,132,199,0.1);
+                border:1px solid rgba(2,132,199,0.3);
+                border-radius:7px;color:#0284c7;font-size:12px;font-weight:600;
                 cursor:pointer;transition:all 0.2s;white-space:nowrap;
               "
-              onmouseover="this.style.background='rgba(100,180,255,0.28)'"
-              onmouseout="this.style.background='rgba(100,180,255,0.15)'"
+              onmouseover="this.style.background='rgba(2,132,199,0.18)'"
+              onmouseout="this.style.background='rgba(2,132,199,0.1)'"
             >${T('vh.restoreBtn', 'Ripristina')}</button>` : ''}
         </div>
       `;
@@ -181,7 +181,7 @@
       <div style="padding:4px 0;">
         <p style="
           margin:0 0 14px;
-          color:rgba(255,255,255,0.55);font-size:12px;line-height:1.5;
+          color:var(--l-muted);font-size:12px;line-height:1.5;
         ">
           ${T('vh.desc',
             'Ogni modifica all\'itinerario di gruppo crea un checkpoint automatico. Puoi tornare a qualsiasi versione precedente.')}

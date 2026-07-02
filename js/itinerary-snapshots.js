@@ -261,17 +261,17 @@
     const T = (k, f) => (typeof window.t === 'function' ? window.t(k, f) : f);
 
     const empty = items.length === 0
-      ? `<p style="color:rgba(255,255,255,0.55);text-align:center;padding:24px 12px;font-size:13px;">
+      ? `<p style="color:var(--l-muted);text-align:center;padding:24px 12px;font-size:13px;">
           ${T('snap.empty', 'Nessuno snapshot salvato. Usa "💾 Salva versione" per crearne uno.')}
          </p>`
       : '';
 
     const rows = items.map(s => {
       // Auto-snapshot: bordo + bg leggermente diversi + badge "🤖 Auto"
-      const cardBg = s.isAuto ? 'rgba(255,180,80,0.06)' : 'rgba(255,255,255,0.05)';
-      const cardBorder = s.isAuto ? 'rgba(255,180,80,0.25)' : 'rgba(255,255,255,0.10)';
+      const cardBg = s.isAuto ? 'rgba(255,180,80,0.10)' : 'rgba(20,30,60,0.03)';
+      const cardBorder = s.isAuto ? 'rgba(255,180,80,0.35)' : 'var(--l-hair)';
       const badge = s.isAuto
-        ? `<span style="display:inline-block;padding:2px 7px;background:rgba(255,180,80,0.22);border:1px solid rgba(255,180,80,0.45);border-radius:999px;font-size:10px;font-weight:700;color:#FFC97A;letter-spacing:.4px;margin-right:4px;">🤖 ${T('snap.autoBadge', 'AUTO')}</span>`
+        ? `<span style="display:inline-block;padding:2px 7px;background:rgba(255,180,80,0.22);border:1px solid rgba(255,180,80,0.45);border-radius:999px;font-size:10px;font-weight:700;color:#8a5a10;letter-spacing:.4px;margin-right:4px;">🤖 ${T('snap.autoBadge', 'AUTO')}</span>`
         : '';
       return `
       <div data-snap-id="${_esc(s.id)}" style="
@@ -279,23 +279,23 @@
         border:1px solid ${cardBorder};border-radius:10px;
         display:flex;flex-direction:column;gap:8px;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;">
-          <div style="font-weight:700;color:#fff;font-size:14px;">${badge}${_esc(s.name)}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);font-family:'SF Mono',Menlo,monospace;">${_fmtTime(s.timestamp)}</div>
+          <div style="font-weight:700;color:var(--l-ink);font-size:14px;">${badge}${_esc(s.name)}</div>
+          <div style="font-size:11px;color:var(--l-muted);font-family:'SF Mono',Menlo,monospace;">${_fmtTime(s.timestamp)}</div>
         </div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.6);">
+        <div style="font-size:12px;color:var(--l-muted);">
           📍 ${s.poiCount} POI · 📅 ${s.dayCount} ${s.dayCount === 1 ? 'giorno' : 'giorni'}
         </div>
         <div style="display:flex;gap:8px;">
           <button data-snap-restore="${_esc(s.id)}" style="
-            flex:1;padding:8px 12px;background:rgba(100,180,150,0.25);
-            border:1.5px solid rgba(100,180,150,0.5);border-radius:6px;
-            color:#fff;font-weight:600;font-size:12px;cursor:pointer;">
+            flex:1;padding:8px 12px;background:rgba(22,163,74,0.16);
+            border:1.5px solid rgba(22,163,74,0.5);border-radius:6px;
+            color:#15803d;font-weight:600;font-size:12px;cursor:pointer;">
             ${T('snap.restore', '↩️ Ripristina')}
           </button>
           <button data-snap-delete="${_esc(s.id)}" style="
-            padding:8px 12px;background:rgba(255,107,107,0.18);
-            border:1.5px solid rgba(255,107,107,0.4);border-radius:6px;
-            color:#fff;font-weight:600;font-size:12px;cursor:pointer;">
+            padding:8px 12px;background:var(--l-accent-soft);
+            border:1.5px solid var(--l-accent-brd);border-radius:6px;
+            color:var(--l-accent-600);font-weight:600;font-size:12px;cursor:pointer;">
             🗑️
           </button>
         </div>
@@ -306,7 +306,7 @@
     const html = `
       <div style="display:flex;flex-direction:column;gap:12px;padding:4px 0;">
         <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
-          <p style="color:rgba(255,255,255,0.65);font-size:12px;margin:0;flex:1;min-width:180px;">
+          <p style="color:var(--l-muted);font-size:12px;margin:0;flex:1;min-width:180px;">
             ${T('snap.intro', 'Salva versioni del tuo itinerario prima di provare modifiche.')}
           </p>
           <button id="snap-save-new" style="
@@ -320,7 +320,7 @@
           ${empty}
           ${rows}
         </div>
-        <div style="font-size:10.5px;color:rgba(255,255,255,0.50);text-align:center;padding-top:8px;">
+        <div style="font-size:10.5px;color:var(--l-faint);text-align:center;padding-top:8px;">
           ${T('snap.limit', `Massimo ${MAX_SNAPSHOTS} versioni — le più vecchie vengono rimosse automaticamente.`)}
         </div>
       </div>

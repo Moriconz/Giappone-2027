@@ -228,7 +228,7 @@
 
     if (!result.ok) {
       window.openSheet(T('topt.title', '🧭 Ottimizza viaggio'),
-        `<div style="padding:24px 14px;text-align:center;color:rgba(255,255,255,0.6);font-size:13px;line-height:1.6;">
+        `<div style="padding:24px 14px;text-align:center;color:var(--l-muted);font-size:13px;line-height:1.6;">
            <div style="font-size:34px;margin-bottom:8px;">🗺️</div>
            <p style="margin:0;">${T('topt.tooFew', 'Servono almeno 2 tappe con posizione nota per ottimizzare il viaggio.')}</p>
          </div>`);
@@ -237,36 +237,36 @@
 
     const { plan, stats } = result;
     const savedPct = stats.beforeKm > 0 ? Math.round((stats.saved / stats.beforeKm) * 100) : 0;
-    const savedColor = stats.saved > 0 ? '#7fe2a9' : 'rgba(255,255,255,0.7)';
+    const savedColor = stats.saved > 0 ? '#15803d' : 'var(--l-muted)';
 
     const dayBlocks = Object.keys(plan).map(d => {
       const entries = plan[d];
       if (!entries.length) return '';
       const names = entries.map(e => `<li style="margin:2px 0;">${_esc(e.poi_name || e.poi_id)}</li>`).join('');
       return `
-        <div style="padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:9px;">
-          <div style="font-weight:700;color:#fff;font-size:13px;margin-bottom:4px;">📅 ${T('topt.day', 'Giorno')} ${Number(d) + 1} <span style="font-weight:500;color:rgba(255,255,255,0.5);font-size:11px;">· ${entries.length} ${T('topt.stops', 'tappe')}</span></div>
-          <ul style="margin:0;padding-left:18px;font-size:12px;color:rgba(255,255,255,0.8);">${names}</ul>
+        <div style="padding:10px 12px;background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:9px;">
+          <div style="font-weight:700;color:var(--l-ink);font-size:13px;margin-bottom:4px;">📅 ${T('topt.day', 'Giorno')} ${Number(d) + 1} <span style="font-weight:500;color:var(--l-muted);font-size:11px;">· ${entries.length} ${T('topt.stops', 'tappe')}</span></div>
+          <ul style="margin:0;padding-left:18px;font-size:12px;color:var(--l-ink);">${names}</ul>
         </div>`;
     }).join('');
 
     const html = `
       <div style="display:flex;flex-direction:column;gap:12px;padding:4px 0;">
-        <p style="margin:0;color:rgba(255,255,255,0.7);font-size:12.5px;line-height:1.5;">
+        <p style="margin:0;color:var(--l-muted);font-size:12.5px;line-height:1.5;">
           ${T('topt.intro', 'Anteprima: le tappe vengono raggruppate per zona geografica per ridurre gli spostamenti. Niente viene applicato finché non confermi.')}
         </p>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;text-align:center;">
-          <div><div style="font-size:18px;font-weight:800;color:#fff;">${stats.beforeKm}</div><div style="font-size:10px;color:rgba(255,255,255,0.5);">km ${T('topt.before', 'prima')}</div></div>
-          <div><div style="font-size:18px;font-weight:800;color:#fff;">${stats.afterKm}</div><div style="font-size:10px;color:rgba(255,255,255,0.5);">km ${T('topt.after', 'dopo')}</div></div>
-          <div><div style="font-size:18px;font-weight:800;color:${savedColor};">${stats.saved >= 0 ? '−' : '+'}${Math.abs(stats.saved)}</div><div style="font-size:10px;color:rgba(255,255,255,0.5);">km ${T('topt.saved', 'risparmiati')} ${savedPct > 0 ? '(' + savedPct + '%)' : ''}</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px;background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:10px;text-align:center;">
+          <div><div style="font-size:18px;font-weight:800;color:var(--l-ink);">${stats.beforeKm}</div><div style="font-size:10px;color:var(--l-muted);">km ${T('topt.before', 'prima')}</div></div>
+          <div><div style="font-size:18px;font-weight:800;color:var(--l-ink);">${stats.afterKm}</div><div style="font-size:10px;color:var(--l-muted);">km ${T('topt.after', 'dopo')}</div></div>
+          <div><div style="font-size:18px;font-weight:800;color:${savedColor};">${stats.saved >= 0 ? '−' : '+'}${Math.abs(stats.saved)}</div><div style="font-size:10px;color:var(--l-muted);">km ${T('topt.saved', 'risparmiati')} ${savedPct > 0 ? '(' + savedPct + '%)' : ''}</div></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">${dayBlocks}</div>
-        ${result.without?.length ? `<p style="font-size:11px;color:rgba(255,200,100,0.8);margin:0;">⚠️ ${result.without.length} ${T('topt.noCoord', 'tappe senza posizione resteranno nel Giorno 1.')}</p>` : ''}
+        ${result.without?.length ? `<p style="font-size:11px;color:#8a5a10;margin:0;">⚠️ ${result.without.length} ${T('topt.noCoord', 'tappe senza posizione resteranno nel Giorno 1.')}</p>` : ''}
         <div style="display:flex;gap:8px;margin-top:4px;">
           <button id="topt-apply" style="flex:2;padding:12px;background:linear-gradient(135deg,var(--m-accent),#FF5E1F);border:none;border-radius:9px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">✅ ${T('topt.apply', 'Applica')}</button>
-          <button id="topt-cancel" style="flex:1;padding:12px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.16);border-radius:9px;color:#fff;font-weight:600;font-size:13px;cursor:pointer;">${T('common.cancel', 'Annulla')}</button>
+          <button id="topt-cancel" style="flex:1;padding:12px;background:rgba(20,30,60,0.04);border:1.5px solid var(--l-hair);border-radius:9px;color:var(--l-ink);font-weight:600;font-size:13px;cursor:pointer;">${T('common.cancel', 'Annulla')}</button>
         </div>
-        <p style="font-size:10.5px;color:rgba(255,255,255,0.55);text-align:center;margin:2px 0 0;">${T('topt.undoHint', 'Puoi annullare con ⬅️ o ripristinare una versione salvata.')}</p>
+        <p style="font-size:10.5px;color:var(--l-faint);text-align:center;margin:2px 0 0;">${T('topt.undoHint', 'Puoi annullare con ⬅️ o ripristinare una versione salvata.')}</p>
       </div>
     `;
 

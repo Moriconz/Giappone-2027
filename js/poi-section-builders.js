@@ -31,8 +31,8 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       gap: 4px;
       padding: 2px 8px;
       border-radius: 999px;
-      background: ${isOpen ? 'rgba(74, 222, 128, 0.14)' : 'rgba(248, 113, 113, 0.14)'};
-      color: ${isOpen ? '#86efac' : '#fca5a5'};
+      background: ${isOpen ? 'rgba(22, 163, 74, 0.12)' : 'rgba(220, 38, 38, 0.12)'};
+      color: ${isOpen ? '#16a34a' : '#dc2626'};
       font-size: 11px;
       font-weight: 600;
     ">${isOpen ? PSB_T('poi.open') : PSB_T('poi.closed')}</span>`;
@@ -76,7 +76,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
         gap: 4px;
         font-size: 10px;
         font-weight: 500;
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--l-muted);
         letter-spacing: 0.2px;
       ">
         <span style="font-size: 14px;">${catEmoji}</span>
@@ -85,7 +85,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       <button id="edit-cat-btn" style="
         background: transparent;
         border: none;
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--l-muted);
         cursor: pointer;
         font-size: 12px;
         padding: 2px 4px;
@@ -100,7 +100,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
         margin: 0;
         font-size: 18px;
         font-weight: 700;
-        color: #fff;
+        color: var(--l-ink);
         word-wrap: break-word;
         line-height: 1.3;
       ">${displayName}</h2>
@@ -110,7 +110,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
     ${metadataRow ? `
       <div style="
         font-size: 12px;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--l-muted);
         line-height: 1.3;
         padding: 2px 16px 0 16px;
         display: flex;
@@ -124,7 +124,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
     ` : ''}
 
     <!-- Divider - Minimal spacing -->
-    <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 8px 0 0 0"></div>
+    <div style="height: 1px; background: var(--l-hair); margin: 8px 0 0 0"></div>
   `;
 }
 
@@ -141,8 +141,8 @@ function renderOpeningHours(details) {
 
   return `
     <div style="
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(20, 30, 60, 0.03);
+      border: 1px solid var(--l-hair);
       border-radius: 8px;
       margin-bottom: 12px;
       overflow: hidden;
@@ -152,7 +152,7 @@ function renderOpeningHours(details) {
         padding: 12px;
         background: transparent;
         border: none;
-        color: #fff;
+        color: var(--l-ink);
         font-weight: 600;
         cursor: pointer;
         text-align: left;
@@ -167,14 +167,14 @@ function renderOpeningHours(details) {
 
       <div id="${uid}" style="
         padding: 12px;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-top: 1px solid var(--l-hair);
         display: none;
         font-size: 12px;
       ">
         ${hours.weekdayDescriptions.map(desc => `
           <div style="
             padding: 6px 0;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--l-muted);
             line-height: 1.4;
           ">${desc}</div>
         `).join('')}
@@ -192,8 +192,8 @@ function renderAddress(poi, details) {
 
   return `
     <div style="
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(20, 30, 60, 0.03);
+      border: 1px solid var(--l-hair);
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 12px;
@@ -201,12 +201,12 @@ function renderAddress(poi, details) {
       <div style="
         font-weight: 600;
         font-size: 12px;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--l-muted);
         margin-bottom: 6px;
       ">📍 ${PSB_T('poi.address')}</div>
       <div style="
         font-size: 13px;
-        color: #fff;
+        color: var(--l-ink);
         line-height: 1.4;
         word-break: break-word;
       ">${address}</div>
@@ -226,16 +226,16 @@ function renderWebsite(details) {
   return `
     <a href="${url}" target="_blank" rel="noopener" style="
       display: block;
-      background: linear-gradient(135deg, rgba(42, 110, 144, 0.2), rgba(74, 124, 89, 0.2));
-      border: 1px solid rgba(74, 124, 89, 0.3);
+      background: rgba(2, 132, 199, 0.08);
+      border: 1px solid rgba(2, 132, 199, 0.25);
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 12px;
-      color: #fff;
+      color: #0284c7;
       text-decoration: none;
       font-size: 13px;
       transition: background 0.2s;
-    " onmouseover="this.style.background='linear-gradient(135deg, rgba(42, 110, 144, 0.3), rgba(74, 124, 89, 0.3))'" onmouseout="this.style.background='linear-gradient(135deg, rgba(42, 110, 144, 0.2), rgba(74, 124, 89, 0.2))'">
+    " onmouseover="this.style.background='rgba(2, 132, 199, 0.14)'" onmouseout="this.style.background='rgba(2, 132, 199, 0.08)'">
       🌐 ${domain}
     </a>
   `;
@@ -253,16 +253,16 @@ function renderPhone(details) {
   return `
     <a href="tel:${cleanPhone}" style="
       display: block;
-      background: rgba(255, 107, 53, 0.1);
-      border: 1px solid rgba(255, 107, 53, 0.3);
+      background: rgba(224, 65, 78, 0.08);
+      border: 1px solid rgba(224, 65, 78, 0.25);
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 12px;
-      color: #fff;
+      color: var(--l-accent-600);
       text-decoration: none;
       font-size: 13px;
       transition: background 0.2s;
-    " onmouseover="this.style.background='rgba(255, 107, 53, 0.2)'" onmouseout="this.style.background='rgba(255, 107, 53, 0.1)'">
+    " onmouseover="this.style.background='rgba(224, 65, 78, 0.14)'" onmouseout="this.style.background='rgba(224, 65, 78, 0.08)'">
       📞 ${phone}
     </a>
   `;
@@ -277,13 +277,13 @@ function renderDescription(details) {
 
   return `
     <div style="
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(20, 30, 60, 0.03);
+      border: 1px solid var(--l-hair);
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 12px;
       font-size: 13px;
-      color: rgba(255, 255, 255, 0.85);
+      color: var(--l-ink);
       line-height: 1.5;
     ">
       ${text}
@@ -307,9 +307,9 @@ function renderRestaurantAttributes(poi, details) {
   const gfChip = gfStatus !== 'unknown' ? `
     <span style="
       display: inline-block;
-      background: ${gfStatus === 'confirmed' ? 'rgba(74,222,128,0.2)' : 'rgba(132,204,22,0.15)'};
-      border: 1px solid ${gfStatus === 'confirmed' ? 'rgba(74,222,128,0.5)' : 'rgba(132,204,22,0.4)'};
-      color: ${gfStatus === 'confirmed' ? '#4ade80' : '#84cc16'};
+      background: ${gfStatus === 'confirmed' ? 'rgba(22,163,74,0.12)' : 'rgba(101,163,13,0.12)'};
+      border: 1px solid ${gfStatus === 'confirmed' ? 'rgba(22,163,74,0.4)' : 'rgba(101,163,13,0.35)'};
+      color: ${gfStatus === 'confirmed' ? '#16a34a' : '#65a30d'};
       border-radius: 6px;
       padding: 6px 10px;
       font-size: 11px;
@@ -331,12 +331,12 @@ function renderRestaurantAttributes(poi, details) {
     .map(a => `
       <span style="
         display: inline-block;
-        background: rgba(74, 124, 89, 0.2);
-        border: 1px solid rgba(74, 124, 89, 0.4);
+        background: rgba(20, 30, 60, 0.055);
+        border: 1px solid var(--l-hair);
         border-radius: 6px;
         padding: 6px 10px;
         font-size: 11px;
-        color: #fff;
+        color: var(--l-ink);
         font-weight: 600;
       ">${a.label}</span>
     `)
@@ -346,8 +346,8 @@ function renderRestaurantAttributes(poi, details) {
 
   return `
     <div style="
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(20, 30, 60, 0.02);
+      border: 1px solid var(--l-hair);
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 12px;
@@ -355,7 +355,7 @@ function renderRestaurantAttributes(poi, details) {
       <div style="
         font-weight: 600;
         font-size: 11px;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--l-muted);
         margin-bottom: 8px;
         text-transform: uppercase;
       ">🍴 ${PSB_T('poi.features')}</div>
@@ -390,12 +390,12 @@ function renderPriceLevel(details) {
   return `
     <div style="
       display: inline-block;
-      background: rgba(255, 215, 0, 0.15);
-      border: 1px solid rgba(255, 215, 0, 0.3);
+      background: rgba(180, 83, 9, 0.1);
+      border: 1px solid rgba(180, 83, 9, 0.3);
       border-radius: 6px;
       padding: 6px 10px;
       font-size: 12px;
-      color: #FFD700;
+      color: #b45309;
       font-weight: 700;
       margin-bottom: 12px;
     ">
@@ -426,13 +426,13 @@ function renderSuggestedDuration(poi) {
 
   return `
     <div style="
-      background: rgba(100, 150, 200, 0.1);
-      border: 1px solid rgba(100, 150, 200, 0.3);
+      background: rgba(2, 132, 199, 0.08);
+      border: 1px solid rgba(2, 132, 199, 0.25);
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 12px;
       font-size: 13px;
-      color: #fff;
+      color: var(--l-ink);
     ">
       <div style="font-weight: 600; margin-bottom: 4px;">${PSB_T('poi.suggestedTime')}</div>
       <div>${duration}</div>
@@ -450,13 +450,13 @@ function renderEntranceFee(poi) {
 
   return `
     <div style="
-      background: rgba(255, 107, 53, 0.1);
-      border: 1px solid rgba(255, 107, 53, 0.3);
+      background: rgba(224, 65, 78, 0.08);
+      border: 1px solid rgba(224, 65, 78, 0.25);
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 12px;
       font-size: 13px;
-      color: #fff;
+      color: var(--l-ink);
     ">
       <div style="font-weight: 600; margin-bottom: 4px;">${PSB_T('poi.entrance')}</div>
       <div>${fee}</div>

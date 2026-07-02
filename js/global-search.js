@@ -44,37 +44,37 @@
 
   function renderResults(res) {
     if (!res) {
-      return `<div style="text-align:center; padding:24px; color:rgba(255,255,255,0.4); font-size:13px;">
+      return `<div style="text-align:center; padding:24px; color:var(--l-faint); font-size:13px;">
         ${esc(T('gs.typeMore', 'Digita almeno 2 caratteri…'))}</div>`;
     }
     if (res.pois.length === 0 && res.stops.length === 0) {
-      return `<div style="text-align:center; padding:24px; color:rgba(255,255,255,0.5); font-size:13px;">
+      return `<div style="text-align:center; padding:24px; color:var(--l-muted); font-size:13px;">
         🤷 ${esc(T('gs.noResults', 'Nessun risultato'))}</div>`;
     }
     const section = (title, inner) => inner ? `
       <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
-                  color:rgba(255,255,255,0.45); margin:14px 4px 6px;">${esc(title)}</div>${inner}` : '';
+                  color:var(--l-faint); margin:14px 4px 6px;">${esc(title)}</div>${inner}` : '';
 
     const poiBtns = res.pois.map(p => `
       <button class="gs-item" data-kind="poi" data-id="${esc(p.id)}" style="
         display:flex; align-items:center; gap:10px; width:100%; text-align:left;
-        background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
-        border-radius:10px; padding:10px 12px; color:rgba(255,255,255,0.9);
+        background:rgba(20,30,60,0.04); border:1px solid var(--l-hair);
+        border-radius:10px; padding:10px 12px; color:var(--l-ink);
         font-size:13px; cursor:pointer; margin-bottom:6px;">
         <span>${p.gf || p.gluten_free ? '🌾' : '📍'}</span>
         <span style="flex:1;">${esc(p.name || p.title)}</span>
-        ${p.cat ? `<span style="font-size:11px; color:rgba(255,255,255,0.4);">${esc(p.cat)}</span>` : ''}
+        ${p.cat ? `<span style="font-size:11px; color:var(--l-muted);">${esc(p.cat)}</span>` : ''}
       </button>`).join('');
 
     const stopBtns = res.stops.map(s => `
       <button class="gs-item" data-kind="stop" data-id="${esc(s.entry.poi_id || '')}" style="
         display:flex; align-items:center; gap:10px; width:100%; text-align:left;
-        background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
-        border-radius:10px; padding:10px 12px; color:rgba(255,255,255,0.9);
+        background:rgba(20,30,60,0.04); border:1px solid var(--l-hair);
+        border-radius:10px; padding:10px 12px; color:var(--l-ink);
         font-size:13px; cursor:pointer; margin-bottom:6px;">
         <span>🗓️</span>
         <span style="flex:1;">${esc(s.entry.poi_name)}</span>
-        <span style="font-size:11px; color:var(--m-accent, #FF6B35);">${esc(T('tl.day', 'Giorno'))} ${s.day + 1}${s.entry.time ? ' · ' + esc(s.entry.time) : ''}</span>
+        <span style="font-size:11px; color:var(--l-accent);">${esc(T('tl.day', 'Giorno'))} ${s.day + 1}${s.entry.time ? ' · ' + esc(s.entry.time) : ''}</span>
       </button>`).join('');
 
     return section(T('gs.pois', 'Luoghi'), poiBtns) + section(T('gs.itinerary', 'Itinerario'), stopBtns);
@@ -87,8 +87,8 @@
           placeholder="${esc(T('gs.placeholder', 'Cerca luoghi, ristoranti GF, tappe…'))}"
           aria-label="${esc(T('gs.placeholder', 'Cerca luoghi, ristoranti GF, tappe…'))}"
           style="width:100%; box-sizing:border-box; padding:12px 14px; font-size:15px;
-                 background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.18);
-                 border-radius:12px; color:#fff; outline:none;" />
+                 background:rgba(20,30,60,0.04); border:1px solid var(--l-hair);
+                 border-radius:12px; color:var(--l-ink); outline:none;" />
         <div id="gs-results">${renderResults(null)}</div>
       </div>`;
 

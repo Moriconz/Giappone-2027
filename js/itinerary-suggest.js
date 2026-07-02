@@ -149,7 +149,7 @@
 
     if (days.length === 0) {
       window.openSheet(T('sugg.title', '✨ Suggerimenti'),
-        `<div style="padding:24px 14px;text-align:center;color:rgba(255,255,255,0.6);font-size:13px;line-height:1.6;">
+        `<div style="padding:24px 14px;text-align:center;color:var(--l-muted);font-size:13px;line-height:1.6;">
            <div style="font-size:34px;margin-bottom:8px;">🗺️</div>
            <p style="margin:0;">${T('sugg.empty', 'Aggiungi qualche tappa con posizione: poi ti suggerirò cosa fare nel tempo libero.')}</p>
          </div>`);
@@ -163,25 +163,25 @@
       const free = day.freeMin;
       const hasFree = free >= MIN_FREE_MIN;
       const suggestions = hasFree ? suggestForDay(day.dayIdx, 4) : [];
-      const freeColor = free >= 240 ? '#7fe2a9' : free >= MIN_FREE_MIN ? '#ffc97a' : 'rgba(255,255,255,0.5)';
+      const freeColor = free >= 240 ? '#15803d' : free >= MIN_FREE_MIN ? '#b45309' : 'var(--l-muted)';
 
       const suggList = suggestions.length ? suggestions.map(s => `
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid rgba(255,255,255,0.06);">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--l-hair);">
           <span style="font-size:15px;flex-shrink:0;">${s.isGF ? '🌾' : '📍'}</span>
           <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_esc(s.name)}</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.5);">${s.dist.toFixed(1)} km${s.poi.rating ? ' · ⭐ ' + s.poi.rating : ''}${s.isGF ? ' · GF' : ''}</div>
+            <div style="font-size:13px;color:var(--l-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_esc(s.name)}</div>
+            <div style="font-size:11px;color:var(--l-muted);">${s.dist.toFixed(1)} km${s.poi.rating ? ' · ⭐ ' + s.poi.rating : ''}${s.isGF ? ' · GF' : ''}</div>
           </div>
           <button data-sugg-add="${_esc(s.poi.id || s.poi.googlePlaceId)}" data-sugg-day="${day.dayIdx}" data-sugg-name="${_esc(s.name)}" data-sugg-lat="${s.poi.lat}" data-sugg-lng="${s.poi.lng}" style="
-            flex-shrink:0;padding:6px 11px;background:rgba(76,175,80,0.22);border:1.5px solid rgba(76,175,80,0.5);
-            border-radius:7px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;">➕ Day ${day.dayIdx + 1}</button>
+            flex-shrink:0;padding:6px 11px;background:rgba(22,163,74,0.16);border:1.5px solid rgba(22,163,74,0.5);
+            border-radius:7px;color:#15803d;font-size:12px;font-weight:600;cursor:pointer;">➕ Day ${day.dayIdx + 1}</button>
         </div>
-      `).join('') : `<div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;">${hasFree ? T('sugg.noNearby', 'Nessun POI vicino non ancora in itinerario.') : T('sugg.dayFull', 'Giornata piena, poco tempo libero.')}</div>`;
+      `).join('') : `<div style="font-size:12px;color:var(--l-faint);padding:6px 0;">${hasFree ? T('sugg.noNearby', 'Nessun POI vicino non ancora in itinerario.') : T('sugg.dayFull', 'Giornata piena, poco tempo libero.')}</div>`;
 
       return `
-        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:11px;padding:12px 14px;">
+        <div style="background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:11px;padding:12px 14px;">
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
-            <span style="font-weight:700;color:#fff;font-size:13.5px;">📅 ${T('topt.day', 'Giorno')} ${day.dayIdx + 1}</span>
+            <span style="font-weight:700;color:var(--l-ink);font-size:13.5px;">📅 ${T('topt.day', 'Giorno')} ${day.dayIdx + 1}</span>
             <span style="font-size:12px;color:${freeColor};font-weight:600;">⏳ ${_fmtFree(free)} ${T('sugg.free', 'liberi')}</span>
           </div>
           ${suggList}
@@ -190,7 +190,7 @@
 
     const html = `
       <div style="display:flex;flex-direction:column;gap:12px;padding:4px 0;">
-        <p style="margin:0;color:rgba(255,255,255,0.7);font-size:12.5px;line-height:1.5;">
+        <p style="margin:0;color:var(--l-muted);font-size:12.5px;line-height:1.5;">
           ${T('sugg.intro', 'In base al tempo libero di ogni giorno, ecco POI vicini (entro 6 km dal baricentro del giorno) non ancora nel tuo itinerario. 🌾 = opzione gluten-free.')}
         </p>
         <div style="display:flex;flex-direction:column;gap:10px;">${blocks}</div>

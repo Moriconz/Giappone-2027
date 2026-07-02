@@ -69,15 +69,15 @@
     const chips = peers.slice(0, 5).map(p => {
       const init = (p.name || '?').slice(0, 2).toUpperCase();
       const img = p.avatar
-        ? `<img src="${p.avatar}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid #4ade80;" title="${p.name}" />`
-        : `<div title="${p.name}" style="width:26px;height:26px;border-radius:50%;background:#2196F3;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #4ade80;">${init}</div>`;
+        ? `<img src="${p.avatar}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid #16a34a;" title="${p.name}" />`
+        : `<div title="${p.name}" style="width:26px;height:26px;border-radius:50%;background:#2196F3;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #16a34a;">${init}</div>`;
       return `<div style="margin-left:-8px;">${img}</div>`;
     }).join('');
     const label = peers.length === 1 ? `${peers[0].name} ${T('pres.one', 'sta guardando')}` : `${peers.length} ${T('pres.many', 'stanno guardando')}`;
     return `
-      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);border-radius:10px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);border-radius:10px;margin-bottom:12px;">
         <div style="display:flex;align-items:center;padding-left:8px;">${chips}</div>
-        <span style="font-size:12px;color:#4ade80;font-weight:600;">🟢 ${label}</span>
+        <span style="font-size:12px;color:#16a34a;font-weight:600;">🟢 ${label}</span>
       </div>`;
   }
 

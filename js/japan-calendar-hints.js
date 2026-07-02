@@ -226,10 +226,10 @@
 
   function _palette(severity) {
     switch (severity) {
-      case 'danger':  return { bg: 'rgba(255,80,80,0.15)',  border: 'rgba(255,80,80,0.45)',  fg: '#ffb5b5' };
-      case 'warning': return { bg: 'rgba(255,180,80,0.15)', border: 'rgba(255,180,80,0.45)', fg: '#ffcf85' };
+      case 'danger':  return { bg: 'rgba(224,65,78,0.12)',  border: 'rgba(224,65,78,0.45)',  fg: '#c8313e' };
+      case 'warning': return { bg: 'rgba(180,83,9,0.12)', border: 'rgba(180,83,9,0.45)', fg: '#b45309' };
       case 'info':
-      default:        return { bg: 'rgba(120,180,255,0.13)', border: 'rgba(120,180,255,0.40)', fg: '#a5cdff' };
+      default:        return { bg: 'rgba(2,132,199,0.12)', border: 'rgba(2,132,199,0.40)', fg: '#0284c7' };
     }
   }
 
@@ -267,11 +267,11 @@
           <span style="font-size:18px;flex:0 0 auto;">${h.icon}</span>
           <span style="flex:1;line-height:1.4;">
             <strong>${_esc(label)}</strong>
-            <span style="display:block;font-size:11px;color:rgba(255,255,255,0.6);font-weight:500;font-family:'SF Mono',Menlo,monospace;">
+            <span style="display:block;font-size:11px;color:var(--l-muted);font-weight:500;font-family:'SF Mono',Menlo,monospace;">
               ${_fmtDateRange(h.actualStart, h.actualEnd)}
             </span>
           </span>
-          <span style="flex:0 0 auto;color:rgba(255,255,255,0.55);font-size:14px;">→</span>
+          <span style="flex:0 0 auto;color:var(--l-muted);font-size:14px;">→</span>
         </button>
       `;
     }).join('');
@@ -279,10 +279,10 @@
     return `
       <div id="jpcal-hints-widget" style="
         padding:14px;margin:14px 0;
-        background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;">
+        background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:12px;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:10px;flex-wrap:wrap;">
-          <div style="font-weight:700;color:#fff;font-size:13.5px;">${headerLabel}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);">${_esc(subtitle)}</div>
+          <div style="font-weight:700;color:var(--l-ink);font-size:13.5px;">${headerLabel}</div>
+          <div style="font-size:11px;color:var(--l-muted);">${_esc(subtitle)}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">
           ${cards}
@@ -306,20 +306,20 @@
           display:flex;align-items:center;gap:12px;">
           <div style="font-size:32px;flex:0 0 auto;">${hint.icon}</div>
           <div>
-            <div style="font-size:16px;font-weight:700;color:#fff;">${_esc(label)}</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.7);font-family:'SF Mono',Menlo,monospace;margin-top:2px;">
+            <div style="font-size:16px;font-weight:700;color:var(--l-ink);">${_esc(label)}</div>
+            <div style="font-size:12px;color:var(--l-muted);font-family:'SF Mono',Menlo,monospace;margin-top:2px;">
               ${_fmtDateRange(hint.actualStart, hint.actualEnd)}
             </div>
           </div>
         </div>
         <div style="
-          padding:14px;background:rgba(255,255,255,0.03);
-          border:1px solid rgba(255,255,255,0.08);border-radius:10px;
-          color:rgba(255,255,255,0.85);font-size:13px;line-height:1.6;">
+          padding:14px;background:rgba(20,30,60,0.03);
+          border:1px solid var(--l-hair);border-radius:10px;
+          color:var(--l-ink);font-size:13px;line-height:1.6;">
           ${_esc(message)}
         </div>
         ${hint.severity === 'info' ? `
-          <p style="font-size:10.5px;color:rgba(255,255,255,0.42);text-align:center;margin-top:12px;line-height:1.5;">
+          <p style="font-size:10.5px;color:var(--l-faint);text-align:center;margin-top:12px;line-height:1.5;">
             ⚠️ ${T('jpcal.estimateDisclaimer', 'Date stimate, calibrate su pattern 2020–2024. Le date reali sono pubblicate dalla JMA a febbraio dell\'anno stesso.')}
           </p>` : ''}
       </div>

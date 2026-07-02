@@ -137,7 +137,7 @@ function renderStep1(state) {
       <div style="
         width:100%;
         height:6px;
-        background:rgba(255,255,255,0.1);
+        background:rgba(20,30,60,0.08);
         border-radius:3px;
         overflow:hidden;
       ">
@@ -153,13 +153,13 @@ function renderStep1(state) {
       <div style="
         font-size:12px;
         font-weight:600;
-        color:rgba(255,255,255,0.6);
+        color:var(--l-muted);
         text-align:center;
       ">Passo 1 di 3</div>
 
       <!-- POI Card -->
       <div style="
-        background:linear-gradient(135deg, rgba(255,107,53,0.2), rgba(255,165,100,0.1));
+        background:linear-gradient(135deg, rgba(255,107,53,0.14), rgba(255,165,100,0.08));
         border:1.5px solid rgba(255,107,53,0.3);
         border-radius:12px;
         padding:20px;
@@ -192,13 +192,13 @@ function renderStep1(state) {
           <div style="
             font-size:16px;
             font-weight:700;
-            color:#fff;
+            color:var(--l-ink);
             margin-bottom:6px;
             word-break:break-word;
           ">${state.poiName}</div>
           <div style="
             font-size:13px;
-            color:rgba(255,255,255,0.7);
+            color:var(--l-muted);
             margin-bottom:8px;
           ">📍 ${state.poiCity}</div>
           <div style="
@@ -217,7 +217,7 @@ function renderStep1(state) {
       <!-- Description -->
       <div style="
         font-size:13px;
-        color:rgba(255,255,255,0.7);
+        color:var(--l-muted);
         line-height:1.6;
       ">
         ✓ Stai per aggiungere questo luogo al tuo itinerario. Nei prossimi step sceglierai il giorno e l'orario.
@@ -243,14 +243,14 @@ function renderStep1(state) {
           width:100%;
           padding:14px 16px;
           background:transparent;
-          border:1.5px solid rgba(255,255,255,0.2);
+          border:1.5px solid var(--l-hair);
           border-radius:10px;
-          color:rgba(255,255,255,0.7);
+          color:var(--l-muted);
           font-size:14px;
           font-weight:600;
           cursor:pointer;
           transition:all 0.2s;
-        " onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.color='rgba(255,255,255,0.95)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.7)'">
+        " onmouseover="this.style.borderColor='rgba(20,30,60,0.25)';this.style.color='var(--l-ink)'" onmouseout="this.style.borderColor='var(--l-hair)';this.style.color='var(--l-muted)'">
           Annulla
         </button>
       </div>
@@ -294,7 +294,7 @@ function renderStep2(state) {
       <div style="
         width:100%;
         height:6px;
-        background:rgba(255,255,255,0.1);
+        background:rgba(20,30,60,0.08);
         border-radius:3px;
         overflow:hidden;
       ">
@@ -310,7 +310,7 @@ function renderStep2(state) {
       <div style="
         font-size:12px;
         font-weight:600;
-        color:rgba(255,255,255,0.6);
+        color:var(--l-muted);
         text-align:center;
       ">Passo 2 di 3</div>
 
@@ -319,22 +319,22 @@ function renderStep2(state) {
         <label style="
           font-size:12px;
           font-weight:700;
-          color:rgba(255,255,255,0.8);
+          color:var(--l-ink);
           display:block;
           margin-bottom:10px;
         ">📅 Scegli il giorno</label>
         <select id="wizard-day-select" style="
           width:100%;
           padding:12px 14px;
-          background:rgba(255,255,255,0.05);
-          border:1.5px solid rgba(255,255,255,0.15);
+          background:rgba(20,30,60,0.03);
+          border:1.5px solid var(--l-hair);
           border-radius:8px;
-          color:#fff;
+          color:var(--l-ink);
           font-size:13px;
           font-weight:500;
           cursor:pointer;
           transition:all 0.2s;
-        " onchange="this.style.borderColor='rgba(255,107,53,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+        " onchange="this.style.borderColor='rgba(255,107,53,0.4)'" onblur="this.style.borderColor='var(--l-hair)'">
           ${dayOptions.map(opt => `
             <option value="${opt.d}" ${opt.d === state.selectedDay ? 'selected' : ''}>
               Day ${opt.d + 1} — ${opt.dayLabel} (${opt.poiCount} POI)${opt.closedWarning}
@@ -344,7 +344,7 @@ function renderStep2(state) {
         ${(() => {
           const sel = dayOptions.find(o => o.d === state.selectedDay);
           return sel?.closedWarning
-            ? `<div style="margin-top:8px;padding:8px 12px;background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);border-radius:8px;font-size:12px;color:#ffd166;">⚠️ Questo posto risulta <b>chiuso</b> il giorno selezionato — verifica gli orari aggiornati prima di andare.</div>`
+            ? `<div style="margin-top:8px;padding:8px 12px;background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);border-radius:8px;font-size:12px;color:#8a5a10;">⚠️ Questo posto risulta <b>chiuso</b> il giorno selezionato — verifica gli orari aggiornati prima di andare.</div>`
             : '';
         })()}
       </div>
@@ -354,22 +354,22 @@ function renderStep2(state) {
         <label style="
           font-size:12px;
           font-weight:700;
-          color:rgba(255,255,255,0.8);
+          color:var(--l-ink);
           display:block;
           margin-bottom:10px;
         ">⏰ Scegli l'orario</label>
         <select id="wizard-time-select" style="
           width:100%;
           padding:12px 14px;
-          background:rgba(255,255,255,0.05);
-          border:1.5px solid rgba(255,255,255,0.15);
+          background:rgba(20,30,60,0.03);
+          border:1.5px solid var(--l-hair);
           border-radius:8px;
-          color:#fff;
+          color:var(--l-ink);
           font-size:13px;
           font-weight:500;
           cursor:pointer;
           transition:all 0.2s;
-        " onchange="this.style.borderColor='rgba(255,107,53,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+        " onchange="this.style.borderColor='rgba(255,107,53,0.4)'" onblur="this.style.borderColor='var(--l-hair)'">
           ${times.map(t => `
             <option value="${t}" ${t === state.selectedTime ? 'selected' : ''}>${t}</option>
           `).join('')}
@@ -378,12 +378,12 @@ function renderStep2(state) {
 
       <!-- Smart Suggestion -->
       <div style="
-        background:rgba(74,175,80,0.1);
-        border:1px solid rgba(74,175,80,0.3);
+        background:rgba(22,163,74,0.10);
+        border:1px solid rgba(22,163,74,0.3);
         border-radius:8px;
         padding:12px 14px;
         font-size:12px;
-        color:rgba(74,175,80,0.9);
+        color:#15803d;
         line-height:1.5;
       ">
         💡 <strong>Suggerimento:</strong> Hai scelto il day ${state.selectedDay + 1} perché ha pochi POI. L'orario suggerito è ${state.selectedTime}.
@@ -395,14 +395,14 @@ function renderStep2(state) {
           flex:1;
           padding:14px 16px;
           background:transparent;
-          border:1.5px solid rgba(255,255,255,0.2);
+          border:1.5px solid var(--l-hair);
           border-radius:10px;
-          color:rgba(255,255,255,0.7);
+          color:var(--l-muted);
           font-size:14px;
           font-weight:600;
           cursor:pointer;
           transition:all 0.2s;
-        " onmouseover="this.style.borderColor='rgba(255,255,255,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)'">
+        " onmouseover="this.style.borderColor='rgba(20,30,60,0.25)'" onmouseout="this.style.borderColor='var(--l-hair)'">
           ← Indietro
         </button>
         <button id="wizard-next-2" style="
@@ -434,7 +434,7 @@ function renderStep3(state) {
       <div style="
         width:100%;
         height:6px;
-        background:rgba(255,255,255,0.1);
+        background:rgba(20,30,60,0.08);
         border-radius:3px;
         overflow:hidden;
       ">
@@ -450,21 +450,21 @@ function renderStep3(state) {
       <div style="
         font-size:12px;
         font-weight:600;
-        color:rgba(255,255,255,0.6);
+        color:var(--l-muted);
         text-align:center;
       ">Passo 3 di 3</div>
 
       <!-- Summary -->
       <div style="
-        background:rgba(255,255,255,0.03);
-        border:1px solid rgba(255,255,255,0.1);
+        background:rgba(20,30,60,0.03);
+        border:1px solid var(--l-hair);
         border-radius:8px;
         padding:10px 12px;
         font-size:12px;
-        color:rgba(255,255,255,0.7);
+        color:var(--l-muted);
         line-height:1.4;
       ">
-        <div style="font-weight:600;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${state.poiName}</div>
+        <div style="font-weight:600;color:var(--l-ink);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${state.poiName}</div>
         <div>📅 Day ${state.selectedDay + 1} · ⏰ ${state.selectedTime}</div>
       </div>
 
@@ -473,30 +473,30 @@ function renderStep3(state) {
         <label style="
           font-size:12px;
           font-weight:700;
-          color:rgba(255,255,255,0.8);
+          color:var(--l-ink);
           display:block;
           margin-bottom:10px;
         ">📝 Note (opzionale)</label>
         <textarea id="wizard-notes-input" placeholder="Es: senza glutine, allergie, preferenze..." style="
           width:100%;
           padding:12px 14px;
-          background:rgba(255,255,255,0.05);
-          border:1.5px solid rgba(255,255,255,0.15);
+          background:rgba(20,30,60,0.03);
+          border:1.5px solid var(--l-hair);
           border-radius:8px;
-          color:#fff;
+          color:var(--l-ink);
           font-size:13px;
           font-family:inherit;
           resize:vertical;
           min-height:80px;
           transition:all 0.2s;
           box-sizing:border-box;
-        " onchange="this.style.borderColor='rgba(255,107,53,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'" onfocus="this.style.borderColor='rgba(255,107,53,0.4)'">${state.notes}</textarea>
+        " onchange="this.style.borderColor='rgba(255,107,53,0.4)'" onblur="this.style.borderColor='var(--l-hair)'" onfocus="this.style.borderColor='rgba(255,107,53,0.4)'">${state.notes}</textarea>
       </div>
 
       <!-- Info -->
       <div style="
         font-size:12px;
-        color:rgba(255,255,255,0.6);
+        color:var(--l-muted);
         line-height:1.5;
       ">
         ℹ️ Le note sono utili per ricordare preferenze, allergie o dettagli importanti per questo luogo.
@@ -508,14 +508,14 @@ function renderStep3(state) {
           flex:1;
           padding:14px 16px;
           background:transparent;
-          border:1.5px solid rgba(255,255,255,0.2);
+          border:1.5px solid var(--l-hair);
           border-radius:10px;
-          color:rgba(255,255,255,0.7);
+          color:var(--l-muted);
           font-size:14px;
           font-weight:600;
           cursor:pointer;
           transition:all 0.2s;
-        " onmouseover="this.style.borderColor='rgba(255,255,255,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)'">
+        " onmouseover="this.style.borderColor='rgba(20,30,60,0.25)'" onmouseout="this.style.borderColor='var(--l-hair)'">
           ← Indietro
         </button>
         <button id="wizard-finish" style="

@@ -167,15 +167,15 @@
       <div style="display:flex;gap:8px;">
         <button id="itinerary-undo-btn" onclick="itineraryUndo()" disabled style="
           flex:1;padding:9px 12px;
-          background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.15);
-          border-radius:8px;color:#fff;font-weight:600;font-size:13px;
+          background:rgba(20,30,60,0.03);border:1.5px solid var(--l-hair);
+          border-radius:8px;color:var(--l-ink);font-weight:600;font-size:13px;
           opacity:0.4;cursor:not-allowed;transition:all 0.15s;">
           ⬅️ ${T('undo.undo', 'Annulla')}
         </button>
         <button id="itinerary-redo-btn" onclick="itineraryRedo()" disabled style="
           flex:1;padding:9px 12px;
-          background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.15);
-          border-radius:8px;color:#fff;font-weight:600;font-size:13px;
+          background:rgba(20,30,60,0.03);border:1.5px solid var(--l-hair);
+          border-radius:8px;color:var(--l-ink);font-weight:600;font-size:13px;
           opacity:0.4;cursor:not-allowed;transition:all 0.15s;">
           ${T('undo.redo', 'Rifai')} ➡️
         </button>

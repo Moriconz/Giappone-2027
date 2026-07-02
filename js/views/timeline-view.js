@@ -44,7 +44,7 @@
     let html;
     if (days.length === 0) {
       html = `
-        <div style="text-align:center; padding:40px 20px; color:rgba(255,255,255,0.6);">
+        <div style="text-align:center; padding:40px 20px; color:var(--l-muted);">
           <div style="font-size:40px; margin-bottom:12px;">🗓️</div>
           <div style="font-size:14px;">${esc(T('tl.empty', 'Nessuna tappa in itinerario. Aggiungi tappe dai POI sulla mappa!'))}</div>
         </div>`;
@@ -58,24 +58,24 @@
           return `
             <button class="tl-stop" data-poi="${esc(e.poi_id || '')}" style="
               display:flex; align-items:center; gap:10px; width:100%; text-align:left;
-              background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
-              border-radius:10px; padding:10px 12px; color:rgba(255,255,255,0.9);
+              background:rgba(20,30,60,0.04); border:1px solid var(--l-hair);
+              border-radius:10px; padding:10px 12px; color:var(--l-ink);
               font-size:13px; cursor:pointer; margin-bottom:6px;">
-              <span style="min-width:46px; font-weight:700; color:var(--m-accent, #FF6B35); font-size:12px;">${esc(e.time || '—')}</span>
+              <span style="min-width:46px; font-weight:700; color:var(--l-accent); font-size:12px;">${esc(e.time || '—')}</span>
               <span style="flex:1;">${esc(resolveName(e))}</span>
-              ${e.duration ? `<span style="font-size:11px; color:rgba(255,255,255,0.45);">${esc(e.duration)} ${esc(T('tl.min', 'min'))}</span>` : ''}
+              ${e.duration ? `<span style="font-size:11px; color:var(--l-muted);">${esc(e.duration)} ${esc(T('tl.min', 'min'))}</span>` : ''}
               ${status ? `<span>${status}</span>` : ''}
             </button>`;
         }).join('');
         return `
           <div style="position:relative; padding-left:22px; margin-bottom:18px;">
-            <div style="position:absolute; left:6px; top:8px; bottom:-10px; width:2px; background:rgba(255,255,255,0.12);"></div>
+            <div style="position:absolute; left:6px; top:8px; bottom:-10px; width:2px; background:var(--l-hair);"></div>
             <div style="position:absolute; left:0; top:4px; width:14px; height:14px; border-radius:50%;
-                        background:var(--m-accent, #FF6B35); border:3px solid rgba(15,18,24,1);"></div>
+                        background:var(--l-accent); border:3px solid #fff;"></div>
             <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
-              <span style="font-weight:800; font-size:15px; color:#fff;">${esc(T('tl.day', 'Giorno'))} ${d + 1}</span>
-              ${dateStr ? `<span style="font-size:12px; color:rgba(255,255,255,0.5);">${esc(dateStr)}</span>` : ''}
-              <span style="margin-left:auto; font-size:11px; color:rgba(255,255,255,0.45);">
+              <span style="font-weight:800; font-size:15px; color:var(--l-ink);">${esc(T('tl.day', 'Giorno'))} ${d + 1}</span>
+              ${dateStr ? `<span style="font-size:12px; color:var(--l-muted);">${esc(dateStr)}</span>` : ''}
+              <span style="margin-left:auto; font-size:11px; color:var(--l-faint);">
                 ${entries.length} ${esc(T('tl.stops', 'tappe'))}${totMin ? ` · ~${Math.round(totMin / 60 * 10) / 10}h` : ''}
               </span>
             </div>
