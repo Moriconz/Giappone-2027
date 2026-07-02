@@ -138,7 +138,7 @@ window.showMemberOptions = function(memberName) {
 
   const optionsHtml = `
     <div style="padding:20px;text-align:center">
-      <div style="font-size:20px;margin-bottom:20px;font-weight:700;color:#FF1493">📍 ${escapeHtml(memberName)}</div>
+      <div style="font-size:20px;margin-bottom:20px;font-weight:700;color:var(--l-accent)">📍 ${escapeHtml(memberName)}</div>
       <div style="font-size:13px;color:#666;margin-bottom:20px">Posizione: ${gpsData.lat.toFixed(4)}, ${gpsData.lng.toFixed(4)}</div>
 
       <div style="display:flex;flex-direction:column;gap:10px">

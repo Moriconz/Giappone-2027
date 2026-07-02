@@ -40,12 +40,12 @@ function renderEnhancedPoiSections(p) {
     }).join('');
 
     sections.push(`
-      <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
-        <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">📸 Galleria Foto</h3>
+      <div style="background:linear-gradient(135deg,rgba(74,91,168,0.06),rgba(30,50,80,0.06));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:14px;padding:14px;margin-bottom:16px">
+        <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:14px;font-weight:700">📸 Galleria Foto</h3>
         <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%">
           ${slides}
         </div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.6);text-align:center;margin-top:8px">${p._photoNames.length} foto disponibili</div>
+        <div style="font-size:11px;color:var(--l-muted);text-align:center;margin-top:8px">${p._photoNames.length} foto disponibili</div>
       </div>
     `);
   }
@@ -55,20 +55,20 @@ function renderEnhancedPoiSections(p) {
     const reviewCards = details.reviews.slice(0, 3).map(review => {
       const stars = Array(review.rating).fill('⭐').join('');
       return `
-        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;margin-bottom:10px">
+        <div style="background:rgba(20,30,60,0.04);border:1px solid var(--l-hair);border-radius:10px;padding:12px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
-            <div style="font-weight:600;color:#fff;font-size:13px">${review.author}</div>
-            <div style="color:#FFD700;font-size:12px">${stars}</div>
+            <div style="font-weight:600;color:var(--l-ink);font-size:13px">${review.author}</div>
+            <div style="color:#b45309;font-size:12px">${stars}</div>
           </div>
-          <div style="color:rgba(255,255,255,0.8);font-size:12px;line-height:1.5;margin-bottom:4px">"${review.text.substring(0, 120)}${review.text.length > 120 ? '...' : ''}"</div>
-          <div style="color:rgba(255,255,255,0.5);font-size:12px">${review.relativePublishTimeDescription}</div>
+          <div style="color:var(--l-ink);font-size:12px;line-height:1.5;margin-bottom:4px">"${review.text.substring(0, 120)}${review.text.length > 120 ? '...' : ''}"</div>
+          <div style="color:var(--l-muted);font-size:12px">${review.relativePublishTimeDescription}</div>
         </div>
       `;
     }).join('');
 
     sections.push(`
-      <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
-        <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">⭐ Recensioni (${details.reviews.length} totali)</h3>
+      <div style="background:linear-gradient(135deg,rgba(74,91,168,0.06),rgba(30,50,80,0.06));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:14px;padding:14px;margin-bottom:16px">
+        <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:14px;font-weight:700">⭐ Recensioni (${details.reviews.length} totali)</h3>
         ${reviewCards}
       </div>
     `);
@@ -82,17 +82,17 @@ function renderEnhancedPoiSections(p) {
     let hoursHtml = '';
     if (weekdayText.length > 0) {
       hoursHtml = weekdayText.map((day, idx) => {
-        return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);font-size:12px">
+        return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--l-hair);color:var(--l-ink);font-size:12px">
           <span>${day.split(':')[0]}</span>
-          <span style="font-weight:600;color:#FFD700">${day.includes(':') ? day.split(': ')[1] : 'Chiuso'}</span>
+          <span style="font-weight:600;color:#b45309">${day.includes(':') ? day.split(': ')[1] : 'Chiuso'}</span>
         </div>`;
       }).join('');
     }
 
     if (hoursHtml) {
       sections.push(`
-        <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
-          <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">⏰ Orari (Prossimi 7 giorni)</h3>
+        <div style="background:linear-gradient(135deg,rgba(74,91,168,0.06),rgba(30,50,80,0.06));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:14px;padding:14px;margin-bottom:16px">
+          <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:14px;font-weight:700">⏰ Orari (Prossimi 7 giorni)</h3>
           ${hoursHtml}
         </div>
       `);
@@ -113,14 +113,14 @@ function renderEnhancedPoiSections(p) {
 
   if (activeAttrs.length > 0) {
     const chips = activeAttrs.map(attr => `
-      <span style="background:linear-gradient(135deg,rgba(255,107,53,0.3),rgba(255,20,147,0.3));border:1px solid rgba(255,107,53,0.6);color:#fff;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block">
+      <span style="background:linear-gradient(135deg,rgba(255,107,53,0.16),var(--l-accent-soft));border:1px solid rgba(255,107,53,0.5);color:var(--l-ink);padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block">
         ${attr.label}
       </span>
     `).join('');
 
     sections.push(`
-      <div style="background:linear-gradient(135deg,rgba(74,91,168,0.12),rgba(30,50,80,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
-        <h3 style="margin:0 0 12px 0;color:#fff;font-size:14px;font-weight:700">🏷️ Caratteristiche</h3>
+      <div style="background:linear-gradient(135deg,rgba(74,91,168,0.06),rgba(30,50,80,0.06));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:14px;padding:14px;margin-bottom:16px">
+        <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:14px;font-weight:700">🏷️ Caratteristiche</h3>
         <div style="display:flex;flex-wrap:wrap;gap:8px">
           ${chips}
         </div>
@@ -140,15 +140,15 @@ function renderEnhancedPoiSections(p) {
 
     if (accessibilityItems.length > 0) {
       const items = accessibilityItems.map(item => `
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;color:rgba(255,255,255,0.8);font-size:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;color:var(--l-ink);font-size:12px;border-bottom:1px solid var(--l-hair)">
           <span style="font-size:14px">✓</span>
           <span>${item}</span>
         </div>
       `).join('');
 
       sections.push(`
-        <div style="background:linear-gradient(135deg,rgba(74,124,89,0.12),rgba(100,150,110,0.12));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(100,200,150,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
-          <h3 style="margin:0 0 12px 0;color:#90EE90;font-size:14px;font-weight:700">♿ Accessibilità</h3>
+        <div style="background:linear-gradient(135deg,rgba(74,124,89,0.08),rgba(100,150,110,0.08));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(22,163,74,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+          <h3 style="margin:0 0 12px 0;color:#16a34a;font-size:14px;font-weight:700">♿ Accessibilità</h3>
           ${items}
         </div>
       `);
@@ -261,7 +261,7 @@ function poiDetailHTML(p){
     } else if (p.photo) {
       photoHtml = `<img src="${p.photo}" alt="${displayName}" loading="lazy" style="width:100%;height:260px;object-fit:cover;border-radius:12px 12px 0 0;margin-bottom:16px;display:block">`;
     } else {
-      photoHtml = `<div style="width:100%;height:260px;background:linear-gradient(135deg,rgba(0,255,136,.05),rgba(255,20,147,.05));border-radius:12px 12px 0 0;margin-bottom:16px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5)">📷 Foto non disponibili</div>`;
+      photoHtml = `<div style="width:100%;height:260px;background:linear-gradient(135deg,rgba(22,163,74,.06),var(--l-accent-soft));border-radius:12px 12px 0 0;margin-bottom:16px;display:flex;align-items:center;justify-content:center;color:var(--l-muted)">📷 Foto non disponibili</div>`;
     }
   }
 
@@ -295,40 +295,40 @@ function poiDetailHTML(p){
           display: flex;
           align-items: center;
           gap: 8px;
-          background: rgba(255, 255, 255, 0.01);
-          border: 1px solid rgba(255, 255, 255, 0.04);
+          background: rgba(20, 30, 60, 0.03);
+          border: 1px solid var(--l-hair);
           border-radius: 8px;
           padding: 8px 10px;
           font-size: 12px;
-          color: rgba(255, 255, 255, 0.4);
+          color: var(--l-muted);
           opacity: 0.85;
         ">
           <span class="gf-spinner" style="
             width: 10px;
             height: 10px;
-            border: 1.5px solid rgba(255, 255, 255, 0.12);
-            border-top-color: #4ade80;
+            border: 1.5px solid rgba(20, 30, 60, 0.15);
+            border-top-color: #16a34a;
             border-radius: 50%;
             display: inline-block;
             flex-shrink: 0;
             animation: spin 0.8s linear infinite;
           "></span>
-          <div style="flex: 1; line-height: 1.3; color: rgba(255, 255, 255, 0.4);">
+          <div style="flex: 1; line-height: 1.3; color: var(--l-muted);">
             Verifica gluten-free in corso…
           </div>
         </div>
         <style>
           @keyframes spin { to { transform: rotate(360deg); } }
           .gf-box.gf-unknown {
-            background: rgba(255, 255, 255, 0.03) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            color: rgba(255, 255, 255, 0.65) !important;
+            background: rgba(20, 30, 60, 0.04) !important;
+            border: 1px solid var(--l-hair) !important;
+            color: var(--l-ink) !important;
           }
           .gf-box.gf-unknown strong {
-            color: rgba(255, 255, 255, 0.75) !important;
+            color: var(--l-ink) !important;
           }
           .gf-box.gf-unknown small {
-            color: rgba(255, 255, 255, 0.45) !important;
+            color: var(--l-muted) !important;
           }
         </style>
       </div>
@@ -350,11 +350,11 @@ function poiDetailHTML(p){
       <div style="
         padding: 0 16px;
         font-size: 12px;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--l-muted);
         font-weight: 500;
         margin-bottom: 0;
       ">${poiSubtypeLabel}</div>
-      <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 6px 0 12px 0"></div>
+      <div style="height: 1px; background: var(--l-hair); margin: 6px 0 12px 0"></div>
     ` : ''}
 
     <!-- 4. BRIEF DESCRIPTION (earlier for context) -->
@@ -383,7 +383,7 @@ function poiDetailHTML(p){
 
     <!-- 9. RATING (stars) -->
     <div style="padding:0 16px;margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:16px">
-      <label style="font-size:13px;color:rgba(255,255,255,0.6);font-weight:600;white-space:nowrap">La tua valutazione</label>
+      <label style="font-size:13px;color:var(--l-muted);font-weight:600;white-space:nowrap">La tua valutazione</label>
       ${stars}
     </div>
 
@@ -391,12 +391,12 @@ function poiDetailHTML(p){
     ${enhancedSections}
 
     <!-- DIVIDER — separates from main action -->
-    <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0"></div>
+    <div style="height:1px;background:var(--l-hair);margin:16px 0"></div>
 
     <!-- 10. MAIN CTA: ADD TO ITINERARY (prominent, ruggine saturo) -->
     <div style="padding:0 16px;margin:16px 0">
       <button id="add-to-itinerary-btn" class="btn-cta">${window.t ? window.t('poi.addToItinerary') : "📅 Aggiungi all'itinerario"}</button>
-      <button id="propose-to-group-btn" style="width:100%;margin-top:8px;padding:12px;background:rgba(74,222,128,0.15);border:1.5px solid rgba(74,222,128,0.4);border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">🗳️ ${window.t ? window.t('poi.proposeGroup', 'Proponi al gruppo') : 'Proponi al gruppo'}</button>
+      <button id="propose-to-group-btn" style="width:100%;margin-top:8px;padding:12px;background:rgba(22,163,74,0.12);border:1.5px solid rgba(22,163,74,0.4);border-radius:10px;color:var(--l-ink);font-size:14px;font-weight:700;cursor:pointer;">🗳️ ${window.t ? window.t('poi.proposeGroup', 'Proponi al gruppo') : 'Proponi al gruppo'}</button>
     </div>
 
     <!-- 11. PERSONAL NOTES (collapsible by default) -->
@@ -419,8 +419,8 @@ function poiDetailHTML(p){
           width:100%;
           height:36px;
           background:transparent;
-          border:1px solid rgba(255,255,255,0.15);
-          color:rgba(255,255,255,0.7);
+          border:1px solid var(--l-hair);
+          color:var(--l-muted);
           border-radius:8px;
           cursor:pointer;
           font-weight:600;
@@ -430,7 +430,7 @@ function poiDetailHTML(p){
           justify-content:center;
           gap:6px;
           transition:all 0.2s;
-        " onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.7)'">
+        " onmouseover="this.style.borderColor='rgba(20,30,60,0.3)';this.style.color='var(--l-ink)'" onmouseout="this.style.borderColor='var(--l-hair)';this.style.color='var(--l-muted)'">
           🧭 Apri mappa
         </button>
 
@@ -484,8 +484,8 @@ function poiDetailHTML(p){
         flex:1;
         height:36px;
         background:transparent;
-        border:1px solid rgba(255,255,255,0.1);
-        color:rgba(255,255,255,0.6);
+        border:1px solid var(--l-hair);
+        color:var(--l-muted);
         border-radius:8px;
         cursor:pointer;
         font-weight:500;
@@ -495,14 +495,14 @@ function poiDetailHTML(p){
         justify-content:center;
         gap:6px;
         transition:all 0.2s;
-      " onmouseover="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.6)'">${saved?'⭐ Salvato':'☆ Salva'}</button>
+      " onmouseover="this.style.borderColor='rgba(20,30,60,0.25)';this.style.color='var(--l-ink)'" onmouseout="this.style.borderColor='var(--l-hair)';this.style.color='var(--l-muted)'">${saved?'⭐ Salvato':'☆ Salva'}</button>
 
       <button class="btn-secondary" id="add-cal" style="
         flex:1;
         height:36px;
         background:transparent;
-        border:1px solid rgba(255,255,255,0.1);
-        color:rgba(255,255,255,0.6);
+        border:1px solid var(--l-hair);
+        color:var(--l-muted);
         border-radius:8px;
         cursor:pointer;
         font-weight:500;
@@ -512,7 +512,7 @@ function poiDetailHTML(p){
         justify-content:center;
         gap:6px;
         transition:all 0.2s;
-      " onmouseover="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.6)'">📅 Calendario</button>
+      " onmouseover="this.style.borderColor='rgba(20,30,60,0.25)';this.style.color='var(--l-ink)'" onmouseout="this.style.borderColor='var(--l-hair)';this.style.color='var(--l-muted)'">📅 Calendario</button>
     </div>
 
     <!-- Bottom spacing -->
@@ -820,7 +820,7 @@ function openPOI(id){
               const _jsToGoogleDay = (d) => (d + 6) % 7; // Sun=6, Mon=0, ..., Sat=5
               html = `
                 <div style="padding: 16px;">
-                  <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step1') : '📅 STEP 1/4 — Scegli il giorno'}</p>
+                  <p style="color: var(--l-ink); margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step1') : '📅 STEP 1/4 — Scegli il giorno'}</p>
                   <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
                     ${Array.from({length: days}, (_, i) => {
                       const isSelected = wizardState.selectedDay === i;
@@ -865,55 +865,55 @@ function openPOI(id){
                     const openMinutes = openHour * 60 + openMin;
                     const closeMinutes = closeHour * 60 + closeMin;
                     if (inputMinutes < openMinutes || inputMinutes >= closeMinutes) {
-                      hoursWarning = `<div style="background:rgba(255,165,0,0.2);border:1px solid rgba(255,165,0,0.4);border-radius:5px;padding:10px;margin-top:10px;font-size:11px;color:rgba(255,200,100,0.9)">⚠️ Questo luogo apre ${hoursStr}. Vuoi continuare?</div>`;
+                      hoursWarning = `<div style="background:rgba(180,83,9,0.12);border:1px solid rgba(180,83,9,0.35);border-radius:5px;padding:10px;margin-top:10px;font-size:11px;color:#b45309">⚠️ Questo luogo apre ${hoursStr}. Vuoi continuare?</div>`;
                     }
                   }
                 }
               }
               html = `
                 <div style="padding: 16px;">
-                  <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step2') : "🕐 STEP 2/4 — Scegli l'orario"}</p>
+                  <p style="color: var(--l-ink); margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step2') : "🕐 STEP 2/4 — Scegli l'orario"}</p>
                   <div style="margin-bottom: 16px;">
-                    <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">Orario (HH:MM)</label>
+                    <label style="display: block; color: var(--l-muted); font-size: 12px; margin-bottom: 8px;">Orario (HH:MM)</label>
                     <input type="text" id="wizard-time-input" value="${wizardState.selectedTime}" placeholder="14:30" maxlength="5" style="
                       width: 100%;
                       padding: 10px;
-                      background: rgba(255,255,255,0.08);
-                      border: 1px solid rgba(255,255,255,0.2);
+                      background: rgba(20,30,60,0.05);
+                      border: 1px solid var(--l-hair);
                       border-radius: 6px;
-                      color: #fff;
+                      color: var(--l-ink);
                       font-size: 16px;
                       box-sizing: border-box;
                       font-family: 'Courier New', monospace;
                     ">
-                    <p style="color: rgba(255,255,255,0.55); font-size: 11px; margin-top: 6px;">Formato: HH:MM (es: 14:30, 09:45)</p>
+                    <p style="color: var(--l-muted); font-size: 11px; margin-top: 6px;">Formato: HH:MM (es: 14:30, 09:45)</p>
                     ${hoursWarning}
                   </div>
-                  <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 16px;">Giorno selezionato: <strong style="color: var(--m-accent);">Day ${wizardState.selectedDay + 1}</strong></p>
+                  <p style="color: var(--l-muted); font-size: 12px; margin-top: 16px;">Giorno selezionato: <strong style="color: var(--m-accent);">Day ${wizardState.selectedDay + 1}</strong></p>
                 </div>
               `;
             } else if (wizardState.step === 3) {
               // STEP 3: Details (Duration, Notes, Cost)
               html = `
                 <div style="padding: 16px; max-height: 400px; overflow-y: auto;">
-                  <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step3') : '📋 STEP 3/4 — Dettagli (opzionali)'}</p>
+                  <p style="color: var(--l-ink); margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step3') : '📋 STEP 3/4 — Dettagli (opzionali)'}</p>
 
                   <div style="margin-bottom: 14px;">
-                    <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">${window.t ? window.t('wizard.duration') : '⏱️ Durata (minuti)'}</label>
+                    <label style="display: block; color: var(--l-muted); font-size: 12px; margin-bottom: 8px;">${window.t ? window.t('wizard.duration') : '⏱️ Durata (minuti)'}</label>
                     <div style="display: flex; gap: 6px; margin-bottom: 8px;">
                       ${[30, 60, 90, 120, 180].map(d => `
                         <button class="duration-preset" data-duration="${d}" style="
                           flex: 1;
                           padding: 8px;
-                          background: ${wizardState.duration === d ? 'rgba(74,124,89,0.4)' : 'rgba(255,255,255,0.04)'};
-                          border: 1px solid ${wizardState.duration === d ? 'rgba(74,124,89,0.6)' : 'rgba(255,255,255,0.1)'};
-                          color: ${wizardState.duration === d ? '#4ade80' : 'rgba(255,255,255,0.7)'};
+                          background: ${wizardState.duration === d ? 'rgba(74,124,89,0.4)' : 'rgba(20,30,60,0.04)'};
+                          border: 1px solid ${wizardState.duration === d ? 'rgba(74,124,89,0.6)' : 'var(--l-hair)'};
+                          color: ${wizardState.duration === d ? '#16a34a' : 'var(--l-muted)'};
                           border-radius: 4px;
                           font-size: 11px;
                           font-weight: 500;
                           cursor: pointer;
                           transition: all 0.2s;
-                        " onmouseover="this.style.background='${wizardState.duration === d ? 'rgba(74,124,89,0.5)' : 'rgba(255,255,255,0.08)'}'" onmouseout="this.style.background='${wizardState.duration === d ? 'rgba(74,124,89,0.4)' : 'rgba(255,255,255,0.04)'}'">
+                        " onmouseover="this.style.background='${wizardState.duration === d ? 'rgba(74,124,89,0.5)' : 'rgba(20,30,60,0.08)'}'" onmouseout="this.style.background='${wizardState.duration === d ? 'rgba(74,124,89,0.4)' : 'rgba(20,30,60,0.04)'}'">
                           ${d}m
                         </button>
                       `).join('')}
@@ -921,38 +921,38 @@ function openPOI(id){
                     <input type="number" id="wizard-duration-input" value="${wizardState.duration}" min="5" max="480" placeholder="o inserisci manualmente" style="
                       width: 100%;
                       padding: 8px;
-                      background: rgba(255,255,255,0.04);
-                      border: 1px solid rgba(255,255,255,0.1);
+                      background: rgba(20,30,60,0.04);
+                      border: 1px solid var(--l-hair);
                       border-radius: 4px;
-                      color: #fff;
+                      color: var(--l-ink);
                       font-size: 12px;
                       box-sizing: border-box;
                     ">
                   </div>
 
                   <div style="margin-bottom: 14px;">
-                    <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">💰 Costo (opzionale)</label>
+                    <label style="display: block; color: var(--l-muted); font-size: 12px; margin-bottom: 8px;">💰 Costo (opzionale)</label>
                     <input type="number" id="wizard-cost-input" value="${wizardState.cost}" min="0" placeholder="Es: 15.50" style="
                       width: 100%;
                       padding: 8px;
-                      background: rgba(255,255,255,0.04);
-                      border: 1px solid rgba(255,255,255,0.1);
+                      background: rgba(20,30,60,0.04);
+                      border: 1px solid var(--l-hair);
                       border-radius: 4px;
-                      color: #fff;
+                      color: var(--l-ink);
                       font-size: 12px;
                       box-sizing: border-box;
                     ">
                   </div>
 
                   <div style="margin-bottom: 14px;">
-                    <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">🏷️ Categoria</label>
+                    <label style="display: block; color: var(--l-muted); font-size: 12px; margin-bottom: 8px;">🏷️ Categoria</label>
                     <select id="wizard-tag-select" style="
                       width: 100%;
                       padding: 8px;
-                      background: rgba(255,255,255,0.04);
-                      border: 1px solid rgba(255,255,255,0.1);
+                      background: rgba(20,30,60,0.04);
+                      border: 1px solid var(--l-hair);
                       border-radius: 4px;
-                      color: #fff;
+                      color: var(--l-ink);
                       font-size: 12px;
                       box-sizing: border-box;
                     ">
@@ -965,14 +965,14 @@ function openPOI(id){
                   </div>
 
                   <div>
-                    <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px;">📝 Note personalizzate (opzionale)</label>
+                    <label style="display: block; color: var(--l-muted); font-size: 12px; margin-bottom: 8px;">📝 Note personalizzate (opzionale)</label>
                     <textarea id="wizard-notes-input" placeholder="Es: Prenotare in anticipo, glutine-free disponibile..." style="
                       width: 100%;
                       padding: 8px;
-                      background: rgba(255,255,255,0.04);
-                      border: 1px solid rgba(255,255,255,0.1);
+                      background: rgba(20,30,60,0.04);
+                      border: 1px solid var(--l-hair);
                       border-radius: 4px;
-                      color: #fff;
+                      color: var(--l-ink);
                       font-size: 12px;
                       resize: vertical;
                       min-height: 60px;
@@ -990,48 +990,48 @@ function openPOI(id){
               const dayLabel = dayDate.toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
               html = `
                 <div style="padding: 16px;">
-                  <p style="color: #fff; margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step4') : '✅ STEP 4/4 — Riepilogo'}</p>
+                  <p style="color: var(--l-ink); margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step4') : '✅ STEP 4/4 — Riepilogo'}</p>
 
-                  <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+                  <div style="background: rgba(20,30,60,0.04); border: 1px solid var(--l-hair); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
                     <div style="margin-bottom: 10px;">
-                      <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📌 Punto di interesse</div>
-                      <div style="font-size: 14px; color: #fff; font-weight: 600;">${poiName}</div>
+                      <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📌 Punto di interesse</div>
+                      <div style="font-size: 14px; color: var(--l-ink); font-weight: 600;">${poiName}</div>
                     </div>
 
-                    <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-                      <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📅 Data e orario</div>
-                      <div style="font-size: 13px; color: rgba(255,255,255,0.9);">
+                    <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid var(--l-hair);">
+                      <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📅 Data e orario</div>
+                      <div style="font-size: 13px; color: var(--l-ink);">
                         <strong>Day ${wizardState.selectedDay + 1}</strong> · ${dayLabel}<br>
                         <strong>${wizardState.selectedTime}</strong>
                       </div>
                     </div>
 
-                    <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-                      <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">⏱️ Durata</div>
-                      <div style="font-size: 13px; color: rgba(255,255,255,0.9);"><strong>${wizardState.duration}</strong> minuti</div>
+                    <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid var(--l-hair);">
+                      <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">⏱️ Durata</div>
+                      <div style="font-size: 13px; color: var(--l-ink);"><strong>${wizardState.duration}</strong> minuti</div>
                     </div>
 
-                    <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-                      <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">🏷️ Categoria</div>
-                      <div style="font-size: 13px; color: rgba(255,255,255,0.9);"><strong>${['cibo', 'trasporti', 'ingressi', 'shopping', 'altro'].includes(wizardState.tag) ? wizardState.tag.charAt(0).toUpperCase() + wizardState.tag.slice(1) : 'Altro'}</strong></div>
+                    <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid var(--l-hair);">
+                      <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">🏷️ Categoria</div>
+                      <div style="font-size: 13px; color: var(--l-ink);"><strong>${['cibo', 'trasporti', 'ingressi', 'shopping', 'altro'].includes(wizardState.tag) ? wizardState.tag.charAt(0).toUpperCase() + wizardState.tag.slice(1) : 'Altro'}</strong></div>
                     </div>
 
                     ${wizardState.cost > 0 ? `
-                      <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">💰 Costo</div>
-                        <div style="font-size: 13px; color: rgba(255,255,255,0.9);"><strong>¥${wizardState.cost}</strong></div>
+                      <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid var(--l-hair);">
+                        <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">💰 Costo</div>
+                        <div style="font-size: 13px; color: var(--l-ink);"><strong>¥${wizardState.cost}</strong></div>
                       </div>
                     ` : ''}
 
                     ${wizardState.notes ? `
-                      <div style="padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📝 Note</div>
-                        <div style="font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.4;">${wizardState.notes}</div>
+                      <div style="padding-top: 10px; border-top: 1px solid var(--l-hair);">
+                        <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📝 Note</div>
+                        <div style="font-size: 12px; color: var(--l-ink); line-height: 1.4;">${wizardState.notes}</div>
                       </div>
                     ` : ''}
                   </div>
 
-                  <p style="color: rgba(255,255,255,0.6); font-size: 12px; text-align: center;">Conferma per aggiungere alla tappa</p>
+                  <p style="color: var(--l-muted); font-size: 12px; text-align: center;">Conferma per aggiungere alla tappa</p>
                 </div>
               `;
             }
@@ -1085,36 +1085,36 @@ function openPOI(id){
 
             // Re-render ENTIRE wizard (content + buttons), not just the content
             const fullWizardHTML = renderWizardStep() + `
-              <div style="padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; align-items: center; justify-content: flex-start;">
+              <div style="padding: 12px 16px; border-top: 1px solid var(--l-hair); display: flex; gap: 8px; align-items: center; justify-content: flex-start;">
                 <!-- LEFT BUTTONS -->
                 <button class="wizard-cancel-btn" style="
                   padding: 8px 12px;
-                  background: rgba(255,255,255,0.04);
-                  border: 1px solid rgba(255,255,255,0.1);
-                  color: rgba(255,255,255,0.6);
+                  background: rgba(20,30,60,0.04);
+                  border: 1px solid var(--l-hair);
+                  color: var(--l-muted);
                   border-radius: 4px;
                   cursor: pointer;
                   font-size: 11px;
                   font-weight: 500;
                   transition: all 0.2s;
                   white-space: nowrap;
-                " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                " onmouseover="this.style.background='rgba(20,30,60,0.08)'" onmouseout="this.style.background='rgba(20,30,60,0.04)'">
                   ✕ Annulla
                 </button>
 
                 ${wizardState.step > 1 ? `
                   <button class="wizard-back-btn" style="
                     padding: 8px 12px;
-                    background: rgba(255,255,255,0.04);
-                    border: 1px solid rgba(255,255,255,0.1);
-                    color: rgba(255,255,255,0.6);
+                    background: rgba(20,30,60,0.04);
+                    border: 1px solid var(--l-hair);
+                    color: var(--l-muted);
                     border-radius: 4px;
                     cursor: pointer;
                     font-size: 11px;
                     font-weight: 500;
                     transition: all 0.2s;
                     white-space: nowrap;
-                  " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                  " onmouseover="this.style.background='rgba(20,30,60,0.08)'" onmouseout="this.style.background='rgba(20,30,60,0.04)'">
                     ${window.t ? window.t('common.back') : '← Indietro'}
                   </button>
                 ` : ''}
@@ -1143,7 +1143,7 @@ function openPOI(id){
                     padding: 8px 16px;
                     background: rgba(74,124,89,0.3);
                     border: 1px solid rgba(74,124,89,0.5);
-                    color: #4ade80;
+                    color: #16a34a;
                     border-radius: 4px;
                     cursor: pointer;
                     font-size: 12px;
@@ -1380,7 +1380,7 @@ function openPOI(id){
                   const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
                   if (timeRegex.test(timeVal)) {
                     wizardState.selectedTime = timeVal;
-                    e.target.style.borderColor = 'rgba(255,255,255,0.2)';
+                    e.target.style.borderColor = 'rgba(20,30,60,0.2)';
                     console.log('[WIZARD] Time selected:', wizardState.selectedTime);
                   } else {
                     e.target.style.borderColor = 'rgba(255, 107, 53, 0.6)';
@@ -1416,36 +1416,36 @@ function openPOI(id){
            * Create initial wizard content with controls
            */
           const wizardHTML = renderWizardStep() + `
-            <div style="padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; align-items: center; justify-content: flex-start;">
+            <div style="padding: 12px 16px; border-top: 1px solid var(--l-hair); display: flex; gap: 8px; align-items: center; justify-content: flex-start;">
               <!-- LEFT BUTTONS -->
               <button class="wizard-cancel-btn" style="
                 padding: 8px 12px;
-                background: rgba(255,255,255,0.04);
-                border: 1px solid rgba(255,255,255,0.1);
-                color: rgba(255,255,255,0.6);
+                background: rgba(20,30,60,0.04);
+                border: 1px solid var(--l-hair);
+                color: var(--l-muted);
                 border-radius: 4px;
                 cursor: pointer;
                 font-size: 11px;
                 font-weight: 500;
                 transition: all 0.2s;
                 white-space: nowrap;
-              " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+              " onmouseover="this.style.background='rgba(20,30,60,0.08)'" onmouseout="this.style.background='rgba(20,30,60,0.04)'">
                 ✕ Annulla
               </button>
 
               ${wizardState.step > 1 ? `
                 <button class="wizard-back-btn" style="
                   padding: 8px 12px;
-                  background: rgba(255,255,255,0.04);
-                  border: 1px solid rgba(255,255,255,0.1);
-                  color: rgba(255,255,255,0.6);
+                  background: rgba(20,30,60,0.04);
+                  border: 1px solid var(--l-hair);
+                  color: var(--l-muted);
                   border-radius: 4px;
                   cursor: pointer;
                   font-size: 11px;
                   font-weight: 500;
                   transition: all 0.2s;
                   white-space: nowrap;
-                " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                " onmouseover="this.style.background='rgba(20,30,60,0.08)'" onmouseout="this.style.background='rgba(20,30,60,0.04)'">
                   ${window.t ? window.t('common.back') : '← Indietro'}
                 </button>
               ` : ''}
@@ -1474,7 +1474,7 @@ function openPOI(id){
                   padding: 8px 16px;
                   background: rgba(74,124,89,0.3);
                   border: 1px solid rgba(74,124,89,0.5);
-                  color: #4ade80;
+                  color: #16a34a;
                   border-radius: 4px;
                   cursor: pointer;
                   font-size: 12px;
@@ -1531,7 +1531,7 @@ function openPOI(id){
           .filter(([k]) => k !== 'all')
           .map(([k, v]) => {
             const isSelected = (window.state.userCategoryOverrides?.[id] || p.cat) === k;
-            return `<button class="btn" data-cat="${k}" style="font-size:11px;padding:8px;text-align:center;background:${isSelected ? '#FF1493' : '#f0f0f0'};color:${isSelected ? 'white' : '#333'};border:none;border-radius:4px;cursor:pointer">
+            return `<button class="btn" data-cat="${k}" style="font-size:11px;padding:8px;text-align:center;background:${isSelected ? '#e0414e' : '#f0f0f0'};color:${isSelected ? 'white' : '#333'};border:none;border-radius:4px;cursor:pointer">
               ${v.icon}<br>${v.label}
             </button>`;
           })

@@ -398,7 +398,7 @@ window.openGFPlacesPanel = function(prefillData = null, editId = null) {
         </div>
         ${p.safety_level ? `<div style="display:inline-block;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-bottom:8px;${p.safety_level === 'GREEN' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F' : p.safety_level === 'YELLOW' ? 'background:rgba(255,215,0,0.2);color:#FFD700' : 'background:rgba(255,107,107,0.2);color:#FF6B6B'};">${p.safety_level === 'GREEN' ? '🟢 SAFE' : p.safety_level === 'YELLOW' ? '🟡 CAUTION' : '🔴 DANGER'}</div>` : ''}
         <div class="gpc-meta" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-          ${(p.tags || []).map(t => `<span class="gpc-tag" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:3px 8px;font-size:11px;">${t}</span>`).join('')}
+          ${(p.tags || []).map(t => `<span class="gpc-tag" style="background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.12);border-radius:4px;padding:3px 8px;font-size:11px;color:var(--l-ink);">${t}</span>`).join('')}
         </div>
         ${p.note ? `<div style="margin:8px 0;font-size:12px;color:var(--muted);line-height:1.4;">${p.note}</div>` : ''}
         <div class="gpc-actions" style="display:flex;gap:6px;margin-top:10px;">

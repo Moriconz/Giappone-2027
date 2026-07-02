@@ -97,7 +97,7 @@
   function showAddItineraryDialog(poi, onConfirm) {
     const html = `
       <div style="position:fixed;inset:0;z-index:3000;background:rgba(20,30,80,.85);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto" id="add-itin-overlay">
-        <div style="background:linear-gradient(170deg,#FFFDF0 0%,#FFF8DC 100%);border-top:3px solid #FF1493;border-radius:12px;padding:24px;max-width:380px;width:100%;margin:auto 0;box-shadow:0 -8px 40px rgba(255,20,147,.3)">
+        <div style="background:linear-gradient(170deg,#FFFDF0 0%,#FFF8DC 100%);border-top:3px solid var(--l-accent);border-radius:12px;padding:24px;max-width:380px;width:100%;margin:auto 0;box-shadow:0 -8px 40px rgba(224,65,78,.3)">
           <h3 style="margin:0 0 16px;font-size:18px;color:#1A2560;font-weight:700;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">${poi.name || poi.bestname || 'Aggiungi tappa'}</h3>
           <div class="form-row">
             <label style="color:#6B5EA8;font-weight:700;font-size:12px;display:block;margin-bottom:6px">📅 Giorno del viaggio (1, 2, 3...)</label>
@@ -113,7 +113,7 @@
           </div>
           <div style="display:flex;gap:8px;margin-top:18px">
             <button id="itin-cancel" style="flex:1;padding:11px;background:linear-gradient(135deg,#E8E0FF,#D8CCFF);border:2px solid #C8BDFF;border-radius:8px;color:#1A2560;cursor:pointer;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;transition:all 0.18s ease">Annulla</button>
-            <button id="itin-confirm" style="flex:1;padding:11px;background:linear-gradient(135deg,#FF1493,#FF69B4);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 0 16px rgba(255,20,147,.45);transition:all 0.18s ease">✓ Aggiungi</button>
+            <button id="itin-confirm" style="flex:1;padding:11px;background:linear-gradient(135deg,var(--l-accent),var(--l-accent-600));border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 0 16px rgba(224,65,78,.45);transition:all 0.18s ease">✓ Aggiungi</button>
           </div>
         </div>
       </div>
@@ -193,29 +193,29 @@
     }).join('') : '<p style="color:var(--muted);font-size:13px;padding:12px">📋 L\'itinerario del gruppo è vuoto. Seleziona tappe dalla lista sottostante per aggiungerle!</p>';
 
     const searchHtml = `
-      <div style="position:sticky;top:0;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);padding:12px;margin-bottom:12px;z-index:200;border-radius:14px">
+      <div style="position:sticky;top:0;background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);padding:12px;margin-bottom:12px;z-index:200;border-radius:14px">
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <input id="list-search" type="text" placeholder="🔍 Scrivi una città (Tokyo, Osaka, Kyoto...)"
-            style="flex:1;padding:8px 10px;background:rgba(74,91,168,0.12);backdrop-filter:blur(10px);color:#fff;border:1.5px solid rgba(255,255,255,0.25);border-radius:8px;font:inherit;font-size:13px">
-          <button id="btn-google-search" style="padding:8px 12px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;white-space:nowrap;font-size:12px;box-shadow:0 0 12px rgba(255,20,147,0.3)">🌍 Google</button>
+            style="flex:1;padding:8px 10px;background:#fff;backdrop-filter:blur(10px);color:var(--l-ink);border:1.5px solid var(--l-hair);border-radius:8px;font:inherit;font-size:13px">
+          <button id="btn-google-search" style="padding:8px 12px;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));border:2px solid var(--l-accent);border-radius:8px;color:#fff;cursor:pointer;font-weight:600;white-space:nowrap;font-size:12px;box-shadow:0 0 12px rgba(224,65,78,0.3)">🌍 Google</button>
         </div>
         <div style="display:flex;gap:6px;font-size:12px">
-          <button id="btn-export-whatsapp" style="flex:1;padding:6px;background:rgba(76,175,80,.2);border:1.5px solid rgba(76,175,80,.5);border-radius:6px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;backdrop-filter:blur(10px)">📤 WhatsApp</button>
-          <button id="btn-share-group" style="flex:1;padding:6px;background:rgba(255,20,147,.2);border:1.5px solid rgba(255,20,147,.5);border-radius:6px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;backdrop-filter:blur(10px)">👥 Condividi</button>
+          <button id="btn-export-whatsapp" style="flex:1;padding:6px;background:rgba(22,163,74,.12);border:1.5px solid rgba(22,163,74,.4);border-radius:6px;color:#16a34a;cursor:pointer;font-size:11px;font-weight:600;backdrop-filter:blur(10px)">📤 WhatsApp</button>
+          <button id="btn-share-group" style="flex:1;padding:6px;background:var(--l-accent-soft);border:1.5px solid var(--l-accent-brd);border-radius:6px;color:var(--l-accent);cursor:pointer;font-size:11px;font-weight:600;backdrop-filter:blur(10px)">👥 Condividi</button>
         </div>
       </div>
-      <div class="section" style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
+      <div class="section" style="background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:14px;padding:14px;margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <h3 style="margin:0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🗓️ Itinerario (${itinerary.length})</h3>
-          <span style="font-size:11px;color:rgba(255,255,255,0.7)">Tempo reale</span>
+          <h3 style="margin:0;color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🗓️ Itinerario (${itinerary.length})</h3>
+          <span style="font-size:11px;color:var(--l-muted)">Tempo reale</span>
         </div>
-        <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:0 0 8px">Condiviso con i membri della stanza</p>
+        <p style="font-size:12px;color:var(--l-muted);margin:0 0 8px">Condiviso con i membri della stanza</p>
         <div id="itinerary-list">${itineraryHtml}</div>
       </div>
       <div id="list-results" style="margin-top:20px">
-        <div style="padding:20px;text-align:center;color:rgba(255,255,255,0.7);font-size:13px">
+        <div style="padding:20px;text-align:center;color:var(--l-muted);font-size:13px">
           <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
-          <p style="font-size:11px;margin:8px 0 0;color:rgba(255,255,255,0.5)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+          <p style="font-size:11px;margin:8px 0 0;color:var(--l-faint)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
         </div>
       </div>
     `;
@@ -252,9 +252,9 @@
 
         if (!query) {
           resultsDiv.innerHTML = `
-            <div style="padding:20px;text-align:center;color:rgba(255,255,255,0.7);font-size:13px">
+            <div style="padding:20px;text-align:center;color:var(--l-muted);font-size:13px">
               <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
-              <p style="font-size:11px;margin:8px 0 0;color:rgba(255,255,255,0.5)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+              <p style="font-size:11px;margin:8px 0 0;color:var(--l-faint)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
             </div>
           `;
           return;
@@ -275,9 +275,9 @@
           if (searchResults.length === 0) {
             resultsDiv.innerHTML = `
               <div style="padding:20px;text-align:center">
-                <p style="font-size:14px;margin:0 0 8px;color:#FF1493;font-weight:700">❌ Nessun POI trovato</p>
-                <p style="font-size:12px;margin:0;color:rgba(255,255,255,0.7)">Non ci sono luoghi a "${query}"</p>
-                <p style="font-size:11px;margin:8px 0 0;color:rgba(255,255,255,0.5)">💡 Prova con: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima</p>
+                <p style="font-size:14px;margin:0 0 8px;color:var(--l-accent);font-weight:700">❌ Nessun POI trovato</p>
+                <p style="font-size:12px;margin:0;color:var(--l-muted)">Non ci sono luoghi a "${query}"</p>
+                <p style="font-size:11px;margin:8px 0 0;color:var(--l-faint)">💡 Prova con: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima</p>
               </div>
             `;
             return;

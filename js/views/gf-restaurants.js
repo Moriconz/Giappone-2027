@@ -89,12 +89,12 @@
           <h3 style="
             font-size: 16px;
             font-weight: 700;
-            color: rgba(255,255,255,0.95);
+            color: var(--l-ink);
             margin: 0 0 8px 0;
           ">${noResultsMsg}</h3>
           <p style="
             font-size: 13px;
-            color: rgba(255,255,255,0.6);
+            color: var(--l-muted);
             margin: 0 0 16px 0;
           ">${suggestion}</p>
           <a href="${discoverUrl}" target="_blank" style="
@@ -124,7 +124,7 @@
         ctaButtons.push(`<a href="tel:${r.phone.replace(/[^0-9+]/g,'')}" style="flex:1;padding:10px 12px;background:linear-gradient(135deg, var(--m-accent), #FF5E1F);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(255,107,53,0.4)'" onmouseout="this.style.boxShadow='none'">📞 Chiama</a>`);
       }
       if (r.maps_url) {
-        ctaButtons.push(`<a href="${r.maps_url}" target="_blank" style="flex:1;padding:10px 12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,165,100,0.2);border-radius:8px;color:rgba(255,255,255,0.85);font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)';this.style.borderColor='rgba(255,165,100,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,165,100,0.2)'">🗺️ Mappe</a>`);
+        ctaButtons.push(`<a href="${r.maps_url}" target="_blank" style="flex:1;padding:10px 12px;background:rgba(20,30,60,0.05);border:1px solid rgba(255,165,100,0.3);border-radius:8px;color:var(--l-ink);font-size:12px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(20,30,60,0.09)';this.style.borderColor='rgba(255,165,100,0.5)'" onmouseout="this.style.background='rgba(20,30,60,0.05)';this.style.borderColor='rgba(255,165,100,0.3)'">🗺️ Mappe</a>`);
       }
 
       const secondaryLinks = [];
@@ -136,36 +136,36 @@
 
       const rating = r.rating ? `⭐ ${r.rating}` : '';
       const reviewCount = r.review_count ? `(${r.review_count})` : '';
-      const distanceStr = r.distance ? `<span style="color:#4ADE80;font-weight:600">${window.fmtDist(r.distance)}</span>` : '';
+      const distanceStr = r.distance ? `<span style="color:#16a34a;font-weight:600">${window.fmtDist(r.distance)}</span>` : '';
 
       return `
         <div style="
           padding: 14px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(20,30,60,0.03);
+          border: 1px solid rgba(20,30,60,0.08);
           border-radius: 12px;
           transition: all 0.2s;
-        " onmouseover="this.style.background='rgba(255,255,255,0.06)';this.style.borderColor='rgba(255,165,100,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.1)'">
+        " onmouseover="this.style.background='rgba(20,30,60,0.05)';this.style.borderColor='rgba(255,165,100,0.3)'" onmouseout="this.style.background='rgba(20,30,60,0.03)';this.style.borderColor='rgba(20,30,60,0.08)'">
           <!-- Header: Name + Distance -->
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
             <div style="flex: 1; min-width: 0;">
-              <div style="font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.95); margin-bottom: 2px;">${r.name}</div>
-              <div style="font-size: 12px; color: rgba(255,255,255,0.6);">${r.city}${r.area?` · ${r.area}`:''}${r.cuisine?` · ${r.cuisine}`:''}</div>
+              <div style="font-size: 14px; font-weight: 700; color: var(--l-ink); margin-bottom: 2px;">${r.name}</div>
+              <div style="font-size: 12px; color: var(--l-muted);">${r.city}${r.area?` · ${r.area}`:''}${r.cuisine?` · ${r.cuisine}`:''}</div>
             </div>
             ${distanceStr ? `<div style="margin-left: 8px; white-space: nowrap; font-size: 12px; font-weight: 600;">${distanceStr}</div>` : ''}
           </div>
 
           <!-- Address (if available) -->
-          ${r.address ? `<div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 8px;">${r.address}</div>` : ''}
+          ${r.address ? `<div style="font-size: 12px; color: var(--l-faint); margin-bottom: 8px;">${r.address}</div>` : ''}
 
           <!-- Tags -->
           ${tags ? `<div style="margin-bottom: 8px; font-size: 0;">${tags}</div>` : ''}
 
           <!-- Rating -->
-          ${rating || reviewCount ? `<div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 10px;">${rating} ${reviewCount}</div>` : ''}
+          ${rating || reviewCount ? `<div style="font-size: 12px; color: var(--l-muted); margin-bottom: 10px;">${rating} ${reviewCount}</div>` : ''}
 
           <!-- Note -->
-          ${r.note ? `<div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 10px; padding: 8px; background: rgba(74,222,128,0.05); border-left: 2px solid rgba(74,222,128,0.3); border-radius: 4px;">${r.note}</div>` : ''}
+          ${r.note ? `<div style="font-size: 12px; color: var(--l-muted); margin-bottom: 10px; padding: 8px; background: rgba(74,222,128,0.08); border-left: 2px solid rgba(74,222,128,0.4); border-radius: 4px;">${r.note}</div>` : ''}
 
           <!-- CTA Buttons -->
           <div style="display: flex; gap: 8px; margin-bottom: ${secondaryLinks.length ? '8px' : '0'};">

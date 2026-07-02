@@ -119,7 +119,7 @@
         ${photosHtml}
       </div>
       <div style="display:flex;gap:8px;margin-top:12px">
-        <a href="${googleMapsUrl}" target="_blank" style="flex:1;padding:10px;background:linear-gradient(135deg, #FF1493, #FF69B4);color:white;border:none;border-radius:6px;text-align:center;text-decoration:none;font-weight:600;font-size:12px">🗺️ Google Maps</a>
+        <a href="${googleMapsUrl}" target="_blank" style="flex:1;padding:10px;background:linear-gradient(135deg, var(--l-accent), var(--l-accent-600));color:white;border:none;border-radius:6px;text-align:center;text-decoration:none;font-weight:600;font-size:12px">🗺️ Google Maps</a>
         <a href="${appleMapsUrl}" target="_blank" style="flex:1;padding:10px;background:linear-gradient(135deg, #00FF88, #C0FF9F);color:#2D3B7D;border:none;border-radius:6px;text-align:center;text-decoration:none;font-weight:600;font-size:12px">🍎 Mappe Apple</a>
       </div>
     </div>`;
@@ -187,7 +187,7 @@
       window.openSheet('🛍️ Shopping', `
         <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
           ${Array.from({length: 6}).map(() => '<div class="skeleton" style="height:68px;border-radius:12px;"></div>').join('')}
-          <p style="color:rgba(255,255,255,0.50);text-align:center;font-size:12px;margin:4px 0 0;">⏳ Caricamento negozi in corso…</p>
+          <p style="color:var(--l-muted, var(--muted));text-align:center;font-size:12px;margin:4px 0 0;">⏳ Caricamento negozi in corso…</p>
         </div>`);
       return;
     }

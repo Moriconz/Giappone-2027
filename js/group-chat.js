@@ -306,7 +306,7 @@ window.groupChat = (() => {
           <div style="max-width: 70%;">
             ${!isOwn ? `<div style="font-size: 12px; font-weight: 600; margin-bottom: 3px; padding: 0 8px; color: ${senderColor};">${escapeHtml(messageFrom)}</div>` : ''}
             <div style="
-              background: ${isOwn ? '#ff1493' : '#e0e0e0'};
+              background: ${isOwn ? 'var(--l-accent)' : '#e0e0e0'};
               color: ${isOwn ? '#fff' : '#333'};
               padding: 8px 12px;
               border-radius: 8px;
@@ -518,9 +518,9 @@ window.groupChat = (() => {
    */
   function getColorForName(name) {
     const colors = [
-      '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
-      '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B88B', '#ABEBC6',
-      '#F5B7B1', '#85C1E9', '#F9E79F', '#D7BDE2', '#A9DFBF'
+      '#d64545', '#2a9d8f', '#2b7fad', '#c9702c', '#3f9c7f',
+      '#b8971f', '#8a4fae', '#3d84ab', '#c07a3f', '#3f9c5f',
+      '#c85f5a', '#3178b0', '#b09324', '#8259ab', '#4a9c5e'
     ];
 
     // Hash semplice del nome

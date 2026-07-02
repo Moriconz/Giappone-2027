@@ -106,39 +106,39 @@
     const pct = items.length ? Math.round(done / items.length * 100) : 0;
 
     const rows = items.map(it => `
-      <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:9px;margin-bottom:6px;">
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(20,30,60,0.03);border:1px solid rgba(20,30,60,0.08);border-radius:9px;margin-bottom:6px;">
         <button onclick="window.GroupChecklist.toggle('${_esc(it.id)}')" style="flex-shrink:0;width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;
-          background:${it.done ? 'rgba(76,175,80,0.3)' : 'rgba(255,255,255,0.06)'};border:1.5px solid ${it.done ? 'rgba(76,175,80,0.7)' : 'rgba(255,255,255,0.2)'};color:#fff;">${it.done ? '✓' : ''}</button>
+          background:${it.done ? 'rgba(22,163,74,0.18)' : 'rgba(20,30,60,0.05)'};border:1.5px solid ${it.done ? 'rgba(22,163,74,0.6)' : 'rgba(20,30,60,0.2)'};color:${it.done ? '#16a34a' : 'var(--l-ink)'};">${it.done ? '✓' : ''}</button>
         <div style="flex:1;min-width:0;">
-          <div style="color:#fff;font-size:13px;${it.done ? 'text-decoration:line-through;opacity:0.55;' : ''}">${_esc(it.text)}</div>
-          ${it.done && it.doneBy ? `<div style="font-size:10px;color:rgba(255,255,255,0.45);">${T('ck.doneBy', 'fatto da')} ${_esc(it.doneBy)}</div>` : ''}
+          <div style="color:var(--l-ink);font-size:13px;${it.done ? 'text-decoration:line-through;opacity:0.55;' : ''}">${_esc(it.text)}</div>
+          ${it.done && it.doneBy ? `<div style="font-size:10px;color:var(--l-faint);">${T('ck.doneBy', 'fatto da')} ${_esc(it.doneBy)}</div>` : ''}
         </div>
-        <button onclick="window.GroupChecklist.remove('${_esc(it.id)}')" style="background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;font-size:13px;padding:4px;">🗑️</button>
+        <button onclick="window.GroupChecklist.remove('${_esc(it.id)}')" style="background:none;border:none;color:var(--l-faint);cursor:pointer;font-size:13px;padding:4px;">🗑️</button>
       </div>`).join('');
 
     const html = `
       <div id="group-ck-body" style="padding:4px 2px;">
         ${items.length ? `
-        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;margin-bottom:12px;">
+        <div style="background:rgba(20,30,60,0.04);border:1px solid rgba(20,30,60,0.1);border-radius:12px;padding:14px;margin-bottom:12px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-            <span style="color:#fff;font-size:14px;font-weight:700;">${done}/${items.length} ${T('ck.done', 'completati')}</span>
-            <span style="color:${pct === 100 ? '#4ade80' : 'var(--m-accent,#ff7a45)'};font-weight:700;">${pct}%</span>
+            <span style="color:var(--l-ink);font-size:14px;font-weight:700;">${done}/${items.length} ${T('ck.done', 'completati')}</span>
+            <span style="color:${pct === 100 ? '#16a34a' : 'var(--m-accent,#ff7a45)'};font-weight:700;">${pct}%</span>
           </div>
-          <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
-            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--m-accent,#ff7a45),#4ade80);transition:width 0.3s;"></div>
+          <div style="height:8px;background:rgba(20,30,60,0.08);border-radius:4px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--m-accent,#ff7a45),#16a34a);transition:width 0.3s;"></div>
           </div>
         </div>` : ''}
 
         <div style="display:flex;gap:8px;margin-bottom:14px;">
-          <input id="ck-input" type="text" placeholder="${T('ck.placeholder', 'Es: prenotare ristorante GF a Kyoto')}" style="flex:1;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:13px;box-sizing:border-box;">
-          <button id="ck-add-btn" style="padding:10px 16px;background:rgba(255,107,53,0.25);border:1.5px solid rgba(255,107,53,0.45);border-radius:8px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">+</button>
+          <input id="ck-input" type="text" placeholder="${T('ck.placeholder', 'Es: prenotare ristorante GF a Kyoto')}" style="flex:1;padding:10px;background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.15);border-radius:8px;color:var(--l-ink);font-size:13px;box-sizing:border-box;">
+          <button id="ck-add-btn" style="padding:10px 16px;background:rgba(255,107,53,0.2);border:1.5px solid rgba(255,107,53,0.45);border-radius:8px;color:var(--l-ink);font-size:14px;font-weight:700;cursor:pointer;">+</button>
         </div>
 
         ${items.length ? rows : `
-          <div style="text-align:center;padding:30px 20px;color:rgba(255,255,255,0.5);">
+          <div style="text-align:center;padding:30px 20px;color:var(--l-muted);">
             <div style="font-size:42px;margin-bottom:12px;">📋</div>
             <p style="margin:0 0 16px;">${T('ck.empty', 'Lista vuota. Aggiungete insieme cosa portare e cosa fare.')}</p>
-            <button id="ck-seed-btn" style="padding:10px 18px;background:rgba(74,222,128,0.15);border:1.5px solid rgba(74,222,128,0.4);border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">🍪 ${T('ck.seed', 'Aggiungi preset GF')}</button>
+            <button id="ck-seed-btn" style="padding:10px 18px;background:rgba(22,163,74,0.12);border:1.5px solid rgba(22,163,74,0.4);border-radius:8px;color:#15803d;font-size:13px;font-weight:700;cursor:pointer;">🍪 ${T('ck.seed', 'Aggiungi preset GF')}</button>
           </div>`}
       </div>`;
 

@@ -106,7 +106,7 @@
           background: rgba(255,165,100,0.2);
           border: 1.5px solid rgba(255,165,100,0.4);
           border-radius: 20px;
-          color: rgba(255,255,255,0.9);
+          color: var(--l-ink);
           font-size: 13px;
           font-weight: 600;
           cursor: pointer;
@@ -116,16 +116,16 @@
         ${allCities.map(city => `
           <button class="gf-city-chip" data-city="${city}" style="
             padding: 8px 14px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(20,30,60,0.04);
+            border: 1px solid rgba(20,30,60,0.08);
             border-radius: 20px;
-            color: rgba(255,255,255,0.7);
+            color: var(--l-muted);
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
             white-space: nowrap;
-          " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">${city}</button>
+          " onmouseover="this.style.background='rgba(20,30,60,0.08)'" onmouseout="this.style.background='rgba(20,30,60,0.04)'">${city}</button>
         `).join('')}
       </div>
     `;
@@ -135,14 +135,14 @@
         <!-- Search bar -->
         <input id="gf-search" placeholder="${window.t ? window.t('gf.searchByName') : 'Cerca per nome...'}" style="
           padding: 10px 14px;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,165,100,0.2);
+          background: rgba(20,30,60,0.04);
+          border: 1px solid rgba(255,165,100,0.3);
           border-radius: 10px;
-          color: rgba(255,255,255,0.95);
+          color: var(--l-ink);
           font-size: 14px;
           font-family: inherit;
           transition: all 0.2s;
-        " onfocus="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,165,100,0.4)';" onblur="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,165,100,0.2)';">
+        " onfocus="this.style.background='rgba(20,30,60,0.06)'; this.style.borderColor='rgba(255,165,100,0.5)';" onblur="this.style.background='rgba(20,30,60,0.04)'; this.style.borderColor='rgba(255,165,100,0.3)';">
 
         <!-- City chips -->
         ${cityChipsHTML}
@@ -151,7 +151,7 @@
         <div id="gf-list-sheet" style="position: relative; min-height: 200px; display: flex; flex-direction: column; gap: 8px;">
           <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
             ${Array.from({length:5}).map(() => '<div class="skeleton skeleton-card"></div>').join('')}
-            <p style="color: rgba(255,255,255,0.55); text-align: center; padding: 6px; margin: 0; font-size: 12px;">${window.t ? window.t('gf.loadingRestaurants') : '⏳ Caricamento ristoranti...'}</p>
+            <p style="color: var(--l-muted); text-align: center; padding: 6px; margin: 0; font-size: 12px;">${window.t ? window.t('gf.loadingRestaurants') : '⏳ Caricamento ristoranti...'}</p>
           </div>
         </div>
       </div>
@@ -220,14 +220,14 @@
         chip.addEventListener("click", () => {
           cityChips.forEach(c => {
             c.classList.remove("active");
-            c.style.background = "rgba(255,255,255,0.04)";
-            c.style.borderColor = "rgba(255,255,255,0.1)";
-            c.style.color = "rgba(255,255,255,0.7)";
+            c.style.background = "rgba(20,30,60,0.04)";
+            c.style.borderColor = "rgba(20,30,60,0.08)";
+            c.style.color = "var(--l-muted)";
           });
           chip.classList.add("active");
           chip.style.background = "rgba(255,165,100,0.2)";
           chip.style.borderColor = "rgba(255,165,100,0.4)";
-          chip.style.color = "rgba(255,255,255,0.9)";
+          chip.style.color = "var(--l-ink)";
           selectedCity = chip.dataset.city;
           window.renderGFList(selectedCity, searchInput?.value || "");
         });

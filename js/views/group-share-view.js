@@ -19,7 +19,7 @@ function showNoGroupModal() {
       <div style="background:linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,20,147,.1));border:1px solid var(--m-accent);border-radius:10px;padding:16px;margin:12px;">
         <h3 style="margin:0 0 12px 0;color:var(--m-accent);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">⚠️ Non sei in nessun gruppo</h3>
 
-        <p style="margin:0 0 16px 0;color:#fff;font-size:13px;line-height:1.5;">
+        <p style="margin:0 0 16px 0;color:var(--l-ink);font-size:13px;line-height:1.5;">
           Per condividere il tuo itinerario con altri, devi prima entrare in un gruppo oppure crearne uno nuovo.
         </p>
 
@@ -27,7 +27,7 @@ function showNoGroupModal() {
           <button id="btn-go-groups" style="flex:1;background:linear-gradient(180deg,var(--m-accent),#FF8C42);border:2px solid var(--m-accent);color:white;border-radius:8px;padding:11px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
             👥 Gruppami
           </button>
-          <button id="btn-close-no-group" style="flex:1;background:rgba(255,107,53,.2);border:2px solid rgba(255,107,53,.5);color:#fff;border-radius:8px;padding:11px;font-weight:600;cursor:pointer;">
+          <button id="btn-close-no-group" style="flex:1;background:rgba(255,107,53,.12);border:2px solid rgba(255,107,53,.5);color:var(--l-ink);border-radius:8px;padding:11px;font-weight:600;cursor:pointer;">
             ❌ Chiudi
           </button>
         </div>
@@ -96,19 +96,19 @@ function showShareItineraryModal() {
   const roomId = window.state.group.roomId;
   const html = `
     <div style="padding: 0; min-width: 300px;">
-      <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:14px;margin:12px;">
-        <h3 style="margin:0 0 12px 0;color:#FF1493;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📤 Condividi Itinerario</h3>
+      <div style="background:linear-gradient(135deg,rgba(74,124,89,.08),rgba(224,65,78,.06));border:1px solid rgba(20,30,60,.12);border-radius:10px;padding:14px;margin:12px;">
+        <h3 style="margin:0 0 12px 0;color:var(--l-accent);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📤 Condividi Itinerario</h3>
 
-        <div style="background:#E8F4FF;border:2px solid #00FF88;border-radius:8px;padding:12px;margin-bottom:12px;">
+        <div style="background:#E8F4FF;border:2px solid #16a34a;border-radius:8px;padding:12px;margin-bottom:12px;">
           <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:14px">Stanza: ${escapeHtml(roomId)}</p>
           <p style="margin:0;color:#666;font-size:12px">Tappe: <strong>${_allPOIs.length}</strong></p>
         </div>
 
         <div style="display:flex;gap:8px">
-          <button id="confirm-share-itin" style="flex:1;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
+          <button id="confirm-share-itin" style="flex:1;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));border:2px solid var(--l-accent-600);color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
             ✅ Condividi
           </button>
-          <button id="cancel-share-itin" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
+          <button id="cancel-share-itin" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;font-weight:600;cursor:pointer;">
             ❌ Annulla
           </button>
         </div>
@@ -246,7 +246,7 @@ function showGroupItineraryEditor(itineraryId, itinerary) {
 
   // Render POI list
   const poisHtml = pois.map((poi, idx) => `
-    <div style="background:#FFF;border:1px solid #00FF88;border-radius:6px;padding:10px;margin-bottom:8px">
+    <div style="background:#FFF;border:1px solid #16a34a;border-radius:6px;padding:10px;margin-bottom:8px">
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
         <div style="flex:1">
           <input type="text" class="poi-name-edit" data-poi-idx="${idx}" value="${escapeHtml(poi.name?.value || poi.name || '')}"
@@ -276,9 +276,9 @@ function showGroupItineraryEditor(itineraryId, itinerary) {
   const html = `
     <div style="padding: 0; display: flex; flex-direction: column; height: 100%; gap: 10px;">
       <!-- Header -->
-      <div style="background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(201,76,76,.1));border:1px solid #00FF88;border-radius:10px;padding:12px;margin:12px 12px 0">
+      <div style="background:linear-gradient(135deg,rgba(74,124,89,.08),rgba(224,65,78,.06));border:1px solid rgba(20,30,60,.12);border-radius:10px;padding:12px;margin:12px 12px 0">
         <input type="text" id="itin-name-input" value="${escapeHtml(itinName)}"
-          style="width:100%;padding:8px;border:2px solid #FF1493;border-radius:6px;font-weight:600;color:#FF1493;font-size:14px">
+          style="width:100%;padding:8px;border:2px solid var(--l-accent);border-radius:6px;font-weight:600;color:var(--l-accent);font-size:14px">
         <div style="font-size:11px;color:#666;margin-top:6px">📍 ${pois.length} tappe • v${itinerary.version || 1}</div>
       </div>
 
@@ -291,14 +291,14 @@ function showGroupItineraryEditor(itineraryId, itinerary) {
 
       <!-- Add POI Button -->
       <div style="padding:0 12px;margin:0">
-        <button id="add-poi-to-itin" style="width:100%;padding:10px;background:linear-gradient(180deg,#00FF88,#00DD77);border:2px solid #00FF88;color:#2D3B7D;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:8px">
+        <button id="add-poi-to-itin" style="width:100%;padding:10px;background:linear-gradient(180deg,#22c55e,#16a34a);border:2px solid #16a34a;color:#2D3B7D;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:8px">
           ➕ Aggiungi POI da Google Places
         </button>
       </div>
 
       <!-- Save Button -->
       <div style="padding:0 12px 12px;display:flex;gap:8px;margin:0">
-        <button id="save-itin-changes" style="flex:1;padding:10px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
+        <button id="save-itin-changes" style="flex:1;padding:10px;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));border:2px solid var(--l-accent-600);color:white;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
           💾 Salva Modifiche
         </button>
         <button id="cancel-itin-edit" style="flex:1;padding:10px;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;font-weight:600;cursor:pointer;">
@@ -450,7 +450,7 @@ function addPoiToEditor(googlePlace, itinerary) {
   if (poisList) {
     const newIdx = itinerary.pois?.length || 0;
     const newRow = document.createElement('div');
-    newRow.style.cssText = 'background:#FFF;border:1px solid #00FF88;border-radius:6px;padding:10px;margin-bottom:8px';
+    newRow.style.cssText = 'background:#FFF;border:1px solid #16a34a;border-radius:6px;padding:10px;margin-bottom:8px';
     newRow.setAttribute('data-poi-idx', newIdx);
     newRow.innerHTML = `
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">

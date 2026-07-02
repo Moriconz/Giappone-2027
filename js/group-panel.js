@@ -33,10 +33,10 @@ window.groupPanel = (() => {
     const connStatus = (() => {
       const st = window.peerGPS?.getStatus?.() || 'disconnected';
       const peers = window.peerGPS?.getPeerCount?.() ?? 0;
-      const lock = window.RoomCrypto?.ready?.() ? ` <span style="color:#4ade80;font-weight:700" title="${T('group.encrypted', 'Messaggi cifrati end-to-end col codice stanza')}">🔒 ${T('group.e2ee', 'E2EE')}</span>` : '';
-      if (st === 'connected') return `<span style="color:#7FFF7F;font-weight:700">🟢 Connesso</span> <span style="color:rgba(255,255,255,0.7)">· ${peers} ${peers === 1 ? 'membro' : 'membri'} online</span>${lock}`;
-      if (st === 'connecting') return `<span style="color:#FFD700;font-weight:700">🟡 Connessione in corso…</span>${lock}`;
-      return `<span style="color:#FF6B6B;font-weight:700">🔴 Non connesso</span>`;
+      const lock = window.RoomCrypto?.ready?.() ? ` <span style="color:#16a34a;font-weight:700" title="${T('group.encrypted', 'Messaggi cifrati end-to-end col codice stanza')}">🔒 ${T('group.e2ee', 'E2EE')}</span>` : '';
+      if (st === 'connected') return `<span style="color:#16a34a;font-weight:700">🟢 Connesso</span> <span style="color:var(--l-muted)">· ${peers} ${peers === 1 ? 'membro' : 'membri'} online</span>${lock}`;
+      if (st === 'connecting') return `<span style="color:#b45309;font-weight:700">🟡 Connessione in corso…</span>${lock}`;
+      return `<span style="color:#dc2626;font-weight:700">🔴 Non connesso</span>`;
     })();
     const membersList = members.map(m => {
       const avatarHtml = m.avatar ? `
@@ -55,11 +55,11 @@ window.groupPanel = (() => {
       const isClickable = isOnline && !isSelf && hasGPS;
 
       return `
-      <div class="group-member-card" data-member-name="${escapeHtml(m.name)}" style="display:flex;gap:10px;align-items:center;padding:10px;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:10px;margin-bottom:8px;transition:all 0.3s" data-clickable="${isClickable}">
+      <div class="group-member-card" data-member-name="${escapeHtml(m.name)}" style="display:flex;gap:10px;align-items:center;padding:10px;background:rgba(20,30,60,0.04);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(20,30,60,0.1);border-radius:10px;margin-bottom:8px;transition:all 0.3s" data-clickable="${isClickable}">
         ${avatarHtml}
         <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <div style="font-weight:700;font-size:14px;color:#fff">${escapeHtml(m.name || 'Unnamed')}${isSelf ? ' <span style="font-size:10px;color:rgba(255,255,255,0.5)">(tu)</span>' : ''}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.7)">${isOnline ? '🟢 ' + T('common.online', 'Online') : '🔴 ' + T('common.offline', 'Offline')}${hasGPS && !isSelf ? ' 📍 GPS' : ''}</div>
+          <div style="font-weight:700;font-size:14px;color:var(--l-ink)">${escapeHtml(m.name || 'Unnamed')}${isSelf ? ' <span style="font-size:10px;color:var(--l-muted)">(tu)</span>' : ''}</div>
+          <div style="font-size:11px;color:var(--l-muted)">${isOnline ? '🟢 ' + T('common.online', 'Online') : '🔴 ' + T('common.offline', 'Offline')}${hasGPS && !isSelf ? ' 📍 GPS' : ''}</div>
         </div>
       </div>
     `;
@@ -69,41 +69,41 @@ window.groupPanel = (() => {
       <div style="padding: 0;">
 
         <!-- STANZA INFO -->
-        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 6px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🏠 ${T('group.room', 'Stanza')}: <strong>${escapeHtml(group.roomId)}</strong></h3>
-          <p style="font-size:12px;color:rgba(255,255,255,0.7);margin:0 0 6px 0;">Creata da: <strong style="color:#fff">${escapeHtml(group.createdBy || 'Sconosciuto')}</strong></p>
+        <div style="background:rgba(20,30,60,0.04);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(20,30,60,0.1);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 6px 0;color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🏠 ${T('group.room', 'Stanza')}: <strong>${escapeHtml(group.roomId)}</strong></h3>
+          <p style="font-size:12px;color:var(--l-muted);margin:0 0 6px 0;">Creata da: <strong style="color:var(--l-ink)">${escapeHtml(group.createdBy || 'Sconosciuto')}</strong></p>
           <p id="group-conn-status" style="font-size:12px;margin:0;">${connStatus}</p>
         </div>
 
         <!-- MEMBRI -->
-        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 12px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">👥 ${T('group.members', 'Membri')} (${members.length})</h3>
-          ${membersList ? `<div style="display:flex;flex-direction:column;gap:8px">${membersList}</div>` : '<p style="color:rgba(255,255,255,0.6);font-size:13px;margin:0">Nessun membro.</p>'}
+        <div style="background:rgba(20,30,60,0.04);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(20,30,60,0.1);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">👥 ${T('group.members', 'Membri')} (${members.length})</h3>
+          ${membersList ? `<div style="display:flex;flex-direction:column;gap:8px">${membersList}</div>` : '<p style="color:var(--l-muted);font-size:13px;margin:0">Nessun membro.</p>'}
         </div>
 
         <!-- GPS SHARING -->
-        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📍 ${T('group.gpsSharing', 'Condivisione GPS')}</h3>
-          <div style="display:flex;gap:10px;align-items:center;padding:10px;background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:10px">
+        <div style="background:rgba(20,30,60,0.04);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(20,30,60,0.1);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 10px 0;color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📍 ${T('group.gpsSharing', 'Condivisione GPS')}</h3>
+          <div style="display:flex;gap:10px;align-items:center;padding:10px;background:rgba(20,30,60,0.04);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(20,30,60,0.1);border-radius:10px">
             <input type="checkbox" id="gps-share-toggle" ${gpsEnabled ? 'checked' : ''}
-              style="width:18px;height:18px;cursor:pointer;accent-color:#FF1493">
+              style="width:18px;height:18px;cursor:pointer;accent-color:var(--l-accent)">
             <label for="gps-share-toggle" style="flex:1;cursor:pointer;margin:0">
-              <strong style="color:#fff">${gpsEnabled ? '✅ Posizione in diretta' : '⬜ Posizione inattiva'}</strong>
-              <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px">
+              <strong style="color:var(--l-ink)">${gpsEnabled ? '✅ Posizione in diretta' : '⬜ Posizione inattiva'}</strong>
+              <div style="font-size:11px;color:var(--l-muted);margin-top:2px">
                 ${FORCE_FAKE_GPS ? '📍 Usando Tokyo (test mode)' : '📍 Usando posizione reale'}
               </div>
             </label>
           </div>
-          <p style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:8px;margin-bottom:0">
+          <p style="font-size:11px;color:var(--l-muted);margin-top:8px;margin-bottom:0">
             La tua posizione è visibile ai membri del gruppo solo se attiva.
           </p>
         </div>
 
         <!-- ITINERARI DI GRUPPO (Phase 3) -->
-        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📋 Itinerari di Gruppo</h3>
+        <div style="background:rgba(20,30,60,0.04);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(20,30,60,0.1);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 10px 0;color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📋 Itinerari di Gruppo</h3>
           <div id="group-itineraries-list" style="margin-bottom:10px;max-height:200px;overflow-y:auto">
-            <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:0;padding:8px">Nessun itinerario condiviso.</p>
+            <p style="font-size:12px;color:var(--l-muted);margin:0;padding:8px">Nessun itinerario condiviso.</p>
           </div>
           <div style="display:flex;gap:6px;margin-bottom:10px">
             <button id="undo-group-btn" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:6px;padding:8px;font-weight:600;cursor:pointer;font-size:12px;opacity:0.6" disabled title="Annulla ultimo cambio">
@@ -113,39 +113,39 @@ window.groupPanel = (() => {
               ➡️ Rifai
             </button>
           </div>
-          <p style="font-size:11px;color:rgba(255,255,255,0.6);margin:0">
+          <p style="font-size:11px;color:var(--l-muted);margin:0">
             Modifica condivisa e sincronizzazione in tempo reale.
           </p>
         </div>
 
         <!-- CHAT -->
-        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">💬 Chat Gruppo</h3>
-          <button class="btn primary" id="open-group-chat" style="width:100%;margin-bottom:8px;background:linear-gradient(180deg,#FF1493,#FF69B4);border:2px solid #FF1493;color:white;border-radius:8px;padding:10px;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer;box-shadow:0 0 12px rgba(255,20,147,0.3)">
+        <div style="background:rgba(20,30,60,0.04);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(20,30,60,0.1);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 10px 0;color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">💬 Chat Gruppo</h3>
+          <button class="btn primary" id="open-group-chat" style="width:100%;margin-bottom:8px;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));border:2px solid var(--l-accent-600);color:white;border-radius:8px;padding:10px;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer;box-shadow:0 0 12px var(--l-accent-soft)">
             💬 Apri chat stanza
           </button>
           <button class="btn" id="clear-group-chat" style="width:100%;margin-bottom:10px;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
             🧹 Pulisci chat
           </button>
-          <p style="font-size:11px;color:rgba(255,255,255,0.6);margin:0">
+          <p style="font-size:11px;color:var(--l-muted);margin:0">
             Comunica con i membri della stanza (messaggi P2P).
           </p>
         </div>
 
         <!-- INVITA MEMBRO -->
-        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🔗 Invita</h3>
-          <button class="btn" id="btn-copy-invite-link" style="width:100%;margin-bottom:8px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
+        <div style="background:rgba(20,30,60,0.04);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(20,30,60,0.1);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 10px 0;color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🔗 Invita</h3>
+          <button class="btn" id="btn-copy-invite-link" style="width:100%;margin-bottom:8px;background:rgba(20,30,60,0.06);border:1.5px solid rgba(20,30,60,0.18);color:var(--l-ink);border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
             🔗 Copia link invito
           </button>
-          <button class="btn" id="btn-open-audit-log" style="width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.8);border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-size:12px;">
+          <button class="btn" id="btn-open-audit-log" style="width:100%;background:rgba(20,30,60,0.04);border:1.5px solid rgba(20,30,60,0.12);color:var(--l-muted);border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-size:12px;">
             📜 Cronologia modifiche
           </button>
         </div>
 
         <!-- GESTIONE STANZA -->
-        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
-          <h3 style="margin:0 0 10px 0;color:#fff;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">⚙️ Gestione Stanza</h3>
+        <div style="background:rgba(20,30,60,0.04);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(20,30,60,0.1);border-radius:14px;padding:14px;margin:12px;margin-bottom:20px;">
+          <h3 style="margin:0 0 10px 0;color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">⚙️ Gestione Stanza</h3>
           ${isCreator ? `
             <button class="btn" id="delete-room" style="width:100%;margin-bottom:8px;background:#FF6B6B;border:2px solid #FF6B6B;color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer">
               🗑️ Elimina stanza (solo creatore)
@@ -154,7 +154,7 @@ window.groupPanel = (() => {
           <button class="btn" id="exit-room" style="width:100%;background:#FFB84D;border:2px solid #FFB84D;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer">
             ❌ Esci dalla stanza
           </button>
-          <p style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:8px;margin-bottom:0">
+          <p style="font-size:11px;color:var(--l-muted);margin-top:8px;margin-bottom:0">
             Esci dal gruppo. Non riceverai più messaggi.
           </p>
         </div>
@@ -299,7 +299,7 @@ window.groupPanel = (() => {
 
     const roomId = window.state?.group?.roomId;
     if (!roomId) {
-      listDiv.innerHTML = '<p style="font-size:12px;color:rgba(255,255,255,0.6);margin:0;padding:8px">Non sei in un gruppo.</p>';
+      listDiv.innerHTML = '<p style="font-size:12px;color:var(--l-muted);margin:0;padding:8px">Non sei in un gruppo.</p>';
       return;
     }
 
@@ -307,7 +307,7 @@ window.groupPanel = (() => {
     const itineraryIds = Object.keys(itineraries);
 
     if (itineraryIds.length === 0) {
-      listDiv.innerHTML = '<p style="font-size:12px;color:rgba(255,255,255,0.6);margin:0;padding:8px">Nessun itinerario condiviso.</p>';
+      listDiv.innerHTML = '<p style="font-size:12px;color:var(--l-muted);margin:0;padding:8px">Nessun itinerario condiviso.</p>';
       return;
     }
 
@@ -325,40 +325,40 @@ window.groupPanel = (() => {
         const modTime = poi.audit?.lastModifiedAt ? window.getTimeAgo?.(poi.audit.lastModifiedAt) : '';
         // Handle both { value: ... } format and plain string format
         const poiName = typeof poi.name === 'object' ? (poi.name?.value || '?') : (poi.name || '?');
-        return `<div style="font-size:11px;color:rgba(255,255,255,0.7);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.1)">
-          ${idx + 1}. ${escapeHtml(poiName)} <span style="color:rgba(255,255,255,0.5)">via ${escapeHtml(lastMod)}</span>
+        return `<div style="font-size:11px;color:var(--l-muted);padding:4px 0;border-bottom:1px solid rgba(20,30,60,0.08)">
+          ${idx + 1}. ${escapeHtml(poiName)} <span style="color:var(--l-faint)">via ${escapeHtml(lastMod)}</span>
         </div>`;
       }).join('');
 
-      const moreText = poiCount > 3 ? `<div style="font-size:11px;color:rgba(255,255,255,0.5);padding:4px 0">+${poiCount - 3} altre tappe</div>` : '';
+      const moreText = poiCount > 3 ? `<div style="font-size:11px;color:var(--l-faint);padding:4px 0">+${poiCount - 3} altre tappe</div>` : '';
 
       return `
-        <div style="background:rgba(74,91,168,0.12);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:14px;margin-bottom:12px;font-size:14px">
+        <div style="background:rgba(20,30,60,0.04);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(20,30,60,0.1);border-radius:12px;padding:14px;margin-bottom:12px;font-size:14px">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px">
             <div style="flex:1;min-width:0">
-              <div style="color:#fff;font-weight:700;font-size:15px;line-height:1.4;margin-bottom:4px">
+              <div style="color:var(--l-ink);font-weight:700;font-size:15px;line-height:1.4;margin-bottom:4px">
                 📋 ${escapeHtml(itin.name?.value || itin.name || 'Itinerario')}
               </div>
-              <div style="color:rgba(255,255,255,0.65);font-size:11px;line-height:1.3;margin-bottom:4px">
+              <div style="color:var(--l-muted);font-size:11px;line-height:1.3;margin-bottom:4px">
                 ${isShared ? '📤 Condiviso da ' : '👤 Creato da '}<strong>${escapeHtml(owner)}</strong>
               </div>
-              <div style="color:rgba(255,255,255,0.5);font-size:11px">
+              <div style="color:var(--l-faint);font-size:11px">
                 Ultimo aggiornamento: <strong>${escapeHtml(lastModBy)}</strong> ${lastModTime}
               </div>
             </div>
             <div style="display:flex;gap:6px;flex-shrink:0">
-              <button data-edit-itinerary="${itinId}" title="Modifica itinerario" style="background:rgba(74,91,168,0.3);backdrop-filter:blur(15px);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;white-space:nowrap">
+              <button data-edit-itinerary="${itinId}" title="Modifica itinerario" style="background:rgba(20,30,60,0.08);backdrop-filter:blur(15px);border:1px solid rgba(20,30,60,0.2);color:var(--l-ink);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;white-space:nowrap">
                 ✏️ Modifica
               </button>
-              <button data-delete-itinerary="${itinId}" title="Elimina itinerario" style="background:rgba(255,20,147,0.2);backdrop-filter:blur(15px);border:1px solid rgba(255,20,147,0.4);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;white-space:nowrap">
+              <button data-delete-itinerary="${itinId}" title="Elimina itinerario" style="background:var(--l-accent-soft);backdrop-filter:blur(15px);border:1px solid var(--l-accent-brd);color:var(--l-accent-600);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;white-space:nowrap">
                 🗑️ Elimina
               </button>
             </div>
           </div>
 
           <!-- Tappe preview with member info -->
-          <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:8px;margin-top:8px;border-left:2px solid rgba(255,107,53,0.4)">
-            <div style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:600;margin-bottom:4px">📍 ${poiCount} tappe</div>
+          <div style="background:rgba(20,30,60,0.05);border-radius:8px;padding:8px;margin-top:8px;border-left:2px solid rgba(255,107,53,0.4)">
+            <div style="font-size:12px;color:var(--l-muted);font-weight:600;margin-bottom:4px">📍 ${poiCount} tappe</div>
             ${tappeListHTML}
             ${moreText}
           </div>

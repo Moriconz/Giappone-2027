@@ -73,32 +73,32 @@ function renderItineraryUnified() {
           flex-direction:column;
           gap:10px;
           padding:12px 14px;
-          background:linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-          border:1px solid rgba(255,255,255,0.12);
+          background:linear-gradient(135deg, rgba(20,30,60,0.05), rgba(20,30,60,0.02));
+          border:1px solid var(--l-hair);
           border-radius:8px;
           margin-bottom:8px;
           cursor:grab;
           transition:background 0.2s ease,border-color 0.2s ease;
-          box-shadow:0 2px 8px rgba(0,0,0,0.2);
-        " onmouseover="this.style.background='linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))';this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))';this.style.borderColor='rgba(255,255,255,0.12)'">
+          box-shadow:0 2px 8px rgba(0,0,0,0.06);
+        " onmouseover="this.style.background='linear-gradient(135deg, rgba(20,30,60,0.1), rgba(20,30,60,0.05))';this.style.borderColor='rgba(20,30,60,0.2)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(20,30,60,0.05), rgba(20,30,60,0.02))';this.style.borderColor='var(--l-hair)'">
 
           <!-- ROW 1: Number + Name + Menu/VisitedStatus -->
           <div style="display:flex;align-items:center;gap:8px;width:100%;overflow:hidden;opacity:${entry.status === 'visited' ? '0.7' : '1'}" class="itinerary-poi-header">
             <span style="flex-shrink:0;width:24px;height:24px;background:linear-gradient(135deg, var(--m-accent), var(--m-accent));color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${idx + 1}</span>
             <div style="flex:1;min-width:0;overflow:hidden">
-              <div style="font-size:14px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:${entry.status === 'visited' ? 'line-through' : 'none'}">${poiNameDisplay}</div>
-              ${entry.addedBy ? `<div style="font-size:10px;color:rgba(255,255,255,0.5);white-space:nowrap">da ${entry.addedBy}</div>` : ''}
+              <div style="font-size:14px;color:var(--l-ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:${entry.status === 'visited' ? 'line-through' : 'none'}">${poiNameDisplay}</div>
+              ${entry.addedBy ? `<div style="font-size:10px;color:var(--l-muted);white-space:nowrap">da ${entry.addedBy}</div>` : ''}
             </div>
             ${entry.status === 'visited'
-              ? `<span style="flex-shrink:0;background:rgba(76,175,80,0.3);color:#4ade80;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px">✅ Visitato</span>`
-              : `<button class="mark-visited-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;min-width:auto;height:32px;background:rgba(76,175,80,0.15);border:1px solid rgba(76,175,80,0.3);border-radius:5px;color:#4ade80;cursor:pointer;font-size:12px;padding:0 10px;transition:background 0.15s,border-color 0.15s;margin-left:auto;margin-right:6px" onmouseover="this.style.background='rgba(76,175,80,0.25)';this.style.borderColor='rgba(76,175,80,0.5)'" onmouseout="this.style.background='rgba(76,175,80,0.15)';this.style.borderColor='rgba(76,175,80,0.3)'">✅ Segna visitato</button>`
+              ? `<span style="flex-shrink:0;background:rgba(22,163,74,0.15);color:#16a34a;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px">✅ Visitato</span>`
+              : `<button class="mark-visited-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;min-width:auto;height:32px;background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.3);border-radius:5px;color:#16a34a;cursor:pointer;font-size:12px;padding:0 10px;transition:background 0.15s,border-color 0.15s;margin-left:auto;margin-right:6px" onmouseover="this.style.background='rgba(22,163,74,0.18)';this.style.borderColor='rgba(22,163,74,0.5)'" onmouseout="this.style.background='rgba(22,163,74,0.1)';this.style.borderColor='rgba(22,163,74,0.3)'">✅ Segna visitato</button>`
             }
-            <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" aria-label="Opzioni tappa" style="flex-shrink:0;min-width:44px;min-height:44px;background:transparent;border:none;border-radius:8px;color:rgba(255,255,255,0.5);cursor:pointer;font-size:18px;padding:0;transition:background 0.15s,color 0.15s;opacity:1" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.background='transparent';this.style.color='rgba(255,255,255,0.5)'">⋮</button>
+            <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" aria-label="Opzioni tappa" style="flex-shrink:0;min-width:44px;min-height:44px;background:transparent;border:none;border-radius:8px;color:var(--l-muted);cursor:pointer;font-size:18px;padding:0;transition:background 0.15s,color 0.15s;opacity:1" onmouseover="this.style.background='rgba(20,30,60,0.08)';this.style.color='var(--l-ink)'" onmouseout="this.style.background='transparent';this.style.color='var(--l-muted)'">⋮</button>
           </div>
 
           <!-- ROW 2: Time, Duration, Cost badges -->
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <span style="background:rgba(74,124,89,0.3);color:#4ade80;padding:4px 10px;border-radius:5px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px">
+            <span style="background:rgba(22,163,74,0.15);color:#16a34a;padding:4px 10px;border-radius:5px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px">
               ⏰ ${entry.time}
             </span>
             <span style="background:${durationColor === 'rgba(76,175,80,0.7)' ? 'rgba(76,175,80,0.25)' : durationColor === 'rgba(255,193,7,0.7)' ? 'rgba(255,193,7,0.25)' : 'rgba(255,107,53,0.25)'};color:${durationColor};padding:4px 10px;border-radius:5px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px">
@@ -113,13 +113,13 @@ function renderItineraryUnified() {
             const em = r.mode === 'walking' ? '🚶' : r.mode === 'driving' ? '🚆' : '🚇';
             const lbl = r.mode === 'walking' ? 'a piedi' : r.mode === 'driving' ? 'treno' : 'mezzi';
             const fare = (r.cost > 0) ? `💴 ¥${r.cost}` : 'gratis';
-            const fareColor = (r.cost > 0) ? 'rgba(255,122,69,0.6)' : '#7FFF7F';
+            const fareColor = (r.cost > 0) ? '#c2410c' : '#16a34a';
             return `
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:6px 10px;background:rgba(100,150,200,0.1);border-radius:6px;margin-top:4px">
-              <span style="font-size:10px;color:rgba(255,255,255,0.45);font-weight:700;text-transform:uppercase">↳ spostamento</span>
-              <span style="font-size:11px;color:rgba(120,200,255,0.9);font-weight:600">${em} ${lbl}</span>
-              <span style="font-size:11px;color:rgba(120,200,255,0.9);font-weight:600">⏱️ ${r.duration_min} min</span>
-              <span style="font-size:11px;color:rgba(120,200,255,0.7)">📍 ${r.distance_km} km</span>
+              <span style="font-size:10px;color:var(--l-muted);font-weight:700;text-transform:uppercase">↳ spostamento</span>
+              <span style="font-size:11px;color:#0284c7;font-weight:600">${em} ${lbl}</span>
+              <span style="font-size:11px;color:#0284c7;font-weight:600">⏱️ ${r.duration_min} min</span>
+              <span style="font-size:11px;color:#0284c7">📍 ${r.distance_km} km</span>
               <span style="font-size:11px;font-weight:700;color:${fareColor}">${fare}</span>
             </div>`;
           })() : ''}
@@ -128,7 +128,7 @@ function renderItineraryUnified() {
           ${(entry.opening_hours || entry.price_level) ? `
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               ${entry.opening_hours ? `
-                <span style="background:rgba(100,200,255,0.2);color:#64c8ff;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;white-space:nowrap">
+                <span style="background:rgba(2,132,199,0.15);color:#0284c7;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;white-space:nowrap">
                   🕐 ${Array.isArray(entry.opening_hours) ? 'Orari disponibili' : (entry.opening_hours.substring(0, 30) + (entry.opening_hours.length > 30 ? '...' : ''))}
                 </span>
               ` : ''}
@@ -138,7 +138,7 @@ function renderItineraryUnified() {
                 </span>
               ` : ''}
               ${entry.ticket_cost ? `
-                <span style="background:rgba(255,87,87,0.2);color:#ff5757;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px">
+                <span style="background:rgba(220,38,38,0.14);color:#dc2626;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px">
                   🎫 ¥${entry.ticket_cost}
                 </span>
               ` : ''}
@@ -147,23 +147,23 @@ function renderItineraryUnified() {
 
           <!-- ROW 4: Notes (if present) -->
           ${entry.notes ? `
-            <div style="padding:8px 10px;background:rgba(255,255,255,0.04);border-left:3px solid rgba(255,193,7,0.4);border-radius:4px;font-size:12px;color:rgba(255,255,255,0.75);line-height:1.4">
-              <strong style="color:rgba(255,193,7,0.8)">📝 Nota:</strong> ${entry.notes}
+            <div style="padding:8px 10px;background:rgba(20,30,60,0.04);border-left:3px solid rgba(180,83,9,0.4);border-radius:4px;font-size:12px;color:var(--l-ink);line-height:1.4">
+              <strong style="color:#b45309">📝 Nota:</strong> ${entry.notes}
             </div>
           ` : ''}
         </div>
       `;
-    }).join('') : '<p style="color:rgba(255,255,255,0.5);font-size:12px;padding:12px;text-align:center">📍 Nessun POI aggiunto. Clicca [+] per aggiungerlo</p>';
+    }).join('') : '<p style="color:var(--l-muted);font-size:12px;padding:12px;text-align:center">📍 Nessun POI aggiunto. Clicca [+] per aggiungerlo</p>';
 
     return `
-      <div class="itinerary-day-accordion" style="margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);box-shadow:0 2px 8px rgba(0,0,0,0.2)">
+      <div class="itinerary-day-accordion" style="margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid var(--l-hair);box-shadow:0 2px 8px rgba(0,0,0,0.06)">
         <button class="itinerary-day-header" data-day="${dayIndex}" style="
           width:100%;
           padding:14px 16px;
-          background:linear-gradient(90deg, rgba(74,124,89,0.2), rgba(255,107,53,0.08));
+          background:linear-gradient(90deg, rgba(74,124,89,0.16), rgba(255,107,53,0.08));
           border:none;
-          border-bottom:1px solid rgba(255,255,255,0.1);
-          color:#fff;
+          border-bottom:1px solid var(--l-hair);
+          color:var(--l-ink);
           text-align:left;
           cursor:pointer;
           display:flex;
@@ -173,30 +173,30 @@ function renderItineraryUnified() {
           font-weight:700;
           font-size:15px;
           min-height:44px;
-        " onmouseover="this.style.background='linear-gradient(90deg, rgba(74,124,89,0.3), rgba(255,107,53,0.15))'" onmouseout="this.style.background='linear-gradient(90deg, rgba(74,124,89,0.2), rgba(255,107,53,0.08))'">
+        " onmouseover="this.style.background='linear-gradient(90deg, rgba(74,124,89,0.24), rgba(255,107,53,0.15))'" onmouseout="this.style.background='linear-gradient(90deg, rgba(74,124,89,0.16), rgba(255,107,53,0.08))'">
           <span style="display:flex;align-items:center;gap:8px">
             <span style="font-size:18px">📅</span>
             <span>${dayLabel}</span>
           </span>
           <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-            <span style="display:flex;align-items:center;gap:12px;font-size:13px;color:rgba(255,255,255,0.7)">
-              <span style="background:rgba(74,124,89,0.3);color:#4ade80;padding:3px 10px;border-radius:4px;font-weight:600">${dayPOIs.length} POI</span>
-              <span style="background:rgba(255,107,53,0.3);color:rgba(255,122,69,0.6);padding:3px 10px;border-radius:4px;font-weight:600">⏱ ${(dayDuration / 60).toFixed(1)}h</span>
-              ${costByDay[dayIndex] > 0 ? `<span style="background:rgba(100,200,255,0.25);color:#64c8ff;padding:3px 10px;border-radius:4px;font-weight:600">¥${costByDay[dayIndex]}</span>` : ''}
-              ${distanceByDay[dayIndex] > 0 ? `<span style="background:rgba(100,180,200,0.25);color:#64b4c8;padding:3px 10px;border-radius:4px;font-weight:600">🚶 ${distanceByDay[dayIndex].toFixed(1)}km</span>` : ''}
+            <span style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--l-muted)">
+              <span style="background:rgba(22,163,74,0.15);color:#16a34a;padding:3px 10px;border-radius:4px;font-weight:600">${dayPOIs.length} POI</span>
+              <span style="background:rgba(255,107,53,0.18);color:#c2410c;padding:3px 10px;border-radius:4px;font-weight:600">⏱ ${(dayDuration / 60).toFixed(1)}h</span>
+              ${costByDay[dayIndex] > 0 ? `<span style="background:rgba(2,132,199,0.15);color:#0284c7;padding:3px 10px;border-radius:4px;font-weight:600">¥${costByDay[dayIndex]}</span>` : ''}
+              ${distanceByDay[dayIndex] > 0 ? `<span style="background:rgba(2,132,199,0.15);color:#0e7490;padding:3px 10px;border-radius:4px;font-weight:600">🚶 ${distanceByDay[dayIndex].toFixed(1)}km</span>` : ''}
             </span>
-            ${dayPOIs.length >= 2 ? `<span style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,0.6);font-weight:600">
-              <span title="visite vs spostamenti" style="display:inline-flex;height:6px;width:84px;border-radius:3px;overflow:hidden;background:rgba(255,107,53,0.5)"><span style="height:100%;width:${100 - _transitPct}%;background:#4ade80"></span></span>
+            ${dayPOIs.length >= 2 ? `<span style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--l-muted);font-weight:600">
+              <span title="visite vs spostamenti" style="display:inline-flex;height:6px;width:84px;border-radius:3px;overflow:hidden;background:rgba(255,107,53,0.3)"><span style="height:100%;width:${100 - _transitPct}%;background:#16a34a"></span></span>
               <span>${(_visitMin / 60).toFixed(1)}h visite · ${(_transitMin / 60).toFixed(1)}h spost. (${_transitPct}%)</span>
             </span>` : ''}
-            ${_dense ? `<span style="font-size:11px;color:#ffb454;font-weight:700;background:rgba(255,180,84,0.15);border:1px solid rgba(255,180,84,0.4);padding:2px 8px;border-radius:5px">⚠️ Giornata molto densa (${(_loadMin / 60).toFixed(1)}h)</span>` : ''}
+            ${_dense ? `<span style="font-size:11px;color:#b45309;font-weight:700;background:rgba(180,83,9,0.12);border:1px solid rgba(180,83,9,0.35);padding:2px 8px;border-radius:5px">⚠️ Giornata molto densa (${(_loadMin / 60).toFixed(1)}h)</span>` : ''}
           </div>
         </button>
         <div class="itinerary-day-content" data-day="${dayIndex}" style="
           display:none;
           padding:14px 16px;
-          background:rgba(255,255,255,0.02);
-          border-top:1px solid rgba(255,255,255,0.08);
+          background:rgba(20,30,60,0.02);
+          border-top:1px solid var(--l-hair);
           contain:layout style paint;
         ">
           <div class="itinerary-poi-list" style="margin-bottom:12px">${poiListHTML}</div>
@@ -204,10 +204,10 @@ function renderItineraryUnified() {
             width:100%;
             padding:10px 14px;
             min-height:44px;
-            background:linear-gradient(135deg, rgba(76,175,80,0.15), rgba(74,124,89,0.1));
-            border:2px dashed rgba(76,175,80,0.4);
+            background:linear-gradient(135deg, rgba(22,163,74,0.12), rgba(74,124,89,0.08));
+            border:2px dashed rgba(22,163,74,0.4);
             border-radius:8px;
-            color:#4ade80;
+            color:#16a34a;
             font-weight:700;
             font-size:13px;
             cursor:pointer;
@@ -216,13 +216,13 @@ function renderItineraryUnified() {
             align-items:center;
             justify-content:center;
             gap:6px;
-          " onmouseover="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.25), rgba(74,124,89,0.15))';this.style.borderColor='rgba(76,175,80,0.6)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.15), rgba(74,124,89,0.1))';this.style.borderColor='rgba(76,175,80,0.4)'">
+          " onmouseover="this.style.background='linear-gradient(135deg, rgba(22,163,74,0.2), rgba(74,124,89,0.12))';this.style.borderColor='rgba(22,163,74,0.6)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(22,163,74,0.12), rgba(74,124,89,0.08))';this.style.borderColor='rgba(22,163,74,0.4)'">
             <span style="font-size:16px">➕</span> Aggiungi POI a questo giorno
           </button>
           ${dayPOIs.length >= 3 ? `<button class="itinerary-optimize-btn" data-day="${dayIndex}" style="
             width:100%;margin-top:8px;padding:9px 14px;min-height:40px;
             background:rgba(255,107,53,0.14);border:1px solid rgba(255,107,53,0.4);
-            border-radius:8px;color:rgba(255,122,69,0.6);font-weight:700;font-size:13px;cursor:pointer;
+            border-radius:8px;color:#c2410c;font-weight:700;font-size:13px;cursor:pointer;
             display:flex;align-items:center;justify-content:center;gap:6px">
             <span style="font-size:15px">🧭</span> Ottimizza il giro (meno spostamenti)
           </button>` : ''}
@@ -239,8 +239,8 @@ function renderItineraryUnified() {
     return `
       <div style="
         padding: 12px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,165,100,0.2);
+        background: rgba(20,30,60,0.04);
+        border: 1px solid rgba(255,165,100,0.3);
         border-radius: 8px;
         margin-bottom: 8px;
         display: flex;
@@ -248,26 +248,26 @@ function renderItineraryUnified() {
         align-items: center;
       ">
         <div>
-          <div style="font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.95);">${entry.name || (poi ? poi.name : '?')}</div>
-          <div style="font-size: 11px; color: rgba(255,255,255,0.6);">${entry.city || (poi ? poi.city : '?')}${dayStr}${timeStr}</div>
+          <div style="font-size: 13px; font-weight: 600; color: var(--l-ink);">${entry.name || (poi ? poi.name : '?')}</div>
+          <div style="font-size: 11px; color: var(--l-muted);">${entry.city || (poi ? poi.city : '?')}${dayStr}${timeStr}</div>
         </div>
         <button data-remove-itinerary="${entry.id}" style="
           padding: 6px 10px;
-          background: rgba(255,107,107,0.2);
-          border: 1px solid rgba(255,107,107,0.4);
+          background: rgba(220,38,38,0.12);
+          border: 1px solid rgba(220,38,38,0.35);
           border-radius: 6px;
-          color: #FF6B6B;
+          color: #dc2626;
           font-size: 11px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
-        " onmouseover="this.style.background='rgba(255,107,107,0.3)'" onmouseout="this.style.background='rgba(255,107,107,0.2)'">✕ Rimuovi</button>
+        " onmouseover="this.style.background='rgba(220,38,38,0.2)'" onmouseout="this.style.background='rgba(220,38,38,0.12)'">✕ Rimuovi</button>
       </div>
     `;
   }).join('') : `<div style="text-align:center;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:12px">
     <span style="font-size:36px">👥</span>
-    <p style="color:rgba(255,255,255,0.5);font-size:13px;margin:0;line-height:1.5">Nessuna tappa condivisa ancora.<br>Unisciti o crea un gruppo per sincronizzare l'itinerario.</p>
-    <button onclick="window.renderGroupView?.()" style="padding:8px 18px;background:rgba(99,102,241,0.2);border:1.5px solid rgba(99,102,241,0.4);border-radius:16px;color:rgba(255,255,255,0.85);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">👥 Vai al Gruppo</button>
+    <p style="color:var(--l-muted);font-size:13px;margin:0;line-height:1.5">Nessuna tappa condivisa ancora.<br>Unisciti o crea un gruppo per sincronizzare l'itinerario.</p>
+    <button onclick="window.renderGroupView?.()" style="padding:8px 18px;background:rgba(99,102,241,0.14);border:1.5px solid rgba(99,102,241,0.4);border-radius:16px;color:var(--l-ink);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">👥 Vai al Gruppo</button>
   </div>`;
 
   // Render weather alerts
@@ -285,35 +285,35 @@ function renderItineraryUnified() {
 
       <!-- BUDGET SUMMARY — Level 1: Manual costs only (current state) -->
       <div class="budget-summary" style="
-        background:linear-gradient(135deg, rgba(100,150,200,0.1), rgba(255,107,53,0.05));
-        border:1px solid rgba(255,255,255,0.12);
+        background:linear-gradient(135deg, rgba(2,132,199,0.08), rgba(255,107,53,0.05));
+        border:1px solid var(--l-hair);
         border-radius:8px;
         padding:12px 14px;
       ">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <span style="font-weight:600;color:#fff;font-size:13px">${budgetModel.title}</span>
-          <span style="font-size:11px;color:rgba(255,255,255,0.6)">${days} giorni</span>
+          <span style="font-weight:600;color:var(--l-ink);font-size:13px">${budgetModel.title}</span>
+          <span style="font-size:11px;color:var(--l-muted)">${days} giorni</span>
         </div>
 
         <!-- Primary metric: Total manual costs -->
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
-          <div style="font-size:11px;color:rgba(255,255,255,0.7)">${budgetModel.primaryLabel}</div>
-          <div style="font-size:18px;color:#4ade80;font-weight:700">${budgetModel.primaryValue}</div>
+          <div style="font-size:11px;color:var(--l-muted)">${budgetModel.primaryLabel}</div>
+          <div style="font-size:18px;color:#16a34a;font-weight:700">${budgetModel.primaryValue}</div>
         </div>
 
         <!-- Secondary metric: POI with costs -->
-        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:8px">
+        <div style="font-size:11px;color:var(--l-muted);margin-bottom:8px">
           ${budgetModel.secondaryLabel}
         </div>
 
         <!-- Info note: what's NOT yet included -->
         <div style="
           font-size:10px;
-          color:rgba(255,255,255,0.5);
+          color:var(--l-muted);
           padding:6px 8px;
-          background:rgba(255,160,0,0.1);
+          background:rgba(180,83,9,0.08);
           border-radius:4px;
-          border-left:2px solid rgba(255,160,0,0.4);
+          border-left:2px solid rgba(180,83,9,0.4);
         ">
           ⓘ ${budgetModel.infoText}
         </div>
@@ -322,7 +322,7 @@ function renderItineraryUnified() {
       <!-- SECTION 1: YOUR ITINERARY -->
       <div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 12px 0;">
-          <h3 style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.95);margin:0;">📅 Il Tuo Itinerario</h3>
+          <h3 style="font-size:14px;font-weight:700;color:var(--l-ink);margin:0;">📅 Il Tuo Itinerario</h3>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             ${totalPOIs >= 2 ? `<button onclick="window.loadScript('./js/itinerary-optimizer-trip.js').then(()=>window.openTripOptimizer?.())" style="padding:5px 10px;background:rgba(255,107,53,0.15);border:1.5px solid rgba(255,107,53,0.5);border-radius:20px;color:var(--m-accent);font-size:11px;font-weight:600;cursor:pointer;" title="Riorganizza per zone geografiche">🧭 Ottimizza</button>` : ''}
             <button onclick="window.loadScript('./js/itinerary-suggest.js').then(()=>window.openItinerarySuggest?.())" style="padding:5px 10px;background:rgba(100,150,255,0.12);border:1.5px solid rgba(100,150,255,0.4);border-radius:20px;color:rgba(150,180,255,1);font-size:11px;font-weight:600;cursor:pointer;" title="Suggerimenti POI da aggiungere">✨ Suggerimenti</button>
@@ -334,67 +334,67 @@ function renderItineraryUnified() {
       </div>
 
       <!-- DIVIDER -->
-      <div style="height:1px;background:linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);margin:8px 0;"></div>
+      <div style="height:1px;background:linear-gradient(90deg, transparent, var(--l-hair), transparent);margin:8px 0;"></div>
 
       <!-- SECTION 2: SHARING CONTROLS -->
       <div>
         <h3 style="
           font-size: 14px;
           font-weight: 700;
-          color: rgba(255,255,255,0.95);
+          color: var(--l-ink);
           margin: 0 0 12px 0;
         ">📤 Condividi con il Gruppo</h3>
         <div style="display:flex;flex-direction:column;gap:8px;">
           <button id="btn-export-html-unified" onclick="handleExportHTML()" style="
             padding: 12px 16px;
-            background: rgba(100,150,200,0.2);
-            border: 1.5px solid rgba(100,150,200,0.5);
+            background: rgba(2,132,199,0.14);
+            border: 1.5px solid rgba(2,132,199,0.4);
             border-radius: 8px;
-            color: #fff;
+            color: var(--l-ink);
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-          " onmouseover="this.style.background='rgba(100,150,200,0.3)'" onmouseout="this.style.background='rgba(100,150,200,0.2)'">
+          " onmouseover="this.style.background='rgba(2,132,199,0.22)'" onmouseout="this.style.background='rgba(2,132,199,0.14)'">
             📄 Esporta (stampabile)
           </button>
           <button id="btn-export-whatsapp-unified" onclick="handleExportWhatsApp()" style="
             padding: 12px 16px;
-            background: rgba(76,175,80,0.2);
-            border: 1.5px solid rgba(76,175,80,0.5);
+            background: rgba(22,163,74,0.14);
+            border: 1.5px solid rgba(22,163,74,0.4);
             border-radius: 8px;
-            color: #fff;
+            color: var(--l-ink);
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-          " onmouseover="this.style.background='rgba(76,175,80,0.3)'" onmouseout="this.style.background='rgba(76,175,80,0.2)'">
+          " onmouseover="this.style.background='rgba(22,163,74,0.22)'" onmouseout="this.style.background='rgba(22,163,74,0.14)'">
             📤 Esporta su WhatsApp
           </button>
           <button id="btn-share-link-unified" onclick="handleShareLink()" style="
             padding: 12px 16px;
-            background: rgba(150,120,220,0.2);
-            border: 1.5px solid rgba(150,120,220,0.5);
+            background: rgba(126,90,190,0.14);
+            border: 1.5px solid rgba(126,90,190,0.4);
             border-radius: 8px;
-            color: #fff;
+            color: var(--l-ink);
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-          " onmouseover="this.style.background='rgba(150,120,220,0.3)'" onmouseout="this.style.background='rgba(150,120,220,0.2)'">
+          " onmouseover="this.style.background='rgba(126,90,190,0.22)'" onmouseout="this.style.background='rgba(126,90,190,0.14)'">
             🔗 Copia link condivisibile
           </button>
           <button id="btn-share-group-unified" onclick="handleShareGroup()" style="
             padding: 12px 16px;
-            background: rgba(255,107,107,0.2);
-            border: 1.5px solid rgba(255,107,107,0.4);
+            background: var(--l-accent-soft);
+            border: 1.5px solid var(--l-accent-brd);
             border-radius: 8px;
-            color: #fff;
+            color: var(--l-ink);
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-          " onmouseover="this.style.background='rgba(255,107,107,0.3)'" onmouseout="this.style.background='rgba(255,107,107,0.2)'">
+          " onmouseover="this.style.background='rgba(224,65,78,0.2)'" onmouseout="this.style.background='var(--l-accent-soft)'">
             👥 Condividi con Gruppo
           </button>
         </div>
@@ -405,12 +405,12 @@ function renderItineraryUnified() {
         <h3 style="
           font-size: 14px;
           font-weight: 700;
-          color: rgba(255,255,255,0.95);
+          color: var(--l-ink);
           margin: 0 0 12px 0;
         ">👥 Itinerario Condiviso</h3>
         <p style="
           font-size: 12px;
-          color: rgba(255,255,255,0.6);
+          color: var(--l-muted);
           margin: 0 0 12px 0;
         ">Tappe condivise con i membri del gruppo (tempo reale)</p>
         <div style="display:flex;flex-direction:column;gap:6px;">
@@ -626,7 +626,7 @@ window.openSharedItineraryPreview = function(payload) {
   const count = (payload && payload.items && payload.items.length) || 0;
   window.__sharedPayload = payload;
   const html = `<div style="padding:8px">
-    <p style="color:#fff;font-size:14px;margin:0 0 14px">Qualcuno ha condiviso un itinerario con <strong>${count}</strong> tappe.</p>
+    <p style="color:var(--l-ink);font-size:14px;margin:0 0 14px">Qualcuno ha condiviso un itinerario con <strong>${count}</strong> tappe.</p>
     <button onclick="window.importSharedItinerary(window.__sharedPayload); window.closeSheet&&window.closeSheet();" class="btn primary" style="width:100%;padding:13px;font-weight:700">📥 Importa nel mio itinerario</button>
   </div>`;
   window.openSheet?.('🔗 Itinerario condiviso', html);
@@ -781,7 +781,7 @@ function showEmptyItineraryModal() {
       <h2 style="
         font-size: 20px;
         font-weight: 700;
-        color: rgba(255,255,255,0.95);
+        color: var(--l-ink);
         margin: 0 0 16px 0;
         line-height: 1.3;
       ">${window.t ? window.t('itin.noItinShare') : 'Nessun itinerario da condividere'}</h2>
@@ -789,7 +789,7 @@ function showEmptyItineraryModal() {
       <!-- Description -->
       <p style="
         font-size: 14px;
-        color: rgba(255,255,255,0.7);
+        color: var(--l-muted);
         margin: 0 0 32px 0;
         line-height: 1.6;
         max-width: 320px;
@@ -824,10 +824,10 @@ function showEmptyItineraryModal() {
         <!-- Secondary button: Aggiungi una tappa -->
         <button class="empty-share-add-btn" style="
           padding: 6px 10px !important;
-          background: linear-gradient(135deg, rgba(76,175,80,0.2), rgba(76,175,80,0.1)) !important;
-          border: 1px solid rgba(76,175,80,0.4) !important;
+          background: linear-gradient(135deg, rgba(22,163,74,0.14), rgba(22,163,74,0.08)) !important;
+          border: 1px solid rgba(22,163,74,0.4) !important;
           border-radius: 5px !important;
-          color: #4ADE80 !important;
+          color: #16a34a !important;
           font-size: 13px !important;
           font-weight: 600 !important;
           cursor: pointer !important;
@@ -835,7 +835,7 @@ function showEmptyItineraryModal() {
           line-height: 1.2 !important;
           height: auto !important;
           min-height: auto !important;
-        " onmouseover="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.3), rgba(76,175,80,0.15))'; this.style.borderColor='rgba(76,175,80,0.6)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(76,175,80,0.2), rgba(76,175,80,0.1))'; this.style.borderColor='rgba(76,175,80,0.4)';">
+        " onmouseover="this.style.background='linear-gradient(135deg, rgba(22,163,74,0.22), rgba(22,163,74,0.12))'; this.style.borderColor='rgba(22,163,74,0.6)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(22,163,74,0.14), rgba(22,163,74,0.08))'; this.style.borderColor='rgba(22,163,74,0.4)';">
           ${window.t ? window.t('itin.addStop') : '➕ Aggiungi una tappa'}
         </button>
       </div>
@@ -891,7 +891,7 @@ function setupAccordionAndDragDrop() {
       if (content) {
         const isOpen = content.style.display === 'block';
         content.style.display = isOpen ? 'none' : 'block';
-        header.style.borderBottomColor = isOpen ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)';
+        header.style.borderBottomColor = isOpen ? 'rgba(20,30,60,0.08)' : 'rgba(20,30,60,0.2)';
       }
     }, 100);
 
@@ -915,14 +915,14 @@ function setupAccordionAndDragDrop() {
     content.addEventListener('dragover', (e) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
-      content.style.background = 'rgba(255,255,255,0.05)';
+      content.style.background = 'rgba(20,30,60,0.05)';
     });
     content.addEventListener('dragleave', (e) => {
-      content.style.background = 'rgba(255,255,255,0.01)';
+      content.style.background = 'rgba(20,30,60,0.02)';
     });
     content.addEventListener('drop', (e) => {
       e.preventDefault();
-      content.style.background = 'rgba(255,255,255,0.01)';
+      content.style.background = 'rgba(20,30,60,0.02)';
       const poiId = e.dataTransfer.getData('poiId');
       const fromDay = parseInt(e.dataTransfer.getData('fromDay'));
       const toDay = parseInt(content.dataset.day);
@@ -980,15 +980,15 @@ function showItineraryPOIMenu(poiId) {
     return `
       <button class="itinerary-menu-move-btn" data-target-day="${i}" style="
         padding:6px 12px;
-        background:${isCurrentDay ? 'rgba(255,107,53,0.3)' : 'rgba(255,255,255,0.08)'};
-        border:1px solid ${isCurrentDay ? 'rgba(255,107,53,0.5)' : 'rgba(255,255,255,0.15)'};
+        background:${isCurrentDay ? 'rgba(255,107,53,0.3)' : 'rgba(20,30,60,0.06)'};
+        border:1px solid ${isCurrentDay ? 'rgba(255,107,53,0.5)' : 'var(--l-hair)'};
         border-radius:4px;
-        color:#fff;
+        color:var(--l-ink);
         cursor:pointer;
         font-size:12px;
         transition:all 0.2s;
         font-weight:${isCurrentDay ? '600' : '400'};
-      " onmouseover="this.style.background='rgba(255,107,53,0.4)'" onmouseout="this.style.background='${isCurrentDay ? 'rgba(255,107,53,0.3)' : 'rgba(255,255,255,0.08)'}'">
+      " onmouseover="this.style.background='rgba(255,107,53,0.4)'" onmouseout="this.style.background='${isCurrentDay ? 'rgba(255,107,53,0.3)' : 'rgba(20,30,60,0.06)'}'">
         Day ${i + 1} ${isCurrentDay ? '✓' : ''}
       </button>
     `;
@@ -997,20 +997,20 @@ function showItineraryPOIMenu(poiId) {
   const html = `
     <div style="padding:20px;display:flex;flex-direction:column;gap:16px;">
       <div>
-        <h3 style="margin:0 0 12px 0;color:#fff;font-size:15px;font-weight:700">📋 ${poiName}</h3>
-        <p style="margin:0;color:rgba(255,255,255,0.6);font-size:12px">Opzioni disponibili</p>
+        <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:15px;font-weight:700">📋 ${poiName}</h3>
+        <p style="margin:0;color:var(--l-muted);font-size:12px">Opzioni disponibili</p>
       </div>
 
       <!-- Orario -->
       <div>
-        <label style="display:block;color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:6px;font-weight:600">⏰ Orario</label>
+        <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:6px;font-weight:600">⏰ Orario</label>
         <input type="text" class="itinerary-menu-time" placeholder="HH:MM" value="${poiData.time}" style="
           width:100%;
           padding:8px 10px;
-          background:rgba(255,255,255,0.08);
-          border:1px solid rgba(255,255,255,0.15);
+          background:rgba(20,30,60,0.05);
+          border:1px solid var(--l-hair);
           border-radius:4px;
-          color:#fff;
+          color:var(--l-ink);
           font-size:13px;
           box-sizing:border-box;
         " />
@@ -1018,14 +1018,14 @@ function showItineraryPOIMenu(poiId) {
 
       <!-- Durata -->
       <div>
-        <label style="display:block;color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:6px;font-weight:600">⏱️ Durata (minuti)</label>
+        <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:6px;font-weight:600">⏱️ Durata (minuti)</label>
         <input type="number" class="itinerary-menu-duration" placeholder="60" value="${poiData.duration}" style="
           width:100%;
           padding:8px 10px;
-          background:rgba(255,255,255,0.08);
-          border:1px solid rgba(255,255,255,0.15);
+          background:rgba(20,30,60,0.05);
+          border:1px solid var(--l-hair);
           border-radius:4px;
-          color:#fff;
+          color:var(--l-ink);
           font-size:13px;
           box-sizing:border-box;
         " />
@@ -1033,14 +1033,14 @@ function showItineraryPOIMenu(poiId) {
 
       <!-- Costo -->
       <div>
-        <label style="display:block;color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:6px;font-weight:600">💰 Costo (¥)</label>
+        <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:6px;font-weight:600">💰 Costo (¥)</label>
         <input type="number" class="itinerary-menu-cost" placeholder="0" value="${poiData.cost || 0}" style="
           width:100%;
           padding:8px 10px;
-          background:rgba(255,255,255,0.08);
-          border:1px solid rgba(255,255,255,0.15);
+          background:rgba(20,30,60,0.05);
+          border:1px solid var(--l-hair);
           border-radius:4px;
-          color:#fff;
+          color:var(--l-ink);
           font-size:13px;
           box-sizing:border-box;
         " />
@@ -1048,14 +1048,14 @@ function showItineraryPOIMenu(poiId) {
 
       <!-- Note -->
       <div>
-        <label style="display:block;color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:6px;font-weight:600">📝 Note</label>
+        <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:6px;font-weight:600">📝 Note</label>
         <textarea class="itinerary-menu-notes" placeholder="Aggiungi una nota..." style="
           width:100%;
           padding:8px 10px;
-          background:rgba(255,255,255,0.08);
-          border:1px solid rgba(255,255,255,0.15);
+          background:rgba(20,30,60,0.05);
+          border:1px solid var(--l-hair);
           border-radius:4px;
-          color:#fff;
+          color:var(--l-ink);
           font-size:13px;
           box-sizing:border-box;
           resize:vertical;
@@ -1066,7 +1066,7 @@ function showItineraryPOIMenu(poiId) {
 
       <!-- Sposta a un altro giorno -->
       <div>
-        <label style="display:block;color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:8px;font-weight:600">📅 Sposta a</label>
+        <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:8px;font-weight:600">📅 Sposta a</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
           ${daysOptions}
         </div>
@@ -1077,29 +1077,29 @@ function showItineraryPOIMenu(poiId) {
         <button class="itinerary-menu-save" style="
           flex:1;
           padding:10px 14px;
-          background:rgba(76,175,80,0.3);
-          border:1px solid rgba(76,175,80,0.5);
+          background:rgba(22,163,74,0.15);
+          border:1px solid rgba(22,163,74,0.4);
           border-radius:6px;
-          color:#4ade80;
+          color:#16a34a;
           font-weight:600;
           font-size:13px;
           cursor:pointer;
           transition:all 0.2s;
-        " onmouseover="this.style.background='rgba(76,175,80,0.4)'" onmouseout="this.style.background='rgba(76,175,80,0.3)'">
+        " onmouseover="this.style.background='rgba(22,163,74,0.25)'" onmouseout="this.style.background='rgba(22,163,74,0.15)'">
           ✓ Salva
         </button>
         <button class="itinerary-menu-delete" style="
           flex:1;
           padding:10px 14px;
-          background:rgba(255,107,107,0.2);
-          border:1px solid rgba(255,107,107,0.4);
+          background:rgba(220,38,38,0.12);
+          border:1px solid rgba(220,38,38,0.35);
           border-radius:6px;
-          color:#FF6B6B;
+          color:#dc2626;
           font-weight:600;
           font-size:13px;
           cursor:pointer;
           transition:all 0.2s;
-        " onmouseover="this.style.background='rgba(255,107,107,0.3)'" onmouseout="this.style.background='rgba(255,107,107,0.2)'">
+        " onmouseover="this.style.background='rgba(220,38,38,0.2)'" onmouseout="this.style.background='rgba(220,38,38,0.12)'">
           🗑️ Cancella
         </button>
       </div>
