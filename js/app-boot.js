@@ -123,31 +123,10 @@
 
       const btn = document.createElement('button');
       btn.id = 'universal-install-btn';
-      btn.textContent = '📱 Aggiungi';
-      btn.style.cssText = `
-        background: #d64550 !important;
-        color: #ffffff !important;
-        border: none !important;
-        padding: 9px 14px !important;
-        border-radius: 10px !important;
-        font-weight: 700 !important;
-        font-size: 13px !important;
-        cursor: pointer !important;
-        flex-shrink: 0 !important;
-        white-space: nowrap !important;
-        box-shadow: 0 2px 10px rgba(214,69,80,0.35) !important;
-        transition: all 0.2s ease !important;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-      `;
-
-      btn.onmouseenter = () => {
-        btn.style.transform = 'scale(1.05)';
-        btn.style.boxShadow = '0 4px 14px rgba(214,69,80,0.5)';
-      };
-      btn.onmouseleave = () => {
-        btn.style.transform = 'scale(1)';
-        btn.style.boxShadow = '0 2px 10px rgba(214,69,80,0.35)';
-      };
+      btn.setAttribute('aria-label', 'Aggiungi alla schermata Home');
+      btn.title = 'Aggiungi alla schermata Home';
+      // Icona "installa/aggiungi a home" — freccia verso un tray, nessun emoji/testo
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v10"/><path d="M6 8l4 4 4-4"/><path d="M3 15.5h14"/></svg>';
 
       btn.onclick = () => this.handleInstall();
       header.appendChild(btn);

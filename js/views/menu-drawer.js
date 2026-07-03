@@ -48,6 +48,14 @@
 
     const menuHTML = `
       <div style="display: flex; flex-direction: column; gap: 8px; padding: 0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;">
+          <span style="font-size:14px;">🌐 ${T('menu.language', 'Lingua')}</span>
+          <select id="lang-switcher-drawer" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:inherit;padding:4px 8px;font-size:13px;">
+            <option value="it">🇮🇹 IT</option>
+            <option value="en">🇬🇧 EN</option>
+            <option value="ja">🇯🇵 日本語</option>
+          </select>
+        </div>
         ${menuItems.map(item => `
           <button class="menu-drawer-item" data-view="${item.view}" style="
             display: flex;
@@ -75,6 +83,18 @@
     `;
 
     window.openSheet((window.t ? window.t('menu.title', '⚙️ Menu') : '⚙️ Menu'), menuHTML);
+
+    // Lingua: il vero <select id="lang-switcher"> è nascosto in index.html (i18n.js
+    // legge/ascolta solo quello) — qui pilotiamo un select gemello visibile nel drawer.
+    const langDrawer = document.getElementById('lang-switcher-drawer');
+    const langReal = document.getElementById('lang-switcher');
+    if (langDrawer && langReal) {
+      langDrawer.value = langReal.value;
+      langDrawer.onchange = () => {
+        langReal.value = langDrawer.value;
+        langReal.dispatchEvent(new Event('change'));
+      };
+    }
 
     // Attach click handlers
     document.querySelectorAll('.menu-drawer-item').forEach(btn => {

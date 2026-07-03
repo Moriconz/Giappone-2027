@@ -1,6 +1,16 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.4 — Warning orario chiusura POI + Ricerca ibrida Nominatim/Overpass (2026-07-03, Attuale)
+## v3.5 — Pulizia header + nuova icona app (2026-07-03, Attuale)
+
+### ✅ Aggiunte
+- **Toggle tema chiaro/scuro** (`js/theme-toggle.js`) — override manuale in un bottone icona nell'header, sopra il comportamento automatico di sistema che resta il default. Ciclo: automatico → opposto del sistema → altro tema → automatico. Scelta persistita in localStorage (`html[data-theme]`, specificità più alta della sola media query in `css/liquid-light.css`).
+- **Nuova icona app** (`icon-192.png`, `icon-512.png`, `icon-maskable-*.png`) — sostituito il torii/sole rosso (specifico Giappone, da quando l'app è un planner globale) con un marchio vettoriale astratto (aereo di carta/rotta), disegnato via canvas, nessun emoji.
+
+### 🔧 Fix / pulizia
+- Header decongestionato: rimossi bottone ricerca e selettore lingua (spostati nel menu ☰, dove restano pienamente funzionanti — nessuna perdita di funzionalità), bottone installazione ora icona-soltanto invece del testo "📱 Aggiungi".
+- Logo header: rimossa l'emoji 🧭, sostituita con lo stesso marchio vettoriale dell'icona app.
+
+## v3.4 — Warning orario chiusura POI + Ricerca ibrida Nominatim/Overpass (2026-07-03)
 
 ### ✅ Aggiunte
 - **Warning orario chiusura POI** (`js/itinerary-closing-warning.js`) — badge sulla tappa se l'orario di arrivo o fine visita cade fuori apertura, calcolato da `entry.opening_periods` (dati strutturati Google, giorno/ora) confrontati con `entry.time`/`entry.duration` e la data reale del giorno di viaggio. Nessun falso allarme se il dato orari non è disponibile.

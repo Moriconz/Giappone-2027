@@ -130,6 +130,50 @@
   }
 }
 
+/* ── Override manuale tema (js/theme-toggle.js) ────────────────────────
+   html[data-theme] ha specificità più alta di :root semplice (anche dentro
+   la media query sopra), quindi vince sempre quando l'utente ha scelto un
+   tema esplicito. Senza l'attributo, resta il solo automatico di sistema. */
+:root[data-theme="dark"]{
+  --l-ink:#e9edf4; --l-muted:#aab3c4; --l-faint:#828b99;
+  --l-glass:rgba(24,26,32,.55); --l-glass-strong:rgba(28,31,38,.86);
+  --l-border:rgba(255,255,255,.14); --l-hair:rgba(255,255,255,.10);
+  --l-shadow:0 10px 30px rgba(0,0,0,.40); --l-shadow-sm:0 6px 18px rgba(0,0,0,.30);
+  --l-header-bg:rgba(14,16,22,.42); --l-nav-bg:rgba(20,23,30,.86);
+  --l-panel-shadow-hi:rgba(255,255,255,.04); --l-btn-bg:rgba(255,255,255,.10);
+  --l-btn-bg-hover:rgba(255,255,255,.16); --l-input-bg:rgba(118,118,128,.20);
+  --l-card-bg:rgba(255,255,255,.06); --l-card-bg-hover:rgba(255,255,255,.10);
+  --l-toast-bg:rgba(34,38,46,.92); --l-toast-text:#ffffff; --l-toast-border:rgba(255,255,255,.12);
+  --l-scrollbar:rgba(255,255,255,.18); --l-map-bg:#141823; --l-backdrop:rgba(6,8,12,.55);
+  --l-bg-grad: radial-gradient(120% 55% at 88% -6%, rgba(224,65,78,.10), transparent 46%),
+    radial-gradient(120% 55% at 4% 106%, rgba(74,124,240,.08), transparent 48%),
+    linear-gradient(180deg,#0f1218,#141823);
+  --m-bg:#0f1218; --m-bg-2:#141823; --m-surface:#1a1f2b; --m-surface-2:#222836; --m-surface-3:#2a3140;
+  --m-border:rgba(255,255,255,.10); --m-border-strong:rgba(255,255,255,.16);
+  --m-glass-2:rgba(255,255,255,.06); --m-glass-3:rgba(255,255,255,.10);
+  --m-glass-brd:rgba(255,255,255,.14); --m-glass-hi:rgba(255,255,255,.22);
+  --m-success:#34d399; --m-warning:#fbbf24; --m-danger:#f87171; --m-info:#38bdf8;
+}
+:root[data-theme="light"]{
+  --l-ink:#171b24; --l-muted:#727a8a; --l-faint:#9aa2b1;
+  --l-glass:rgba(255,255,255,.62); --l-glass-strong:rgba(255,255,255,.82);
+  --l-border:rgba(255,255,255,.72); --l-hair:rgba(20,30,60,.08);
+  --l-shadow:0 12px 36px rgba(28,40,71,.12); --l-shadow-sm:0 6px 18px rgba(28,40,71,.10);
+  --l-header-bg:rgba(255,255,255,.6); --l-nav-bg:var(--l-glass-strong);
+  --l-panel-shadow-hi:rgba(255,255,255,.9); --l-btn-bg:rgba(20,30,60,.055);
+  --l-btn-bg-hover:rgba(20,30,60,.09); --l-input-bg:rgba(20,30,60,.045);
+  --l-card-bg:#ffffff; --l-card-bg-hover:#f7f8fb;
+  --l-toast-bg:rgba(28,32,42,.92); --l-toast-text:#ffffff; --l-toast-border:rgba(255,255,255,.12);
+  --l-scrollbar:rgba(20,30,60,.16); --l-map-bg:#e7ebf2; --l-backdrop:rgba(28,34,50,.28);
+  --l-bg-grad: radial-gradient(120% 55% at 88% -6%, rgba(224,65,78,.16), transparent 46%),
+    radial-gradient(120% 55% at 4% 106%, rgba(74,124,240,.14), transparent 48%),
+    linear-gradient(180deg,#eef1f6,#e7ebf2);
+  --m-bg:#eef1f6; --m-bg-2:#e7ebf2; --m-surface:#ffffff; --m-surface-2:#f4f6fa; --m-surface-3:#eaedf3;
+  --m-border:rgba(20,30,60,.09); --m-border-strong:rgba(20,30,60,.16);
+  --m-glass-2:#ffffff; --m-glass-3:#f5f6fa; --m-glass-brd:var(--l-hair); --m-glass-hi:rgba(255,255,255,.7);
+  --m-success:#1a9e63; --m-warning:#b45309; --m-danger:#dc2626; --m-info:#0284c7;
+}
+
 /* ── SFONDO arioso (aloni soft dietro al vetro), dipende dal tema ──────── */
 html, body{
   background:var(--l-bg-grad) !important;
@@ -158,25 +202,27 @@ header{
 header h1{ color:var(--l-ink) !important; font-size:19px !important; }
 #filters{ top:calc(48px + env(safe-area-inset-top,0px)) !important; }
 
-/* Ricerca + lingua: pill frosted, più compatte */
-#global-search-btn, #lang-switcher{
+/* Header: due bottoni icona-soltanto (tema + installa), stile pill frosted
+   coerente col resto dell'app — niente testo, niente emoji. */
+#theme-toggle-btn, #universal-install-btn{
   background:var(--l-glass-strong) !important;
   border:1px solid var(--l-border) !important;
   color:var(--l-ink) !important;
   -webkit-backdrop-filter:var(--l-blur-sm) !important; backdrop-filter:var(--l-blur-sm) !important;
   box-shadow:var(--l-shadow-sm) !important;
-  padding:5px 9px !important;
-  font-size:13px !important;
+  width:34px !important; height:34px !important;
+  padding:0 !important;
+  border-radius:999px !important;
+  display:flex !important; align-items:center !important; justify-content:center !important;
+  flex-shrink:0 !important;
+  cursor:pointer !important;
+  transition:background .2s ease, transform .2s ease !important;
 }
-#global-search-btn{ border-radius:999px !important; min-width:32px !important; }
-#global-search-btn:hover{ background:var(--l-accent-soft) !important; }
-#lang-switcher option{ color:#171b24; }
-/* Bottone install/aggiungi: allineato in dimensione al resto dell'header,
-   non più grande degli altri controlli (era percepito come sproporzionato) */
-#universal-install-btn{
-  padding:7px 12px !important;
-  font-size:12.5px !important;
+#theme-toggle-btn:hover, #universal-install-btn:hover{
+  background:var(--l-accent-soft) !important;
+  transform:scale(1.06) !important;
 }
+#universal-install-btn{ margin-left:8px !important; }
 
 /* ════════════════════════════════════════════════════════════════
    FILTRI — chip più compatte, meno densità visiva

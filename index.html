@@ -17,7 +17,8 @@
 <script defer src="./js/api-quota.js"></script>
 <!-- 2026 Core Web Vitals Optimization -->
 <meta name="supported-color-schemes" content="light dark" />
-<!-- Nessun toggle manuale in-app: il tema segue SEMPRE prefers-color-scheme di sistema -->
+<!-- Automatico di default (prefers-color-scheme); override manuale disponibile dal
+     bottone tema in header (js/theme-toggle.js), persistito in localStorage -->
 <meta name="color-scheme" content="light dark" />
 <meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#0f1218" media="(prefers-color-scheme: dark)" />
@@ -59,6 +60,7 @@
 <!-- EARLY INITIALIZATION — PWA Install (supports all browsers) -->
 <!-- ============================================================================ -->
 <script defer src="./js/app-boot.js"></script>
+<script defer src="./js/theme-toggle.js"></script>
 <!-- ============================================================================ -->
 <!-- CDN DEPENDENCIES — All external scripts -->
 <!-- ============================================================================ -->
@@ -113,15 +115,18 @@
   <!-- ✅ INSTALL MODAL REMOVED - UniversalInstaller handles all browsers -->
   <div id="offline-banner" data-i18n="banner.offline">📶 Offline — dati in cache</div>
   <header>
-    <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px;">🧭 Tabi</h1>
-    <button id="global-search-btn" aria-label="Cerca" data-i18n-title="menu.search" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:16px;padding:4px 10px;cursor:pointer;margin-left:auto;margin-right:8px;"
-      onclick="window.loadScript?.('./js/global-search.js').then(()=>window.openGlobalSearch?.())">🔍</button>
-    <select id="lang-switcher" aria-label="Lingua" data-i18n-title="lang.label">
-      <option value="it">🇮🇹 IT</option>
-      <option value="en">🇬🇧 EN</option>
-      <option value="ja">🇯🇵 日本語</option>
-    </select>
+    <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px; display:flex; align-items:center; gap:8px;">
+      <svg width="20" height="20" viewBox="-60 -60 120 120" aria-hidden="true" style="flex-shrink:0;"><path d="M -50 45 L 55 0 L -50 -45 L -50 -10 L 25 0 L -50 10 Z" fill="currentColor"/></svg>
+      Tabi
+    </h1>
+    <button id="theme-toggle-btn" aria-label="Cambia tema chiaro/scuro" title="Tema" style="margin-left:auto;" onclick="window.ThemeToggle?.cycle()"></button>
   </header>
+  <!-- Ricerca globale e lingua: spostate nel menu (☰), non più nell'header per ridurre densità visiva -->
+  <select id="lang-switcher" aria-label="Lingua" data-i18n-title="lang.label" style="display:none;">
+    <option value="it">🇮🇹 IT</option>
+    <option value="en">🇬🇧 EN</option>
+    <option value="ja">🇯🇵 日本語</option>
+  </select>
   <!-- Filters Tab Bar — FIXED below header -->
   <div id="filters" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 100; display: flex; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; gap: 8px; padding: 8px 14px; background: transparent; border-bottom: none; height: 56px; align-items: center; scrollbar-width: none;"></div>
 
