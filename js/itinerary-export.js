@@ -105,13 +105,22 @@
     }
     const notes = window.state?.notes || {};
 
-    let body = `<h1>🗾 Giappone 2027 — Itinerario</h1>
-      <p><strong>Generato:</strong> ${new Date().toLocaleString('it-IT')} · <strong>Tappe:</strong> ${_totalPOIs()}</p>`;
+    // Riepilogo costi (gap segnalato: il report aveva il costo per tappa ma
+    // nessun totale aggregato — riusa getBudgetDB(), già la fonte di verità
+    // del modulo Budget, invece di ricalcolare da capo).
+    const budgetDb = window.getBudgetDB?.();
+    const totalSpent = budgetDb ? window.getTotalSpent?.(budgetDb) : null;
+    const curr = budgetDb?.currency && window.CURRENCIES?.[budgetDb.currency];
+    const spentStr = (totalSpent != null && curr) ? `${curr.symbol}${Math.round(window.convertCurrency?.(totalSpent, 'JPY', budgetDb.currency) ?? totalSpent)}` : null;
+
+    let body = `<h1>🧭 Tabi — Itinerario</h1>
+      <p><strong>Generato:</strong> ${new Date().toLocaleString('it-IT')} · <strong>Giorni:</strong> ${days.length} · <strong>Tappe:</strong> ${_totalPOIs()}${spentStr ? ` · <strong>Speso finora:</strong> ${spentStr}` : ''}</p>`;
 
     days.forEach(({ dayIdx, entries }) => {
       const dayDate = _getDayDate(dayIdx);
       const dayLabel = dayDate.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-      body += `<h2>Giorno ${dayIdx + 1} — ${dayLabel}</h2>`;
+      const dayCost = entries.reduce((s, e) => s + (Number(e.cost) || 0), 0);
+      body += `<h2>Giorno ${dayIdx + 1} — ${dayLabel}${dayCost ? ` <span class="daycost">¥${dayCost}</span>` : ''}</h2>`;
       entries.forEach((e, idx) => {
         const note = e.notes || notes[e.poi_id];
         body += `<div class="stop">
@@ -123,14 +132,15 @@
       });
     });
 
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Giappone 2027</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Tabi — Itinerario</title>
       <style>body{font-family:Arial,sans-serif;margin:20px;color:#333}
         h1{color:#1A3C5E;border-bottom:3px solid #C85C3B;padding-bottom:10px}
         h2{color:#1A3C5E;margin-top:24px;border-left:4px solid #C85C3B;padding-left:10px}
+        .daycost{float:right;font-size:13px;color:#C85C3B;font-weight:normal;}
         .stop{margin:12px 0;padding:12px;background:#f5f5f5;border-left:3px solid #E8A838}
         .stop h3{margin:0 0 6px;color:#1A3C5E}.meta{font-size:12px;color:#666;margin:4px 0}
         .notes{font-style:italic;color:#666;margin-top:6px}a{color:#1A3C5E}</style>
-      </head><body>${body}<div style="margin-top:30px;border-top:1px solid #ccc;padding-top:10px;font-size:11px;color:#999">Esportato da Giappone 2027 Travel Companion</div></body></html>`;
+      </head><body>${body}<div style="margin-top:30px;border-top:1px solid #ccc;padding-top:10px;font-size:11px;color:#999">Esportato da Tabi</div></body></html>`;
 
     const w = window.open('', '_blank');
     if (!w) { window.toast(T('toast.popupBlocked', '⚠️ Consenti i popup per esportare il PDF')); return; }

@@ -26,6 +26,7 @@
       { label: T('menu.gfHeatmap', 'Heatmap GF'), icon: '🔥', view: 'gf-heatmap' },
       { label: T('menu.gfToggle', 'Guida Gluten-Free') + (window.isGFEnabled?.() ? ' ✓' : ''), icon: '🌾', view: 'gf-toggle' },
       { label: T('menu.timeline', 'Timeline viaggio'), icon: '🗓️', view: 'timeline' },
+      { label: T('menu.suggestGaps', 'Suggerimenti tempo libero'), icon: '✨', view: 'itin-suggest' },
       { label: T('menu.search', 'Cerca ovunque'), icon: '🔍', view: 'global-search' },
       { label: T('menu.battery', 'Risparmio batteria') + (window.BatterySaver?.isOn?.() ? ' ✓' : ''), icon: '🔋', view: 'battery-saver' },
       { label: T('menu.reminders', 'Promemoria Tappe'), icon: '🔔', view: 'reminders' },
@@ -121,6 +122,7 @@
               });
             }
             else if (view === 'timeline') { window.loadScript('./js/views/timeline-view.js').then(() => window.renderTimelineView?.()); }
+            else if (view === 'itin-suggest') { window.loadScript('./js/itinerary-suggest.js').then(() => window.openItinerarySuggest?.()); }
             else if (view === 'global-search') { window.loadScript('./js/global-search.js').then(() => window.openGlobalSearch?.()); }
             else if (view === 'battery-saver') { window.BatterySaver?.toggle?.(); }
             else if (view === 'gf-toggle') { window.setGFEnabled?.(!window.isGFEnabled?.()); window.toast?.(window.isGFEnabled?.() ? '🌾 Guida Gluten-Free attiva' : 'Guida Gluten-Free nascosta'); }

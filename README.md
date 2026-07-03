@@ -180,28 +180,34 @@ Alcuni problemi concreti trovati così, non ipotetici:
 Validata con agenti di ricerca dedicati prima di scrivere codice (non solo dichiarata):
 ogni item sotto è stato verificato contro il codice reale, non assunto.
 
-- [x] ~~Vault biglietti~~ — fatto: entità ticket con stati (prenotato/pagato/usato/
-  scaduto/annullato), voce menu dedicata. Manca ancora: collegare un ticket a una
-  tappa/giorno specifici da un picker in UI (i campi esistono nello schema, nessuna
-  UI li popola) e filtri/ricerca sul vault.
-- [x] ~~Cambio congelato per spesa~~ — fatto: ogni spesa salva anche valuta/importo
-  originali dell'inserimento.
-- [x] ~~Opzione gluten-free nell'onboarding~~ — fatto: il form la raccoglieva già,
-  ora è collegata al toggle reale.
-- [x] ~~Plugin destinazione gated~~ — fatto: JR Pass/calendario festività si
-  nascondono se il viaggio non è in Giappone (dedotto dalle tappe/vista mappa, non
-  da un campo destinazione esplicito — l'app non ne ha uno).
-- [x] ~~Vista "Oggi" da campo~~ — fatto: la timeline evidenzia il giorno corrente e
-  mostra il countdown alla prossima tappa.
-- [ ] **Consolidamento moduli itinerario** (~16 file) — un'analisi dedicata ha
-  smentito la stima iniziale di "basso rischio": l'accoppiamento reale tra i moduli
-  (chiamate `window.*` incrociate, UI layer non isolabile) rende il refactor
-  moderato-alto rischio. Serve un'analisi approfondita prima di qualunque fusione,
-  non un pass rapido — rimandato di proposito.
-- [ ] **Migrazione ricerca → Nominatim/Overpass** per un free-tier 100% — verificato
-  e **sconsigliato**: comporterebbe perdere foto dei luoghi e orari di apertura
-  affidabili, entrambi usati quotidianamente. Da riconsiderare solo se la quota
-  Google diventa un blocco reale, non per principio.
+- [x] ~~Vault biglietti~~ — fatto, incluso il collegamento ticket↔tappa (era
+  rimasto solo nello schema) e un countdown leggero per i biglietti nelle
+  prossime 48h. Manca ancora: filtri/ricerca sul vault.
+- [x] ~~Cambio congelato per spesa~~, ~~opzione gluten-free nell'onboarding~~,
+  ~~plugin destinazione gated~~, ~~vista "Oggi" da campo~~ — fatti (vedi
+  changelog sotto per i dettagli di ognuno).
+- [x] ~~Consolidamento moduli itinerario~~ — parziale e onesto: un'analisi
+  file-per-file ha isolato i moduli a **zero accoppiamento incrociato**
+  (fondibili senza rischio) da quelli con decine/centinaia di chiamanti reali
+  (CRDT, sync, UI unificata — questi restano separati, fonderli sarebbe
+  rischio vero). Fuso `itinerary-delete.js` + `itinerary-optimizer-trip.js`
+  → `itinerary-features.js`. Nel farlo, trovato e corretto un bug reale: il
+  bottone "Elimina" su un itinerario di gruppo cancellava solo in locale,
+  senza notificare gli altri membri né aggiornare lo stato di condivisione.
+- [ ] **Warning orario chiusura POI** (arrivi dopo che il luogo ha chiuso) —
+  verificato: il dato `opening_hours` esiste nello schema tappa ma non è mai
+  popolato dal caricamento POI. Richiederebbe parsing del formato orari
+  Google Places + calcolo orario di arrivo cumulativo — feature vera, non un
+  collegamento veloce. Rimandato di proposito, non dimenticato.
+- [ ] **Migrazione ricerca → Nominatim/Overpass** per un free-tier 100% —
+  confermato sconsigliato (perderebbe foto e orari). Verificata un'alternativa
+  ibrida realistica (Nominatim gratis per la ricerca nearby, Google solo sui
+  dettagli aperti dall'utente): stima **-70% di costo**, non implementata
+  perché tocca le funzioni serverless e non è testabile senza un deploy Vercel
+  reale — da fare con un ciclo di test in produzione, non alla cieca.
+- Verificata e scartata: una cache aggiuntiva "per città" per ridurre le
+  chiamate Google — già coperta dalla cache esistente (coordinate + IndexedDB
+  con TTL). Aggiungerne un'altra sarebbe stata complessità ridondante.
 
 ## Stack tecnico
 
@@ -398,28 +404,34 @@ A few concrete problems found this way, not hypothetical ones:
 Validated with dedicated research agents before writing any code — every item below
 was checked against the real codebase, not assumed.
 
-- [x] ~~Ticket vault~~ — done: a ticket entity with states (booked/paid/used/expired/
-  cancelled), a dedicated menu entry. Still missing: linking a ticket to a specific
-  stop/day from a UI picker (the fields exist in the schema, no UI populates them
-  yet) and search/filter on the vault.
-- [x] ~~Frozen FX rate per expense~~ — done: every expense now also stores the
-  original entry currency/amount.
-- [x] ~~Gluten-free option in onboarding~~ — done: the form already collected it, now
-  it's wired to the real toggle.
-- [x] ~~Gated destination plugins~~ — done: JR Pass/festival calendar hide themselves
-  if the trip isn't in Japan (inferred from stops/map view, not an explicit
-  destination field — the app doesn't have one).
-- [x] ~~"Today" field view~~ — done: the timeline highlights the current day and
-  shows a countdown to the next stop.
-- [ ] **Itinerary module consolidation** (~16 files) — a dedicated analysis disproved
-  the original "low risk" estimate: real coupling between modules (cross-cutting
-  `window.*` calls, a non-isolable UI layer) makes this a moderate-to-high-risk
-  refactor. Needs a thorough analysis before any merge, not a quick pass —
-  deliberately deferred.
-- [ ] **Search migration → Nominatim/Overpass** for a 100% free tier — checked and
-  **not recommended**: it would mean losing place photos and reliable opening hours,
-  both used daily. Worth reconsidering only if Google quota becomes a real blocker,
-  not on principle.
+- [x] ~~Ticket vault~~ — done, including linking a ticket to a stop (was schema-only
+  before) and a lightweight countdown badge for tickets due in the next 48h. Still
+  missing: search/filter on the vault.
+- [x] ~~Frozen FX rate per expense~~, ~~gluten-free option in onboarding~~,
+  ~~gated destination plugins~~, ~~"today" field view~~ — done (see changelog below
+  for details on each).
+- [x] ~~Itinerary module consolidation~~ — partial, and honest about it: a
+  file-by-file analysis separated modules with **zero cross-coupling** (safe to
+  merge) from ones with dozens/hundreds of real callers (CRDT, sync, unified UI —
+  these stay separate, merging them would be real risk). Merged
+  `itinerary-delete.js` + `itinerary-optimizer-trip.js` → `itinerary-features.js`.
+  While doing it, found and fixed a real bug: the "Delete" button on a shared group
+  itinerary only deleted locally, without notifying other members or updating
+  share-tracking state.
+- [ ] **POI closing-time warning** (arriving after a place has closed) — checked:
+  the `opening_hours` field exists on the stop schema but is never populated when
+  a POI is loaded. Would need parsing Google Places' hours format plus cumulative
+  arrival-time computation — a real feature, not a quick wire-up. Deliberately
+  deferred, not forgotten.
+- [ ] **Search migration → Nominatim/Overpass** for a 100% free tier — confirmed
+  not recommended (would lose photos and hours). Checked a realistic hybrid
+  (Nominatim for free nearby search, Google only for user-opened details):
+  estimated **-70% cost**, not implemented because it touches serverless functions
+  and isn't testable without a real Vercel deploy — needs a production test loop,
+  not a blind edit.
+- Checked and discarded: an additional "per-city" cache to cut Google calls —
+  already covered by the existing coordinate + IndexedDB TTL cache. A second one
+  would have been redundant complexity.
 
 ## Tech stack
 
@@ -461,7 +473,7 @@ npm run lint:i18n    # checks translation-key consistency
 
 <div align="center">
 
-Direzione e supervisione / Direction and review: **Moriconz**
-Codice / Code: Claude (Anthropic)
+Idea, direzione e supervisione: **Riccardo Moricone** — [LinkedIn](https://www.linkedin.com/in/riccardo-moricone-0b3426157/)
+Codice: Claude (Anthropic)
 
 </div>

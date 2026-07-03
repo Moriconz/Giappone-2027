@@ -385,10 +385,19 @@ window.groupPanel = (() => {
         const ok = await (window.modalConfirm || confirm)('Eliminare questo itinerario?', { danger: true, confirmText: 'Elimina' });
         if (ok) {
           if (window.state.groupItineraries[itinId]) {
-            delete window.state.groupItineraries[itinId];
-            window.saveState?.();
+            // "Elimina" locale-soltanto non bastava: nessun broadcast, nessuna
+            // pulizia del tracking condivisione → gli altri membri continuavano
+            // a vederlo, e state.itinerarySharing restava incoerente (bug reale,
+            // itinerary-delete.js aveva già la funzione giusta, mai collegata).
+            const m = /^group_(.+)_shared$/.exec(itinId);
+            if (m && typeof window.acceptUnshareRequest === 'function') {
+              window.acceptUnshareRequest(m[1], window.state.group?.myName || 'Unknown');
+            } else {
+              delete window.state.groupItineraries[itinId];
+              window.saveState?.();
+              window.toast?.(T('toast.itinDeleted', '🗑️ Itinerario eliminato'));
+            }
             updateGroupItinerariesList();
-            window.toast?.(T('toast.itinDeleted', '🗑️ Itinerario eliminato'));
           }
         }
       });

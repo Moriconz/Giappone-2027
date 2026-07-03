@@ -41,6 +41,26 @@
   };
   const STATUSES = ['booked', 'paid', 'used', 'expired', 'cancelled'];
 
+  // Elenco piatto {poi_id, label} delle tappe in itinerario, per il collegamento ticket→tappa
+  function _stopOptions() {
+    const ibd = window.state?.itineraryByDay || {};
+    const out = [];
+    Object.keys(ibd).map(Number).sort((a, b) => a - b).forEach(d => {
+      (ibd[d] || []).forEach(e => {
+        if (!e.poi_id) return;
+        const name = e.poi_name || (window.allPOIs?.() || []).find(p => p.id === e.poi_id)?.name || e.poi_id;
+        out.push({ poi_id: e.poi_id, day: d, label: `Giorno ${d + 1} · ${name}` });
+      });
+    });
+    return out;
+  }
+
+  function _linkedStopLabel(t) {
+    if (!t.linkStopPoi) return '';
+    const opt = _stopOptions().find(o => o.poi_id === t.linkStopPoi);
+    return opt ? opt.label : '';
+  }
+
   function _fmtDate(iso) {
     if (!iso) return '';
     const d = new Date(iso);
@@ -49,16 +69,32 @@
     return `${p(d.getDate())}/${p(d.getMonth() + 1)} ${p(d.getHours())}:${p(d.getMinutes())}`;
   }
 
+  // Promemoria leggero: countdown se il biglietto è nelle prossime 48h e non
+  // ancora usato/annullato — niente notifiche OS (quelle restano di itinerary-reminders.js
+  // per le tappe), solo un badge visivo per i biglietti imminenti nel vault.
+  function _upcomingBadge(t) {
+    if (!t.startDateTime || t.status === 'used' || t.status === 'cancelled' || t.status === 'expired') return '';
+    const target = new Date(t.startDateTime);
+    if (isNaN(target.getTime())) return '';
+    const deltaMs = target - Date.now();
+    if (deltaMs < 0 || deltaMs > 48 * 3600 * 1000) return '';
+    const h = Math.floor(deltaMs / 3600000), m = Math.round((deltaMs % 3600000) / 60000);
+    const label = h > 0 ? `tra ${h}h${m ? ' ' + m + 'm' : ''}` : `tra ${m}m`;
+    return `<span style="font-size:10px;font-weight:700;color:#fff;background:var(--l-accent);padding:2px 7px;border-radius:999px;margin-left:6px;">⏱ ${label}</span>`;
+  }
+
   function _ticketRow(t) {
     const icon = TYPE_ICON[t.type] || '🎫';
     const priceStr = (t.price != null) ? ` · ${t.price}${t.currency ? ' ' + t.currency : ''}` : '';
     const subParts = [t.provider, t.code, _fmtDate(t.startDateTime)].filter(Boolean).join(' · ');
+    const stopLabel = _linkedStopLabel(t);
     return `
       <div class="poi-row" data-id="${t.id}" style="align-items:flex-start;">
         <div class="icon">${icon}</div>
         <div class="body">
-          <div class="name">${t.title || TYPE_LABEL[t.type] || 'Ticket'}</div>
+          <div class="name">${t.title || TYPE_LABEL[t.type] || 'Ticket'}${_upcomingBadge(t)}</div>
           <div class="sub">${subParts}${priceStr}</div>
+          ${stopLabel ? `<div class="sub" style="margin-top:2px;color:var(--l-accent);">📍 ${stopLabel}</div>` : ''}
           ${t.notes ? `<div class="sub" style="margin-top:2px;">${t.notes}</div>` : ''}
           <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
             <select class="ticket-status-select" data-id="${t.id}" style="font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid;${STATUS_STYLE[t.status] || STATUS_STYLE.booked}">
@@ -86,6 +122,10 @@
         <input name="provider" type="text" placeholder="${T('tickets.form.provider', 'Fornitore (opzionale, es. JR)')}" />
         <input name="code" type="text" placeholder="${T('tickets.form.code', 'Codice/PNR (opzionale)')}" />
         <input name="startDateTime" type="datetime-local" />
+        <select name="linkStopPoi">
+          <option value="">${T('tickets.form.noLink', '(nessuna tappa collegata)')}</option>
+          ${_stopOptions().map(o => `<option value="${o.poi_id}">${o.label}</option>`).join('')}
+        </select>
         <div style="display:flex;gap:8px;">
           <input name="price" type="number" step="0.01" placeholder="${T('tickets.form.price', 'Prezzo')}" style="flex:1;" />
           <input name="currency" type="text" placeholder="${T('tickets.form.currency', 'Valuta')}" style="width:70px;" />
@@ -143,6 +183,7 @@
           provider: fd.get('provider'),
           code: fd.get('code'),
           startDateTime: fd.get('startDateTime'),
+          linkStopPoi: fd.get('linkStopPoi') || null,
           price: fd.get('price'),
           currency: fd.get('currency'),
           notes: fd.get('notes'),

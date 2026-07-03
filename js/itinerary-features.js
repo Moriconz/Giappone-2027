@@ -1,33 +1,137 @@
-/**
- * itinerary-optimizer-trip.js — Ottimizzatore multi-giorno dell'itinerario
- *
- * `optimizeDay` (itinerary.js) riordina le tappe DENTRO un giorno. Questo modulo
- * fa il passo superiore: ridistribuisce TUTTE le tappe sui giorni disponibili
- * minimizzando gli spostamenti, raggruppando per prossimità geografica (le città
- * giapponesi sono ben separate → il clustering cattura "3 giorni a Tokyo, 2 a Kyoto").
- *
- * Algoritmo:
- *   1. Raccoglie tutte le entry con coordinate da `state.itineraryByDay`.
- *   2. k-means geografico (k = giorni con almeno 1 POI atteso, max = giorni trip).
- *   3. Ordina i cluster con nearest-neighbor tra centroidi (minimizza inter-day).
- *   4. Assegna cluster → giorni in sequenza; riordina intra-day (nearest-neighbor).
- *   5. PREVIEW obbligatoria con confronto km prima/dopo; applica solo su conferma.
- *
- * Sicurezza: `apply()` fa un auto-snapshot (ItinerarySnapshots) → l'utente può
- * sempre tornare indietro (anche via Undo).
- *
- * Esposto:
- *   - window.TripOptimizer = { computePlan, openPreview, apply }
- *   - window.openTripOptimizer() → preview
- *
- * Dipendenze (window): state.itineraryByDay, tripProfile.days, ROUTING, allPOIs,
- *   openSheet/closeSheet, toast, t, ItinerarySnapshots, saveState,
- *   renderItineraryUnified, ITINERARY.computeDayRouting.
- */
+// ============================================================================
+// itinerary-features.js — deletePersonalItinerary, requestUnshare,
+//   acceptUnshareRequest + TripOptimizer (computePlan, openPreview, apply)
+//
+// Fusione di itinerary-delete.js + itinerary-optimizer-trip.js: entrambi
+// avevano ZERO accoppiamento incrociato con gli altri moduli itinerary-*.js
+// (verificato: nessuno dei due importa o chiama funzioni dell'altro, o di
+// itinerary-crdt/sync/unified), quindi fondibili senza toccare alcun chiamante.
+//
+// Deps (all window.*): state, saveState, toast, t, getSharedGroups,
+//   unmarkItinerarySharedWithGroup, peerBroadcast, peerGPS, modalConfirm,
+//   ROUTING, allPOIs, openSheet/closeSheet, ItinerarySnapshots,
+//   renderItineraryUnified, ITINERARY.computeDayRouting, GROUP_SYNC
+// ============================================================================
 (function () {
   'use strict';
 
   const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+
+  /* ═════════════════════════════════════════════════════════════════
+     DELETE & UNSHARE (ex itinerary-delete.js)
+     ═════════════════════════════════════════════════════════════════ */
+
+  /**
+   * Delete personal itinerary with confirmation if it's shared (Option C)
+   * If shared: asks "Itinerario condiviso con N gruppi. Eliminare ovunque?"
+   */
+  async function deletePersonalItinerary() {
+    const sharedGroups = window.getSharedGroups?.('personal_itinerary') || [];
+
+    if (sharedGroups.length > 0) {
+      const message = sharedGroups.length === 1
+        ? `⚠️ Itinerario condiviso con 1 gruppo (${sharedGroups[0].groupId}). Eliminare ovunque?`
+        : `⚠️ Itinerario condiviso con ${sharedGroups.length} gruppi. Eliminare ovunque?`;
+
+      const confirmed = await (window.modalConfirm || confirm)(message, { danger: true, confirmText: 'Elimina' });
+      if (!confirmed) return false;
+
+      sharedGroups.forEach(share => {
+        const groupItinId = `group_${share.groupId}_shared`;
+        if (window.state.groupItineraries?.[groupItinId]) {
+          delete window.state.groupItineraries[groupItinId];
+        }
+        window.unmarkItinerarySharedWithGroup?.('personal_itinerary', share.groupId);
+
+        if (window.peerGPS && window.peerBroadcast) {
+          window.peerBroadcast({
+            type: 'itinerary_deleted',
+            payload: {
+              itineraryId: groupItinId,
+              groupId: share.groupId,
+              deletedBy: window.state.group?.myName || 'Unknown'
+            }
+          });
+        }
+      });
+
+      console.log('[Delete] Deleted shared itinerary from all groups');
+    }
+
+    window.state.itinerary = [];
+    window.saveState?.();
+    console.log('[Delete] Deleted personal itinerary');
+    window.toast(T('toast.itinDeleted', '🗑️ Itinerario eliminato'));
+    return true;
+  }
+
+  /**
+   * Request unshare of itinerary from a specific group (for non-owners)
+   * Owner receives: "Marco ha richiesto di smettere di condividere l'itinerario"
+   */
+  function requestUnshare(itineraryId, groupId) {
+    const myName = window.state.group?.myName || 'Unknown';
+    const owner = window.state.groupItineraries?.[`group_${groupId}_shared`]?.owner;
+
+    if (!owner) {
+      window.toast('⚠️ Impossibile trovare il proprietario dell\'itinerario');
+      return;
+    }
+
+    if (window.peerBroadcast) {
+      window.peerBroadcast({
+        type: 'itinerary_unshare_request',
+        payload: {
+          itineraryId: itineraryId,
+          groupId: groupId,
+          requestedBy: myName,
+          requestedAt: Date.now()
+        }
+      });
+    }
+
+    window.toast(`📨 Richiesta inviata a ${owner} per smettere di condividere`);
+    console.log('[Unshare] Requested unshare from', owner);
+  }
+
+  /**
+   * Accept unshare request (or self-initiated "stop sharing") and remove
+   * itinerary from group. Usato anche dal bottone "Elimina" del pannello
+   * gruppo, non solo dal flusso di richiesta-approvazione.
+   */
+  function acceptUnshareRequest(groupId, requestedBy) {
+    window.unmarkItinerarySharedWithGroup?.('personal_itinerary', groupId);
+    const groupItinId = `group_${groupId}_shared`;
+    if (window.state.groupItineraries?.[groupItinId]) {
+      delete window.state.groupItineraries[groupItinId];
+    }
+
+    window.saveState?.();
+
+    if (window.peerBroadcast) {
+      window.peerBroadcast({
+        type: 'itinerary_unshared',
+        payload: {
+          groupId: groupId,
+          unsharedBy: window.state.group?.myName || 'Unknown',
+          unsharedAt: Date.now()
+        }
+      });
+    }
+
+    window.toast(`✅ Non più condiviso con ${groupId}`);
+    console.log('[Unshare] Accepted unshare request from', requestedBy);
+  }
+
+  window.deletePersonalItinerary = deletePersonalItinerary;
+  window.requestUnshare = requestUnshare;
+  window.acceptUnshareRequest = acceptUnshareRequest;
+
+  /* ═════════════════════════════════════════════════════════════════
+     TRIP OPTIMIZER (ex itinerary-optimizer-trip.js)
+     Ottimizzatore multi-giorno: ridistribuisce le tappe sui giorni
+     minimizzando gli spostamenti (k-means geografico + nearest-neighbor).
+     ═════════════════════════════════════════════════════════════════ */
 
   function _coordOf(entry, pois) {
     if (entry && typeof entry.lat === 'number' && typeof entry.lng === 'number') return [entry.lat, entry.lng];
@@ -50,17 +154,14 @@
   function _haversine(a, b) {
     const R = window.ROUTING;
     if (R?.estimateDistanceHaversine) return R.estimateDistanceHaversine(a[0], a[1], b[0], b[1]);
-    // fallback
     const toRad = x => x * Math.PI / 180, Rk = 6371;
     const dLat = toRad(b[0] - a[0]), dLng = toRad(b[1] - a[1]);
     const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.sin(dLng / 2) ** 2;
     return Rk * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
   }
 
-  // k-means++ init + Lloyd iterations
   function _kmeans(points, k) {
     if (points.length <= k) return points.map((p, i) => ({ centroid: p.coord, members: [p] }));
-    // init: k-means++ (primo random, poi i più lontani)
     const centroids = [points[0].coord];
     while (centroids.length < k) {
       let best = null, bestD = -1;
@@ -74,13 +175,11 @@
     let assign = new Array(points.length).fill(-1);
     for (let iter = 0; iter < 25; iter++) {
       let changed = false;
-      // assign
       points.forEach((p, i) => {
         let bi = 0, bd = Infinity;
         centroids.forEach((c, ci) => { const d = _haversine(p.coord, c); if (d < bd) { bd = d; bi = ci; } });
         if (assign[i] !== bi) { assign[i] = bi; changed = true; }
       });
-      // update
       for (let ci = 0; ci < k; ci++) {
         const mem = points.filter((_, i) => assign[i] === ci);
         if (mem.length) {
@@ -101,11 +200,9 @@
     return clusters;
   }
 
-  // Ordina i cluster con nearest-neighbor tra centroidi (minimizza inter-day)
   function _orderClusters(clusters) {
     if (clusters.length <= 1) return clusters;
     const remaining = clusters.slice();
-    // parti dal cluster più a nord-est (arbitrario ma stabile)
     remaining.sort((a, b) => (b.centroid[0] - a.centroid[0]) || (a.centroid[1] - b.centroid[1]));
     const ordered = [remaining.shift()];
     while (remaining.length) {
@@ -117,7 +214,6 @@
     return ordered;
   }
 
-  // Nearest-neighbor intra-cluster (ordine di visita nel giorno)
   function _orderIntra(members) {
     if (members.length <= 2) return members.slice();
     const rem = members.slice(1);
@@ -142,10 +238,6 @@
     return Math.round(km);
   }
 
-  /**
-   * Calcola il piano ottimizzato. Non applica nulla.
-   * Ritorna { ok, plan: {0:[entries],1:[...]}, stats:{beforeKm, afterKm, days, pois}, without }
-   */
   function computePlan() {
     const tripDays = Math.max(1, Number(window.state?.tripProfile?.days) || Object.keys(window.state?.itineraryByDay || {}).length || 8);
     const { withCoord, without } = _collect();
@@ -153,17 +245,14 @@
 
     const pois = (typeof window.allPOIs === 'function') ? window.allPOIs() : [];
 
-    // km attuale (per confronto)
     const ibd = window.state.itineraryByDay || {};
     const beforeArrays = Object.keys(ibd).map(d => ibd[d] || []);
     const beforeKm = _totalKm(beforeArrays, pois);
 
-    // k = min(giorni, cluster naturali). Usa giorni come k ma non più dei POI.
     const k = Math.min(tripDays, withCoord.length);
     let clusters = _kmeans(withCoord, k);
     clusters = _orderClusters(clusters);
 
-    // Assegna cluster → giorni 0..k-1, ordina intra-day
     const plan = {};
     clusters.forEach((cl, dayIdx) => {
       const ordered = _orderIntra(cl.members);
@@ -186,10 +275,6 @@
     };
   }
 
-  /**
-   * Applica il piano: riscrive state.itineraryByDay. Auto-snapshot prima.
-   * Le entry senza coordinate restano nel loro giorno originale (append al Day 0).
-   */
   function apply(result) {
     if (!result?.ok || !result.plan) return false;
     try { window.ItinerarySnapshots?.saveAuto?.('optimize-trip'); } catch (_) {}
@@ -202,13 +287,11 @@
       const di = Number(d);
       newByDay[di] = result.plan[d].slice();
     });
-    // entry senza coordinate → in coda al primo giorno
     if (result.without && result.without.length) {
       newByDay[0] = [...(newByDay[0] || []), ...result.without];
     }
 
     window.state.itineraryByDay = newByDay;
-    // Ricalcola orari/tratte per ogni giorno
     Object.keys(newByDay).forEach(d => {
       try { window.ITINERARY?.computeDayRouting?.(Number(d)); } catch (_) {}
     });
@@ -217,8 +300,6 @@
     window.renderItineraryUnified?.();
     return true;
   }
-
-  // ─── UI preview ──────────────────────────────────────────────────────
 
   function _esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
@@ -263,7 +344,7 @@
         <div style="display:flex;flex-direction:column;gap:8px;">${dayBlocks}</div>
         ${result.without?.length ? `<p style="font-size:11px;color:#8a5a10;margin:0;">⚠️ ${result.without.length} ${T('topt.noCoord', 'tappe senza posizione resteranno nel Giorno 1.')}</p>` : ''}
         <div style="display:flex;gap:8px;margin-top:4px;">
-          <button id="topt-apply" style="flex:2;padding:12px;background:linear-gradient(135deg,var(--m-accent),#FF5E1F);border:none;border-radius:9px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">✅ ${T('topt.apply', 'Applica')}</button>
+          <button id="topt-apply" style="flex:2;padding:12px;background:var(--l-accent);border:none;border-radius:9px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">✅ ${T('topt.apply', 'Applica')}</button>
           <button id="topt-cancel" style="flex:1;padding:12px;background:rgba(20,30,60,0.04);border:1.5px solid var(--l-hair);border-radius:9px;color:var(--l-ink);font-weight:600;font-size:13px;cursor:pointer;">${T('common.cancel', 'Annulla')}</button>
         </div>
         <p style="font-size:10.5px;color:var(--l-faint);text-align:center;margin:2px 0 0;">${T('topt.undoHint', 'Puoi annullare con ⬅️ o ripristinare una versione salvata.')}</p>
