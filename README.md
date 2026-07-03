@@ -10,7 +10,7 @@
 [![P2P](https://img.shields.io/badge/collab-P2P%20MQTT-blue)](#collaborazione-p2p--come-funziona-davvero)
 [![Deploy](https://img.shields.io/badge/deploy-Vercel-black)](https://vercel.com)
 
-[Italiano](#italiano) · [English](#english)
+[Italiano](#italiano) · [English](#english) · [📖 Guida all'uso](GUIDA_UTENTE.md)
 
 </div>
 
@@ -174,6 +174,34 @@ Alcuni problemi concreti trovati così, non ipotetici:
 - **Local-first, non multi-device sync automatico.** Lo stato personale vive in
   localStorage/IndexedDB del singolo browser; passare a un altro dispositivo richiede
   l'export/import di backup JSON.
+
+## Roadmap / cosa manca
+
+Validata con agenti di ricerca dedicati prima di scrivere codice (non solo dichiarata):
+ogni item sotto è stato verificato contro il codice reale, non assunto.
+
+- [x] ~~Vault biglietti~~ — fatto: entità ticket con stati (prenotato/pagato/usato/
+  scaduto/annullato), voce menu dedicata. Manca ancora: collegare un ticket a una
+  tappa/giorno specifici da un picker in UI (i campi esistono nello schema, nessuna
+  UI li popola) e filtri/ricerca sul vault.
+- [x] ~~Cambio congelato per spesa~~ — fatto: ogni spesa salva anche valuta/importo
+  originali dell'inserimento.
+- [x] ~~Opzione gluten-free nell'onboarding~~ — fatto: il form la raccoglieva già,
+  ora è collegata al toggle reale.
+- [x] ~~Plugin destinazione gated~~ — fatto: JR Pass/calendario festività si
+  nascondono se il viaggio non è in Giappone (dedotto dalle tappe/vista mappa, non
+  da un campo destinazione esplicito — l'app non ne ha uno).
+- [x] ~~Vista "Oggi" da campo~~ — fatto: la timeline evidenzia il giorno corrente e
+  mostra il countdown alla prossima tappa.
+- [ ] **Consolidamento moduli itinerario** (~16 file) — un'analisi dedicata ha
+  smentito la stima iniziale di "basso rischio": l'accoppiamento reale tra i moduli
+  (chiamate `window.*` incrociate, UI layer non isolabile) rende il refactor
+  moderato-alto rischio. Serve un'analisi approfondita prima di qualunque fusione,
+  non un pass rapido — rimandato di proposito.
+- [ ] **Migrazione ricerca → Nominatim/Overpass** per un free-tier 100% — verificato
+  e **sconsigliato**: comporterebbe perdere foto dei luoghi e orari di apertura
+  affidabili, entrambi usati quotidianamente. Da riconsiderare solo se la quota
+  Google diventa un blocco reale, non per principio.
 
 ## Stack tecnico
 
@@ -364,6 +392,34 @@ A few concrete problems found this way, not hypothetical ones:
 - **Local-first, not automatic multi-device sync.** Personal state lives in a single
   browser's localStorage/IndexedDB; switching devices requires a manual JSON backup
   export/import.
+
+## Roadmap / what's missing
+
+Validated with dedicated research agents before writing any code — every item below
+was checked against the real codebase, not assumed.
+
+- [x] ~~Ticket vault~~ — done: a ticket entity with states (booked/paid/used/expired/
+  cancelled), a dedicated menu entry. Still missing: linking a ticket to a specific
+  stop/day from a UI picker (the fields exist in the schema, no UI populates them
+  yet) and search/filter on the vault.
+- [x] ~~Frozen FX rate per expense~~ — done: every expense now also stores the
+  original entry currency/amount.
+- [x] ~~Gluten-free option in onboarding~~ — done: the form already collected it, now
+  it's wired to the real toggle.
+- [x] ~~Gated destination plugins~~ — done: JR Pass/festival calendar hide themselves
+  if the trip isn't in Japan (inferred from stops/map view, not an explicit
+  destination field — the app doesn't have one).
+- [x] ~~"Today" field view~~ — done: the timeline highlights the current day and
+  shows a countdown to the next stop.
+- [ ] **Itinerary module consolidation** (~16 files) — a dedicated analysis disproved
+  the original "low risk" estimate: real coupling between modules (cross-cutting
+  `window.*` calls, a non-isolable UI layer) makes this a moderate-to-high-risk
+  refactor. Needs a thorough analysis before any merge, not a quick pass —
+  deliberately deferred.
+- [ ] **Search migration → Nominatim/Overpass** for a 100% free tier — checked and
+  **not recommended**: it would mean losing place photos and reliable opening hours,
+  both used daily. Worth reconsidering only if Google quota becomes a real blocker,
+  not on principle.
 
 ## Tech stack
 
