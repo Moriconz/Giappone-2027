@@ -1,6 +1,11 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.5 — Pulizia header + nuova icona app (2026-07-03, Attuale)
+## v3.6 — Fix card POI: doppio rendering al cambio (2026-07-03, Attuale)
+
+### 🔧 Fix
+- **Bug reale in `js/y2k-windows.js`**: passando da una card POI a un'altra, quella vecchia veniva chiusa con l'animazione di uscita (fino a 260ms) mentre quella nuova si apriva subito — per quella finestra restavano DUE pannelli interi nel DOM, animati insieme. Causava sia il "flash" della card precedente sia lag percepito su mobile (doppio lavoro di layout/paint). Fix: quando un pannello viene SOSTITUITO da un altro (non chiuso e basta), la rimozione è ora immediata, senza animazione — verificato che in nessun istante del cambio card esistano più di un `.y2k-win` nel DOM.
+
+## v3.5 — Pulizia header + nuova icona app (2026-07-03)
 
 ### ✅ Aggiunte
 - **Toggle tema chiaro/scuro** (`js/theme-toggle.js`) — override manuale in un bottone icona nell'header, sopra il comportamento automatico di sistema che resta il default. Ciclo: automatico → opposto del sistema → altro tema → automatico. Scelta persistita in localStorage (`html[data-theme]`, specificità più alta della sola media query in `css/liquid-light.css`).

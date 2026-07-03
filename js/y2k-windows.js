@@ -132,6 +132,23 @@
 
   function closeAll() { Object.keys(wins).forEach(closeWin); }
 
+  // Rimozione immediata, senza animazione di uscita: usata solo quando un
+  // pannello sta per essere SOSTITUITO da un altro (cambio card). L'animazione
+  // di chiusura di closeWin() richiede fino a 260ms in cui il DOM vecchio resta
+  // presente e animato insieme a quello nuovo che si apre subito dopo — da qui
+  // il "flash" della card precedente e il jank su mobile (due pannelli pesanti
+  // composti/animati insieme). Qui non c'è nulla da vedere sparire: il nuovo
+  // pannello lo sostituisce nello stesso istante, quindi l'uscita animata non
+  // aggiunge nulla, solo lavoro extra.
+  function closeWinImmediate(id) {
+    const win = wins[id];
+    if (!win) return;
+    delete wins[id];
+    delete winViews[id];
+    win.remove();
+    document.dispatchEvent(new CustomEvent('y2kwin_closed', { detail: { id } }));
+  }
+
   function activateNav(view) {
     if (!view) return;
     const nav = document.querySelector('nav.bottom');
@@ -154,7 +171,8 @@
         const id = String(title).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20) || 'win';
         // Single-panel mode: close any OTHER open panel first so navigating
         // between views (itinerario → GF → menu) replaces instead of stacking.
-        Object.keys(wins).forEach(k => { if (k !== id) closeWin(k); });
+        // Rimozione immediata (no animazione): sta per aprirsi subito il nuovo.
+        Object.keys(wins).forEach(k => { if (k !== id) closeWinImmediate(k); });
         openWin(id, title, html, window.activeTabView || 'map');
       };
     }
