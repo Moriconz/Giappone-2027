@@ -1,41 +1,62 @@
 /* ============================================================================
-   LIQUID LIGHT — nuovo design system "Apple liquid glass" CHIARO (2026)
-   Caricato DOPO apple-glass.css: ridefinisce la SHELL in chiaro.
-   FASE 1: sfondo, header, ricerca, filtri, nav flottante, widget shell.
-   I pannelli (.y2k-win) restano vetro scuro finché non convertiti (fasi 2+).
+   LIQUID GLASS — design system Apple-style, chiaro o scuro a seconda del
+   SISTEMA (prefers-color-scheme). Nessun toggle manuale: l'utente non sceglie
+   il tema nell'app, lo sceglie nelle impostazioni del telefono/browser.
+   Caricato DOPO apple-glass.css: i token qui sotto sono l'unica fonte di
+   verità per superfici/testo in entrambi i temi — tutte le viste (45+ file
+   JS) leggono questi token via var(), quindi si adattano da sole.
    ============================================================================ */
 
 :root{
-  --l-ink:#171b24;          /* testo principale su chiaro */
-  --l-muted:#727a8a;        /* testo secondario */
-  --l-faint:#9aa2b1;
-  --l-accent:#e0414e;       /* hinomaru, più vivido su chiaro */
+  /* ── Strutturali: identici in entrambi i temi ─────────────────────── */
+  --l-accent:#e0414e;       /* hinomaru — stesso rosso, leggibile su entrambi i fondi */
   --l-accent-600:#c8313e;
   --l-accent-soft:rgba(224,65,78,.12);
   --l-accent-brd:rgba(224,65,78,.42);
+  --l-blur:blur(30px) saturate(180%);
+  --l-blur-sm:blur(16px) saturate(160%);
+  --l-r:24px; --l-r-sm:16px;
+
+  /* ── LIGHT (default) ───────────────────────────────────────────────── */
+  --l-ink:#171b24;          /* testo principale */
+  --l-muted:#727a8a;        /* testo secondario */
+  --l-faint:#9aa2b1;        /* testo terziario/placeholder */
   --l-glass:rgba(255,255,255,.62);
   --l-glass-strong:rgba(255,255,255,.82);
   --l-border:rgba(255,255,255,.72);
   --l-hair:rgba(20,30,60,.08);
   --l-shadow:0 12px 36px rgba(28,40,71,.12);
   --l-shadow-sm:0 6px 18px rgba(28,40,71,.10);
-  --l-blur:blur(30px) saturate(180%);
-  --l-blur-sm:blur(16px) saturate(160%);
-  --l-r:24px; --l-r-sm:16px;
 
-  /* Ri-flip dei token Y2K: apple-glass.css li aveva resi CHIARI per il vetro
-     scuro (fase 1 di questa sessione). Ora i pannelli sono tornati chiari
-     (vedi FASE 2 sotto) → il testo deve tornare scuro, altrimenti è
-     chiaro-su-chiaro e sparisce. Stessa causa, direzione opposta. */
+  --l-header-bg:rgba(255,255,255,.6);
+  --l-nav-bg:var(--l-glass-strong);
+  --l-panel-shadow-hi:rgba(255,255,255,.9);
+  --l-btn-bg:rgba(20,30,60,.055);
+  --l-btn-bg-hover:rgba(20,30,60,.09);
+  --l-input-bg:rgba(20,30,60,.045);
+  --l-card-bg:#ffffff;
+  --l-card-bg-hover:#f7f8fb;
+  --l-toast-bg:rgba(28,32,42,.92);
+  --l-toast-text:#ffffff;
+  --l-toast-border:rgba(255,255,255,.12);
+  --l-scrollbar:rgba(20,30,60,.16);
+  --l-map-bg:#e7ebf2;
+  --l-backdrop:rgba(28,34,50,.28);
+  --l-bg-grad:
+    radial-gradient(120% 55% at 88% -6%, rgba(224,65,78,.16), transparent 46%),
+    radial-gradient(120% 55% at 4% 106%, rgba(74,124,240,.14), transparent 48%),
+    linear-gradient(180deg,#eef1f6,#e7ebf2);
+
+  /* Ri-flip dei token Y2K legacy: apple-glass.css li aveva resi chiari per
+     il vetro scuro pre-esistente; in tema chiaro il testo torna scuro.
+     Sono var() che puntano ai token sopra: si aggiornano da soli col tema. */
   --y2k-ink:   var(--l-ink);
   --y2k-muted: var(--l-muted);
 
-  /* ── FLIP DI SISTEMA: l'intero design system "modern-2026" (--m-*) è
-     costruito per un tema SCURO (bg #0f1218, testo #f3f5f8). Centinaia di
-     regole in tutto l'app leggono questi token con !important. Invece di
-     inseguire ogni selettore, si flippano qui i token stessi: ogni
-     `var(--m-text)` ecc. nel resto del CSS eredita automaticamente il
-     valore chiaro. Stesso principio del fix --y2k-ink sopra, a scala intera. */
+  /* Flip di sistema del design system "modern-2026" (--m-*), costruito
+     originariamente solo-scuro: centinaia di regole in tutto il CSS lo
+     leggono con !important. Qui diventa dipendente dal tema invece che
+     hardcoded, senza dover toccare quelle regole. */
   --m-bg:            #eef1f6;
   --m-bg-2:          #e7ebf2;
   --m-surface:       #ffffff;
@@ -51,68 +72,121 @@
   --m-glass-3:       #f5f6fa;
   --m-glass-brd:     var(--l-hair);
   --m-glass-hi:      rgba(255,255,255,.7);
-  /* Stati semantici: le versioni pastel erano tarate per sfondo scuro →
-     su bianco sono quasi illeggibili come testo. Stessa tinta, più profonda. */
+  /* Stati semantici: versione profonda per contrasto AA su bianco */
   --m-success: #1a9e63;
   --m-warning: #b45309;
   --m-danger:  #dc2626;
   --m-info:    #0284c7;
 }
 
-/* ── SFONDO chiaro arioso (aloni soft dietro al vetro) ─────────────────── */
+/* ── DARK: stessi token, valori per vetro scuro (il tema originale
+   dell'app prima di questo redesign — non reinventato, ripristinato) ── */
+@media (prefers-color-scheme: dark){
+  :root{
+    --l-ink:#e9edf4;
+    --l-muted:#aab3c4;
+    --l-faint:#828b99;
+    --l-glass:rgba(24,26,32,.55);
+    --l-glass-strong:rgba(28,31,38,.86);
+    --l-border:rgba(255,255,255,.14);
+    --l-hair:rgba(255,255,255,.10);
+    --l-shadow:0 10px 30px rgba(0,0,0,.40);
+    --l-shadow-sm:0 6px 18px rgba(0,0,0,.30);
+
+    --l-header-bg:rgba(14,16,22,.42);
+    --l-nav-bg:rgba(20,23,30,.86);
+    --l-panel-shadow-hi:rgba(255,255,255,.04);
+    --l-btn-bg:rgba(255,255,255,.10);
+    --l-btn-bg-hover:rgba(255,255,255,.16);
+    --l-input-bg:rgba(118,118,128,.20);
+    --l-card-bg:rgba(255,255,255,.06);
+    --l-card-bg-hover:rgba(255,255,255,.10);
+    --l-toast-bg:rgba(34,38,46,.92);
+    --l-toast-text:#ffffff;
+    --l-toast-border:rgba(255,255,255,.12);
+    --l-scrollbar:rgba(255,255,255,.18);
+    --l-map-bg:#141823;
+    --l-backdrop:rgba(6,8,12,.55);
+    --l-bg-grad:
+      radial-gradient(120% 55% at 88% -6%, rgba(224,65,78,.10), transparent 46%),
+      radial-gradient(120% 55% at 4% 106%, rgba(74,124,240,.08), transparent 48%),
+      linear-gradient(180deg,#0f1218,#141823);
+
+    --m-bg:            #0f1218;
+    --m-bg-2:          #141823;
+    --m-surface:       #1a1f2b;
+    --m-surface-2:     #222836;
+    --m-surface-3:     #2a3140;
+    --m-border:        rgba(255,255,255,.10);
+    --m-border-strong: rgba(255,255,255,.16);
+    --m-glass-2:       rgba(255,255,255,.06);
+    --m-glass-3:       rgba(255,255,255,.10);
+    --m-glass-brd:     rgba(255,255,255,.14);
+    --m-glass-hi:      rgba(255,255,255,.22);
+    --m-success: #34d399;
+    --m-warning: #fbbf24;
+    --m-danger:  #f87171;
+    --m-info:    #38bdf8;
+  }
+}
+
+/* ── SFONDO arioso (aloni soft dietro al vetro), dipende dal tema ──────── */
 html, body{
-  background:
-    radial-gradient(120% 55% at 88% -6%, rgba(224,65,78,.16), transparent 46%),
-    radial-gradient(120% 55% at 4% 106%, rgba(74,124,240,.14), transparent 48%),
-    linear-gradient(180deg,#eef1f6,#e7ebf2) !important;
+  background:var(--l-bg-grad) !important;
   color:var(--l-ink) !important;
 }
-/* Mappa: fondo chiaro sotto le tile (niente vuoto scuro mentre caricano) */
-#map{ background:#e7ebf2 !important; }
-/* Empty-state mappa: testo scuro leggibile sul chiaro */
+#map{ background:var(--l-map-bg) !important; }
 #map-empty-state{ color:var(--l-ink) !important; }
 #map-empty-state h2{ color:var(--l-ink) !important; }
 #map-empty-state p, #map-empty-state span{ color:var(--l-muted) !important; }
 
 /* ════════════════════════════════════════════════════════════════
-   HEADER — barra superiore chiara
+   HEADER — barra superiore, compatta
    ════════════════════════════════════════════════════════════════ */
 header{
-  background:rgba(255,255,255,.6) !important;
+  background:var(--l-header-bg) !important;
   -webkit-backdrop-filter:var(--l-blur) !important; backdrop-filter:var(--l-blur) !important;
   border-bottom:1px solid var(--l-hair) !important;
   box-shadow:none !important;
-  /* Notch/status-bar (mobile): header è position:relative (flow normale), quindi
-     aumentare il suo padding-top sposta correttamente tutto sotto senza rompere
-     nulla. #filters però ha "top:56px" hardcoded inline in index.html — va
-     esteso della stessa quantità qui sotto, altrimenti si sovrappone all'header
-     più alto sui device con notch. */
-  padding-top:calc(24px + env(safe-area-inset-top,0px)) !important;
+  /* Notch/status-bar (mobile, sempre attivo indipendentemente dal tema):
+     header è position:relative (flow normale), aumentarne il padding-top
+     sposta tutto sotto senza rompere nulla. #filters ha "top:56px"
+     hardcoded inline in index.html → esteso della stessa quantità sotto. */
+  padding-top:calc(16px + env(safe-area-inset-top,0px)) !important;
+  padding-bottom:10px !important;
 }
-header h1{ color:var(--l-ink) !important; }
+header h1{ color:var(--l-ink) !important; font-size:19px !important; }
+#filters{ top:calc(48px + env(safe-area-inset-top,0px)) !important; }
 
-/* #filters: "top:56px" inline assume l'altezza header senza notch → estesa qui */
-#filters{ top:calc(56px + env(safe-area-inset-top,0px)) !important; }
-
-/* Ricerca + lingua: pill frosted chiare */
+/* Ricerca + lingua: pill frosted, più compatte */
 #global-search-btn, #lang-switcher{
   background:var(--l-glass-strong) !important;
   border:1px solid var(--l-border) !important;
   color:var(--l-ink) !important;
   -webkit-backdrop-filter:var(--l-blur-sm) !important; backdrop-filter:var(--l-blur-sm) !important;
   box-shadow:var(--l-shadow-sm) !important;
+  padding:5px 9px !important;
+  font-size:13px !important;
 }
-#global-search-btn{ border-radius:999px !important; }
+#global-search-btn{ border-radius:999px !important; min-width:32px !important; }
 #global-search-btn:hover{ background:var(--l-accent-soft) !important; }
 #lang-switcher option{ color:#171b24; }
+/* Bottone install/aggiungi: allineato in dimensione al resto dell'header,
+   non più grande degli altri controlli (era percepito come sproporzionato) */
+#universal-install-btn{
+  padding:7px 12px !important;
+  font-size:12.5px !important;
+}
 
 /* ════════════════════════════════════════════════════════════════
-   FILTRI — chip frosted chiare, attiva rossa
+   FILTRI — chip più compatte, meno densità visiva
    ════════════════════════════════════════════════════════════════ */
 #filters{
   background:transparent !important;
   -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
   border-bottom:none !important;
+  gap:6px !important;
+  padding:6px 12px !important;
 }
 #filters button.chip, #filters .chip, .chip{
   background:var(--l-glass-strong) !important;
@@ -121,6 +195,8 @@ header h1{ color:var(--l-ink) !important; }
   -webkit-backdrop-filter:var(--l-blur-sm) !important; backdrop-filter:var(--l-blur-sm) !important;
   box-shadow:var(--l-shadow-sm) !important;
   font-weight:600 !important;
+  padding:6px 12px !important;
+  font-size:12.5px !important;
 }
 #filters button.chip.active, #filters .chip.active, .chip.active, .chip[aria-pressed="true"]{
   background:var(--l-accent) !important;
@@ -130,7 +206,7 @@ header h1{ color:var(--l-ink) !important; }
 }
 
 /* ════════════════════════════════════════════════════════════════
-   BOTTOM NAV — pill flottante chiara (stile iOS/visionOS)
+   BOTTOM NAV — pill flottante
    ════════════════════════════════════════════════════════════════ */
 nav.bottom{
   position:fixed !important;
@@ -140,7 +216,7 @@ nav.bottom{
   height:auto !important;
   padding:9px 8px !important;
   border-radius:26px !important;
-  background:var(--l-glass-strong) !important;
+  background:var(--l-nav-bg) !important;
   -webkit-backdrop-filter:var(--l-blur) !important; backdrop-filter:var(--l-blur) !important;
   border:1px solid var(--l-border) !important;
   border-top:1px solid var(--l-border) !important;
@@ -162,13 +238,11 @@ nav.bottom button.active{
 nav.bottom button.active span{ color:var(--l-accent) !important; }
 
 /* ════════════════════════════════════════════════════════════════
-   SHELL widgets — empty-state mappa, meteo (su chiaro)
+   SHELL widgets — empty-state mappa, meteo
    ════════════════════════════════════════════════════════════════ */
-/* Empty state "Nessun POI": testo scuro leggibile sulla mappa chiara */
 #map ~ * .ol-empty-overlay,
 #map-empty-overlay h2{ color:var(--l-ink) !important; }
 
-/* Meteo widget: card chiara frosted (coerente con la shell) */
 #weather-floating #weather-card{
   background:var(--l-glass-strong) !important;
   border:1px solid var(--l-border) !important;
@@ -183,18 +257,12 @@ nav.bottom button.active span{ color:var(--l-accent) !important; }
   color:var(--l-accent) !important;
 }
 
-/* Offline banner su chiaro */
 #offline-banner{ color:var(--l-ink) !important; }
 
-/* Focus ring coerente */
 :focus-visible{ outline:2.5px solid var(--l-accent) !important; outline-offset:2px !important; }
 
 /* ════════════════════════════════════════════════════════════════
-   FASE 2 — PANNELLI: flip .y2k-win da vetro scuro a vetro chiaro
-   Questo è il contenitore condiviso da OGNI schermata (budget, gruppo,
-   GF, menu, itinerario…): convertirlo qui cambia veste a tutta l'app
-   in un colpo solo. Il contenuto inline-styled dentro va corretto
-   vista-per-vista (agenti dedicati), ma la base ora è chiara.
+   PANNELLI (.y2k-win / .sheet) — contenitore condiviso da ogni vista
    ════════════════════════════════════════════════════════════════ */
 .y2k-win{
   background:var(--l-glass) !important;
@@ -202,7 +270,7 @@ nav.bottom button.active span{ color:var(--l-accent) !important; }
   border:1px solid var(--l-border) !important;
   border-bottom:none !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 1px 0 var(--l-panel-shadow-hi),
     0 -18px 60px rgba(28,40,71,.22) !important;
   color:var(--l-ink) !important;
 }
@@ -212,16 +280,15 @@ nav.bottom button.active span{ color:var(--l-accent) !important; }
   color:var(--l-ink) !important;
 }
 .y2k-win-title span, .y2k-win-title h2{ color:var(--l-ink) !important; }
-.y2k-win-title::before{ background:rgba(20,30,60,.16) !important; }
+.y2k-win-title::before{ background:rgba(128,128,140,.3) !important; }
 .y2k-win-close{
-  background:rgba(20,30,60,.06) !important;
+  background:rgba(128,128,140,.14) !important;
   color:var(--l-muted) !important;
 }
 .y2k-win-close:hover{ background:var(--l-accent) !important; color:#fff !important; }
-.panel-backdrop{ background:rgba(28,34,50,.28) !important; -webkit-backdrop-filter:blur(6px) !important; backdrop-filter:blur(6px) !important; }
+.panel-backdrop{ background:var(--l-backdrop) !important; -webkit-backdrop-filter:blur(6px) !important; backdrop-filter:blur(6px) !important; }
 #map.blur{ filter:blur(6px) brightness(0.94) saturate(105%) !important; }
 
-/* .sheet (sistema pannelli legacy, usato da alcune viste in parallelo a .y2k-win) */
 .sheet-inner{
   background:var(--l-glass) !important;
   -webkit-backdrop-filter:var(--l-blur) !important; backdrop-filter:var(--l-blur) !important;
@@ -230,21 +297,21 @@ nav.bottom button.active span{ color:var(--l-accent) !important; }
 }
 .sheet-header{ border-bottom:1px solid var(--l-hair) !important; }
 #sheet-title{ color:var(--l-ink) !important; }
-.sheet .sheet-handle{ background:rgba(20,30,60,.16) !important; }
-#sheet-close{ background:rgba(20,30,60,.06) !important; color:var(--l-muted) !important; }
+.sheet .sheet-handle{ background:rgba(128,128,140,.3) !important; }
+#sheet-close{ background:rgba(128,128,140,.14) !important; color:var(--l-muted) !important; }
 
-/* ── BOTTONI dentro i pannelli: da overlay bianco-su-scuro a overlay scuro-su-chiaro ── */
+/* ── BOTTONI dentro i pannelli ── */
 .btn,
 .y2k-win-body button:not(.btn-cta):not(.y2k-win-close):not(.menu-drawer-item),
 .sheet-body button:not(.y2k-win-close):not(.menu-drawer-item){
-  background:rgba(20,30,60,.055) !important;
+  background:var(--l-btn-bg) !important;
   border:1px solid var(--l-hair) !important;
   color:var(--l-ink) !important;
 }
 .btn:hover,
 .y2k-win-body button:not(.btn-cta):not(.y2k-win-close):not(.menu-drawer-item):hover,
 .sheet-body button:hover{
-  background:rgba(20,30,60,.09) !important;
+  background:var(--l-btn-bg-hover) !important;
 }
 .btn.primary, .btn-primary, .btn-cta,
 .y2k-win-body .btn.primary, .y2k-win-body .btn-cta{
@@ -255,13 +322,13 @@ nav.bottom button.active span{ color:var(--l-accent) !important; }
 .btn.primary:hover, .btn-primary:hover, .btn-cta:hover,
 .y2k-win-body .btn-cta:hover{ background:var(--l-accent-600) !important; }
 
-/* ── INPUT nei pannelli: campo chiaro "inset" ── */
+/* ── INPUT nei pannelli ── */
 .y2k-win-body input[type="text"], .y2k-win-body input[type="number"],
 .y2k-win-body input[type="email"], .y2k-win-body input[type="password"],
 .y2k-win-body input[type="search"], .y2k-win-body input[type="date"],
 .y2k-win-body input[type="time"], .y2k-win-body textarea, .y2k-win-body select,
 .sheet-body input, .sheet-body textarea, .sheet-body select{
-  background:rgba(20,30,60,.045) !important;
+  background:var(--l-input-bg) !important;
   border:1px solid var(--l-hair) !important;
   color:var(--l-ink) !important;
 }
@@ -271,60 +338,58 @@ nav.bottom button.active span{ color:var(--l-accent) !important; }
   box-shadow:0 0 0 3.5px var(--l-accent-soft) !important;
 }
 
-/* ── CARD sul vetro chiaro (poi-row, stat-card, expense-item, …) ── */
+/* ── CARD sul vetro (poi-row, stat-card, expense-item, …) ── */
 .y2k-win-body .poi-row, .poi-row, .shop-card, .booking-card,
 .gallery-photo-card, .expense-item, .weather-forecast-card, .weather-day,
 .y2k-win-body .section, .section, .gf-box, .groq-panel, .m-card, .m-card-2,
 .stat-card, .category-row, .budget-setup-banner, .budget-header,
 .budget-form-section, .budget-expenses-section, .budget-categories,
 .group-member-card, .gf-place-card{
-  background:#fff !important;
+  background:var(--l-card-bg) !important;
   border:1px solid var(--l-hair) !important;
   box-shadow:0 2px 10px rgba(28,40,71,.06) !important;
   color:var(--l-ink) !important;
 }
 .y2k-win-body .poi-row:hover, .poi-row:hover, .shop-card:hover, .booking-card:hover{
-  background:#f7f8fb !important;
+  background:var(--l-card-bg-hover) !important;
 }
 
-/* Voci del menu drawer — #y2kwin-menu è figlio diretto di <body> (fuori da #app),
-   NON scoperchiare con #app: non matcherebbe mai. Classe piana, ultima nel file = vince. */
+/* Voci del menu drawer — #y2kwin-menu è figlio diretto di <body> (fuori da #app) */
 .menu-drawer-item{
-  background-color:#fff !important;
+  background-color:var(--l-card-bg) !important;
   background-image:none !important;
   border:1px solid var(--l-hair) !important;
   box-shadow:0 2px 8px rgba(28,40,71,.05) !important;
   color:var(--l-ink) !important;
 }
-.menu-drawer-item:hover{ background-color:#f5f6fa !important; }
+.menu-drawer-item:hover{ background-color:var(--l-card-bg-hover) !important; }
 #app .menu-drawer-item span{ color:inherit !important; }
 
-/* Toast su chiaro */
+/* Toast */
 #toast-container.show{
-  background:rgba(28,32,42,.92) !important;
-  color:#fff !important;
+  background:var(--l-toast-bg) !important;
+  color:var(--l-toast-text) !important;
   -webkit-backdrop-filter:var(--l-blur-sm) !important; backdrop-filter:var(--l-blur-sm) !important;
-  border:1px solid rgba(255,255,255,.12) !important;
+  border:1px solid var(--l-toast-border) !important;
 }
 
-/* Scrollbar su chiaro */
-::-webkit-scrollbar-thumb{ background:rgba(20,30,60,.16) !important; }
+::-webkit-scrollbar-thumb{ background:var(--l-scrollbar) !important; }
 
 /* ════════════════════════════════════════════════════════════════
    FALLBACK — niente backdrop-filter: superfici quasi opache
    ════════════════════════════════════════════════════════════════ */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  header{ background:rgba(248,250,253,.96) !important; }
-  nav.bottom{ background:rgba(255,255,255,.97) !important; }
-  #weather-floating #weather-card{ background:rgba(255,255,255,.97) !important; }
-  .y2k-win, .sheet-inner{ background:rgba(248,250,253,.98) !important; }
+  header{ background:var(--l-header-bg) !important; }
+  nav.bottom{ background:var(--l-nav-bg) !important; }
+  #weather-floating #weather-card{ background:var(--l-glass-strong) !important; }
+  .y2k-win, .sheet-inner{ background:var(--l-glass-strong) !important; }
 }
 
 /* ════════════════════════════════════════════════════════════════
    USCITA PANNELLO — simmetrica all'entrata "m-sheet-up" (modern-2026.css),
-   riusata al contrario invece di una nuova keyframe: stessa curva, stesso
-   feeling, diff minimo. prefers-reduced-motion la azzera già globalmente
-   (regola universale in modern-2026.css), niente da aggiungere qui.
+   riusata al contrario invece di una nuova keyframe. Sempre attiva,
+   indipendente dal tema. prefers-reduced-motion la azzera già
+   globalmente (regola universale in modern-2026.css).
    ════════════════════════════════════════════════════════════════ */
 .y2k-win-closing{
   animation:m-sheet-up .22s var(--m-ease) reverse forwards !important;

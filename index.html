@@ -17,11 +17,13 @@
 <script defer src="./js/api-quota.js"></script>
 <!-- 2026 Core Web Vitals Optimization -->
 <meta name="supported-color-schemes" content="light dark" />
-<meta name="color-scheme" content="light" />
-<meta name="theme-color" content="#eef1f6" />
+<!-- Nessun toggle manuale in-app: il tema segue SEMPRE prefers-color-scheme di sistema -->
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0f1218" media="(prefers-color-scheme: dark)" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Tabi" />
 <meta name="description" content="Travel companion Giappone 2027 — mappa interattiva, gluten-free, itinerario, offline." />
 <link rel="manifest" href="./manifest.webmanifest" />
