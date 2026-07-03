@@ -338,6 +338,20 @@ nav.bottom button.active span{ color:var(--l-accent) !important; }
   box-shadow:0 0 0 3.5px var(--l-accent-soft) !important;
 }
 
+/* Il pannello (.y2k-win) È GIÀ la superficie di vetro: .budget-container
+   (base.css) aveva un proprio bg/bordo/raggio, quindi il primo figlio
+   (.budget-header, anch'esso boxed) appariva come una "seconda finestra"
+   annidata dentro la prima. Niente doppia cornice: il container torna un
+   wrapper piatto, ogni sezione sotto resta la sua unica card. */
+.budget-container{
+  background:transparent !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  border:none !important;
+  box-shadow:none !important;
+  border-radius:0 !important;
+}
+
 /* ── CARD sul vetro (poi-row, stat-card, expense-item, …) ── */
 .y2k-win-body .poi-row, .poi-row, .shop-card, .booking-card,
 .gallery-photo-card, .expense-item, .weather-forecast-card, .weather-day,
