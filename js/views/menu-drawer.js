@@ -14,6 +14,7 @@
     const T = window.t || ((k, f) => f || k);
     const menuItems = [
       { label: T('menu.wishlist', 'Wishlist GF del gruppo'), icon: '🗳️', view: 'gf-wishlist', style: 'color: #4ade80; background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.3);' },
+      { label: T('menu.tickets', 'Biglietti'), icon: '🎫', view: 'tickets' },
       { label: T('menu.bookings', 'Prenota'), icon: '📅', view: 'bookings' },
       { label: T('menu.shopping', 'Shopping'), icon: '🛍️', view: 'shopping' },
       { label: T('menu.group', 'Gruppo'), icon: '👥', view: 'group' },
@@ -28,8 +29,14 @@
       { label: T('menu.search', 'Cerca ovunque'), icon: '🔍', view: 'global-search' },
       { label: T('menu.battery', 'Risparmio batteria') + (window.BatterySaver?.isOn?.() ? ' ✓' : ''), icon: '🔋', view: 'battery-saver' },
       { label: T('menu.reminders', 'Promemoria Tappe'), icon: '🔔', view: 'reminders' },
-      { label: T('menu.jrpass', 'Conviene il JR Pass?'), icon: '🚄', view: 'jr-pass' },
-      { label: T('menu.japanCal', 'Calendario Giappone'), icon: '📅', view: 'japan-cal' },
+      // Plugin destinazione: JR Pass e calendario festività hanno senso solo
+      // per un viaggio in Giappone. Nessun campo "destinazione" esplicito in
+      // tripProfile → si deduce dalle tappe già in itinerario (o dall'ultima
+      // vista mappa), vedi window.isJapanTrip() in state.js.
+      ...(window.isJapanTrip?.() !== false ? [
+        { label: T('menu.jrpass', 'Conviene il JR Pass?'), icon: '🚄', view: 'jr-pass' },
+        { label: T('menu.japanCal', 'Calendario Giappone'), icon: '📅', view: 'japan-cal' },
+      ] : []),
       { label: T('menu.groqai', 'Groq AI'), icon: '🤖', view: 'groq-menu' },
       { label: T('menu.suggest', 'Suggerisci Posti'), icon: '💡', view: 'gf-suggest' },
       { label: T('menu.createTrip', 'Voglio creare il mio viaggio'), icon: '✏️', view: 'create-trip', style: 'color: var(--m-accent); background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3);' },
@@ -99,6 +106,7 @@
             else if (view === 'gf-wishlist') { window.GFWishlist?.openPanel?.(); }
             else if (view === 'group-expenses') { window.GroupExpenses?.openPanel?.(); }
             else if (view === 'group-checklist') { window.GroupChecklist?.openPanel?.(); }
+            else if (view === 'tickets') { window.loadScript('./js/views/tickets-view.js').then(() => window.renderTicketsVault?.()); }
             else if (view === 'bookings') { window.loadScript('./js/views/bookings-view.js').then(() => window.renderBookingsView?.()); }
             else if (view === 'shopping') { window.renderShoppingView?.(); }
             else if (view === 'group') { window.renderGroupView?.(); }
@@ -118,7 +126,7 @@
             else if (view === 'gf-toggle') { window.setGFEnabled?.(!window.isGFEnabled?.()); window.toast?.(window.isGFEnabled?.() ? '🌾 Guida Gluten-Free attiva' : 'Guida Gluten-Free nascosta'); }
             else if (view === 'reminders') { window.loadScript('./js/itinerary-reminders.js').then(() => window.openItineraryReminders?.()); }
             else if (view === 'jr-pass') { window.loadScript('./js/jr-pass-calculator.js').then(() => window.openJRPassPanel?.()); }
-            else if (view === 'japan-cal') { window.JapanCalendarHints?.openPanel?.(); }
+            else if (view === 'japan-cal') { window.loadScript('./js/japan-calendar-hints.js').then(() => window.JapanCalendarHints?.openPanel?.()); }
             else if (view === 'groq-menu') { window.openGroqPanel(); }
             else if (view === 'gf-suggest') { window.openGFSuggestionPanel(); }
             else if (view === 'sos') { window.loadScript('./js/views/sos-view.js').then(() => window.renderSOSPanel?.()); }

@@ -34,6 +34,34 @@
     return poi ? (poi.name || poi.title) : (T('tl.unknown', 'Tappa'));
   }
 
+  // Indice del giorno che corrisponde a OGGI, se tripProfile.startDate è nota
+  function todayDayIndex() {
+    const start = window.state?.tripProfile?.startDate;
+    if (!start) return null;
+    const s = new Date(start + 'T00:00:00');
+    if (isNaN(s)) return null;
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((now - s) / 86400000);
+    return diffDays >= 0 ? diffDays : null;
+  }
+
+  // Prossima tappa non ancora iniziata nel giorno di oggi, con countdown "tra Xh Ym"
+  function nextStopCountdown(entries) {
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    for (const e of entries) {
+      const m = /^(\d{1,2}):(\d{2})$/.exec(e.time || '');
+      if (!m) continue;
+      const stopMin = Number(m[1]) * 60 + Number(m[2]);
+      if (stopMin >= nowMin) {
+        const delta = stopMin - nowMin;
+        const h = Math.floor(delta / 60), mm = delta % 60;
+        return { poi_id: e.poi_id, label: h > 0 ? `tra ${h}h${mm ? ' ' + mm + 'm' : ''}` : `tra ${mm}m` };
+      }
+    }
+    return null;
+  }
+
   function renderTimelineView() {
     const byDay = window.state?.itineraryByDay || {};
     const days = Object.keys(byDay)
@@ -49,20 +77,26 @@
           <div style="font-size:14px;">${esc(T('tl.empty', 'Nessuna tappa in itinerario. Aggiungi tappe dai POI sulla mappa!'))}</div>
         </div>`;
     } else {
+      const todayIdx = todayDayIndex();
       const blocks = days.map(d => {
+        const isToday = d === todayIdx;
         const entries = [...byDay[d]].sort((a, b) => String(a.time || '99:99').localeCompare(String(b.time || '99:99')));
         const totMin = entries.reduce((s, e) => s + (Number(e.duration) || 0), 0);
         const dateStr = dayDate(d);
+        const next = isToday ? nextStopCountdown(entries) : null;
         const stops = entries.map(e => {
           const status = e.status === 'done' ? '✅' : (e.status === 'approved' ? '👍' : '');
+          const isNext = next && e.poi_id === next.poi_id;
           return `
             <button class="tl-stop" data-poi="${esc(e.poi_id || '')}" style="
               display:flex; align-items:center; gap:10px; width:100%; text-align:left;
-              background:rgba(20,30,60,0.04); border:1px solid var(--l-hair);
+              background:${isNext ? 'var(--l-accent-soft)' : 'rgba(20,30,60,0.04)'};
+              border:1px solid ${isNext ? 'var(--l-accent-brd)' : 'var(--l-hair)'};
               border-radius:10px; padding:10px 12px; color:var(--l-ink);
               font-size:13px; cursor:pointer; margin-bottom:6px;">
               <span style="min-width:46px; font-weight:700; color:var(--l-accent); font-size:12px;">${esc(e.time || '—')}</span>
               <span style="flex:1;">${esc(resolveName(e))}</span>
+              ${isNext ? `<span style="font-size:11px; font-weight:700; color:var(--l-accent);">⏱ ${esc(next.label)}</span>` : ''}
               ${e.duration ? `<span style="font-size:11px; color:var(--l-muted);">${esc(e.duration)} ${esc(T('tl.min', 'min'))}</span>` : ''}
               ${status ? `<span>${status}</span>` : ''}
             </button>`;
@@ -74,6 +108,7 @@
                         background:var(--l-accent); border:3px solid #fff;"></div>
             <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
               <span style="font-weight:800; font-size:15px; color:var(--l-ink);">${esc(T('tl.day', 'Giorno'))} ${d + 1}</span>
+              ${isToday ? `<span style="font-size:10px; font-weight:700; color:#fff; background:var(--l-accent); padding:2px 8px; border-radius:999px;">${esc(T('tl.today', 'OGGI'))}</span>` : ''}
               ${dateStr ? `<span style="font-size:12px; color:var(--l-muted);">${esc(dateStr)}</span>` : ''}
               <span style="margin-left:auto; font-size:11px; color:var(--l-faint);">
                 ${entries.length} ${esc(T('tl.stops', 'tappe'))}${totMin ? ` · ~${Math.round(totMin / 60 * 10) / 10}h` : ''}

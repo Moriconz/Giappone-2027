@@ -129,4 +129,25 @@ window.setGFEnabled = function (on) {
   if (!on) document.querySelector('nav.bottom button[data-view="map"]')?.click?.();
 };
 
+// ── Rilevamento "viaggio in Giappone" per i plugin destinazione (JR Pass,
+// calendario festività). Non c'è un campo destinazione esplicito in
+// tripProfile: si riusa la stessa bounding-box già presente in
+// google-places-loader.js (getZoneFromCoordinates/JAPAN_ZONES), applicata
+// alle tappe già in itinerario o, in mancanza, all'ultima vista mappa. ─
+window.isJapanTrip = function () {
+  try {
+    const ibd = window.state?.itineraryByDay || {};
+    const stops = Object.values(ibd).flat().filter(e => typeof e.lat === 'number' && typeof e.lng === 'number');
+    if (stops.length && typeof window.getZoneFromCoordinates === 'function') {
+      return stops.some(s => !!window.getZoneFromCoordinates(s.lat, s.lng));
+    }
+    // Nessuna tappa con coordinate ancora: guarda l'ultima vista mappa
+    const mv = JSON.parse(localStorage.getItem('gj2027_map_view') || 'null');
+    if (mv && typeof mv.lat === 'number' && typeof mv.lng === 'number') {
+      return mv.lat >= 24 && mv.lat <= 46 && mv.lng >= 122 && mv.lng <= 146;
+    }
+    return true; // nessun segnale: default storico dell'app (Giappone)
+  } catch (_) { return true; }
+};
+
 console.log('[State] Initialized. Keys:', Object.keys(window.state).length);

@@ -835,6 +835,10 @@ function initOnboardingForm() {
       window.saveState?.();
     }
 
+    // Il form ha già l'opzione "senza glutine" tra i vincoli alimentari,
+    // ma finora non era collegata al toggle GF reale (menu → isGFEnabled).
+    if (tripProfile.diet === 'gluten-free') window.setGFEnabled?.(true);
+
     // Signal post-onboarding tip on next load
     sessionStorage.setItem('gj_onboarding_just_done', '1');
 

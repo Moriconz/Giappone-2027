@@ -269,14 +269,19 @@
               ${db.expenses.slice(-5).reverse().map((exp) => {
                 const catInfo = EXPENSE_CATEGORIES.find(c => c.id === exp.category) || EXPENSE_CATEGORIES[0];
                 const date = new Date(exp.date).toLocaleDateString('it-IT');
+                // Cambio congelato: se la spesa fu inserita in una valuta diversa da
+                // quella oggi selezionata, mostra quanto fu pagato davvero all'origine.
+                const originalHint = (exp.entryCurrency && exp.entryCurrency !== db.currency)
+                  ? ` · ${CURRENCIES[exp.entryCurrency]?.symbol || exp.entryCurrency}${exp.entryAmount}`
+                  : '';
                 return `
                   <div class="expense-item">
                     <div style="flex:1;min-width:0">
-                      <div style="font-weight:700;color:#fff;font-size:11px;margin-bottom:1px">${exp.description || catInfo.name}</div>
-                      <div style="font-size:12px;color:rgba(255,255,255,0.6)">${date}</div>
+                      <div style="font-weight:700;color:var(--l-ink);font-size:11px;margin-bottom:1px">${exp.description || catInfo.name}</div>
+                      <div style="font-size:12px;color:var(--l-muted)">${date}${originalHint}</div>
                     </div>
                     <div style="text-align:right;flex-shrink:0">
-                      <div style="font-weight:700;color:#fff;font-size:12px">${displayCurr(exp.amount)}</div>
+                      <div style="font-weight:700;color:var(--l-ink);font-size:12px">${displayCurr(exp.amount)}</div>
                       <button class="expense-delete-btn" data-expense-index="${db.expenses.indexOf(exp)}" style="background:none;border:none;color:#FF6B6B;font-size:12px;cursor:pointer;font-weight:700;text-decoration:underline;padding:0;margin-top:1px">${T('common.delete')}</button>
                     </div>
                   </div>
@@ -322,6 +327,11 @@
             amount:      jpyAmount,
             description,
             date:        new Date().toISOString(),
+            // Cambio congelato: l'importo JPY sopra è già immutabile (convertito una
+            // volta sola all'inserimento), ma senza questi due campi si perde per
+            // sempre "quanto hai pagato davvero" se poi cambi valuta di visualizzazione.
+            entryCurrency: db.currency,
+            entryAmount:   amount,
           });
 
           saveBudgetDB(db);
