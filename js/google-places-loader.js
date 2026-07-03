@@ -189,9 +189,16 @@ async function loadNearbyPOIs(lat, lng) {
       continue;
     }
 
-    // Load from API
+    // Load from API — prova prima OSM (gratuito), fallback su Google se insufficiente
     console.log(`[GooglePlacesLoader] Fetching from API: ${radiusM}m`);
-    const pois = await fetchGooglePlacesPOIs(lat, lng, radiusM);
+    let pois = null;
+    const osmPois = await window.NominatimLoader?.fetchNearbyPOIs(lat, lng, radiusM);
+    if (osmPois && osmPois.length >= 5) {
+      console.log(`[GooglePlacesLoader] Using OSM/Overpass results: ${osmPois.length} POIs (skip Google)`);
+      pois = osmPois;
+    } else {
+      pois = await fetchGooglePlacesPOIs(lat, lng, radiusM);
+    }
 
     if (pois && pois.length > 0) {
       loadedRadii.add(key);

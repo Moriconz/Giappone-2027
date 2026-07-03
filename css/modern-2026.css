@@ -489,6 +489,9 @@ header {
 .y2k-win-body p, .y2k-win-body li, .y2k-win-body div,
 .y2k-win-body span, .y2k-win-body label { color: var(--m-text-2) !important; }
 .y2k-win-body strong { color: var(--m-text) !important; }
+/* badge closing-warning: colore semantico deve battere il div generico sopra */
+.y2k-win-body .itin-closing-warning.is-closed { color: var(--m-danger) !important; }
+.y2k-win-body .itin-closing-warning.is-closing-soon { color: var(--m-warning) !important; }
 /* same overrides for legacy .sheet-body / .sheet-inner containers */
 .sheet-body h1, .sheet-inner h1,
 .sheet-body h2, .sheet-inner h2,

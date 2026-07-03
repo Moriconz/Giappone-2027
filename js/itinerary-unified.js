@@ -124,6 +124,18 @@ function renderItineraryUnified() {
             </div>`;
           })() : ''}
 
+          <!-- ROW 4bis: Warning "arrivo/uscita a chiuso" (solo se abbiamo opening_periods strutturati) -->
+          ${(() => {
+            const w = window.getEntryClosingWarning?.(dayIndex, entry, tripProfile.startDate);
+            if (!w) return '';
+            const color = w.severity === 'closed' ? 'var(--m-danger)' : 'var(--m-warning)';
+            const severityClass = w.severity === 'closed' ? 'is-closed' : 'is-closing-soon';
+            return `
+            <div class="itin-closing-warning ${severityClass}" style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:color-mix(in srgb, ${color} 14%, transparent);border:1px solid color-mix(in srgb, ${color} 40%, transparent);border-radius:6px;font-size:12px;font-weight:600">
+              ⚠️ ${w.message}
+            </div>`;
+          })()}
+
           <!-- ROW 4: Opening hours + Price level (if enriched) -->
           ${(entry.opening_hours || entry.price_level) ? `
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">

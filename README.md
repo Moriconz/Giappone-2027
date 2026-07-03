@@ -194,17 +194,25 @@ ogni item sotto è stato verificato contro il codice reale, non assunto.
   → `itinerary-features.js`. Nel farlo, trovato e corretto un bug reale: il
   bottone "Elimina" su un itinerario di gruppo cancellava solo in locale,
   senza notificare gli altri membri né aggiornare lo stato di condivisione.
-- [ ] **Warning orario chiusura POI** (arrivi dopo che il luogo ha chiuso) —
-  verificato: il dato `opening_hours` esiste nello schema tappa ma non è mai
-  popolato dal caricamento POI. Richiederebbe parsing del formato orari
-  Google Places + calcolo orario di arrivo cumulativo — feature vera, non un
-  collegamento veloce. Rimandato di proposito, non dimenticato.
-- [ ] **Migrazione ricerca → Nominatim/Overpass** per un free-tier 100% —
-  confermato sconsigliato (perderebbe foto e orari). Verificata un'alternativa
-  ibrida realistica (Nominatim gratis per la ricerca nearby, Google solo sui
-  dettagli aperti dall'utente): stima **-70% di costo**, non implementata
-  perché tocca le funzioni serverless e non è testabile senza un deploy Vercel
-  reale — da fare con un ciclo di test in produzione, non alla cieca.
+- [x] ~~Warning orario chiusura POI~~ — fatto. La causa era un bug reale, non
+  mancanza di dati: `poi-enrichment.js` cercava `window.googlePlacesDetailsClient`
+  (minuscolo) mentre il modulo espone `window.GooglePlacesDetailsClient`
+  (maiuscolo), quindi l'arricchimento orari non è mai partito finché non
+  corretto. Aggiunto anche il parsing dei `periods` strutturati di Google
+  (invece del solo testo `weekday_text`, inutilizzabile per confronti) e un
+  badge sulla tappa quando l'orario di arrivo o fine visita cade fuori
+  apertura. Verificato con 4 casi (aperto, chiuso, chiude a breve, dati
+  assenti → nessun falso allarme) e a occhio in chiaro/scuro.
+- [x] ~~Migrazione ricerca → Nominatim/Overpass~~ — fatto, come ibrido non
+  distruttivo: Overpass API tentato per primo per la scoperta POI vicini
+  (gratuito, via browser, nessuna funzione serverless toccata), fallback su
+  Google Places solo se i risultati sono insufficienti (<5) o il servizio
+  pubblico è sotto carico. Verificato con richieste reali riuscite (166 POI
+  intorno a Kyoto Station, nomi e categorie corretti) e con un fallimento
+  reale (504 Gateway Timeout dell'istanza pubblica, gestito correttamente
+  col fallback). Risparmio atteso Google Places: 80-90% in aree urbane dense
+  a buona copertura OSM, minore in zone rurali/periferiche dove OSM ha meno
+  dati. Escape hatch: `localStorage.setItem('disableNominatimHybrid','true')`.
 - Verificata e scartata: una cache aggiuntiva "per città" per ridurre le
   chiamate Google — già coperta dalla cache esistente (coordinate + IndexedDB
   con TTL). Aggiungerne un'altra sarebbe stata complessità ridondante.
@@ -418,17 +426,25 @@ was checked against the real codebase, not assumed.
   While doing it, found and fixed a real bug: the "Delete" button on a shared group
   itinerary only deleted locally, without notifying other members or updating
   share-tracking state.
-- [ ] **POI closing-time warning** (arriving after a place has closed) — checked:
-  the `opening_hours` field exists on the stop schema but is never populated when
-  a POI is loaded. Would need parsing Google Places' hours format plus cumulative
-  arrival-time computation — a real feature, not a quick wire-up. Deliberately
-  deferred, not forgotten.
-- [ ] **Search migration → Nominatim/Overpass** for a 100% free tier — confirmed
-  not recommended (would lose photos and hours). Checked a realistic hybrid
-  (Nominatim for free nearby search, Google only for user-opened details):
-  estimated **-70% cost**, not implemented because it touches serverless functions
-  and isn't testable without a real Vercel deploy — needs a production test loop,
-  not a blind edit.
+- [x] ~~POI closing-time warning~~ — done. The real cause was a bug, not
+  missing data: `poi-enrichment.js` looked for `window.googlePlacesDetailsClient`
+  (lowercase) while the module exposes `window.GooglePlacesDetailsClient`
+  (capitalized), so hours enrichment never actually ran until fixed. Also
+  added parsing of Google's structured `periods` (instead of only the
+  `weekday_text` string, unusable for real comparisons) and a badge on the
+  stop when arrival or end-of-visit time falls outside opening hours.
+  Verified with 4 cases (open, closed, closing soon, no data → no false
+  alarm) and visually in both light/dark.
+- [x] ~~Search migration → Nominatim/Overpass~~ — done, as a non-destructive
+  hybrid: Overpass API tried first for nearby-POI discovery (free, from the
+  browser, no serverless function touched), falling back to Google Places
+  only when results are insufficient (<5) or the public service is under
+  load. Verified with real successful requests (166 POIs around Kyoto
+  Station, correct names and categories) and a real failure case (504
+  Gateway Timeout from the public instance, correctly handled by the
+  fallback). Expected Google Places savings: 80-90% in dense urban areas
+  with good OSM coverage, less in rural/peripheral areas with sparser OSM
+  data. Escape hatch: `localStorage.setItem('disableNominatimHybrid','true')`.
 - Checked and discarded: an additional "per-city" cache to cut Google calls —
   already covered by the existing coordinate + IndexedDB TTL cache. A second one
   would have been redundant complexity.

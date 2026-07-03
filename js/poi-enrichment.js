@@ -24,11 +24,13 @@ const POI_ENRICHMENT = {
 
     const extracted = {
       opening_hours: null,
+      opening_periods: null,
       price_level: null,
       ticket_cost: null
     };
 
-    // Opening hours: prefer businessHours (structured) over currentOpeningHours (text)
+    // Opening hours: businessHours non è mai restituito dall'endpoint (vedi api/googlePlacesDetails.js
+    // fieldMask, che chiede solo currentOpeningHours) — tenuto per compatibilità se l'API cambia in futuro.
     if (details.businessHours && Array.isArray(details.businessHours)) {
       const hours = details.businessHours.map(h => ({
         day: h.day,
@@ -40,6 +42,11 @@ const POI_ENRICHMENT = {
       }
     } else if (details.currentOpeningHours?.weekdayDescriptions) {
       extracted.opening_hours = details.currentOpeningHours.weekdayDescriptions.join(' | ');
+    }
+
+    // Dati strutturati per confronto programmatico (giorno/ora), es. warning "arrivo a chiuso"
+    if (Array.isArray(details.currentOpeningHours?.periods)) {
+      extracted.opening_periods = details.currentOpeningHours.periods;
     }
 
     // Price level: Google uses 1-4 scale, we normalize to string
@@ -77,14 +84,14 @@ const POI_ENRICHMENT = {
     }
 
     // Fetch fresh details
-    if (!window.googlePlacesDetailsClient) {
-      console.warn('[POIEnrichment] googlePlacesDetailsClient not available');
+    if (!window.GooglePlacesDetailsClient) {
+      console.warn('[POIEnrichment] GooglePlacesDetailsClient not available');
       return false;
     }
 
     try {
       console.log('[POIEnrichment] Fetching details for:', placeId);
-      const details = await window.googlePlacesDetailsClient.fetchDetails(placeId);
+      const details = await window.GooglePlacesDetailsClient.fetchDetails(placeId);
       if (!details) {
         console.warn('[POIEnrichment] No details returned for:', placeId);
         return false;
@@ -116,6 +123,7 @@ const POI_ENRICHMENT = {
       const entry = dayPOIs.find(e => e.poi_id === poiId);
       if (entry) {
         entry.opening_hours = enrichedData.opening_hours;
+        entry.opening_periods = enrichedData.opening_periods;
         entry.price_level = enrichedData.price_level;
         entry.ticket_cost = enrichedData.ticket_cost;
         entry.source_meta.source = 'google_places';

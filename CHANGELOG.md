@@ -1,6 +1,16 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.3 — Fix strutturali + Timeline, Ricerca globale, Risparmio batteria (2026-06-11, Attuale)
+## v3.4 — Warning orario chiusura POI + Ricerca ibrida Nominatim/Overpass (2026-07-03, Attuale)
+
+### ✅ Aggiunte
+- **Warning orario chiusura POI** (`js/itinerary-closing-warning.js`) — badge sulla tappa se l'orario di arrivo o fine visita cade fuori apertura, calcolato da `entry.opening_periods` (dati strutturati Google, giorno/ora) confrontati con `entry.time`/`entry.duration` e la data reale del giorno di viaggio. Nessun falso allarme se il dato orari non è disponibile.
+- **Ricerca ibrida Nominatim/Overpass** (`js/nominatim-loader.js`) — Overpass API tentato per primo per i POI vicini (gratuito, client-side, nessuna funzione serverless toccata), fallback su Google Places solo se risultati insufficienti (<5) o servizio pubblico sotto carico. Escape hatch: `localStorage.setItem('disableNominatimHybrid','true')`.
+
+### 🔧 Fix
+- **Bug reale in `js/poi-enrichment.js`**: referenziava `window.googlePlacesDetailsClient` (minuscolo) invece del vero global `window.GooglePlacesDetailsClient` (maiuscolo) — l'arricchimento orari/prezzi in background non è mai partito finché non corretto. Aggiunto anche il parsing dei `periods` strutturati (al posto del solo testo `weekday_text`, inutilizzabile per confronti programmatici).
+- `css/modern-2026.css`: regola generica `.y2k-win-body div { color: var(--m-text-2) !important }` sovrascriveva il colore semantico del nuovo badge — aggiunta regola più specifica per `.itin-closing-warning`.
+
+## v3.3 — Fix strutturali + Timeline, Ricerca globale, Risparmio batteria (2026-06-11)
 
 ### ✅ Aggiunte
 - **🗓️ Timeline viaggio** (`js/views/timeline-view.js`, lazy) — panoramica verticale multi-giorno con tappe in ordine orario, date reali da `tripProfile.startDate`, click → apre il POI. Voce nel menu.
