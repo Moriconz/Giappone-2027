@@ -534,8 +534,13 @@ header {
 }
 #weather-more-btn:hover { background: var(--m-accent-soft) !important; color: var(--m-accent) !important; }
 
-/* ── Map blur quando un pannello è aperto ───────────────────────── */
-#map.blur { filter: blur(2px) brightness(0.7); transition: filter 0.25s var(--m-ease); }
+/* ── Map blur quando un pannello è aperto ───────────────────────────
+   Nessuna transition apposta: animare "filter" su un elemento che contiene
+   la mappa (canvas OpenLayers + marker) forza un repaint costoso ad ogni
+   frame per 250ms — è il lag percepito soprattutto alla CHIUSURA, quando il
+   pannello sta anche animandosi via e i due lavori si sommano sulla stessa
+   GPU. Applicare/togliere il blur di scatto costa una volta sola, non 15x. */
+#map.blur { filter: blur(2px) brightness(0.7); }
 
 /* ── Accessibilità ──────────────────────────────────────────────── */
 :focus-visible {

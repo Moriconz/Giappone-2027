@@ -1,6 +1,12 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.6 — Fix card POI: doppio rendering al cambio (2026-07-03, Attuale)
+## v3.7 — Fix widget meteo sopra i pannelli + lag chiusura (2026-07-03, Attuale)
+
+### 🔧 Fix
+- **Widget meteo flottante sopra i pannelli aperti**: `updateGpsWeatherWidget`/`updateWeatherWithFallback`/`showWeatherError` (`js/views/weather-view.js`) rimostravano il widget incondizionatamente — se il GPS rispondeva in ritardo (dopo che l'utente aveva già aperto un pannello, es. il dettaglio Meteo stesso), il widget flottante ricompariva sopra. Aggiunto un controllo condiviso: il widget non compare mai se un pannello (`.y2k-win`) è aperto.
+- **Lag alla chiusura dei pannelli**: `#map.blur` (`css/modern-2026.css`) animava il `filter` con una `transition` di 0.25s — costoso da ricalcolare frame per frame sull'intera mappa (canvas + marker), soprattutto in concomitanza con l'animazione di chiusura del pannello stesso. Rimossa la transition: il blur ora scatta di scatto invece di essere animato, eliminando il lavoro GPU duplicato durante la chiusura.
+
+## v3.6 — Fix card POI: doppio rendering al cambio (2026-07-03)
 
 ### 🔧 Fix
 - **Bug reale in `js/y2k-windows.js`**: passando da una card POI a un'altra, quella vecchia veniva chiusa con l'animazione di uscita (fino a 260ms) mentre quella nuova si apriva subito — per quella finestra restavano DUE pannelli interi nel DOM, animati insieme. Causava sia il "flash" della card precedente sia lag percepito su mobile (doppio lavoro di layout/paint). Fix: quando un pannello viene SOSTITUITO da un altro (non chiuso e basta), la rimozione è ora immediata, senza animazione — verificato che in nessun istante del cambio card esistano più di un `.y2k-win` nel DOM.

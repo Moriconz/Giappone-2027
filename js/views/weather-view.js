@@ -8,6 +8,14 @@
 (function () {
   'use strict';
 
+  // Il widget flottante non deve MAI ricomparire sopra un pannello aperto: le
+  // funzioni sotto possono risolvere in ritardo (GPS, fetch meteo) DOPO che
+  // l'utente ha già aperto un pannello (es. proprio il dettaglio Meteo), e
+  // farebbero .add('show') incondizionatamente sovrapponendosi ad esso.
+  function showWeatherFloatingIfNoPanelOpen(el) {
+    if (el && !document.querySelector('.y2k-win')) el.classList.add('show');
+  }
+
   function renderWeatherView() {
     const state = window.state || {};
     // Use itineraryByDay (new) with flat fallback to state.itinerary (legacy)
@@ -327,7 +335,7 @@
       if (weatherTime) weatherTime.textContent = timeStr;
       weatherTemp.innerHTML = `${currentTemp}<span style="font-size: 32px;">°C</span>`;
       weatherCondition.textContent = currentCondition;
-      weatherFloating.classList.add('show');
+      showWeatherFloatingIfNoPanelOpen(weatherFloating);
       console.log('[Weather] Card updated with fallback:', { currentTemp, currentCondition, dateStr, timeStr });
     }
   }
@@ -393,7 +401,7 @@
           if (weatherTime) weatherTime.textContent = timeStr;
           weatherTemp.innerHTML = `${currentTemp}<span style="font-size: 32px;">°C</span>`;
           weatherCondition.textContent = currentCondition;
-          weatherFloating.classList.add('show');
+          showWeatherFloatingIfNoPanelOpen(weatherFloating);
           console.log('[Weather] Card updated:', { currentTemp, currentCondition, dateStr, timeStr });
         }
       },
@@ -419,7 +427,7 @@
       weatherDate.textContent = 'Errore';
       weatherTemp.textContent = '—';
       weatherCondition.textContent = errorMsg;
-      weatherFloating.classList.add('show');
+      showWeatherFloatingIfNoPanelOpen(weatherFloating);
       console.warn('[Weather] Error displayed:', consoleMsg || errorMsg);
     }
   }
