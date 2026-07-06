@@ -6,7 +6,7 @@
  * ✓ Offline-first strategy
  */
 
-const CACHE_NAME = 'giappone-2027-v9';
+const CACHE_NAME = 'giappone-2027-v10';
 const CACHE_API = 'giappone-2027-api-v1';
 const CACHE_IMG = 'giappone-2027-img-v1';
 const OFFLINE_URL = './index.html';
@@ -123,13 +123,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // App shell (HTML, CSS, JS, manifest) — NETWORK-FIRST.
-  // Garantisce che online si veda SEMPRE l'ultima versione (no UI/codice stale);
-  // la cache è solo il fallback offline. Evita il classico "ho aggiornato ma
-  // vedo ancora la versione vecchia" senza dover bumpare la cache ogni volta.
+  // App shell (HTML, CSS, JS, manifest) — NETWORK-FIRST con REVALIDATION.
+  // Network-first da solo NON basta: fetch(request) passa dalla cache HTTP
+  // del browser, e con i max-age di GitHub Pages/Vercel tornava il file
+  // vecchio anche "dalla rete" — era la causa del cronico "ho deployato ma
+  // vedo ancora la versione vecchia". cache:'no-cache' forza la revalidation
+  // col server (ETag → 304 se invariato: costo di un roundtrip, non del file).
   if (url.match(/\.(html|css|js|json|webmanifest)$/i) ||
       url.startsWith(self.location.origin)) {
-    event.respondWith(networkFirstStrategy(event.request, CACHE_NAME));
+    event.respondWith(networkFirstStrategy(event.request, CACHE_NAME, true));
     return;
   }
 });
@@ -158,10 +160,11 @@ async function cacheFirstStrategy(request, cacheName) {
   }
 }
 
-// Network-first strategy: prefer network, fallback to cache
-async function networkFirstStrategy(request, cacheName) {
+// Network-first strategy: prefer network, fallback to cache.
+// revalidate=true bypassa la cache HTTP del browser (ETag/304).
+async function networkFirstStrategy(request, cacheName, revalidate = false) {
   try {
-    const response = await fetch(request);
+    const response = await fetch(request, revalidate ? { cache: 'no-cache' } : undefined);
     if (response.ok) {
       const cache = await caches.open(cacheName);
       cache.put(request, response.clone());
