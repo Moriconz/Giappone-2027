@@ -2494,11 +2494,12 @@ main {
     line-height: 1.7 !important;
   }
 
-  /* ── BOTTONI GENERALI ────────────────────────────────────────── */
+  /* ── BOTTONI GENERALI: solo tap-target minimo ────────────────────
+     padding/font-size forzati rimossi: sovrascrivevano con !important le
+     scelte di ogni componente (stessa causa sistemica degli altri due
+     blocchi analoghi, vedi commento nel blocco ≤480px). */
   button, .btn, input[type="button"], input[type="submit"] {
     min-height: 44px !important;
-    padding: 12px 16px !important;
-    font-size:16px !important;
   }
 
   button svg {
@@ -2567,8 +2568,14 @@ main {
 
 @media (max-width: 480px) {
 
-  /* ── THUMB-FRIENDLY ZONES 2026 – 50px+ tap targets ─────────────── */
-  /* All interactive elements must be at least 50x50px with safe zones */
+  /* ── THUMB-FRIENDLY TAP TARGETS ──────────────────────────────────
+     Solo min-height 44px (standard tap target): la versione precedente
+     forzava anche min-width:50px e padding:12px 16px con !important su
+     OGNI bottone dell'app, sovrascrivendo i padding dei singoli componenti
+     — era la causa sistemica dei bottoni gonfi/disallineati e dei testi
+     che andavano a capo su mobile in tutte le card. Il padding torna a
+     deciderlo ogni componente; il target di tocco resta garantito da
+     min-height + safe zone ::after qui sotto. */
   button,
   .btn,
   a[role="button"],
@@ -2577,9 +2584,7 @@ main {
   .icon-btn,
   [class*="tap-target"],
   .chip {
-    min-width: 50px !important;
-    min-height: 50px !important;
-    padding: 12px 16px !important;
+    min-height: 44px !important;
     position: relative !important;
   }
 
@@ -2595,9 +2600,10 @@ main {
 
   /* ── EXPLICIT OVERRIDE FOR FILTER CHIPS – do NOT apply thumb-friendly sizing ─ */
   #filters .chip,
-  #filters button.chip {
+  #filters button.chip,
+  .gf-city-chip {
     min-width: auto !important;
-    min-height: 40px !important;
+    min-height: 36px !important;
     padding: 6px 12px !important;
     font-size:14px !important;
     position: static !important;
@@ -2752,11 +2758,13 @@ main {
     word-break: break-word !important;
   }
 
-  /* ── BOTTONI PIÙ GRANDI ──────────────────────────────────────── */
+  /* ── BOTTONI: solo tap-target minimo ─────────────────────────────
+     Prima forzava anche padding:14px 16px e font-size:15px !important su
+     OGNI bottone: appiattiva le scelte dei componenti, gonfiava le righe
+     di bottoni e mandava a capo i testi (causa sistemica del layout
+     "sconnesso" su mobile in tutte le card). */
   button, .btn {
-    min-height: 48px !important;
-    padding: 14px 16px !important;
-    font-size: 15px !important;
+    min-height: 44px !important;
   }
 
   /* ── INPUT FIELDS PIÙ GRANDI ─────────────────────────────────── */

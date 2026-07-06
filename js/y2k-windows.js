@@ -106,10 +106,14 @@
     // il setTimeout è solo una rete di sicurezza se animationend non scatta.
     win.id = win.id + '-closing';
     win.classList.add('y2k-win-closing');
-    const finish = () => win.remove();
+    // updateMapBlur() è rimandata a fine animazione: togliere #map.blur è un
+    // repaint full-screen della mappa, e farlo nello stesso frame in cui parte
+    // lo slide di uscita era una causa concreta del lag di chiusura su mobile.
+    // updateMapBlur ricalcola da wins{}, quindi se nel frattempo si è aperto
+    // un altro pannello il blur resta correttamente attivo (idempotente).
+    const finish = () => { win.remove(); updateMapBlur(); };
     win.addEventListener('animationend', finish, { once: true });
     setTimeout(finish, 260);
-    updateMapBlur();
     updateBackdrop();
 
     document.dispatchEvent(new CustomEvent('y2kwin_closed', { detail: { id } }));

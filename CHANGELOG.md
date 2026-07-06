@@ -1,6 +1,22 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.14 — Testo a capo nei bottoni + lag chiusura pannelli densi (2026-07-04, Attuale)
+## v3.15 — Fix sistemico UI mobile: via i 3 appiattitori CSS + zona azioni POI (2026-07-04, Attuale)
+
+Segnalati dall'utente: "Aggiungi una nota" fuori asse rispetto ai CTA, bottoni troppo attaccati, layout "sconnesso" in ogni card su mobile, lag visivo alla chiusura.
+
+### 🔧 Causa sistemica trovata
+Tre blocchi in `css/legacy-skin.css` (due a ≤480px, uno a ≤768px) forzavano su OGNI bottone dell'app `padding` e `font-size` con `!important` (12-14px/16px, font 15-16px, min-height 48-50px), sovrascrivendo le scelte di ogni singolo componente. Era il motivo per cui i bottoni risultavano gonfi, disallineati e con testi a capo su telefono in tutte le card, mentre a schermo largo tutto sembrava a posto. Ridotti al solo tap-target minimo (`min-height:44px`): il padding torna a deciderlo ogni componente. Eccezione chip estesa a `.gf-city-chip` (36px).
+
+### 🔧 Zona azioni dettaglio POI
+- CTA/Proponi/Nota/riga secondaria: stesso inset 16px per tutti (prima `.notes-section` usava un token che scende a 14px su mobile → "Aggiungi una nota" fuori asse), colonna con gap 12px (prima 8px, "troppo attaccati").
+- `.notes-button` ora full-width e centrato (prima content-width, incollato a sinistra).
+- Bottoni Safe/Problema/Nota: `flex-basis:auto` così ognuno parte dalla larghezza del suo testo — niente più wrap o troncamenti.
+
+### 🔧 Lag chiusura pannelli (seconda passata)
+- Rimosso `backdrop-filter: blur` dal backdrop full-screen in tutti e 3 i temi: la mappa sotto è GIÀ sfocata da `#map.blur`, il secondo blur era ridondante e, transizionando in opacity, ricalcolava la sfocatura di tutto lo schermo ad ogni frame di apertura/chiusura.
+- `js/y2k-windows.js`: la rimozione di `#map.blur` (repaint full-screen della mappa) è rimandata a fine animazione di uscita invece che nello stesso frame in cui parte lo slide. Verificata la sequenza: blur presente durante lo slide, rimosso a pannello sparito.
+
+## v3.14 — Testo a capo nei bottoni + lag chiusura pannelli densi (2026-07-04)
 
 ### 🔧 Fix
 - **Testo a capo nei bottoni azioni POI**: dopo il bump font globale (v3.12), "🧭 Apri mappa" andava a capo su 2 righe dentro un box ad altezza fissa 36px (schiacciato/tagliato), e "✅ GF safe" idem nella riga sopra — effetto "sconnesso" segnalato. Accorciate le etichette ("Mappa", "Safe") e sostituita l'altezza fissa con `min-height` + `white-space:nowrap`, coerente su tutti i bottoni della zona (Mappa/Salva/Calendario e Safe/Problema/Nota).

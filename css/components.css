@@ -502,8 +502,12 @@
 .notes-button {
   display: flex;
   align-items: center;
+  /* Full-width e centrato: prima era content-width e restava incollato a
+     sinistra, disallineato rispetto ai CTA full-width della stessa colonna. */
+  width: 100%;
+  justify-content: center;
   gap: var(--space-sm);
-  padding: 8px 16px;
+  padding: 10px 16px;
   background: transparent;
   border: 1px dashed var(--color-border-light);
   border-radius: 8px;
@@ -520,8 +524,11 @@
 }
 
 .notes-section {
-  padding: 0 var(--space-lg);
-  margin: var(--space-lg) 0;
+  /* Inset fisso 16px: le sezioni sorelle (CTA sopra, riga Mappa/Salva/
+     Calendario sotto) usano 16px inline — con var(--space-lg), che scende a
+     14px su mobile, questa sezione risultava visibilmente fuori asse. */
+  padding: 0 16px;
+  margin: 12px 0;
 }
 
 .notes-section label {

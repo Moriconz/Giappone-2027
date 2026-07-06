@@ -138,9 +138,9 @@
     const pn = _esc(poiName || '');
     const actions = `
       <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-        <button onclick="window.GFCrowd.addReport('${_esc(poiId)}','${pn}','safe')" style="flex:1;min-width:90px;padding:8px;white-space:nowrap;background:rgba(76,175,80,0.22);border:1.5px solid rgba(76,175,80,0.5);border-radius:7px;color:#166534;font-size:14px;font-weight:600;cursor:pointer;">✅ ${T('gfc.btnSafe', 'Safe')}</button>
-        <button onclick="window.GFCrowd.addReport('${_esc(poiId)}','${pn}','warning')" style="flex:1;min-width:90px;padding:8px;white-space:nowrap;background:rgba(255,180,80,0.18);border:1.5px solid rgba(255,180,80,0.45);border-radius:7px;color:#92400e;font-size:14px;font-weight:600;cursor:pointer;">⚠️ ${T('gfc.btnWarn', 'Problema')}</button>
-        <button onclick="window.GFCrowd.promptNote('${_esc(poiId)}','${pn}')" style="flex:1;min-width:90px;padding:8px;white-space:nowrap;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.16);border-radius:7px;color:var(--l-ink);font-size:14px;font-weight:600;cursor:pointer;">💬 ${T('gfc.btnNote', 'Nota')}</button>
+        <button onclick="window.GFCrowd.addReport('${_esc(poiId)}','${pn}','safe')" style="flex:1 1 auto;padding:9px 8px;white-space:nowrap;background:rgba(76,175,80,0.22);border:1.5px solid rgba(76,175,80,0.5);border-radius:7px;color:#166534;font-size:14px;font-weight:600;cursor:pointer;">✅ ${T('gfc.btnSafe', 'Safe')}</button>
+        <button onclick="window.GFCrowd.addReport('${_esc(poiId)}','${pn}','warning')" style="flex:1 1 auto;padding:9px 8px;white-space:nowrap;background:rgba(255,180,80,0.18);border:1.5px solid rgba(255,180,80,0.45);border-radius:7px;color:#92400e;font-size:14px;font-weight:600;cursor:pointer;">⚠️ ${T('gfc.btnWarn', 'Problema')}</button>
+        <button onclick="window.GFCrowd.promptNote('${_esc(poiId)}','${pn}')" style="flex:1 1 auto;padding:9px 8px;white-space:nowrap;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.16);border-radius:7px;color:var(--l-ink);font-size:14px;font-weight:600;cursor:pointer;">💬 ${T('gfc.btnNote', 'Nota')}</button>
       </div>`;
 
     return `

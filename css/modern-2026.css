@@ -218,8 +218,11 @@ body.panel-open { overflow: hidden; }
   inset: 0;
   z-index: 1900;
   background: rgba(6, 8, 12, 0.74);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  /* NIENTE backdrop-filter qui: la mappa sotto è già sfocata da #map.blur,
+     quindi il blur del backdrop era ridondante — e un backdrop-filter
+     full-screen che transiziona opacity ricalcola la sfocatura di tutto lo
+     schermo ad ogni frame, in concorrenza con lo slide del pannello: era
+     una delle cause principali del lag di apertura/chiusura su mobile. */
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.25s var(--m-ease), visibility 0.25s;

@@ -147,11 +147,11 @@ nav.bottom button.active {
 }
 .y2k-win-close:hover { background: var(--m-accent) !important; color: #fff !important; }
 
-/* backdrop più profondo, con leggero blur (depth alla Apple) */
+/* backdrop più profondo, senza blur: la profondità la dà già #map.blur sotto,
+   e un backdrop-filter full-screen in transizione costa un ricalcolo della
+   sfocatura ad ogni frame (lag apertura/chiusura pannelli su mobile) */
 .panel-backdrop {
   background: rgba(6, 8, 12, 0.45);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  backdrop-filter: blur(10px) saturate(120%);
 }
 /* mappa sotto il pannello: sfocata e desaturata appena */
 #map.blur { filter: blur(7px) brightness(0.62) saturate(115%); }

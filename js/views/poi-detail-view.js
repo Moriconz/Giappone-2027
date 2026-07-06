@@ -394,9 +394,13 @@ function poiDetailHTML(p){
     <div style="height:1px;background:var(--l-hair);margin:16px 0"></div>
 
     <!-- 10. MAIN CTA: ADD TO ITINERARY (prominent, ruggine saturo) -->
-    <div style="padding:0 16px;margin:16px 0">
-      <button id="add-to-itinerary-btn" class="btn-cta">${window.t ? window.t('poi.addToItinerary') : "📅 Aggiungi all'itinerario"}</button>
-      <button id="propose-to-group-btn" style="width:100%;margin-top:8px;padding:12px;background:rgba(22,163,74,0.12);border:1.5px solid rgba(22,163,74,0.4);border-radius:10px;color:var(--l-ink);font-size:16px;font-weight:700;cursor:pointer;">🗳️ ${window.t ? window.t('poi.proposeGroup', 'Proponi al gruppo') : 'Proponi al gruppo'}</button>
+    <!-- Zona azioni: TUTTE le sezioni (CTA, nota, riga secondaria) condividono
+         inset orizzontale 16px e ritmo verticale 12px — l'allineamento a
+         sinistra di "Aggiungi una nota" era dovuto a un inset diverso
+         (token --space-lg = 14px su mobile) e a un bottone content-width. -->
+    <div style="display:flex;flex-direction:column;gap:12px;margin:16px 16px 12px">
+      <button id="add-to-itinerary-btn" class="btn-cta" style="margin:0;">${window.t ? window.t('poi.addToItinerary') : "📅 Aggiungi all'itinerario"}</button>
+      <button id="propose-to-group-btn" style="width:100%;padding:12px;background:rgba(22,163,74,0.12);border:1.5px solid rgba(22,163,74,0.4);border-radius:10px;color:var(--l-ink);font-size:16px;font-weight:700;cursor:pointer;">🗳️ ${window.t ? window.t('poi.proposeGroup', 'Proponi al gruppo') : 'Proponi al gruppo'}</button>
     </div>
 
     <!-- 11. PERSONAL NOTES (collapsible by default) -->
