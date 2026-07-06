@@ -1,6 +1,12 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.13 — Bottoni Apri mappa/Salva/Calendario disallineati (2026-07-04, Attuale)
+## v3.14 — Testo a capo nei bottoni + lag chiusura pannelli densi (2026-07-04, Attuale)
+
+### 🔧 Fix
+- **Testo a capo nei bottoni azioni POI**: dopo il bump font globale (v3.12), "🧭 Apri mappa" andava a capo su 2 righe dentro un box ad altezza fissa 36px (schiacciato/tagliato), e "✅ GF safe" idem nella riga sopra — effetto "sconnesso" segnalato. Accorciate le etichette ("Mappa", "Safe") e sostituita l'altezza fissa con `min-height` + `white-space:nowrap`, coerente su tutti i bottoni della zona (Mappa/Salva/Calendario e Safe/Problema/Nota).
+- **Lag alla chiusura di pannelli densi** (es. dettaglio POI con riscontri gruppo, bottoni, stelle): aggiunto `will-change:transform,opacity` a `.y2k-win` — senza quell'hint il browser ridisegna tutto il contenuto interno ad ogni frame dello slide invece di spostare un layer già composto. Impatto maggiore su sheet ricche di contenuto rispetto a una lista semplice, coerente con la segnalazione specifica sul dettaglio POI.
+
+## v3.13 — Bottoni Apri mappa/Salva/Calendario disallineati (2026-07-04)
 
 ### 🔧 Fix
 Nel dettaglio POI, "Apri mappa" era visibilmente più stretto di "Salva"/"Calendario" a schermi mobile (375px: 83.6px vs 117.7px), pur avendo tutti e tre `flex:1`. Causa: asimmetria di markup — "Apri mappa" era avvolto in un `<div>` extra per contenere il menu a tendina (Google/Apple Maps), gli altri due erano `<button>` diretti nella riga flex. Chrome calcola la distribuzione flex diversamente per un contenitore-div-con-bottone-dentro rispetto a un bottone diretto, anche con `flex:1` identico su entrambi.

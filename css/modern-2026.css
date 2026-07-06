@@ -245,6 +245,12 @@ body.panel-open { overflow: hidden; }
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.10), 0 -10px 44px rgba(0, 0, 0, 0.55) !important;
   overflow: hidden;
   animation: m-sheet-up 0.32s var(--m-ease);
+  /* Promuove l'intero pannello a un layer compositato a parte: senza questo,
+     ogni frame dello slide (apertura E chiusura) ridisegna tutto il
+     contenuto interno (box riscontri gruppo, bottoni, stelle...) invece di
+     spostare un bitmap già pronto — su sheet dense (dettaglio POI) è
+     esattamente il lag percepito alla chiusura. */
+  will-change: transform, opacity;
   /* reset di eventuali stili legacy */
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;

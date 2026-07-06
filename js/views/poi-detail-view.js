@@ -422,7 +422,8 @@ function poiDetailHTML(p){
     <div style="display:flex;gap:8px;margin:12px 16px;justify-content:space-between;position:relative">
       <button class="btn-maps-dropdown" data-poi-id="${p.id}" style="
         flex:1;
-        height:36px;
+        min-height:40px;
+        padding:6px 8px;
         background:transparent;
         border:1px solid var(--l-hair);
         color:var(--l-muted);
@@ -430,13 +431,14 @@ function poiDetailHTML(p){
         cursor:pointer;
         font-weight:600;
         font-size:14px;
+        white-space:nowrap;
         display:flex;
         align-items:center;
         justify-content:center;
         gap:6px;
         transition:all 0.2s;
       " onmouseover="this.style.borderColor='rgba(20,30,60,0.3)';this.style.color='var(--l-ink)'" onmouseout="this.style.borderColor='var(--l-hair)';this.style.color='var(--l-muted)'">
-        🧭 Apri mappa
+        🧭 Mappa
       </button>
 
       <!-- Dropdown menu (hidden by default) — fuori flusso, non conta nel flex -->
@@ -486,7 +488,8 @@ function poiDetailHTML(p){
 
       <button class="btn-secondary" id="save-poi" style="
         flex:1;
-        height:36px;
+        min-height:40px;
+        padding:6px 8px;
         background:transparent;
         border:1px solid var(--l-hair);
         color:var(--l-muted);
@@ -494,6 +497,7 @@ function poiDetailHTML(p){
         cursor:pointer;
         font-weight:500;
         font-size:14px;
+        white-space:nowrap;
         display:flex;
         align-items:center;
         justify-content:center;
@@ -503,7 +507,8 @@ function poiDetailHTML(p){
 
       <button class="btn-secondary" id="add-cal" style="
         flex:1;
-        height:36px;
+        min-height:40px;
+        padding:6px 8px;
         background:transparent;
         border:1px solid var(--l-hair);
         color:var(--l-muted);
@@ -511,6 +516,7 @@ function poiDetailHTML(p){
         cursor:pointer;
         font-weight:500;
         font-size:14px;
+        white-space:nowrap;
         display:flex;
         align-items:center;
         justify-content:center;
