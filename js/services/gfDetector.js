@@ -1,10 +1,24 @@
 /**
  * GLUTEN FREE DETECTION SERVICE
  *
- * 3 fonti parallele:
- * - Fonte A: scan reviews keywords locali
- * - Fonte B: Find Me Gluten Free API
- * - Fonte C: servesVegetarianFood flag da Places API
+ * Unica fonte automatica: scan keyword nelle review (debole, va verificato
+ * sul posto). Stato massimo raggiungibile: 'likely', mai 'confirmed' — un
+ * automatismo che legge testo di recensioni non può "confermare" nulla per
+ * un celiaco.
+ *
+ * Rimosse due fonti che gonfiavano falsamente lo score verso 'confirmed':
+ * - Ex Fonte B (Find Me Gluten Free): il fetch() diretto al loro sito viene
+ *   sempre bloccato da CORS lato browser (nessuna API pubblica reale usata),
+ *   quindi non ha mai prodotto risultati — era dead code che sprecava un
+ *   timeout di 3s ad ogni lookup e faceva scrivere in UI "Confermato da Find
+ *   Me Gluten Free" quando quella fonte non era mai stata davvero consultata.
+ * - Ex Fonte C (servesVegetarianFood/servesVeganFood): vegetariano/vegano
+ *   NON vuol dire senza glutine (pasta, pane, seitan sono entrambi comuni in
+ *   cucina vegetariana) — contava come evidenza GF qualcosa che non lo è,
+ *   rischio concreto di falso positivo per chi ha celiachia reale.
+ *
+ * La vera conferma "sul campo" resta il layer umano in gf-crowdsource.js
+ * (riscontri ✅/⚠️ del gruppo), non toccato da questo modulo.
  *
  * Cache localStorage con TTL 30 giorni
  */
@@ -38,53 +52,6 @@ async function sourceA_reviewsKeywords(reviews = []) {
   });
 
   return { points: Math.min(points, 2), source: 'reviews' };
-}
-
-/**
- * Fonte B: Find Me Gluten Free API
- * (Fallback se API non disponibile)
- */
-async function sourceB_fmgfApi(placeId, placeName) {
-  try {
-    // Implementazione reale richiederebbe API key o scraping
-    // Qui simuliamo una chiamata asincrona con timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-    const response = await fetch(
-      `https://www.findmeglutenfree.com/search?q=${encodeURIComponent(placeName)}`,
-      { method: 'GET', signal: controller.signal }
-    );
-
-    clearTimeout(timeoutId);
-
-    if (response.ok) {
-      const html = await response.text();
-      // Parsing semplificato: cerca "gluten-friendly" o "celiac-friendly"
-      const isGlutenFriendly =
-        html.includes('gluten-friendly') ||
-        html.includes('celiac-friendly') ||
-        html.includes('gluten free');
-
-      return { points: isGlutenFriendly ? 3 : 0, source: 'fmgf' };
-    }
-  } catch (err) {
-    console.debug('[GF Detector] FMGF source unavailable:', err.message);
-  }
-
-  return { points: 0, source: 'fmgf' };
-}
-
-/**
- * Fonte C: Attributi Places API
- */
-function sourceC_placesAttributes(details = {}) {
-  let points = 0;
-
-  if (details.servesVegetarianFood === true) points += 0.5;
-  if (details.servesVeganFood === true) points += 0.5;
-
-  return { points, source: 'attributes' };
 }
 
 /**
@@ -138,8 +105,10 @@ function setCachedGFStatus(placeId, status, source) {
 /**
  * MAIN FUNCTION: detectGlutenFree()
  *
- * Parallelo su 3 fonti con Promise.allSettled
- * Score: confirmed (>=3), likely (>=1), unknown (0)
+ * Unica fonte: scan keyword review. Tetto a 'likely' — mai 'confirmed':
+ * la conferma vera è il riscontro umano in GFCrowd (gf-crowdsource.js).
+ * `details` non più usato (era solo per l'ex fonte vegetariano/vegano),
+ * lasciato nella firma per non toccare i chiamanti esistenti.
  */
 async function detectGlutenFree(poi, placeId, details = {}, reviews = []) {
   // Check cache prima
@@ -151,41 +120,14 @@ async function detectGlutenFree(poi, placeId, details = {}, reviews = []) {
 
   console.debug('[GF Detector] Starting detection for:', poi.name);
 
-  // Parallelo su 3 fonti
-  const results = await Promise.allSettled([
-    sourceA_reviewsKeywords(reviews),
-    sourceB_fmgfApi(placeId, poi.name || ''),
-    Promise.resolve(sourceC_placesAttributes(details))
-  ]);
-
-  // Aggregate score
-  let totalScore = 0;
-  let primarySource = 'unknown';
-
-  results.forEach((result, idx) => {
-    if (result.status === 'fulfilled') {
-      totalScore += result.value.points || 0;
-
-      // Primary source: la più alta (FMGF > Reviews > Attributes)
-      if (result.value.points > 0) {
-        const sources = ['reviews', 'fmgf', 'attributes'];
-        if (!primarySource || sources.indexOf(result.value.source) < sources.indexOf(primarySource)) {
-          primarySource = result.value.source;
-        }
-      }
-    }
-  });
-
-  // Determine status
-  let status = 'unknown';
-  if (totalScore >= 3) status = 'confirmed';
-  else if (totalScore >= 1) status = 'likely';
+  const { points } = await sourceA_reviewsKeywords(reviews);
+  const status = points >= 1 ? 'likely' : 'unknown';
 
   const result = {
     status,
-    source: primarySource,
+    source: points > 0 ? 'reviews' : 'unknown',
     timestamp: Date.now(),
-    score: totalScore
+    score: points
   };
 
   console.debug('[GF Detector] Result:', status, '(score:', totalScore, ')');

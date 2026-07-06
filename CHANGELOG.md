@@ -1,6 +1,13 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.7 — Fix widget meteo sopra i pannelli + lag chiusura (2026-07-03, Attuale)
+## v3.8 — Fix falso "confermato" nel rilevamento gluten-free (2026-07-04, Attuale)
+
+### 🔧 Fix (sicurezza/accuratezza)
+- `js/services/gfDetector.js` dichiarava 3 fonti ma solo una funzionava: la fonte "Find Me Gluten Free" faceva un `fetch()` diretto al loro sito, sempre bloccato da CORS lato browser — non ha mai prodotto un risultato reale, era dead code. La fonte "attributi Places" contava `servesVegetarianFood`/`servesVeganFood` come evidenza gluten-free, ma vegetariano ≠ senza glutine (pasta, pane, seitan sono comuni in cucina vegetariana): rischio concreto di falso positivo per un celiaco.
+- L'effetto combinato: un locale poteva ottenere il badge verde **"🌾 Confermato da Find Me Gluten Free"** senza che quella fonte fosse mai stata davvero consultata, basandosi solo su recensioni + flag vegetariano/vegano.
+- Rimosse le due fonti deboli. Resta solo lo scan keyword nelle review, con tetto a `'likely'` — mai più `'confirmed'` da un automatismo. La vera conferma resta il riscontro umano del gruppo (`gf-crowdsource.js`, non toccato). Il link a Find Me Gluten Free resta in UI ma come aiuto alla verifica manuale, non come conferma automatica.
+
+## v3.7 — Fix widget meteo sopra i pannelli + lag chiusura (2026-07-03)
 
 ### 🔧 Fix
 - **Widget meteo flottante sopra i pannelli aperti**: `updateGpsWeatherWidget`/`updateWeatherWithFallback`/`showWeatherError` (`js/views/weather-view.js`) rimostravano il widget incondizionatamente — se il GPS rispondeva in ritardo (dopo che l'utente aveva già aperto un pannello, es. il dettaglio Meteo stesso), il widget flottante ricompariva sopra. Aggiunto un controllo condiviso: il widget non compare mai se un pannello (`.y2k-win`) è aperto.

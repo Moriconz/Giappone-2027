@@ -132,36 +132,29 @@ function renderGFStatus(container, status, fmgfUrl) {
   console.debug('[renderGFStatus] Called with:', { containerExists: !!container, status, containerHTML: container?.innerHTML?.substring(0, 100) });
   if (!container) return;
 
-  if (status === 'confirmed') {
-    // Confermato: link verde a Find Me GF
+  // Nessun automatismo qui può dire "confermato" per un celiaco — solo scan
+  // keyword nelle review. La vera conferma è il riscontro umano (GFCrowd,
+  // renderizzato a parte). Il link a Find Me Gluten Free resta come aiuto
+  // per la verifica manuale dell'utente, mai come "conferma" automatica.
+  if (status === 'likely') {
     container.innerHTML = `
-      <a href="${fmgfUrl}" target="_blank" rel="noopener noreferrer" class="status-badge status-confirmed">
+      <a href="${fmgfUrl}" target="_blank" rel="noopener noreferrer" class="status-badge status-likely">
         <div class="status-content">
-          <strong>🌾 Opzioni gluten-free disponibili</strong>
-          <small>Confermato da Find Me Gluten Free</small>
+          <strong>🌾 Probabilmente gluten-free</strong>
+          <small>Menzionato nelle recensioni — verifica al locale o su Find Me Gluten Free</small>
         </div>
         <span class="status-arrow">→</span>
       </a>
     `;
-  } else if (status === 'likely') {
-    // Probabile: giallo, no link
-    container.innerHTML = `
-      <div class="status-badge status-likely">
-        <div class="status-content">
-          <strong>🌾 Probabilmente gluten-free</strong>
-          <small>Menzionato nelle recensioni, verifica al locale</small>
-        </div>
-      </div>
-    `;
   } else if (status === 'unknown' || status === 'timeout' || status === 'error') {
-    // Softer styling: più neutro e informativo, non warning-like
     container.innerHTML = `
-      <div class="status-badge status-unknown">
+      <a href="${fmgfUrl}" target="_blank" rel="noopener noreferrer" class="status-badge status-unknown">
         <div class="status-content">
           <strong>Gluten-free non verificato</strong>
-          <small>Nessuna conferma trovata al momento</small>
+          <small>Nessuna menzione trovata — cerca su Find Me Gluten Free</small>
         </div>
-      </div>
+        <span class="status-arrow">→</span>
+      </a>
     `;
   } else {
     // Stato sconosciuto: rimuovi il container
