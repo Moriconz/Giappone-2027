@@ -24,7 +24,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing city or API key', shops: [] });
   }
 
-  const cacheParams = { city: city.toLowerCase() };
+  // lat/lng arrotondati nella cache key: due città omonime in paesi diversi
+  // (es. Kyoto/altro) non devono condividere la cache ora che il suffisso
+  // "Japan" non è più hardcoded.
+  const cacheParams = { city: city.toLowerCase(), ll: (lat && lng) ? `${Number(lat).toFixed(1)},${Number(lng).toFixed(1)}` : '' };
   const cached = await cacheGet('gfShops', cacheParams);
   if (cached) return res.status(200).json(cached);
 
@@ -34,13 +37,15 @@ export default async function handler(req, res) {
   }
 
   async function searchGlutenFreeShops() {
-    // Multiple search queries per coprire diverse categorie di gluten-free
+    // Multiple search queries per coprire diverse categorie di gluten-free.
+    // Niente più " Japan" hardcoded: l'app è un planner globale, la zona la
+    // àncora il location bias lat/lng (25km) passato dal client.
     const queries = [
-      `gluten free restaurant ${city} Japan`,
-      `gluten free cafe ${city} Japan`,
-      `gluten free bakery ${city} Japan`,
-      `celiac friendly restaurant ${city} Japan`,
-      `coeliac restaurant ${city} Japan`
+      `gluten free restaurant ${city}`,
+      `gluten free cafe ${city}`,
+      `gluten free bakery ${city}`,
+      `celiac friendly restaurant ${city}`,
+      `coeliac restaurant ${city}`
     ];
 
     const allShops = new Map(); // Usa Map per evitare duplicati (by place_id)

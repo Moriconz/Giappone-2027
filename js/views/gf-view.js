@@ -10,7 +10,7 @@
   // ---- GF Shops cache (in-memory + localStorage 7d TTL) ----
   const gfCache = { shops: {} };
 
-  async function loadGlutenFreeShopsForCity(city) {
+  async function loadGlutenFreeShopsForCity(city, cityLat, cityLng) {
     if (gfCache.shops[city]) {
       console.log(`%c[GF] Cache HIT (memoria): ${city} = ${gfCache.shops[city].length} shops`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
       return gfCache.shops[city];
@@ -31,13 +31,17 @@
       }
     } catch { /* localStorage non disponibile */ }
 
-    const coords = window.CITY_COORDS[city];
-    if (!coords) {
-      console.warn(`%c[GF] ❌ ${city} non trovata in CITY_COORDS`, 'background: #D9534F; color: white; padding: 4px 8px; border-radius: 3px');
-      return [];
+    // Coordinate: esplicite (zone derivate dall'itinerario) o da CITY_COORDS
+    // (fallback per il viaggio Giappone di default).
+    let lat = cityLat, lng = cityLng;
+    if (typeof lat !== 'number' || typeof lng !== 'number') {
+      const coords = window.CITY_COORDS[city];
+      if (!coords) {
+        console.warn(`[GF] ${city}: nessuna coordinata nota, skip`);
+        return [];
+      }
+      [lat, lng] = coords;
     }
-
-    const [lat, lng] = coords;
     const apiUrl = `/api/searchGlutenFreeShops?city=${encodeURIComponent(city)}&lat=${lat}&lng=${lng}`;
     console.log(`%c[GF] 🌐 Fetching ${city}...`, 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px');
     console.log(`[GF] URL: ${apiUrl}`);
@@ -77,16 +81,39 @@
     }
   }
 
+  // Zone derivate dalle tappe dell'itinerario: cluster di tappe entro ~25km.
+  // È questo che rende la GF Guide "globale": segue il viaggio dell'utente
+  // ovunque sia, invece di una lista fissa di città giapponesi.
+  function _zonesFromItinerary() {
+    const stops = Object.values(window.state?.itineraryByDay || {}).flat()
+      .filter(e => typeof e?.lat === 'number' && typeof e?.lng === 'number');
+    const zones = [];
+    for (const s of stops) {
+      const z = zones.find(z => window.haversineKm(z.lat, z.lng, s.lat, s.lng) < 25);
+      if (z) { z.count++; continue; }
+      zones.push({ label: (s.poi_name || 'Zona').slice(0, 18), lat: s.lat, lng: s.lng, count: 1 });
+    }
+    return zones;
+  }
+
   function renderGFView() {
-    // Usa TUTTE le città da CITY_COORDS
-    const allCities = Object.keys(window.CITY_COORDS).sort();
+    // Zone dal viaggio dell'utente; fallback lista città Giappone se
+    // l'itinerario è ancora vuoto (trip di default).
+    const zones = _zonesFromItinerary();
+    const allCities = zones.length
+      ? zones.map(z => z.label)
+      : Object.keys(window.CITY_COORDS).sort();
+    const zoneByLabel = Object.fromEntries(zones.map(z => [z.label, z]));
 
     // Determina la città attuale da GPS (se disponibile)
     let currentCity = null;
     if (window.state?.gpsCurrentLat && window.state?.gpsCurrentLng) {
-      // Trova la città più vicina
+      // Trova la zona/città più vicina (zone da itinerario se presenti)
+      const candidates = zones.length
+        ? zones.map(z => [z.label, [z.lat, z.lng]])
+        : Object.entries(window.CITY_COORDS);
       let minDist = Infinity;
-      for (const [city, [lat, lng]] of Object.entries(window.CITY_COORDS)) {
+      for (const [city, [lat, lng]] of candidates) {
         const dx = window.state.gpsCurrentLat - lat;
         const dy = window.state.gpsCurrentLng - lng;
         const dist = Math.sqrt(dx*dx + dy*dy);
@@ -178,7 +205,8 @@
             const isCurrentCity = city === currentCity;
             console.log(`[renderGFView] ${i+1}/${priorityCities.length} Caricando${isCurrentCity ? ' (PRIORITÀ GPS)' : ''}: ${city}...`);
 
-            const shops = await loadGlutenFreeShopsForCity(city);
+            const z = zoneByLabel[city];
+            const shops = await loadGlutenFreeShopsForCity(city, z?.lat, z?.lng);
             if (shops.length > 0) {
               console.log(`%c[renderGFView] ✓ ${city}: ${shops.length} GF shops`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
               window.allGlutenFreeShops = (window.allGlutenFreeShops || []).concat(shops);
