@@ -242,7 +242,7 @@ header h1{ color:var(--l-ink) !important; font-size:19px !important; }
   box-shadow:var(--l-shadow-sm) !important;
   font-weight:600 !important;
   padding:6px 12px !important;
-  font-size:12.5px !important;
+  font-size:14px !important;
 }
 #filters button.chip.active, #filters .chip.active, .chip.active, .chip[aria-pressed="true"]{
   background:var(--l-accent) !important;

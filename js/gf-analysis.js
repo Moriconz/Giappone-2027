@@ -139,13 +139,13 @@ window.showMemberOptions = function(memberName) {
   const optionsHtml = `
     <div style="padding:20px;text-align:center">
       <div style="font-size:20px;margin-bottom:20px;font-weight:700;color:var(--l-accent)">📍 ${escapeHtml(memberName)}</div>
-      <div style="font-size:13px;color:#666;margin-bottom:20px">Posizione: ${gpsData.lat.toFixed(4)}, ${gpsData.lng.toFixed(4)}</div>
+      <div style="font-size:15px;color:#666;margin-bottom:20px">Posizione: ${gpsData.lat.toFixed(4)}, ${gpsData.lng.toFixed(4)}</div>
 
       <div style="display:flex;flex-direction:column;gap:10px">
-        <button class="btn" id="show-member-map" data-member="${memberName}" style="background:linear-gradient(135deg,#4A7C59,#3A6C49);color:white;border:none;border-radius:8px;padding:14px;font-weight:600;font-size:14px;cursor:pointer">
+        <button class="btn" id="show-member-map" data-member="${memberName}" style="background:linear-gradient(135deg,#4A7C59,#3A6C49);color:white;border:none;border-radius:8px;padding:14px;font-weight:600;font-size:16px;cursor:pointer">
           🗺️ Mostra su mappa
         </button>
-        <button class="btn" id="reach-member" data-member="${memberName}" style="background:linear-gradient(135deg,#7A8BA5,#5A6A95);color:white;border:none;border-radius:8px;padding:14px;font-weight:600;font-size:14px;cursor:pointer">
+        <button class="btn" id="reach-member" data-member="${memberName}" style="background:linear-gradient(135deg,#7A8BA5,#5A6A95);color:white;border:none;border-radius:8px;padding:14px;font-weight:600;font-size:16px;cursor:pointer">
           🧭 Raggiungi con mappe
         </button>
       </div>

@@ -77,8 +77,8 @@
     const resultsList = results.map((place) => `
       <div style="padding:10px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:6px" onclick="window.addGooglePlaceToItinerary({id:'${place.id}',name:'${place.name.replace(/'/g, "\\'")}',city:'${place.city.replace(/'/g, "\\'")}',lat:${place.lat},lng:${place.lng},address:'${place.address.replace(/'/g, "\\'")}'})">
         <div style="font-weight:600;color:var(--accent)">${place.name}</div>
-        <div style="font-size:12px;color:var(--muted)">${place.city}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">${place.address}</div>
+        <div style="font-size:14px;color:var(--muted)">${place.city}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">${place.address}</div>
       </div>
     `).join('');
 
@@ -100,16 +100,16 @@
         <div style="background:linear-gradient(170deg,#FFFDF0 0%,#FFF8DC 100%);border-top:3px solid var(--l-accent);border-radius:12px;padding:24px;max-width:380px;width:100%;margin:auto 0;box-shadow:0 -8px 40px rgba(224,65,78,.3)">
           <h3 style="margin:0 0 16px;font-size:18px;color:#1A2560;font-weight:700;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">${poi.name || poi.bestname || 'Aggiungi tappa'}</h3>
           <div class="form-row">
-            <label style="color:#6B5EA8;font-weight:700;font-size:12px;display:block;margin-bottom:6px">📅 Giorno del viaggio (1, 2, 3...)</label>
-            <input id="itin-day" type="number" placeholder="1" min="1" max="30" style="font-size:14px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
+            <label style="color:#6B5EA8;font-weight:700;font-size:14px;display:block;margin-bottom:6px">📅 Giorno del viaggio (1, 2, 3...)</label>
+            <input id="itin-day" type="number" placeholder="1" min="1" max="30" style="font-size:16px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
           </div>
           <div class="form-row">
-            <label style="color:#6B5EA8;font-weight:700;font-size:12px;display:block;margin-bottom:6px">⏰ Orario (es. 09:30)</label>
-            <input id="itin-time" type="text" placeholder="09:30" style="font-size:14px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" autocomplete="off" />
+            <label style="color:#6B5EA8;font-weight:700;font-size:14px;display:block;margin-bottom:6px">⏰ Orario (es. 09:30)</label>
+            <input id="itin-time" type="text" placeholder="09:30" style="font-size:16px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" autocomplete="off" />
           </div>
           <div class="form-row">
-            <label style="color:#6B5EA8;font-weight:700;font-size:12px;display:block;margin-bottom:6px">💰 Costo (es. 10€, opzionale)</label>
-            <input id="itin-cost" type="text" placeholder="Gratis" style="font-size:14px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
+            <label style="color:#6B5EA8;font-weight:700;font-size:14px;display:block;margin-bottom:6px">💰 Costo (es. 10€, opzionale)</label>
+            <input id="itin-cost" type="text" placeholder="Gratis" style="font-size:16px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
           </div>
           <div style="display:flex;gap:8px;margin-top:18px">
             <button id="itin-cancel" style="flex:1;padding:11px;background:linear-gradient(135deg,#E8E0FF,#D8CCFF);border:2px solid #C8BDFF;border-radius:8px;color:#1A2560;cursor:pointer;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;transition:all 0.18s ease">Annulla</button>
@@ -182,40 +182,40 @@
       const timeStr = entry.time ? ` · ⏰ ${entry.time}` : '';
       const costStr = entry.cost ? ` · 💰 ${entry.cost}` : '';
       return `<div class="poi-row" style="position:relative" data-itinerary-id="${entry.id}">
-        <div style="position:absolute;top:8px;right:8px;font-size:11px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:4px">${idx+1}</div>
+        <div style="position:absolute;top:8px;right:8px;font-size:13px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:4px">${idx+1}</div>
         <div class="icon">${poi ? (CATS[poi.cat]?.icon || '📍') : '📌'}</div>
         <div class="body">
           <div class="name">${entry.name || (poi ? getPoiDisplayName(poi) : '?')}</div>
           <div class="sub">${entry.city || (poi ? poi.city : '?')}${distStr}${dayStr}${timeStr}${costStr}</div>
         </div>
-        <button class="btn" aria-label="Rimuovi tappa" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:var(--danger);border-color:var(--danger);color:#fff" data-remove-itinerary="${entry.id}">✕</button>
+        <button class="btn" aria-label="Rimuovi tappa" style="flex-shrink:0;padding:4px 8px;font-size:13px;background:var(--danger);border-color:var(--danger);color:#fff" data-remove-itinerary="${entry.id}">✕</button>
       </div>`;
-    }).join('') : '<p style="color:var(--muted);font-size:13px;padding:12px">📋 L\'itinerario del gruppo è vuoto. Seleziona tappe dalla lista sottostante per aggiungerle!</p>';
+    }).join('') : '<p style="color:var(--muted);font-size:15px;padding:12px">📋 L\'itinerario del gruppo è vuoto. Seleziona tappe dalla lista sottostante per aggiungerle!</p>';
 
     const searchHtml = `
       <div style="position:sticky;top:0;background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);padding:12px;margin-bottom:12px;z-index:200;border-radius:14px">
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <input id="list-search" type="text" placeholder="🔍 Scrivi una città (Tokyo, Osaka, Kyoto...)"
-            style="flex:1;padding:8px 10px;background:#fff;backdrop-filter:blur(10px);color:var(--l-ink);border:1.5px solid var(--l-hair);border-radius:8px;font:inherit;font-size:13px">
-          <button id="btn-google-search" style="padding:8px 12px;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));border:2px solid var(--l-accent);border-radius:8px;color:#fff;cursor:pointer;font-weight:600;white-space:nowrap;font-size:12px;box-shadow:0 0 12px rgba(224,65,78,0.3)">🌍 Google</button>
+            style="flex:1;padding:8px 10px;background:#fff;backdrop-filter:blur(10px);color:var(--l-ink);border:1.5px solid var(--l-hair);border-radius:8px;font:inherit;font-size:15px">
+          <button id="btn-google-search" style="padding:8px 12px;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));border:2px solid var(--l-accent);border-radius:8px;color:#fff;cursor:pointer;font-weight:600;white-space:nowrap;font-size:14px;box-shadow:0 0 12px rgba(224,65,78,0.3)">🌍 Google</button>
         </div>
-        <div style="display:flex;gap:6px;font-size:12px">
-          <button id="btn-export-whatsapp" style="flex:1;padding:6px;background:rgba(22,163,74,.12);border:1.5px solid rgba(22,163,74,.4);border-radius:6px;color:#16a34a;cursor:pointer;font-size:11px;font-weight:600;backdrop-filter:blur(10px)">📤 WhatsApp</button>
-          <button id="btn-share-group" style="flex:1;padding:6px;background:var(--l-accent-soft);border:1.5px solid var(--l-accent-brd);border-radius:6px;color:var(--l-accent);cursor:pointer;font-size:11px;font-weight:600;backdrop-filter:blur(10px)">👥 Condividi</button>
+        <div style="display:flex;gap:6px;font-size:14px">
+          <button id="btn-export-whatsapp" style="flex:1;padding:6px;background:rgba(22,163,74,.12);border:1.5px solid rgba(22,163,74,.4);border-radius:6px;color:#16a34a;cursor:pointer;font-size:13px;font-weight:600;backdrop-filter:blur(10px)">📤 WhatsApp</button>
+          <button id="btn-share-group" style="flex:1;padding:6px;background:var(--l-accent-soft);border:1.5px solid var(--l-accent-brd);border-radius:6px;color:var(--l-accent);cursor:pointer;font-size:13px;font-weight:600;backdrop-filter:blur(10px)">👥 Condividi</button>
         </div>
       </div>
       <div class="section" style="background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:14px;padding:14px;margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <h3 style="margin:0;color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">🗓️ Itinerario (${itinerary.length})</h3>
-          <span style="font-size:11px;color:var(--l-muted)">Tempo reale</span>
+          <span style="font-size:13px;color:var(--l-muted)">Tempo reale</span>
         </div>
-        <p style="font-size:12px;color:var(--l-muted);margin:0 0 8px">Condiviso con i membri della stanza</p>
+        <p style="font-size:14px;color:var(--l-muted);margin:0 0 8px">Condiviso con i membri della stanza</p>
         <div id="itinerary-list">${itineraryHtml}</div>
       </div>
       <div id="list-results" style="margin-top:20px">
-        <div style="padding:20px;text-align:center;color:var(--l-muted);font-size:13px">
+        <div style="padding:20px;text-align:center;color:var(--l-muted);font-size:15px">
           <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
-          <p style="font-size:11px;margin:8px 0 0;color:var(--l-faint)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+          <p style="font-size:13px;margin:8px 0 0;color:var(--l-faint)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
         </div>
       </div>
     `;
@@ -252,9 +252,9 @@
 
         if (!query) {
           resultsDiv.innerHTML = `
-            <div style="padding:20px;text-align:center;color:var(--l-muted);font-size:13px">
+            <div style="padding:20px;text-align:center;color:var(--l-muted);font-size:15px">
               <p>📍 Scrivi il nome di una città per vedere i luoghi</p>
-              <p style="font-size:11px;margin:8px 0 0;color:var(--l-faint)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
+              <p style="font-size:13px;margin:8px 0 0;color:var(--l-faint)">Es: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima...</p>
             </div>
           `;
           return;
@@ -275,9 +275,9 @@
           if (searchResults.length === 0) {
             resultsDiv.innerHTML = `
               <div style="padding:20px;text-align:center">
-                <p style="font-size:14px;margin:0 0 8px;color:var(--l-accent);font-weight:700">❌ Nessun POI trovato</p>
-                <p style="font-size:12px;margin:0;color:var(--l-muted)">Non ci sono luoghi a "${query}"</p>
-                <p style="font-size:11px;margin:8px 0 0;color:var(--l-faint)">💡 Prova con: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima</p>
+                <p style="font-size:16px;margin:0 0 8px;color:var(--l-accent);font-weight:700">❌ Nessun POI trovato</p>
+                <p style="font-size:14px;margin:0;color:var(--l-muted)">Non ci sono luoghi a "${query}"</p>
+                <p style="font-size:13px;margin:8px 0 0;color:var(--l-faint)">💡 Prova con: Tokyo, Osaka, Kyoto, Hokkaido, Nagano, Fukuoka, Hiroshima</p>
               </div>
             `;
             return;
@@ -321,7 +321,7 @@
                     <div class="sub">${catLabel} · ${distStr}${ratingStr ? ' · ' + ratingStr : ''}${costStr ? ' · ' + costStr : ''}</div>
                   </div>
                   ${photoUrl ? `<img src="${photoUrl}" loading="lazy" style="width:60px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;cursor:pointer" alt="Foto" class="poi-photo" data-poi-name="${getPoiDisplayName(p).replace(/"/g, '&quot;')}" data-photo-url="${photoUrl}">` : ''}
-                  <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:11px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer"
+                  <button class="btn" style="flex-shrink:0;padding:4px 8px;font-size:13px;background:${isInItin?'var(--warning)':'var(--primary)'};border-color:${isInItin?'var(--warning)':'var(--primary)'};color:#fff;cursor:pointer"
                     data-add-to-itinerary="${p.googlePlaceId}"
                     data-poi-place-id="${p.googlePlaceId}"
                     data-poi-name="${getPoiDisplayName(p).replace(/"/g, '&quot;')}"
@@ -336,7 +336,7 @@
             return `
               <div class="category-section" data-category="${cat}">
                 <h4 class="category-header" style="cursor:pointer;user-select:none;display:flex;gap:8px;align-items:center">
-                  <span class="category-toggle" style="font-size:12px;font-weight:700">▼</span>
+                  <span class="category-toggle" style="font-size:14px;font-weight:700">▼</span>
                   <span>${CATS[cat]?.label || cat}</span>
                   <span class="count">${items.length}</span>
                 </h4>
@@ -422,7 +422,7 @@
               photoImg.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:8px;box-shadow:0 0 40px rgba(255,255,255,.3)';
               photoImg.loading = 'eager';
               const titleDiv = document.createElement('p');
-              titleDiv.style.cssText = 'color:#fff;margin-top:16px;text-align:center;font-size:14px;font-weight:600;max-width:90vw';
+              titleDiv.style.cssText = 'color:#fff;margin-top:16px;text-align:center;font-size:16px;font-weight:600;max-width:90vw';
               titleDiv.textContent = img.dataset.poiName;
               container.appendChild(closeBtn);
               container.appendChild(photoImg);

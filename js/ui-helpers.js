@@ -69,10 +69,10 @@ const MODAL_CSS = `
   }
   @keyframes _modalSlideUp { from { transform: translateY(12px); opacity:0; } to { transform: translateY(0); opacity:1; } }
   .app-modal__title { font-size: 15px; font-weight: 700; margin: 0 0 10px; }
-  .app-modal__body { font-size: 13px; color: rgba(255,255,255,.8); line-height: 1.5; margin: 0 0 18px; white-space: pre-line; }
+  .app-modal__body { font-size:15px; color: rgba(255,255,255,.8); line-height: 1.5; margin: 0 0 18px; white-space: pre-line; }
   .app-modal__input {
     width: 100%; box-sizing: border-box;
-    padding: 10px 12px; font-size: 13px;
+    padding: 10px 12px; font-size:15px;
     background: rgba(255,255,255,.07); color: #fff;
     border: 1.5px solid rgba(255,255,255,.2); border-radius: 10px;
     margin-bottom: 16px; font-family: inherit; outline: none;
@@ -82,7 +82,7 @@ const MODAL_CSS = `
   .app-modal__input::placeholder { color: rgba(255,255,255,.35); }
   .app-modal__actions { display: flex; gap: 8px; justify-content: flex-end; }
   .app-modal__btn {
-    padding: 9px 18px; border-radius: 10px; font-size: 13px;
+    padding: 9px 18px; border-radius: 10px; font-size:15px;
     font-weight: 600; cursor: pointer; border: none; font-family: inherit;
     transition: opacity .15s, transform .1s;
   }

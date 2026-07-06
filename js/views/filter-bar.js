@@ -38,14 +38,14 @@
       advPanel.innerHTML = `
         <div style="font-weight:700;margin-bottom:10px">🔧 Filtri avanzati</div>
         <div style="margin-bottom:10px">
-          <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">⭐ Voto minimo: <strong id="rating-val">${minRating}</strong></label>
+          <label style="display:block;font-size:14px;color:var(--muted);margin-bottom:4px">⭐ Voto minimo: <strong id="rating-val">${minRating}</strong></label>
           <input type="range" id="adv-rating" min="0" max="5" step="1" value="${minRating}" style="width:100%;cursor:pointer" />
         </div>
         <div style="margin-bottom:10px">
-          <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">💰 Budget massimo: <strong id="budget-val">¥${maxBudget}</strong></label>
+          <label style="display:block;font-size:14px;color:var(--muted);margin-bottom:4px">💰 Budget massimo: <strong id="budget-val">¥${maxBudget}</strong></label>
           <input type="range" id="adv-budget" min="0" max="100000" step="5000" value="${maxBudget}" style="width:100%;cursor:pointer" />
         </div>
-        <button id="adv-reset" class="btn" style="width:100%;font-size:12px;padding:6px">Reset filtri</button>
+        <button id="adv-reset" class="btn" style="width:100%;font-size:14px;padding:6px">Reset filtri</button>
       `;
       filtersEl.parentElement.style.position = 'relative';
       filtersEl.parentElement.appendChild(advPanel);

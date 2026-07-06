@@ -117,9 +117,9 @@
 
     const summaryChips = `
       <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-        <span style="background:rgba(76,175,80,0.18);border:1px solid rgba(76,175,80,0.4);border-radius:999px;padding:3px 10px;font-size:12px;color:#16a34a;font-weight:700;">✅ ${s.safe}</span>
-        <span style="background:rgba(255,180,80,0.16);border:1px solid rgba(255,180,80,0.4);border-radius:999px;padding:3px 10px;font-size:12px;color:#b45309;font-weight:700;">⚠️ ${s.warning}</span>
-        ${s.note ? `<span style="background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.14);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--l-muted);font-weight:600;">💬 ${s.note}</span>` : ''}
+        <span style="background:rgba(76,175,80,0.18);border:1px solid rgba(76,175,80,0.4);border-radius:999px;padding:3px 10px;font-size:14px;color:#16a34a;font-weight:700;">✅ ${s.safe}</span>
+        <span style="background:rgba(255,180,80,0.16);border:1px solid rgba(255,180,80,0.4);border-radius:999px;padding:3px 10px;font-size:14px;color:#b45309;font-weight:700;">⚠️ ${s.warning}</span>
+        ${s.note ? `<span style="background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.14);border-radius:999px;padding:3px 10px;font-size:14px;color:var(--l-muted);font-weight:600;">💬 ${s.note}</span>` : ''}
       </div>`;
 
     const rows = list.length ? list.map(r => {
@@ -127,26 +127,26 @@
       const col = r.type === 'safe' ? '#16a34a' : r.type === 'warning' ? '#b45309' : 'var(--l-muted)';
       return `
         <div style="display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-top:1px solid rgba(20,30,60,0.08);">
-          <span style="font-size:14px;flex-shrink:0;">${icon}</span>
+          <span style="font-size:16px;flex-shrink:0;">${icon}</span>
           <div style="flex:1;min-width:0;">
-            <div style="font-size:12px;color:var(--l-ink);"><strong style="color:${col};">${_esc(r.by)}</strong> · <span style="color:var(--l-faint);font-size:11px;">${_timeAgo(r.ts)}</span></div>
-            ${r.note ? `<div style="font-size:12px;color:var(--l-muted);margin-top:2px;word-break:break-word;">${_esc(r.note)}</div>` : ''}
+            <div style="font-size:14px;color:var(--l-ink);"><strong style="color:${col};">${_esc(r.by)}</strong> · <span style="color:var(--l-faint);font-size:13px;">${_timeAgo(r.ts)}</span></div>
+            ${r.note ? `<div style="font-size:14px;color:var(--l-muted);margin-top:2px;word-break:break-word;">${_esc(r.note)}</div>` : ''}
           </div>
         </div>`;
-    }).join('') : `<div style="font-size:12px;color:var(--l-faint);padding:6px 0;">${T('gfc.empty', 'Ancora nessun riscontro. Sii il primo a confermare!')}</div>`;
+    }).join('') : `<div style="font-size:14px;color:var(--l-faint);padding:6px 0;">${T('gfc.empty', 'Ancora nessun riscontro. Sii il primo a confermare!')}</div>`;
 
     const pn = _esc(poiName || '');
     const actions = `
       <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-        <button onclick="window.GFCrowd.addReport('${_esc(poiId)}','${pn}','safe')" style="flex:1;min-width:90px;padding:8px;background:rgba(76,175,80,0.22);border:1.5px solid rgba(76,175,80,0.5);border-radius:7px;color:#166534;font-size:12px;font-weight:600;cursor:pointer;">✅ ${T('gfc.btnSafe', 'GF safe')}</button>
-        <button onclick="window.GFCrowd.addReport('${_esc(poiId)}','${pn}','warning')" style="flex:1;min-width:90px;padding:8px;background:rgba(255,180,80,0.18);border:1.5px solid rgba(255,180,80,0.45);border-radius:7px;color:#92400e;font-size:12px;font-weight:600;cursor:pointer;">⚠️ ${T('gfc.btnWarn', 'Problema')}</button>
-        <button onclick="window.GFCrowd.promptNote('${_esc(poiId)}','${pn}')" style="flex:1;min-width:90px;padding:8px;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.16);border-radius:7px;color:var(--l-ink);font-size:12px;font-weight:600;cursor:pointer;">💬 ${T('gfc.btnNote', 'Nota')}</button>
+        <button onclick="window.GFCrowd.addReport('${_esc(poiId)}','${pn}','safe')" style="flex:1;min-width:90px;padding:8px;background:rgba(76,175,80,0.22);border:1.5px solid rgba(76,175,80,0.5);border-radius:7px;color:#166534;font-size:14px;font-weight:600;cursor:pointer;">✅ ${T('gfc.btnSafe', 'GF safe')}</button>
+        <button onclick="window.GFCrowd.addReport('${_esc(poiId)}','${pn}','warning')" style="flex:1;min-width:90px;padding:8px;background:rgba(255,180,80,0.18);border:1.5px solid rgba(255,180,80,0.45);border-radius:7px;color:#92400e;font-size:14px;font-weight:600;cursor:pointer;">⚠️ ${T('gfc.btnWarn', 'Problema')}</button>
+        <button onclick="window.GFCrowd.promptNote('${_esc(poiId)}','${pn}')" style="flex:1;min-width:90px;padding:8px;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.16);border-radius:7px;color:var(--l-ink);font-size:14px;font-weight:600;cursor:pointer;">💬 ${T('gfc.btnNote', 'Nota')}</button>
       </div>`;
 
     return `
       <div style="background:rgba(74,91,168,0.06);border:1.5px solid rgba(20,30,60,0.1);border-radius:14px;padding:14px;margin:8px 16px 16px;">
-        <h3 style="margin:0 0 4px 0;color:var(--l-ink);font-size:14px;font-weight:700;">🤝 ${T('gfc.title', 'Riscontri del gruppo')}</h3>
-        <p style="margin:0 0 10px 0;font-size:11px;color:var(--l-faint);">${inGroup ? T('gfc.subIn', 'Condivisi con il tuo gruppo') : T('gfc.subOut', 'Salvati in locale (unisciti a un gruppo per condividerli)')}</p>
+        <h3 style="margin:0 0 4px 0;color:var(--l-ink);font-size:16px;font-weight:700;">🤝 ${T('gfc.title', 'Riscontri del gruppo')}</h3>
+        <p style="margin:0 0 10px 0;font-size:13px;color:var(--l-faint);">${inGroup ? T('gfc.subIn', 'Condivisi con il tuo gruppo') : T('gfc.subOut', 'Salvati in locale (unisciti a un gruppo per condividerli)')}</p>
         ${summaryChips}
         <div>${rows}</div>
         ${actions}

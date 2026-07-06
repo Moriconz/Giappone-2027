@@ -33,7 +33,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
       border-radius: 999px;
       background: ${isOpen ? 'rgba(22, 163, 74, 0.12)' : 'rgba(220, 38, 38, 0.12)'};
       color: ${isOpen ? '#16a34a' : '#dc2626'};
-      font-size: 11px;
+      font-size:13px;
       font-weight: 600;
     ">${isOpen ? PSB_T('poi.open') : PSB_T('poi.closed')}</span>`;
     parts.push(statusBadge);
@@ -74,12 +74,12 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
         display: flex;
         align-items: center;
         gap: 4px;
-        font-size: 10px;
+        font-size:12px;
         font-weight: 500;
         color: var(--l-muted);
         letter-spacing: 0.2px;
       ">
-        <span style="font-size: 14px;">${catEmoji}</span>
+        <span style="font-size:16px;">${catEmoji}</span>
         <span>${catLabel}</span>
       </div>
       <button id="edit-cat-btn" style="
@@ -87,7 +87,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
         border: none;
         color: var(--l-muted);
         cursor: pointer;
-        font-size: 12px;
+        font-size:14px;
         padding: 2px 4px;
         opacity: 0.5;
         transition: opacity 0.2s;
@@ -109,7 +109,7 @@ function renderHeaderCompact(poi, displayName, catColor, catEmoji, isEditing = f
     <!-- Row 3: Metadata - Tight -->
     ${metadataRow ? `
       <div style="
-        font-size: 12px;
+        font-size:14px;
         color: var(--l-muted);
         line-height: 1.3;
         padding: 2px 16px 0 16px;
@@ -162,14 +162,14 @@ function renderOpeningHours(details) {
       ">
         <span>🕐</span>
         <span>${PSB_T('poi.hours')}</span>
-        <span style="margin-left: auto; font-size: 12px;">▼</span>
+        <span style="margin-left: auto; font-size:14px;">▼</span>
       </button>
 
       <div id="${uid}" style="
         padding: 12px;
         border-top: 1px solid var(--l-hair);
         display: none;
-        font-size: 12px;
+        font-size:14px;
       ">
         ${hours.weekdayDescriptions.map(desc => `
           <div style="
@@ -200,12 +200,12 @@ function renderAddress(poi, details) {
     ">
       <div style="
         font-weight: 600;
-        font-size: 12px;
+        font-size:14px;
         color: var(--l-muted);
         margin-bottom: 6px;
       ">📍 ${PSB_T('poi.address')}</div>
       <div style="
-        font-size: 13px;
+        font-size:15px;
         color: var(--l-ink);
         line-height: 1.4;
         word-break: break-word;
@@ -233,7 +233,7 @@ function renderWebsite(details) {
       margin-bottom: 12px;
       color: #0284c7;
       text-decoration: none;
-      font-size: 13px;
+      font-size:15px;
       transition: background 0.2s;
     " onmouseover="this.style.background='rgba(2, 132, 199, 0.14)'" onmouseout="this.style.background='rgba(2, 132, 199, 0.08)'">
       🌐 ${domain}
@@ -260,7 +260,7 @@ function renderPhone(details) {
       margin-bottom: 12px;
       color: var(--l-accent-600);
       text-decoration: none;
-      font-size: 13px;
+      font-size:15px;
       transition: background 0.2s;
     " onmouseover="this.style.background='rgba(224, 65, 78, 0.14)'" onmouseout="this.style.background='rgba(224, 65, 78, 0.08)'">
       📞 ${phone}
@@ -282,7 +282,7 @@ function renderDescription(details) {
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 12px;
-      font-size: 13px;
+      font-size:15px;
       color: var(--l-ink);
       line-height: 1.5;
     ">
@@ -312,7 +312,7 @@ function renderRestaurantAttributes(poi, details) {
       color: ${gfStatus === 'confirmed' ? '#16a34a' : '#65a30d'};
       border-radius: 6px;
       padding: 6px 10px;
-      font-size: 11px;
+      font-size:13px;
       font-weight: 700;
     ">🌾 ${gfStatus === 'confirmed' ? PSB_T('poi.gfConfirmed') : PSB_T('poi.gfLikely')}</span>
   ` : '';
@@ -335,7 +335,7 @@ function renderRestaurantAttributes(poi, details) {
         border: 1px solid var(--l-hair);
         border-radius: 6px;
         padding: 6px 10px;
-        font-size: 11px;
+        font-size:13px;
         color: var(--l-ink);
         font-weight: 600;
       ">${a.label}</span>
@@ -354,7 +354,7 @@ function renderRestaurantAttributes(poi, details) {
     ">
       <div style="
         font-weight: 600;
-        font-size: 11px;
+        font-size:13px;
         color: var(--l-muted);
         margin-bottom: 8px;
         text-transform: uppercase;
@@ -394,7 +394,7 @@ function renderPriceLevel(details) {
       border: 1px solid rgba(180, 83, 9, 0.3);
       border-radius: 6px;
       padding: 6px 10px;
-      font-size: 12px;
+      font-size:14px;
       color: #b45309;
       font-weight: 700;
       margin-bottom: 12px;
@@ -431,7 +431,7 @@ function renderSuggestedDuration(poi) {
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 12px;
-      font-size: 13px;
+      font-size:15px;
       color: var(--l-ink);
     ">
       <div style="font-weight: 600; margin-bottom: 4px;">${PSB_T('poi.suggestedTime')}</div>
@@ -455,7 +455,7 @@ function renderEntranceFee(poi) {
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 12px;
-      font-size: 13px;
+      font-size:15px;
       color: var(--l-ink);
     ">
       <div style="font-weight: 600; margin-bottom: 4px;">${PSB_T('poi.entrance')}</div>

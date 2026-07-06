@@ -107,7 +107,7 @@
           border: 1.5px solid rgba(255,165,100,0.4);
           border-radius: 20px;
           color: var(--l-ink);
-          font-size: 13px;
+          font-size:15px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
@@ -120,7 +120,7 @@
             border: 1px solid rgba(20,30,60,0.08);
             border-radius: 20px;
             color: var(--l-muted);
-            font-size: 13px;
+            font-size:15px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
@@ -139,7 +139,7 @@
           border: 1px solid rgba(255,165,100,0.3);
           border-radius: 10px;
           color: var(--l-ink);
-          font-size: 14px;
+          font-size:16px;
           font-family: inherit;
           transition: all 0.2s;
         " onfocus="this.style.background='rgba(20,30,60,0.06)'; this.style.borderColor='rgba(255,165,100,0.5)';" onblur="this.style.background='rgba(20,30,60,0.04)'; this.style.borderColor='rgba(255,165,100,0.3)';">
@@ -151,7 +151,7 @@
         <div id="gf-list-sheet" style="position: relative; min-height: 200px; display: flex; flex-direction: column; gap: 8px;">
           <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
             ${Array.from({length:5}).map(() => '<div class="skeleton skeleton-card"></div>').join('')}
-            <p style="color: var(--l-muted); text-align: center; padding: 6px; margin: 0; font-size: 12px;">${window.t ? window.t('gf.loadingRestaurants') : '⏳ Caricamento ristoranti...'}</p>
+            <p style="color: var(--l-muted); text-align: center; padding: 6px; margin: 0; font-size:14px;">${window.t ? window.t('gf.loadingRestaurants') : '⏳ Caricamento ristoranti...'}</p>
           </div>
         </div>
       </div>

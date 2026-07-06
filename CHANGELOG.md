@@ -1,6 +1,13 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.11 — Rimosso terzo elenco hardcoded + redesign card GF Guide (2026-07-04, Attuale)
+## v3.12 — Testo troppo piccolo in tutta l'app: bump globale (2026-07-04, Attuale)
+
+Segnalato dall'utente sulla card GF Guide, verificato essere sistemico: 88 punti in tutto il CSS a 13px o meno (33 a 12px, 26 a 13px, 12 a 11px, 11 a 10px, 5 a 9px, 1 a 8px) — sotto i 13-14px il testo è oggettivamente piccolo su mobile.
+
+### 🔧 Fix
+Bump automatico +2px su ogni `font-size` da 8px a 14px, in **tutti** i file CSS e JS (805 occorrenze, 61 file: `css/legacy-skin.css`, `js/views/poi-detail-view.js`, `js/itinerary-unified.js`, `js/gf-places-panel.js` e altri 57). Mappatura 1:1 che preserva la gerarchia relativa esistente (8→10, 9→11, 10→12, 11→13, 12→14, 13→15, 14→16) — niente redesign dei layout, solo testo più leggibile ovunque. Verificato: nessun overflow/troncamento su GF Guide, dettaglio POI (card densa con badge, riscontri gruppo, bottoni), sintassi di tutti i 56 file JS toccati, smoke test pulito.
+
+## v3.11 — Rimosso terzo elenco hardcoded + redesign card GF Guide (2026-07-04)
 
 ### 🔧 Fix
 - Trovato un **terzo** elenco GF scritto a mano (`GF_RESTAURANTS` in `js/views/gf-restaurants.js`, 10 locali con gli stessi nomi del file già rimosso in v3.10) — era quello che alimentava davvero la schermata "GF Guide" vista dall'utente, sfuggito all'audit precedente. Rimosso: la lista ora arriva solo da `window.allGlutenFreeShops` (Google Places Text Search live, quota-gated) e `window.GFPlaces.getAll()` (derivato dal review-scan live, v3.10). Le note editoriali finte tipo "Primo locale certificato GIG in Asia" sono sparite insieme al dato inventato che le portava.

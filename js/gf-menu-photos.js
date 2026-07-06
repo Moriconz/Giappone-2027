@@ -122,15 +122,15 @@
     const thumbs = photos.map(ph => `
       <div style="position:relative;flex-shrink:0;">
         <img src="${ph.data}" onclick="window.__gfMenuLightbox(this.src)" style="width:74px;height:90px;object-fit:cover;border-radius:8px;border:1px solid rgba(20,30,60,0.15);cursor:pointer;" />
-        <div style="font-size:9px;color:var(--l-faint);text-align:center;margin-top:2px;">${_esc(ph.by)}</div>
-        ${ph.by === me ? `<button onclick="window.GFMenuPhotos.remove('${_esc(poiId)}','${ph.id}')" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:11px;cursor:pointer;line-height:1;">×</button>` : ''}
+        <div style="font-size:11px;color:var(--l-faint);text-align:center;margin-top:2px;">${_esc(ph.by)}</div>
+        ${ph.by === me ? `<button onclick="window.GFMenuPhotos.remove('${_esc(poiId)}','${ph.id}')" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:13px;cursor:pointer;line-height:1;">×</button>` : ''}
       </div>`).join('');
 
     el.innerHTML = `
       <div style="margin-top:6px;padding:14px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.3);border-radius:12px;">
-        <div style="font-size:13px;font-weight:700;color:#16a34a;margin-bottom:10px;">📷 ${T('gfm.title', 'Foto menù GF del gruppo')}</div>
-        ${photos.length ? `<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;">${thumbs}</div>` : `<div style="font-size:12px;color:var(--l-muted);margin-bottom:10px;">${T('gfm.empty', 'Nessuna foto. Fotografa il menù gluten-free per il gruppo.')}</div>`}
-        <button onclick="window.GFMenuPhotos.captureForPoi('${_esc(poiId)}','${_esc(poiName)}')" style="width:100%;padding:10px;background:rgba(74,222,128,0.18);border:1.5px solid rgba(74,222,128,0.45);border-radius:8px;color:#166534;font-size:13px;font-weight:700;cursor:pointer;">📷 ${T('gfm.add', 'Aggiungi foto menù')}</button>
+        <div style="font-size:15px;font-weight:700;color:#16a34a;margin-bottom:10px;">📷 ${T('gfm.title', 'Foto menù GF del gruppo')}</div>
+        ${photos.length ? `<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;">${thumbs}</div>` : `<div style="font-size:14px;color:var(--l-muted);margin-bottom:10px;">${T('gfm.empty', 'Nessuna foto. Fotografa il menù gluten-free per il gruppo.')}</div>`}
+        <button onclick="window.GFMenuPhotos.captureForPoi('${_esc(poiId)}','${_esc(poiName)}')" style="width:100%;padding:10px;background:rgba(74,222,128,0.18);border:1.5px solid rgba(74,222,128,0.45);border-radius:8px;color:#166534;font-size:15px;font-weight:700;cursor:pointer;">📷 ${T('gfm.add', 'Aggiungi foto menù')}</button>
       </div>`;
   }
   window.GFMenuPhotos = { captureForPoi, getForPoi, receive, renderInto, remove, count };

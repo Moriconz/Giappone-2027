@@ -80,7 +80,7 @@
     if (deltaMs < 0 || deltaMs > 48 * 3600 * 1000) return '';
     const h = Math.floor(deltaMs / 3600000), m = Math.round((deltaMs % 3600000) / 60000);
     const label = h > 0 ? `tra ${h}h${m ? ' ' + m + 'm' : ''}` : `tra ${m}m`;
-    return `<span style="font-size:10px;font-weight:700;color:#fff;background:var(--l-accent);padding:2px 7px;border-radius:999px;margin-left:6px;">⏱ ${label}</span>`;
+    return `<span style="font-size:12px;font-weight:700;color:#fff;background:var(--l-accent);padding:2px 7px;border-radius:999px;margin-left:6px;">⏱ ${label}</span>`;
   }
 
   function _ticketRow(t) {
@@ -97,10 +97,10 @@
           ${stopLabel ? `<div class="sub" style="margin-top:2px;color:var(--l-accent);">📍 ${stopLabel}</div>` : ''}
           ${t.notes ? `<div class="sub" style="margin-top:2px;">${t.notes}</div>` : ''}
           <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-            <select class="ticket-status-select" data-id="${t.id}" style="font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid;${STATUS_STYLE[t.status] || STATUS_STYLE.booked}">
+            <select class="ticket-status-select" data-id="${t.id}" style="font-size:13px;padding:3px 8px;border-radius:999px;border:1px solid;${STATUS_STYLE[t.status] || STATUS_STYLE.booked}">
               ${STATUSES.map(s => `<option value="${s}" ${s === t.status ? 'selected' : ''}>${STATUS_LABEL[s]}</option>`).join('')}
             </select>
-            <button class="ticket-del-btn" data-id="${t.id}" style="font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--l-accent-brd);background:transparent;color:var(--l-accent);cursor:pointer;">
+            <button class="ticket-del-btn" data-id="${t.id}" style="font-size:13px;padding:3px 8px;border-radius:999px;border:1px solid var(--l-accent-brd);background:transparent;color:var(--l-accent);cursor:pointer;">
               🗑️ ${T('tickets.delete', 'Elimina')}
             </button>
           </div>
@@ -111,7 +111,7 @@
   function _formHTML() {
     return `
       <form id="ticket-add-form" class="section" style="display:flex;flex-direction:column;gap:8px;">
-        <div style="font-weight:700;font-size:13px;color:var(--l-ink);">${T('tickets.addNew', '+ Nuovo biglietto')}</div>
+        <div style="font-weight:700;font-size:15px;color:var(--l-ink);">${T('tickets.addNew', '+ Nuovo biglietto')}</div>
         <select name="type" required>
           <option value="transport">🚄 ${TYPE_LABEL.transport}</option>
           <option value="entry">🎟️ ${TYPE_LABEL.entry}</option>
@@ -147,7 +147,7 @@
 
     const list = all.length
       ? all.map(_ticketRow).join('')
-      : `<p style="color:var(--l-muted);font-size:13px;text-align:center;padding:16px 0;">${T('tickets.empty', 'Nessun biglietto salvato. Aggiungine uno qui sotto.')}</p>`;
+      : `<p style="color:var(--l-muted);font-size:15px;text-align:center;padding:16px 0;">${T('tickets.empty', 'Nessun biglietto salvato. Aggiungine uno qui sotto.')}</p>`;
 
     const html = `
       <div style="display:flex;flex-direction:column;gap:10px;">
@@ -163,7 +163,7 @@
     body.querySelectorAll('.ticket-status-select').forEach(sel => {
       sel.onchange = () => {
         window.ITINERARY_TICKETS.updateTicketStatus(sel.dataset.id, sel.value);
-        sel.setAttribute('style', `font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid;${STATUS_STYLE[sel.value] || STATUS_STYLE.booked}`);
+        sel.setAttribute('style', `font-size:13px;padding:3px 8px;border-radius:999px;border:1px solid;${STATUS_STYLE[sel.value] || STATUS_STYLE.booked}`);
       };
     });
     body.querySelectorAll('.ticket-del-btn').forEach(btn => {

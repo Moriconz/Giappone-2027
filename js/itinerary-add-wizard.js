@@ -151,7 +151,7 @@ function renderStep1(state) {
 
       <!-- Step Indicator -->
       <div style="
-        font-size:12px;
+        font-size:14px;
         font-weight:600;
         color:var(--l-muted);
         text-align:center;
@@ -197,12 +197,12 @@ function renderStep1(state) {
             word-break:break-word;
           ">${state.poiName}</div>
           <div style="
-            font-size:13px;
+            font-size:15px;
             color:var(--l-muted);
             margin-bottom:8px;
           ">📍 ${state.poiCity}</div>
           <div style="
-            font-size:11px;
+            font-size:13px;
             background:rgba(255,107,53,0.3);
             border-radius:4px;
             padding:4px 8px;
@@ -216,7 +216,7 @@ function renderStep1(state) {
 
       <!-- Description -->
       <div style="
-        font-size:13px;
+        font-size:15px;
         color:var(--l-muted);
         line-height:1.6;
       ">
@@ -232,7 +232,7 @@ function renderStep1(state) {
           border:none;
           border-radius:10px;
           color:#fff;
-          font-size:14px;
+          font-size:16px;
           font-weight:700;
           cursor:pointer;
           transition:all 0.2s;
@@ -246,7 +246,7 @@ function renderStep1(state) {
           border:1.5px solid var(--l-hair);
           border-radius:10px;
           color:var(--l-muted);
-          font-size:14px;
+          font-size:16px;
           font-weight:600;
           cursor:pointer;
           transition:all 0.2s;
@@ -308,7 +308,7 @@ function renderStep2(state) {
 
       <!-- Step Indicator -->
       <div style="
-        font-size:12px;
+        font-size:14px;
         font-weight:600;
         color:var(--l-muted);
         text-align:center;
@@ -317,7 +317,7 @@ function renderStep2(state) {
       <!-- Day Selection -->
       <div>
         <label style="
-          font-size:12px;
+          font-size:14px;
           font-weight:700;
           color:var(--l-ink);
           display:block;
@@ -330,7 +330,7 @@ function renderStep2(state) {
           border:1.5px solid var(--l-hair);
           border-radius:8px;
           color:var(--l-ink);
-          font-size:13px;
+          font-size:15px;
           font-weight:500;
           cursor:pointer;
           transition:all 0.2s;
@@ -344,7 +344,7 @@ function renderStep2(state) {
         ${(() => {
           const sel = dayOptions.find(o => o.d === state.selectedDay);
           return sel?.closedWarning
-            ? `<div style="margin-top:8px;padding:8px 12px;background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);border-radius:8px;font-size:12px;color:#8a5a10;">⚠️ Questo posto risulta <b>chiuso</b> il giorno selezionato — verifica gli orari aggiornati prima di andare.</div>`
+            ? `<div style="margin-top:8px;padding:8px 12px;background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);border-radius:8px;font-size:14px;color:#8a5a10;">⚠️ Questo posto risulta <b>chiuso</b> il giorno selezionato — verifica gli orari aggiornati prima di andare.</div>`
             : '';
         })()}
       </div>
@@ -352,7 +352,7 @@ function renderStep2(state) {
       <!-- Time Selection -->
       <div>
         <label style="
-          font-size:12px;
+          font-size:14px;
           font-weight:700;
           color:var(--l-ink);
           display:block;
@@ -365,7 +365,7 @@ function renderStep2(state) {
           border:1.5px solid var(--l-hair);
           border-radius:8px;
           color:var(--l-ink);
-          font-size:13px;
+          font-size:15px;
           font-weight:500;
           cursor:pointer;
           transition:all 0.2s;
@@ -382,7 +382,7 @@ function renderStep2(state) {
         border:1px solid rgba(22,163,74,0.3);
         border-radius:8px;
         padding:12px 14px;
-        font-size:12px;
+        font-size:14px;
         color:#15803d;
         line-height:1.5;
       ">
@@ -398,7 +398,7 @@ function renderStep2(state) {
           border:1.5px solid var(--l-hair);
           border-radius:10px;
           color:var(--l-muted);
-          font-size:14px;
+          font-size:16px;
           font-weight:600;
           cursor:pointer;
           transition:all 0.2s;
@@ -412,7 +412,7 @@ function renderStep2(state) {
           border:none;
           border-radius:10px;
           color:#fff;
-          font-size:14px;
+          font-size:16px;
           font-weight:700;
           cursor:pointer;
           transition:all 0.2s;
@@ -448,7 +448,7 @@ function renderStep3(state) {
 
       <!-- Step Indicator -->
       <div style="
-        font-size:12px;
+        font-size:14px;
         font-weight:600;
         color:var(--l-muted);
         text-align:center;
@@ -460,7 +460,7 @@ function renderStep3(state) {
         border:1px solid var(--l-hair);
         border-radius:8px;
         padding:10px 12px;
-        font-size:12px;
+        font-size:14px;
         color:var(--l-muted);
         line-height:1.4;
       ">
@@ -471,7 +471,7 @@ function renderStep3(state) {
       <!-- Notes Input -->
       <div>
         <label style="
-          font-size:12px;
+          font-size:14px;
           font-weight:700;
           color:var(--l-ink);
           display:block;
@@ -484,7 +484,7 @@ function renderStep3(state) {
           border:1.5px solid var(--l-hair);
           border-radius:8px;
           color:var(--l-ink);
-          font-size:13px;
+          font-size:15px;
           font-family:inherit;
           resize:vertical;
           min-height:80px;
@@ -495,7 +495,7 @@ function renderStep3(state) {
 
       <!-- Info -->
       <div style="
-        font-size:12px;
+        font-size:14px;
         color:var(--l-muted);
         line-height:1.5;
       ">
@@ -511,7 +511,7 @@ function renderStep3(state) {
           border:1.5px solid var(--l-hair);
           border-radius:10px;
           color:var(--l-muted);
-          font-size:14px;
+          font-size:16px;
           font-weight:600;
           cursor:pointer;
           transition:all 0.2s;
@@ -525,7 +525,7 @@ function renderStep3(state) {
           border:none;
           border-radius:10px;
           color:#fff;
-          font-size:14px;
+          font-size:16px;
           font-weight:700;
           cursor:pointer;
           transition:all 0.2s;

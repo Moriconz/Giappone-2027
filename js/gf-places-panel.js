@@ -253,15 +253,15 @@ window.openGroqPanel = async function() {
   const html = `
     <div class="groq-panel">
       <div>
-        <label style="font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:8px">Incolla il menu da analizzare:</label>
+        <label style="font-size:15px;font-weight:700;color:var(--text);display:block;margin-bottom:8px">Incolla il menu da analizzare:</label>
         <textarea id="groq-menu-textarea" class="groq-menu-textarea" placeholder="Es: Pasta al pomodoro, Risotto ai funghi, Petto di pollo..."></textarea>
       </div>
       <div style="margin-top:14px">
-        <label style="font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:8px">Carica una foto del piatto:</label>
+        <label style="font-size:15px;font-weight:700;color:var(--text);display:block;margin-bottom:8px">Carica una foto del piatto:</label>
         <div class="photo-upload-zone" id="groq-photo-zone">📷 Tocca per aggiungere una foto</div>
         <input type="file" id="groq-photo-input" accept="image/*" style="display:none" />
         <img id="groq-photo-preview" class="photo-preview" />
-        <p style="font-size:12px;color:var(--muted);margin-top:6px">Se carichi una foto, l'app cercherà di riconoscere il piatto tramite etichette visive e determinerà il rischio gluten-free. Se il server Groq non è disponibile, userà l'analisi locale.</p>
+        <p style="font-size:14px;color:var(--muted);margin-top:6px">Se carichi una foto, l'app cercherà di riconoscere il piatto tramite etichette visive e determinerà il rischio gluten-free. Se il server Groq non è disponibile, userà l'analisi locale.</p>
       </div>
 
       <button class="groq-analyze-btn" onclick="window.analyzeMenuGroq()">🤖 Analizza</button>
@@ -392,18 +392,18 @@ window.openGFPlacesPanel = function(prefillData = null, editId = null) {
         <div class="gpc-header" style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
           <div>
             <div class="gpc-name" style="font-weight:700;color:var(--text);margin-bottom:4px;">${p.name}</div>
-            <div class="gpc-city" style="font-size:12px;color:var(--muted);">${p.city}${p.area ? ' · ' + p.area : ''}</div>
+            <div class="gpc-city" style="font-size:14px;color:var(--muted);">${p.city}${p.area ? ' · ' + p.area : ''}</div>
           </div>
-          <div class="gpc-rating" style="font-size:14px;">${'⭐'.repeat(p.rating || 0)}</div>
+          <div class="gpc-rating" style="font-size:16px;">${'⭐'.repeat(p.rating || 0)}</div>
         </div>
-        ${p.safety_level ? `<div style="display:inline-block;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-bottom:8px;${p.safety_level === 'GREEN' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F' : p.safety_level === 'YELLOW' ? 'background:rgba(255,215,0,0.2);color:#FFD700' : 'background:rgba(255,107,107,0.2);color:#FF6B6B'};">${p.safety_level === 'GREEN' ? '🟢 SAFE' : p.safety_level === 'YELLOW' ? '🟡 CAUTION' : '🔴 DANGER'}</div>` : ''}
+        ${p.safety_level ? `<div style="display:inline-block;padding:4px 8px;border-radius:4px;font-size:13px;font-weight:700;margin-bottom:8px;${p.safety_level === 'GREEN' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F' : p.safety_level === 'YELLOW' ? 'background:rgba(255,215,0,0.2);color:#FFD700' : 'background:rgba(255,107,107,0.2);color:#FF6B6B'};">${p.safety_level === 'GREEN' ? '🟢 SAFE' : p.safety_level === 'YELLOW' ? '🟡 CAUTION' : '🔴 DANGER'}</div>` : ''}
         <div class="gpc-meta" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-          ${(p.tags || []).map(t => `<span class="gpc-tag" style="background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.12);border-radius:4px;padding:3px 8px;font-size:11px;color:var(--l-ink);">${t}</span>`).join('')}
+          ${(p.tags || []).map(t => `<span class="gpc-tag" style="background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.12);border-radius:4px;padding:3px 8px;font-size:13px;color:var(--l-ink);">${t}</span>`).join('')}
         </div>
-        ${p.note ? `<div style="margin:8px 0;font-size:12px;color:var(--muted);line-height:1.4;">${p.note}</div>` : ''}
+        ${p.note ? `<div style="margin:8px 0;font-size:14px;color:var(--muted);line-height:1.4;">${p.note}</div>` : ''}
         <div class="gpc-actions" style="display:flex;gap:6px;margin-top:10px;">
-          <button onclick="window.startEditGFPlace('${p.id}')" style="flex:1;padding:6px;background:rgba(100,149,237,0.2);border:1px solid rgba(100,149,237,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">✏️ Modifica</button>
-          <button onclick="(window.modalConfirm||((m)=>Promise.resolve(confirm(m))))('Eliminare questo posto?',{danger:true,confirmText:'Elimina'}).then(ok=>{ if(ok){ window.deleteGFPlace('${p.id}'); window.openGFPlacesPanel(); } })" style="flex:1;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">🗑️ Elimina</button>
+          <button onclick="window.startEditGFPlace('${p.id}')" style="flex:1;padding:6px;background:rgba(100,149,237,0.2);border:1px solid rgba(100,149,237,0.4);color:var(--text);border-radius:4px;font-size:13px;cursor:pointer;">✏️ Modifica</button>
+          <button onclick="(window.modalConfirm||((m)=>Promise.resolve(confirm(m))))('Eliminare questo posto?',{danger:true,confirmText:'Elimina'}).then(ok=>{ if(ok){ window.deleteGFPlace('${p.id}'); window.openGFPlacesPanel(); } })" style="flex:1;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:13px;cursor:pointer;">🗑️ Elimina</button>
         </div>
       </div>
     `).join('');
@@ -412,19 +412,19 @@ window.openGFPlacesPanel = function(prefillData = null, editId = null) {
   const addFormHtml = `
     <div class="gf-place-form" style="background:rgba(74,91,168,0.12);backdrop-filter:blur(10px);border:1px solid rgba(74,91,168,0.3);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
       <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <a href="https://www.findmeglutenfree.com/jp" target="_blank" style="flex:1;padding:10px;background:linear-gradient(180deg,#4A5BA8,#3A4B98);color:#fff;border:none;border-radius:6px;text-decoration:none;font-weight:700;font-size:12px;text-align:center;cursor:pointer;">🌐 Trova su Find Me GF</a>
+        <a href="https://www.findmeglutenfree.com/jp" target="_blank" style="flex:1;padding:10px;background:linear-gradient(180deg,#4A5BA8,#3A4B98);color:#fff;border:none;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;cursor:pointer;">🌐 Trova su Find Me GF</a>
       </div>
 
-      <h3 style="margin:0;font-size:13px;color:var(--text);font-weight:700;">➕ Aggiungi Manualmente</h3>
+      <h3 style="margin:0;font-size:15px;color:var(--text);font-weight:700;">➕ Aggiungi Manualmente</h3>
 
       <div style="display:flex;gap:8px;">
-        <input type="text" id="gf-place-name" placeholder="Nome" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
-        <input type="text" id="gf-place-city" placeholder="Città" style="flex:0.8;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
+        <input type="text" id="gf-place-name" placeholder="Nome" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;" />
+        <input type="text" id="gf-place-city" placeholder="Città" style="flex:0.8;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;" />
       </div>
 
       <div style="display:flex;gap:8px;">
-        <input type="text" id="gf-place-area" placeholder="Zona (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
-        <select id="gf-place-rating" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;">
+        <input type="text" id="gf-place-area" placeholder="Zona (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;" />
+        <select id="gf-place-rating" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;">
           <option value="5">⭐⭐⭐⭐⭐</option>
           <option value="4">⭐⭐⭐⭐</option>
           <option value="3">⭐⭐⭐</option>
@@ -433,23 +433,23 @@ window.openGFPlacesPanel = function(prefillData = null, editId = null) {
         </select>
       </div>
 
-      <select id="gf-place-safety" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;">
+      <select id="gf-place-safety" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;">
         <option value="GREEN">🟢 GREEN - 100% Safe</option>
         <option value="YELLOW" selected>🟡 YELLOW - Caution</option>
         <option value="RED">🔴 RED - Danger</option>
       </select>
 
-      <textarea id="gf-place-note" placeholder="Note personali..." style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;min-height:70px;"></textarea>
+      <textarea id="gf-place-note" placeholder="Note personali..." style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;min-height:70px;"></textarea>
 
-      <input type="text" id="gf-place-tags" placeholder="Tags (Es: 100% sicuro, Cucina separata)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;" />
+      <input type="text" id="gf-place-tags" placeholder="Tags (Es: 100% sicuro, Cucina separata)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;" />
 
       <input type="hidden" id="gf-place-source-url" value="" />
       <input type="hidden" id="gf-place-lat" value="" />
       <input type="hidden" id="gf-place-lng" value="" />
 
       <div style="display:flex;gap:8px;margin-bottom:10px;">
-        <button onclick="window.geocodeGFPlace()" style="flex:1;padding:8px;background:rgba(100,149,237,0.2);border:1px solid rgba(100,149,237,0.4);color:var(--text);border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">📍 Geo-localizza</button>
-        <button onclick="window.saveGFPlace()" id="gf-save-button" style="flex:1;padding:8px;background:linear-gradient(180deg,#7FFF7F,#6FEF6F);color:#000;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">💾 Salva</button>
+        <button onclick="window.geocodeGFPlace()" style="flex:1;padding:8px;background:rgba(100,149,237,0.2);border:1px solid rgba(100,149,237,0.4);color:var(--text);border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;">📍 Geo-localizza</button>
+        <button onclick="window.saveGFPlace()" id="gf-save-button" style="flex:1;padding:8px;background:linear-gradient(180deg,#7FFF7F,#6FEF6F);color:#000;border:none;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;">💾 Salva</button>
       </div>
     </div>
   `;
@@ -862,43 +862,43 @@ window.openGFSuggestionPanel = function() {
         <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
           <div>
             <div style="font-weight:700;color:var(--text);">${s.name}</div>
-            <div style="font-size:12px;color:var(--muted);">${s.city}${s.area ? ' · ' + s.area : ''}</div>
+            <div style="font-size:14px;color:var(--muted);">${s.city}${s.area ? ' · ' + s.area : ''}</div>
           </div>
-          <div style="padding:3px 8px;border-radius:4px;font-size:12px;font-weight:700;${
+          <div style="padding:3px 8px;border-radius:4px;font-size:14px;font-weight:700;${
             s.status === 'approved' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F' :
             s.status === 'rejected' ? 'background:rgba(255,107,107,0.2);color:#FF6B6B' :
             'background:rgba(255,215,0,0.2);color:#FFD700'
           };">${s.status === 'approved' ? '✅ Approvato' : s.status === 'rejected' ? '❌ Rifiutato' : '⏳ In attesa'}</div>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Inviato: ${new Date(s.submittedAt).toLocaleDateString('it-IT')}</div>
-        <button onclick="(window.modalConfirm||((m)=>Promise.resolve(confirm(m))))('Eliminare questo suggerimento?',{danger:true,confirmText:'Elimina'}).then(ok=>{ if(ok){ GFSuggestionsDB.delete('${s.id}'); window.openGFSuggestionPanel(); } })" style="width:100%;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:11px;cursor:pointer;">🗑️ Elimina</button>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">Inviato: ${new Date(s.submittedAt).toLocaleDateString('it-IT')}</div>
+        <button onclick="(window.modalConfirm||((m)=>Promise.resolve(confirm(m))))('Eliminare questo suggerimento?',{danger:true,confirmText:'Elimina'}).then(ok=>{ if(ok){ GFSuggestionsDB.delete('${s.id}'); window.openGFSuggestionPanel(); } })" style="width:100%;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:13px;cursor:pointer;">🗑️ Elimina</button>
       </div>
     `).join('');
   }
 
   const formHtml = `
     <div style="background:rgba(100,200,100,0.12);backdrop-filter:blur(10px);border:1px solid rgba(100,200,100,0.3);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
-      <h3 style="margin:0;font-size:13px;color:var(--text);font-weight:700;">✨ Suggerisci un Nuovo POI</h3>
+      <h3 style="margin:0;font-size:15px;color:var(--text);font-weight:700;">✨ Suggerisci un Nuovo POI</h3>
 
       <div style="display:flex;gap:8px;">
-        <input type="text" id="gf-suggest-name" placeholder="Nome ristorante" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
-        <input type="text" id="gf-suggest-city" placeholder="Città" style="flex:0.8;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+        <input type="text" id="gf-suggest-name" placeholder="Nome ristorante" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;box-sizing:border-box;" />
+        <input type="text" id="gf-suggest-city" placeholder="Città" style="flex:0.8;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;box-sizing:border-box;" />
       </div>
 
       <div style="display:flex;gap:8px;">
-        <input type="text" id="gf-suggest-area" placeholder="Zona (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
-        <input type="text" id="gf-suggest-address" placeholder="Indirizzo (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+        <input type="text" id="gf-suggest-area" placeholder="Zona (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;box-sizing:border-box;" />
+        <input type="text" id="gf-suggest-address" placeholder="Indirizzo (opz.)" style="flex:1;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;box-sizing:border-box;" />
       </div>
 
-      <input type="email" id="gf-suggest-email" placeholder="La tua email (opzionale)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;" />
+      <input type="email" id="gf-suggest-email" placeholder="La tua email (opzionale)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;box-sizing:border-box;" />
 
-      <textarea id="gf-suggest-description" placeholder="Descrizione / Motivo (Eg: Menu 100% GF, staff attento...)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;min-height:70px;box-sizing:border-box;"></textarea>
+      <textarea id="gf-suggest-description" placeholder="Descrizione / Motivo (Eg: Menu 100% GF, staff attento...)" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;min-height:70px;box-sizing:border-box;"></textarea>
 
-      <button onclick="window.submitGFSuggestion()" style="width:100%;padding:10px;background:linear-gradient(180deg,#64C864,#54B854);color:#000;border:none;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;box-sizing:border-box;">🚀 Invia Suggerimento</button>
+      <button onclick="window.submitGFSuggestion()" style="width:100%;padding:10px;background:linear-gradient(180deg,#64C864,#54B854);color:#000;border:none;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;box-sizing:border-box;">🚀 Invia Suggerimento</button>
     </div>
   `;
 
-  const html = `<div style="padding:16px;display:flex;flex-direction:column;gap:16px;">${formHtml}<div><h3 style="margin:0 0 12px;font-size:13px;color:var(--text);font-weight:700;">📋 I Tuoi Suggerimenti</h3>${suggestionsHtml}</div></div>`;
+  const html = `<div style="padding:16px;display:flex;flex-direction:column;gap:16px;">${formHtml}<div><h3 style="margin:0 0 12px;font-size:15px;color:var(--text);font-weight:700;">📋 I Tuoi Suggerimenti</h3>${suggestionsHtml}</div></div>`;
   window.openSheet('💡 Suggerisci POI', html);
 };
 

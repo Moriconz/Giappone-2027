@@ -52,18 +52,18 @@
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;min-height:200px;">
           <div style="font-size:44px;margin-bottom:14px;">🌾</div>
           <div style="font-size:15px;font-weight:700;color:var(--l-ink);margin:0 0 6px;">Nessun locale gluten-free trovato qui</div>
-          <p style="font-size:12.5px;color:var(--l-muted);margin:0 0 16px;max-width:280px;">I dati sono live (Google Places + rilevamento recensioni) — se la zona non è ancora stata cercata, prova un'altra città o cerca manualmente.</p>
+          <p style="font-size:14px;color:var(--l-muted);margin:0 0 16px;max-width:280px;">I dati sono live (Google Places + rilevamento recensioni) — se la zona non è ancora stata cercata, prova un'altra città o cerca manualmente.</p>
           <a href="${discoverUrl}" target="_blank" rel="noopener noreferrer" style="
             display:inline-block;padding:10px 18px;background:rgba(74,222,128,0.14);
             border:1.5px solid rgba(74,222,128,0.4);border-radius:10px;color:#16a34a;
-            font-size:13px;font-weight:700;text-decoration:none;">🔍 Cerca su Find Me Gluten Free</a>
+            font-size:15px;font-weight:700;text-decoration:none;">🔍 Cerca su Find Me Gluten Free</a>
         </div>`;
       return;
     }
 
     const html = filtered.map(r => {
       const metaParts = [r.city, r.rating ? `⭐ ${r.rating}${r.review_count ? ` (${r.review_count})` : ''}` : null].filter(Boolean);
-      const distChip = (r.distance != null) ? `<span style="flex-shrink:0;padding:3px 9px;border-radius:999px;background:rgba(74,222,128,0.14);border:1px solid rgba(74,222,128,0.35);color:#16a34a;font-size:11px;font-weight:700;">${window.fmtDist(r.distance)}</span>` : '';
+      const distChip = (r.distance != null) ? `<span style="flex-shrink:0;padding:3px 9px;border-radius:999px;background:rgba(74,222,128,0.14);border:1px solid rgba(74,222,128,0.35);color:#16a34a;font-size:13px;font-weight:700;">${window.fmtDist(r.distance)}</span>` : '';
       const address = r.desc || r.address || '';
       const mapsUrl = r.google_maps_url || r.maps_url || `https://maps.google.com/?q=${encodeURIComponent(r.name)}`;
 
@@ -77,17 +77,17 @@
           border-radius:14px;display:flex;flex-direction:column;gap:8px;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
             <div style="min-width:0;">
-              <div style="font-size:14.5px;font-weight:700;color:var(--l-ink);">${r.name}</div>
-              ${metaParts.length ? `<div style="font-size:12px;color:var(--l-muted);margin-top:2px;">${metaParts.join(' · ')}</div>` : ''}
+              <div style="font-size:16px;font-weight:700;color:var(--l-ink);">${r.name}</div>
+              ${metaParts.length ? `<div style="font-size:14px;color:var(--l-muted);margin-top:2px;">${metaParts.join(' · ')}</div>` : ''}
             </div>
             ${distChip}
           </div>
-          ${address ? `<div style="font-size:11.5px;color:var(--l-faint);">${address}</div>` : ''}
+          ${address ? `<div style="font-size:13px;color:var(--l-faint);">${address}</div>` : ''}
           <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" style="
             display:block;text-align:center;padding:9px 12px;background:rgba(74,222,128,0.12);
             border:1px solid rgba(74,222,128,0.35);border-radius:9px;color:#16a34a;
-            font-size:12.5px;font-weight:700;text-decoration:none;">🗺️ Apri in Maps</a>
-          <div style="font-size:10.5px;color:var(--l-faint);text-align:center;">${sourceLabel}</div>
+            font-size:14px;font-weight:700;text-decoration:none;">🗺️ Apri in Maps</a>
+          <div style="font-size:12px;color:var(--l-faint);text-align:center;">${sourceLabel}</div>
         </div>`;
     }).join('');
 
@@ -113,11 +113,11 @@
     const html = `
       <div class="section">
         <h2 style="margin:0 0 6px;font-size:18px;">${r.name}</h2>
-        <div style="font-size:13px;color:var(--muted);">${meta}</div>
+        <div style="font-size:15px;color:var(--muted);">${meta}</div>
       </div>
       <div class="section">
-        ${address ? `<p style="margin:0 0 8px;font-size:13px;color:var(--muted);">${address}</p>` : ''}
-        <p style="margin:0;font-size:12px;color:var(--muted);">${sourceLabel}</p>
+        ${address ? `<p style="margin:0 0 8px;font-size:15px;color:var(--muted);">${address}</p>` : ''}
+        <p style="margin:0;font-size:14px;color:var(--muted);">${sourceLabel}</p>
       </div>
       <div class="section" style="display:flex;gap:10px;flex-wrap:wrap;">
         <a class="btn primary" href="${mapsUrl}" target="_blank" rel="noopener">🗺️ Apri in Maps</a>

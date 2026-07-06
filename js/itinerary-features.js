@@ -309,7 +309,7 @@
 
     if (!result.ok) {
       window.openSheet(T('topt.title', '🧭 Ottimizza viaggio'),
-        `<div style="padding:24px 14px;text-align:center;color:var(--l-muted);font-size:13px;line-height:1.6;">
+        `<div style="padding:24px 14px;text-align:center;color:var(--l-muted);font-size:15px;line-height:1.6;">
            <div style="font-size:34px;margin-bottom:8px;">🗺️</div>
            <p style="margin:0;">${T('topt.tooFew', 'Servono almeno 2 tappe con posizione nota per ottimizzare il viaggio.')}</p>
          </div>`);
@@ -326,28 +326,28 @@
       const names = entries.map(e => `<li style="margin:2px 0;">${_esc(e.poi_name || e.poi_id)}</li>`).join('');
       return `
         <div style="padding:10px 12px;background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:9px;">
-          <div style="font-weight:700;color:var(--l-ink);font-size:13px;margin-bottom:4px;">📅 ${T('topt.day', 'Giorno')} ${Number(d) + 1} <span style="font-weight:500;color:var(--l-muted);font-size:11px;">· ${entries.length} ${T('topt.stops', 'tappe')}</span></div>
-          <ul style="margin:0;padding-left:18px;font-size:12px;color:var(--l-ink);">${names}</ul>
+          <div style="font-weight:700;color:var(--l-ink);font-size:15px;margin-bottom:4px;">📅 ${T('topt.day', 'Giorno')} ${Number(d) + 1} <span style="font-weight:500;color:var(--l-muted);font-size:13px;">· ${entries.length} ${T('topt.stops', 'tappe')}</span></div>
+          <ul style="margin:0;padding-left:18px;font-size:14px;color:var(--l-ink);">${names}</ul>
         </div>`;
     }).join('');
 
     const html = `
       <div style="display:flex;flex-direction:column;gap:12px;padding:4px 0;">
-        <p style="margin:0;color:var(--l-muted);font-size:12.5px;line-height:1.5;">
+        <p style="margin:0;color:var(--l-muted);font-size:14px;line-height:1.5;">
           ${T('topt.intro', 'Anteprima: le tappe vengono raggruppate per zona geografica per ridurre gli spostamenti. Niente viene applicato finché non confermi.')}
         </p>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px;background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:10px;text-align:center;">
-          <div><div style="font-size:18px;font-weight:800;color:var(--l-ink);">${stats.beforeKm}</div><div style="font-size:10px;color:var(--l-muted);">km ${T('topt.before', 'prima')}</div></div>
-          <div><div style="font-size:18px;font-weight:800;color:var(--l-ink);">${stats.afterKm}</div><div style="font-size:10px;color:var(--l-muted);">km ${T('topt.after', 'dopo')}</div></div>
-          <div><div style="font-size:18px;font-weight:800;color:${savedColor};">${stats.saved >= 0 ? '−' : '+'}${Math.abs(stats.saved)}</div><div style="font-size:10px;color:var(--l-muted);">km ${T('topt.saved', 'risparmiati')} ${savedPct > 0 ? '(' + savedPct + '%)' : ''}</div></div>
+          <div><div style="font-size:18px;font-weight:800;color:var(--l-ink);">${stats.beforeKm}</div><div style="font-size:12px;color:var(--l-muted);">km ${T('topt.before', 'prima')}</div></div>
+          <div><div style="font-size:18px;font-weight:800;color:var(--l-ink);">${stats.afterKm}</div><div style="font-size:12px;color:var(--l-muted);">km ${T('topt.after', 'dopo')}</div></div>
+          <div><div style="font-size:18px;font-weight:800;color:${savedColor};">${stats.saved >= 0 ? '−' : '+'}${Math.abs(stats.saved)}</div><div style="font-size:12px;color:var(--l-muted);">km ${T('topt.saved', 'risparmiati')} ${savedPct > 0 ? '(' + savedPct + '%)' : ''}</div></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">${dayBlocks}</div>
-        ${result.without?.length ? `<p style="font-size:11px;color:#8a5a10;margin:0;">⚠️ ${result.without.length} ${T('topt.noCoord', 'tappe senza posizione resteranno nel Giorno 1.')}</p>` : ''}
+        ${result.without?.length ? `<p style="font-size:13px;color:#8a5a10;margin:0;">⚠️ ${result.without.length} ${T('topt.noCoord', 'tappe senza posizione resteranno nel Giorno 1.')}</p>` : ''}
         <div style="display:flex;gap:8px;margin-top:4px;">
-          <button id="topt-apply" style="flex:2;padding:12px;background:var(--l-accent);border:none;border-radius:9px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">✅ ${T('topt.apply', 'Applica')}</button>
-          <button id="topt-cancel" style="flex:1;padding:12px;background:rgba(20,30,60,0.04);border:1.5px solid var(--l-hair);border-radius:9px;color:var(--l-ink);font-weight:600;font-size:13px;cursor:pointer;">${T('common.cancel', 'Annulla')}</button>
+          <button id="topt-apply" style="flex:2;padding:12px;background:var(--l-accent);border:none;border-radius:9px;color:#fff;font-weight:700;font-size:16px;cursor:pointer;">✅ ${T('topt.apply', 'Applica')}</button>
+          <button id="topt-cancel" style="flex:1;padding:12px;background:rgba(20,30,60,0.04);border:1.5px solid var(--l-hair);border-radius:9px;color:var(--l-ink);font-weight:600;font-size:15px;cursor:pointer;">${T('common.cancel', 'Annulla')}</button>
         </div>
-        <p style="font-size:10.5px;color:var(--l-faint);text-align:center;margin:2px 0 0;">${T('topt.undoHint', 'Puoi annullare con ⬅️ o ripristinare una versione salvata.')}</p>
+        <p style="font-size:12px;color:var(--l-faint);text-align:center;margin:2px 0 0;">${T('topt.undoHint', 'Puoi annullare con ⬅️ o ripristinare una versione salvata.')}</p>
       </div>
     `;
 

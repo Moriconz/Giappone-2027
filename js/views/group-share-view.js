@@ -19,7 +19,7 @@ function showNoGroupModal() {
       <div style="background:linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,20,147,.1));border:1px solid var(--m-accent);border-radius:10px;padding:16px;margin:12px;">
         <h3 style="margin:0 0 12px 0;color:var(--m-accent);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">⚠️ Non sei in nessun gruppo</h3>
 
-        <p style="margin:0 0 16px 0;color:var(--l-ink);font-size:13px;line-height:1.5;">
+        <p style="margin:0 0 16px 0;color:var(--l-ink);font-size:15px;line-height:1.5;">
           Per condividere il tuo itinerario con altri, devi prima entrare in un gruppo oppure crearne uno nuovo.
         </p>
 
@@ -100,8 +100,8 @@ function showShareItineraryModal() {
         <h3 style="margin:0 0 12px 0;color:var(--l-accent);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📤 Condividi Itinerario</h3>
 
         <div style="background:#E8F4FF;border:2px solid #16a34a;border-radius:8px;padding:12px;margin-bottom:12px;">
-          <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:14px">Stanza: ${escapeHtml(roomId)}</p>
-          <p style="margin:0;color:#666;font-size:12px">Tappe: <strong>${_allPOIs.length}</strong></p>
+          <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:16px">Stanza: ${escapeHtml(roomId)}</p>
+          <p style="margin:0;color:#666;font-size:14px">Tappe: <strong>${_allPOIs.length}</strong></p>
         </div>
 
         <div style="display:flex;gap:8px">
@@ -250,7 +250,7 @@ function showGroupItineraryEditor(itineraryId, itinerary) {
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
         <div style="flex:1">
           <input type="text" class="poi-name-edit" data-poi-idx="${idx}" value="${escapeHtml(poi.name?.value || poi.name || '')}"
-            style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px">
+            style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:14px">
         </div>
         <button class="poi-delete-btn" data-poi-idx="${idx}" aria-label="Elimina POI"
           style="background:#FF6B6B;border:none;color:white;border-radius:4px;padding:4px 8px;cursor:pointer;font-weight:600;flex-shrink:0">
@@ -258,7 +258,7 @@ function showGroupItineraryEditor(itineraryId, itinerary) {
         </button>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:8px">
-        <select class="poi-cat-edit" data-poi-idx="${idx}" style="flex:1;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:11px">
+        <select class="poi-cat-edit" data-poi-idx="${idx}" style="flex:1;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:13px">
           ${Object.keys(CATS).map(catKey => {
             const catData = CATS[catKey];
             const emoji = CAT_EMOJI[catKey] || '📍';
@@ -268,8 +268,8 @@ function showGroupItineraryEditor(itineraryId, itinerary) {
         </select>
       </div>
       <textarea class="poi-notes-edit" data-poi-idx="${idx}" placeholder="Note..."
-        style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:11px;resize:vertical;min-height:40px">${escapeHtml(poi.notes?.value || poi.notes || '')}</textarea>
-      <div style="font-size:12px;color:#999;margin-top:4px">📍 ${poi.lat?.toFixed(4)}, ${poi.lng?.toFixed(4)}</div>
+        style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:13px;resize:vertical;min-height:40px">${escapeHtml(poi.notes?.value || poi.notes || '')}</textarea>
+      <div style="font-size:14px;color:#999;margin-top:4px">📍 ${poi.lat?.toFixed(4)}, ${poi.lng?.toFixed(4)}</div>
     </div>
   `).join('');
 
@@ -278,14 +278,14 @@ function showGroupItineraryEditor(itineraryId, itinerary) {
       <!-- Header -->
       <div style="background:linear-gradient(135deg,rgba(74,124,89,.08),rgba(224,65,78,.06));border:1px solid rgba(20,30,60,.12);border-radius:10px;padding:12px;margin:12px 12px 0">
         <input type="text" id="itin-name-input" value="${escapeHtml(itinName)}"
-          style="width:100%;padding:8px;border:2px solid var(--l-accent);border-radius:6px;font-weight:600;color:var(--l-accent);font-size:14px">
-        <div style="font-size:11px;color:#666;margin-top:6px">📍 ${pois.length} tappe • v${itinerary.version || 1}</div>
+          style="width:100%;padding:8px;border:2px solid var(--l-accent);border-radius:6px;font-weight:600;color:var(--l-accent);font-size:16px">
+        <div style="font-size:13px;color:#666;margin-top:6px">📍 ${pois.length} tappe • v${itinerary.version || 1}</div>
       </div>
 
       <!-- POIs List -->
       <div style="flex:1;overflow-y:auto;padding:0 12px;margin:0">
         <div id="pois-editor-list">
-          ${poisHtml || '<p style="color:#999;font-size:12px">Nessun POI. Aggiungi uno nuovo con il bottone qui sotto.</p>'}
+          ${poisHtml || '<p style="color:#999;font-size:14px">Nessun POI. Aggiungi uno nuovo con il bottone qui sotto.</p>'}
         </div>
       </div>
 
@@ -456,7 +456,7 @@ function addPoiToEditor(googlePlace, itinerary) {
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
         <div style="flex:1">
           <input type="text" class="poi-name-edit" data-poi-idx="${newIdx}" value="${escapeHtml(newPoi.name.value)}"
-            style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px">
+            style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:14px">
         </div>
         <button class="poi-delete-btn" data-poi-idx="${newIdx}"
           style="background:#FF6B6B;border:none;color:white;border-radius:4px;padding:4px 8px;cursor:pointer;font-weight:600;flex-shrink:0">
@@ -464,7 +464,7 @@ function addPoiToEditor(googlePlace, itinerary) {
         </button>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:8px">
-        <select class="poi-cat-edit" data-poi-idx="${newIdx}" style="flex:1;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:11px">
+        <select class="poi-cat-edit" data-poi-idx="${newIdx}" style="flex:1;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:13px">
           <option value="poi" selected>📍 POI</option>
           <option value="albergo">🏨 Albergo</option>
           <option value="ristorante">🍜 Ristorante</option>
@@ -473,8 +473,8 @@ function addPoiToEditor(googlePlace, itinerary) {
         </select>
       </div>
       <textarea class="poi-notes-edit" data-poi-idx="${newIdx}" placeholder="Note..."
-        style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:11px;resize:vertical;min-height:40px"></textarea>
-      <div style="font-size:12px;color:#999;margin-top:4px">📍 ${newPoi.lat.toFixed(4)}, ${newPoi.lng.toFixed(4)}</div>
+        style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:13px;resize:vertical;min-height:40px"></textarea>
+      <div style="font-size:14px;color:#999;margin-top:4px">📍 ${newPoi.lat.toFixed(4)}, ${newPoi.lng.toFixed(4)}</div>
     `;
 
     poisList.appendChild(newRow);

@@ -259,10 +259,10 @@
 
     if (groups.length === 0) {
       const empty = `
-        <div style="padding:24px 14px;text-align:center;color:var(--l-muted);font-size:13px;line-height:1.6;">
+        <div style="padding:24px 14px;text-align:center;color:var(--l-muted);font-size:15px;line-height:1.6;">
           <div style="font-size:36px;margin-bottom:8px;">✅</div>
           <p style="margin:0;">${T('cr.empty', 'Nessun conflitto da rivedere.')}</p>
-          <p style="margin:6px 0 0;font-size:11.5px;color:var(--l-faint);">
+          <p style="margin:6px 0 0;font-size:13px;color:var(--l-faint);">
             ${T('cr.emptyHint', 'Apparirà qui se qualcun altro nel gruppo sovrascrive una tua modifica.')}
           </p>
         </div>
@@ -283,33 +283,33 @@
             border:1px solid var(--l-hair);border-radius:10px;
             display:flex;flex-direction:column;gap:8px;">
             <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;">
-              <div style="font-weight:700;color:var(--l-ink);font-size:13px;">${_esc(c.poiName)}</div>
-              <code style="background:rgba(20,30,60,0.06);padding:2px 8px;border-radius:4px;font-size:11px;color:var(--l-muted);">${_esc(c.field)}</code>
+              <div style="font-weight:700;color:var(--l-ink);font-size:15px;">${_esc(c.poiName)}</div>
+              <code style="background:rgba(20,30,60,0.06);padding:2px 8px;border-radius:4px;font-size:13px;color:var(--l-muted);">${_esc(c.field)}</code>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11.5px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
               <div style="padding:8px;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);border-radius:6px;">
-                <div style="font-size:10px;color:#15803d;font-weight:700;letter-spacing:.5px;margin-bottom:3px;">${T('cr.mine', 'TUO')}</div>
+                <div style="font-size:12px;color:#15803d;font-weight:700;letter-spacing:.5px;margin-bottom:3px;">${T('cr.mine', 'TUO')}</div>
                 <div style="color:var(--l-ink);word-break:break-word;">${_fmtValue(c.local)}</div>
               </div>
               <div style="padding:8px;background:rgba(255,180,80,0.10);border:1px solid rgba(255,180,80,0.3);border-radius:6px;">
-                <div style="font-size:10px;color:#8a5a10;font-weight:700;letter-spacing:.5px;margin-bottom:3px;">${T('cr.theirs', 'GRUPPO')}</div>
+                <div style="font-size:12px;color:#8a5a10;font-weight:700;letter-spacing:.5px;margin-bottom:3px;">${T('cr.theirs', 'GRUPPO')}</div>
                 <div style="color:var(--l-ink);word-break:break-word;">${_fmtValue(c.remote)}</div>
               </div>
             </div>
-            <div style="font-size:11px;color:${winnerColor};font-weight:600;">→ ${winnerLabel}</div>
+            <div style="font-size:13px;color:${winnerColor};font-weight:600;">→ ${winnerLabel}</div>
             <div style="display:flex;gap:8px;">
               <button data-cr-keep="${_esc(g.itineraryId)}|${_esc(c.poiId)}|${_esc(c.field)}|${_esc(c.local)}"
                 style="
                   flex:1;padding:8px 10px;background:rgba(22,163,74,0.16);
                   border:1.5px solid rgba(22,163,74,0.45);border-radius:6px;
-                  color:#15803d;font-size:11.5px;font-weight:600;cursor:pointer;">
+                  color:#15803d;font-size:13px;font-weight:600;cursor:pointer;">
                 ↩️ ${T('cr.keepMine', 'Tieni la mia')}
               </button>
               <button data-cr-dismiss-one="${_esc(g.itineraryId)}|${_esc(c.poiId)}|${_esc(c.field)}"
                 style="
                   flex:1;padding:8px 10px;background:rgba(20,30,60,0.04);
                   border:1.5px solid var(--l-hair);border-radius:6px;
-                  color:var(--l-ink);font-size:11.5px;font-weight:600;cursor:pointer;">
+                  color:var(--l-ink);font-size:13px;font-weight:600;cursor:pointer;">
                 ✓ ${T('cr.acceptAuto', 'Accetta scelta')}
               </button>
             </div>
@@ -320,14 +320,14 @@
       return `
         <div style="display:flex;flex-direction:column;gap:10px;padding:12px;background:rgba(20,30,60,0.02);border:1px solid var(--l-hair);border-radius:12px;margin-bottom:14px;">
           <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;">
-            <div style="font-size:11.5px;color:var(--l-muted);font-family:'SF Mono',Menlo,monospace;">${_esc(g.itineraryId)}</div>
-            <div style="font-size:10.5px;color:var(--l-faint);">${_fmtTime(g.timestamp)}</div>
+            <div style="font-size:13px;color:var(--l-muted);font-family:'SF Mono',Menlo,monospace;">${_esc(g.itineraryId)}</div>
+            <div style="font-size:12px;color:var(--l-faint);">${_fmtTime(g.timestamp)}</div>
           </div>
           ${rows}
           <button data-cr-dismiss-all="${_esc(g.itineraryId)}" style="
             margin-top:6px;padding:7px 10px;background:rgba(20,30,60,0.03);
             border:1.5px solid var(--l-hair);border-radius:6px;
-            color:var(--l-muted);font-size:11px;cursor:pointer;">
+            color:var(--l-muted);font-size:13px;cursor:pointer;">
             ${T('cr.dismissGroup', 'Ho visto, nascondi tutti questi')}
           </button>
         </div>
@@ -337,10 +337,10 @@
     const totalCount = groups.reduce((s, g) => s + g.details.length, 0);
     const html = `
       <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0;">
-        <p style="margin:0 0 8px 0;color:var(--l-muted);font-size:12px;line-height:1.5;">
+        <p style="margin:0 0 8px 0;color:var(--l-muted);font-size:14px;line-height:1.5;">
           ${T('cr.intro', 'Le tue modifiche sono state automaticamente sovrascritte da quelle di altri membri del gruppo (last-write-wins via CRDT). Qui puoi rivedere ognuna e, se vuoi, riapplicare il tuo valore.')}
         </p>
-        <p style="margin:0 0 12px 0;font-size:11.5px;color:var(--l-muted);">
+        <p style="margin:0 0 12px 0;font-size:13px;color:var(--l-muted);">
           ${totalCount} ${T('cr.itemsToReview', 'conflitti da rivedere')}
         </p>
         ${blocksHtml}

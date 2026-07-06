@@ -152,8 +152,8 @@ function openBackupPanel() {
         border-radius: 12px;
         padding: 14px 16px;
       ">
-        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:6px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;">Stato attuale</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.85);line-height:1.5">${currentSummary}</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:6px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;">Stato attuale</div>
+        <div style="font-size:15px;color:rgba(255,255,255,0.85);line-height:1.5">${currentSummary}</div>
       </div>
 
       <!-- Warning -->
@@ -162,7 +162,7 @@ function openBackupPanel() {
         border: 1px solid rgba(251,146,60,0.2);
         border-radius: 10px;
         padding: 10px 14px;
-        font-size: 12px;
+        font-size:14px;
         color: rgba(251,146,60,0.9);
         line-height: 1.4;
       ">
@@ -177,14 +177,14 @@ function openBackupPanel() {
         border: 1.5px solid rgba(99,102,241,0.4);
         border-radius: 12px;
         color: rgba(255,255,255,0.9);
-        font-size: 14px; font-weight: 600;
+        font-size:16px; font-weight: 600;
         cursor: pointer; text-align: left; width: 100%;
         font-family: inherit;
       ">
         <span style="font-size:20px">📦</span>
         <div>
           <div>Esporta backup</div>
-          <div style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.5);margin-top:2px">Scarica giappone2027-backup-${date}.json</div>
+          <div style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.5);margin-top:2px">Scarica giappone2027-backup-${date}.json</div>
         </div>
       </button>
 
@@ -196,14 +196,14 @@ function openBackupPanel() {
         border: 1px solid rgba(255,255,255,0.12);
         border-radius: 12px;
         color: rgba(255,255,255,0.75);
-        font-size: 14px; font-weight: 600;
+        font-size:16px; font-weight: 600;
         cursor: pointer; text-align: left; width: 100%;
         font-family: inherit;
       ">
         <span style="font-size:20px">📂</span>
         <div>
           <div>Ripristina backup</div>
-          <div style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:2px">Carica un file .json precedentemente esportato</div>
+          <div style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:2px">Carica un file .json precedentemente esportato</div>
         </div>
       </button>
 

@@ -219,7 +219,7 @@ document.addEventListener('click', (e) => {
     textarea.placeholder = 'Es: Prenotare con 2 giorni di anticipo...';
     textarea.style.cssText = `
       width:100%;padding:12px;background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);
-      border-radius:10px;font-size:13px;color:var(--l-ink);resize:vertical;min-height:70px;font-family:inherit;
+      border-radius:10px;font-size:15px;color:var(--l-ink);resize:vertical;min-height:70px;font-family:inherit;
       box-sizing:border-box;transition:border-color 0.2s;margin-bottom:8px;
     `;
     textarea.onmouseover = function() { this.style.borderColor = 'rgba(20,30,60,0.2)'; };
@@ -236,7 +236,7 @@ document.addEventListener('click', (e) => {
     saveBtn.textContent = '✓ Salva';
     saveBtn.style.cssText = `
       flex:1;padding:8px;background:rgba(217,119,6,0.8);border:none;border-radius:6px;
-      color:#fff;font-size:12px;cursor:pointer;transition:background 0.2s;
+      color:#fff;font-size:14px;cursor:pointer;transition:background 0.2s;
     `;
     saveBtn.onmouseover = function() { this.style.background = 'rgba(217,119,6,1)'; };
     saveBtn.onmouseout = function() { this.style.background = 'rgba(217,119,6,0.8)'; };
@@ -255,7 +255,7 @@ document.addEventListener('click', (e) => {
     closeBtn.textContent = '✕ Chiudi';
     closeBtn.style.cssText = `
       flex:1;padding:8px;background:transparent;border:1px solid var(--l-hair);border-radius:6px;
-      color:var(--l-muted);font-size:12px;cursor:pointer;transition:all 0.2s;
+      color:var(--l-muted);font-size:14px;cursor:pointer;transition:all 0.2s;
     `;
     closeBtn.onmouseover = function() { this.style.borderColor = 'rgba(20,30,60,0.3)'; };
     closeBtn.onmouseout = function() { this.style.borderColor = 'var(--l-hair)'; };

@@ -27,7 +27,7 @@
     window.openSheet('🌤️ Meteo', `
       <div class="weather-container" style="text-align:center;padding:40px 20px;">
         <div style="font-size:48px;margin-bottom:16px;">⏳</div>
-        <p style="color:var(--y2k-ink);font-size:14px;margin:0;">Caricamento previsioni meteo...</p>
+        <p style="color:var(--y2k-ink);font-size:16px;margin:0;">Caricamento previsioni meteo...</p>
       </div>
     `);
 
@@ -75,8 +75,8 @@
                   <div class="hourly-time">${dayStr} ${timeStr}</div>
                   <div class="hourly-icon">${icon}</div>
                   <div class="hourly-temp">${temp}°C</div>
-                  <div class="hourly-condition" style="font-size:12px;">${condition}</div>
-                  <div class="hourly-details" style="font-size:12px;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,0,0,0.1);">
+                  <div class="hourly-condition" style="font-size:14px;">${condition}</div>
+                  <div class="hourly-details" style="font-size:14px;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,0,0,0.1);">
                     💧 ${precip}mm | 💨 ${wind}km | 💦 ${humidity}%
                   </div>
                 </div>
@@ -91,7 +91,7 @@
                 <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
               </div>
               <div style="text-align:center;padding:20px;background:rgba(255,107,107,0.1);border-radius:10px;">
-                <div style="color:#FF6B6B;font-size:13px;">⚠️ Impossibile caricare meteo per la tua posizione</div>
+                <div style="color:#FF6B6B;font-size:15px;">⚠️ Impossibile caricare meteo per la tua posizione</div>
               </div>
             `;
           }
@@ -102,7 +102,7 @@
               <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
             </div>
             <div style="text-align:center;padding:20px;background:rgba(255,107,107,0.1);border-radius:10px;">
-              <div style="color:#FF6B6B;font-size:13px;">📍 GPS non disponibile - consenti accesso alla posizione</div>
+              <div style="color:#FF6B6B;font-size:15px;">📍 GPS non disponibile - consenti accesso alla posizione</div>
             </div>
           `;
         }
@@ -150,8 +150,8 @@
                 <div class="weather-city">
                   <h3>${city}</h3>
                   <div style="background:rgba(255,107,107,0.1);border:2px solid #FF6B6B;border-radius:10px;padding:16px;text-align:center;">
-                    <div style="color:#FF6B6B;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:14px;margin-bottom:4px;">⚠️ Errore</div>
-                    <p style="color:#FF6B6B;font-size:12px;margin:0;opacity:0.8;">Non riusciamo a caricare i dati meteo.</p>
+                    <div style="color:#FF6B6B;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:16px;margin-bottom:4px;">⚠️ Errore</div>
+                    <p style="color:#FF6B6B;font-size:14px;margin:0;opacity:0.8;">Non riusciamo a caricare i dati meteo.</p>
                   </div>
                 </div>
               `;
@@ -197,7 +197,7 @@
       if (itinerary.length === 0 && gpsSection) {
         weatherHtml += `
           <div style="text-align:center;padding:20px;margin-top:20px;">
-            <p style="color:var(--y2k-muted);font-size:13px;margin:0;line-height:1.5;">💡 Aggiungi tappe per vedere il meteo per le tue destinazioni!</p>
+            <p style="color:var(--y2k-muted);font-size:15px;margin:0;line-height:1.5;">💡 Aggiungi tappe per vedere il meteo per le tue destinazioni!</p>
           </div>
         `;
       }
@@ -522,7 +522,7 @@
         </div>
         <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
           <div class="weather-card-icon">${icon}</div>
-          <div style="font-size: 14px; color: var(--l-muted); text-align: center;">${condition}</div>
+          <div style="font-size:16px; color: var(--l-muted); text-align: center;">${condition}</div>
         </div>
         <div>
           <div class="weather-card-temp">${tempMax}<span class="weather-card-temp-unit">°C</span></div>
@@ -594,8 +594,8 @@
 
     // Badge for GPS status
     const badge = isGPS
-      ? '<span style="background:#00FF88;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;margin-left:8px;">📍 GPS</span>'
-      : '<span style="background:#FFD700;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;margin-left:8px;">⚠️ FALLBACK</span>';
+      ? '<span style="background:#00FF88;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:14px;font-weight:700;margin-left:8px;">📍 GPS</span>'
+      : '<span style="background:#FFD700;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:14px;font-weight:700;margin-left:8px;">⚠️ FALLBACK</span>';
 
     // Build daily forecast cards
     let dailyHtml = '';
@@ -633,14 +633,14 @@
                 <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:0;font-size:18px;font-weight:700;">${locationName}</h2>
                 ${badge}
               </div>
-              <p style="color:var(--y2k-muted);margin:0;font-size:12px;font-family:'Courier New',monospace;">${dateStr}</p>
+              <p style="color:var(--y2k-muted);margin:0;font-size:14px;font-family:'Courier New',monospace;">${dateStr}</p>
             </div>
             <div style="text-align:right;">
               <div style="display:flex;align-items:center;gap:12px;">
                 <div style="font-size:48px;line-height:1;">${icon}</div>
                 <div>
                   <div style="font-size:36px;font-weight:700;font-family:'Courier New',monospace;margin:0;line-height:1;color:var(--y2k-ink);">${currentTemp}°</div>
-                  <p style="color:var(--y2k-muted);margin:2px 0 0 0;font-size:11px;text-transform:capitalize;font-family:'Courier New';">${currentCondition}</p>
+                  <p style="color:var(--y2k-muted);margin:2px 0 0 0;font-size:13px;text-transform:capitalize;font-family:'Courier New';">${currentCondition}</p>
                 </div>
               </div>
             </div>
@@ -651,18 +651,18 @@
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;padding:0 16px;">
           <div style="background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
             <div style="font-size:20px;line-height:1;">💧</div>
-            <div style="font-size:11px;color:var(--l-muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Precip.</div>
-            <div style="font-size:22px;font-weight:800;color:var(--l-ink);font-family:'Courier New',monospace;line-height:1.1;">${precip}<span style="font-size:13px;font-weight:600;margin-left:2px;">mm</span></div>
+            <div style="font-size:13px;color:var(--l-muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Precip.</div>
+            <div style="font-size:22px;font-weight:800;color:var(--l-ink);font-family:'Courier New',monospace;line-height:1.1;">${precip}<span style="font-size:15px;font-weight:600;margin-left:2px;">mm</span></div>
           </div>
           <div style="background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
             <div style="font-size:20px;line-height:1;">💦</div>
-            <div style="font-size:11px;color:var(--l-muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Umidità</div>
-            <div style="font-size:22px;font-weight:800;color:var(--l-ink);font-family:'Courier New',monospace;line-height:1.1;">${humidity}<span style="font-size:13px;font-weight:600;margin-left:2px;">%</span></div>
+            <div style="font-size:13px;color:var(--l-muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Umidità</div>
+            <div style="font-size:22px;font-weight:800;color:var(--l-ink);font-family:'Courier New',monospace;line-height:1.1;">${humidity}<span style="font-size:15px;font-weight:600;margin-left:2px;">%</span></div>
           </div>
           <div style="background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
             <div style="font-size:20px;line-height:1;">💨</div>
-            <div style="font-size:11px;color:var(--l-muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Vento</div>
-            <div style="font-size:22px;font-weight:800;color:var(--l-ink);font-family:'Courier New',monospace;line-height:1.1;">${wind}<span style="font-size:13px;font-weight:600;margin-left:2px;">km/h</span></div>
+            <div style="font-size:13px;color:var(--l-muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Vento</div>
+            <div style="font-size:22px;font-weight:800;color:var(--l-ink);font-family:'Courier New',monospace;line-height:1.1;">${wind}<span style="font-size:15px;font-weight:600;margin-left:2px;">km/h</span></div>
           </div>
         </div>
 
@@ -676,7 +676,7 @@
 
         <!-- Footer -->
         <div style="padding:16px;text-align:center;border-top:2px solid var(--y2k-pink);margin-top:20px;">
-          <p style="color:var(--y2k-muted);font-size:11px;margin:0;font-family:'Courier New',monospace;">📡 Dati da OpenMeteo | Aggiornamento ogni 10 min</p>
+          <p style="color:var(--y2k-muted);font-size:13px;margin:0;font-family:'Courier New',monospace;">📡 Dati da OpenMeteo | Aggiornamento ogni 10 min</p>
         </div>
       </div>
     `;
@@ -694,7 +694,7 @@
     window.openSheet('🌤️ Meteo', `
       <div style="padding:20px;text-align:center;">
         <div style="font-size:48px;margin-bottom:16px;">⏳</div>
-        <p style="color:var(--y2k-ink);font-size:14px;margin:0;">📍 Acquisendo posizione...</p>
+        <p style="color:var(--y2k-ink);font-size:16px;margin:0;">📍 Acquisendo posizione...</p>
       </div>
     `);
 

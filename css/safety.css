@@ -13,7 +13,7 @@
   padding: 10px 16px;
   border-radius: 999px;
   font-weight: 700;
-  font-size: 12px;
+  font-size:14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
@@ -214,13 +214,13 @@
  */
 @media (max-width: 640px) {
   .safety-badge {
-    font-size: 11px;
+    font-size:13px;
     padding: 8px 12px;
     gap: 6px;
   }
 
   .safety-badge::before {
-    font-size: 14px;
+    font-size:16px;
     width: 18px;
   }
 }

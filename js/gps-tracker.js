@@ -70,7 +70,7 @@
         try {
           const payload = { type:'gps', lat:pt.lat, lng:pt.lng,
             name: window.state.group?.myName||'?', avatar: window.state.group?.myAvatar||null };
-          console.log(`%c[GPS] 📍 Trasmettendo posizione: (${pt.lat.toFixed(4)}, ${pt.lng.toFixed(4)}) - ${window.state.group?.myName}`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px;font-size:11px');
+          console.log(`%c[GPS] 📍 Trasmettendo posizione: (${pt.lat.toFixed(4)}, ${pt.lng.toFixed(4)}) - ${window.state.group?.myName}`, 'background:#4A7C59;color:white;padding:4px 8px;border-radius:3px;font-size:13px');
           window.peerBroadcast(payload);
         } catch(e) {}
       }
@@ -106,16 +106,16 @@
   function buildGPSPanelHTML(active,pts,lat,lng){
     return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px">
+        <div style="font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px">
           <span style="width:8px;height:8px;border-radius:50%;background:${active?'var(--success)':'var(--muted)'};display:inline-block;${active?'box-shadow:0 0 0 3px rgba(74,124,89,.25)':''}"></span>
           GPS ${active?'attivo':'inattivo'}
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:3px">${active?lat+', '+lng:'Nessuna posizione'} · ${pts} punti</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:3px">${active?lat+', '+lng:'Nessuna posizione'} · ${pts} punti</div>
       </div>
-      <button id="gps-toggle-btn" class="btn ${active?'success':''}" style="font-size:12px;padding:6px 10px">
+      <button id="gps-toggle-btn" class="btn ${active?'success':''}" style="font-size:14px;padding:6px 10px">
         ${active?'⏹ Stop':'▶ Start GPS'}
       </button>
-      ${pts>0?`<button id="gps-clear-btn" class="btn" aria-label="Cancella traccia GPS" style="font-size:12px;padding:6px 10px">🗑️</button>`:''}
+      ${pts>0?`<button id="gps-clear-btn" class="btn" aria-label="Cancella traccia GPS" style="font-size:14px;padding:6px 10px">🗑️</button>`:''}
     </div>`;
   }
 

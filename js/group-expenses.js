@@ -127,7 +127,7 @@
 
     const balRows = Object.entries(bal).sort((a, b) => b[1] - a[1]).map(([m, v]) => `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(20,30,60,0.08);">
-        <span style="color:var(--l-ink);font-size:14px;font-weight:600;">${_esc(m)}${m === me ? ' <span style="font-size:10px;color:var(--l-muted)">(tu)</span>' : ''}</span>
+        <span style="color:var(--l-ink);font-size:16px;font-weight:600;">${_esc(m)}${m === me ? ' <span style="font-size:12px;color:var(--l-muted)">(tu)</span>' : ''}</span>
         <span style="font-weight:700;color:${v > 1 ? '#16a34a' : v < -1 ? '#dc2626' : 'var(--l-muted)'};">${v > 1 ? '+' : ''}${_yen(v)}</span>
       </div>`).join('');
 
@@ -137,16 +137,16 @@
         <span style="color:var(--l-muted);">→</span>
         <span style="color:#16a34a;font-weight:700;">${_esc(s.to)}</span>
         <span style="margin-left:auto;color:var(--l-ink);font-weight:800;">${_yen(s.amount)}</span>
-      </div>`).join('') : `<p style="color:var(--l-muted);font-size:13px;text-align:center;padding:10px;">${T('exp.allSettled', '✅ Tutti pari, nessun rimborso')}</p>`;
+      </div>`).join('') : `<p style="color:var(--l-muted);font-size:15px;text-align:center;padding:10px;">${T('exp.allSettled', '✅ Tutti pari, nessun rimborso')}</p>`;
 
     const expRows = _list().slice().reverse().map(e => `
       <div style="display:flex;align-items:center;gap:8px;padding:10px;background:rgba(20,30,60,0.03);border:1px solid rgba(20,30,60,0.08);border-radius:8px;margin-bottom:6px;">
         <div style="flex:1;min-width:0;">
-          <div style="color:var(--l-ink);font-size:13px;font-weight:600;">${_esc(e.desc)}</div>
-          <div style="color:var(--l-muted);font-size:11px;">${T('exp.paidBy', 'pagato da')} ${_esc(e.paidBy)} · ${T('exp.splitN', 'diviso tra')} ${e.splitAmong.length}</div>
+          <div style="color:var(--l-ink);font-size:15px;font-weight:600;">${_esc(e.desc)}</div>
+          <div style="color:var(--l-muted);font-size:13px;">${T('exp.paidBy', 'pagato da')} ${_esc(e.paidBy)} · ${T('exp.splitN', 'diviso tra')} ${e.splitAmong.length}</div>
         </div>
-        <div style="color:var(--l-ink);font-weight:700;font-size:14px;">${_yen(e.amount)}</div>
-        ${(e.by === me || e.paidBy === me) ? `<button onclick="window.GroupExpenses.remove('${_esc(e.id)}')" style="background:none;border:none;color:var(--l-faint);cursor:pointer;font-size:14px;padding:4px;">🗑️</button>` : ''}
+        <div style="color:var(--l-ink);font-weight:700;font-size:16px;">${_yen(e.amount)}</div>
+        ${(e.by === me || e.paidBy === me) ? `<button onclick="window.GroupExpenses.remove('${_esc(e.id)}')" style="background:none;border:none;color:var(--l-faint);cursor:pointer;font-size:16px;padding:4px;">🗑️</button>` : ''}
       </div>`).join('');
 
     const html = `
@@ -154,32 +154,32 @@
         <!-- Saldi -->
         <div style="background:rgba(20,30,60,0.04);border:1px solid rgba(20,30,60,0.1);border-radius:12px;padding:14px;margin-bottom:12px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-            <h3 style="margin:0;color:var(--m-accent,#ff7a45);font-size:14px;font-weight:700;">${T('exp.balances', 'Saldi')}</h3>
-            <span style="color:var(--l-muted);font-size:12px;">${T('exp.total', 'Totale')}: ${_yen(total)}</span>
+            <h3 style="margin:0;color:var(--m-accent,#ff7a45);font-size:16px;font-weight:700;">${T('exp.balances', 'Saldi')}</h3>
+            <span style="color:var(--l-muted);font-size:14px;">${T('exp.total', 'Totale')}: ${_yen(total)}</span>
           </div>
-          ${balRows || `<p style="color:var(--l-muted);font-size:13px;">${T('exp.noMembers', 'Nessun membro')}</p>`}
+          ${balRows || `<p style="color:var(--l-muted);font-size:15px;">${T('exp.noMembers', 'Nessun membro')}</p>`}
         </div>
 
         <!-- Rimborsi -->
         <div style="background:rgba(20,30,60,0.04);border:1px solid rgba(20,30,60,0.1);border-radius:12px;padding:14px;margin-bottom:12px;">
-          <h3 style="margin:0 0 10px;color:var(--m-accent,#ff7a45);font-size:14px;font-weight:700;">${T('exp.whoOwes', 'Chi deve a chi')}</h3>
+          <h3 style="margin:0 0 10px;color:var(--m-accent,#ff7a45);font-size:16px;font-weight:700;">${T('exp.whoOwes', 'Chi deve a chi')}</h3>
           ${settRows}
         </div>
 
         <!-- Aggiungi spesa -->
         <div style="background:rgba(20,30,60,0.04);border:1px solid rgba(20,30,60,0.1);border-radius:12px;padding:14px;margin-bottom:12px;">
-          <h3 style="margin:0 0 10px;color:var(--m-accent,#ff7a45);font-size:14px;font-weight:700;">${T('exp.add', 'Aggiungi spesa')}</h3>
-          <input id="exp-desc" type="text" placeholder="${T('exp.descPh', 'Es: cena ramen GF')}" style="width:100%;padding:9px;margin-bottom:8px;background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.15);border-radius:7px;color:var(--l-ink);font-size:13px;box-sizing:border-box;">
+          <h3 style="margin:0 0 10px;color:var(--m-accent,#ff7a45);font-size:16px;font-weight:700;">${T('exp.add', 'Aggiungi spesa')}</h3>
+          <input id="exp-desc" type="text" placeholder="${T('exp.descPh', 'Es: cena ramen GF')}" style="width:100%;padding:9px;margin-bottom:8px;background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.15);border-radius:7px;color:var(--l-ink);font-size:15px;box-sizing:border-box;">
           <div style="display:flex;gap:8px;margin-bottom:8px;">
-            <input id="exp-amount" type="number" min="0" placeholder="¥0" style="flex:1;padding:9px;background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.15);border-radius:7px;color:var(--l-ink);font-size:13px;box-sizing:border-box;">
-            <select id="exp-paidby" style="flex:1;padding:9px;background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.15);border-radius:7px;color:var(--l-ink);font-size:13px;">${memberOpts}</select>
+            <input id="exp-amount" type="number" min="0" placeholder="¥0" style="flex:1;padding:9px;background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.15);border-radius:7px;color:var(--l-ink);font-size:15px;box-sizing:border-box;">
+            <select id="exp-paidby" style="flex:1;padding:9px;background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.15);border-radius:7px;color:var(--l-ink);font-size:15px;">${memberOpts}</select>
           </div>
-          <button id="exp-add-btn" style="width:100%;padding:10px;background:rgba(255,107,53,0.2);border:1.5px solid rgba(255,107,53,0.45);border-radius:8px;color:var(--l-ink);font-size:14px;font-weight:700;cursor:pointer;">${T('exp.addBtn', '+ Registra spesa')}</button>
-          <p style="color:var(--l-faint);font-size:11px;margin:8px 0 0;">${T('exp.splitHint', 'Diviso equamente tra tutti i membri del gruppo.')}</p>
+          <button id="exp-add-btn" style="width:100%;padding:10px;background:rgba(255,107,53,0.2);border:1.5px solid rgba(255,107,53,0.45);border-radius:8px;color:var(--l-ink);font-size:16px;font-weight:700;cursor:pointer;">${T('exp.addBtn', '+ Registra spesa')}</button>
+          <p style="color:var(--l-faint);font-size:13px;margin:8px 0 0;">${T('exp.splitHint', 'Diviso equamente tra tutti i membri del gruppo.')}</p>
         </div>
 
         <!-- Lista spese -->
-        ${_list().length ? `<div style="margin-top:6px;"><h3 style="margin:0 0 8px;color:var(--l-muted);font-size:13px;">${T('exp.history', 'Spese')}</h3>${expRows}</div>` : ''}
+        ${_list().length ? `<div style="margin-top:6px;"><h3 style="margin:0 0 8px;color:var(--l-muted);font-size:15px;">${T('exp.history', 'Spese')}</h3>${expRows}</div>` : ''}
       </div>`;
 
     window.openSheet('💴 ' + T('exp.title', 'Spese di gruppo'), html);

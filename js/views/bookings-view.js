@@ -44,7 +44,7 @@
         <div class="section">${bookingBtns.join(' ')}</div>
       `;
         }).join('')
-      : '<p style="color:var(--muted);font-size:13px">Nessuna prenotazione disponibile.</p>';
+      : '<p style="color:var(--muted);font-size:15px">Nessuna prenotazione disponibile.</p>';
 
     window.openSheet('🍽️ Prenota', html);
 

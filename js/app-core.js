@@ -372,11 +372,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (sec) {
         sec.innerHTML = `
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <label style="font-size:12px;color:rgba(255,255,255,0.6);font-weight:600;letter-spacing:0.3px">📝 Note</label>
+            <label style="font-size:14px;color:rgba(255,255,255,0.6);font-weight:600;letter-spacing:0.3px">📝 Note</label>
           </div>
           <textarea id="poi-note" placeholder="Es: Prenotare con 2 giorni di anticipo..." style="
             width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
-            border-radius:10px;font-size:13px;color:#fff;resize:vertical;min-height:70px;font-family:inherit;
+            border-radius:10px;font-size:15px;color:#fff;resize:vertical;min-height:70px;font-family:inherit;
             box-sizing:border-box;" onmouseover="this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>`;
         setTimeout(() => sec.querySelector('textarea')?.focus(), 0);
       }

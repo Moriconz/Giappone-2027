@@ -74,7 +74,7 @@
       html = `
         <div style="text-align:center; padding:40px 20px; color:var(--l-muted);">
           <div style="font-size:40px; margin-bottom:12px;">🗓️</div>
-          <div style="font-size:14px;">${esc(T('tl.empty', 'Nessuna tappa in itinerario. Aggiungi tappe dai POI sulla mappa!'))}</div>
+          <div style="font-size:16px;">${esc(T('tl.empty', 'Nessuna tappa in itinerario. Aggiungi tappe dai POI sulla mappa!'))}</div>
         </div>`;
     } else {
       const todayIdx = todayDayIndex();
@@ -93,11 +93,11 @@
               background:${isNext ? 'var(--l-accent-soft)' : 'rgba(20,30,60,0.04)'};
               border:1px solid ${isNext ? 'var(--l-accent-brd)' : 'var(--l-hair)'};
               border-radius:10px; padding:10px 12px; color:var(--l-ink);
-              font-size:13px; cursor:pointer; margin-bottom:6px;">
-              <span style="min-width:46px; font-weight:700; color:var(--l-accent); font-size:12px;">${esc(e.time || '—')}</span>
+              font-size:15px; cursor:pointer; margin-bottom:6px;">
+              <span style="min-width:46px; font-weight:700; color:var(--l-accent); font-size:14px;">${esc(e.time || '—')}</span>
               <span style="flex:1;">${esc(resolveName(e))}</span>
-              ${isNext ? `<span style="font-size:11px; font-weight:700; color:var(--l-accent);">⏱ ${esc(next.label)}</span>` : ''}
-              ${e.duration ? `<span style="font-size:11px; color:var(--l-muted);">${esc(e.duration)} ${esc(T('tl.min', 'min'))}</span>` : ''}
+              ${isNext ? `<span style="font-size:13px; font-weight:700; color:var(--l-accent);">⏱ ${esc(next.label)}</span>` : ''}
+              ${e.duration ? `<span style="font-size:13px; color:var(--l-muted);">${esc(e.duration)} ${esc(T('tl.min', 'min'))}</span>` : ''}
               ${status ? `<span>${status}</span>` : ''}
             </button>`;
         }).join('');
@@ -108,9 +108,9 @@
                         background:var(--l-accent); border:3px solid #fff;"></div>
             <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
               <span style="font-weight:800; font-size:15px; color:var(--l-ink);">${esc(T('tl.day', 'Giorno'))} ${d + 1}</span>
-              ${isToday ? `<span style="font-size:10px; font-weight:700; color:#fff; background:var(--l-accent); padding:2px 8px; border-radius:999px;">${esc(T('tl.today', 'OGGI'))}</span>` : ''}
-              ${dateStr ? `<span style="font-size:12px; color:var(--l-muted);">${esc(dateStr)}</span>` : ''}
-              <span style="margin-left:auto; font-size:11px; color:var(--l-faint);">
+              ${isToday ? `<span style="font-size:12px; font-weight:700; color:#fff; background:var(--l-accent); padding:2px 8px; border-radius:999px;">${esc(T('tl.today', 'OGGI'))}</span>` : ''}
+              ${dateStr ? `<span style="font-size:14px; color:var(--l-muted);">${esc(dateStr)}</span>` : ''}
+              <span style="margin-left:auto; font-size:13px; color:var(--l-faint);">
                 ${entries.length} ${esc(T('tl.stops', 'tappe'))}${totMin ? ` · ~${Math.round(totMin / 60 * 10) / 10}h` : ''}
               </span>
             </div>

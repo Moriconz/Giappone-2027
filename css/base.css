@@ -322,7 +322,7 @@
 .budget-container {
   padding: 20px !important;
   line-height: 1.8 !important;
-  font-size: 14px !important;
+  font-size:16px !important;
 }
 
 .budget-header {
@@ -342,7 +342,7 @@
 }
 
 .budget-header span {
-  font-size: 13px !important;
+  font-size:15px !important;
   font-weight: 600 !important;
   opacity: 0.9 !important;
 }
@@ -357,7 +357,7 @@
 .budget-progress-label {
   display: flex !important;
   justify-content: space-between !important;
-  font-size: 13px !important;
+  font-size:15px !important;
   font-weight: 600 !important;
   margin-bottom: 6px !important;
 }
@@ -374,7 +374,7 @@
   justify-content: space-between !important;
   padding: 12px 0 !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  font-size: 14px !important;
+  font-size:16px !important;
   line-height: 1.6 !important;
   gap: 12px !important;
 }
@@ -405,13 +405,13 @@
 
 .budget-setup-banner h3 {
   margin: 0 !important;
-  font-size: 14px !important;
+  font-size:16px !important;
   font-weight: 700 !important;
 }
 
 .budget-setup-banner p {
   margin: 0 !important;
-  font-size: 12px !important;
+  font-size:14px !important;
   line-height: 1.5 !important;
   opacity: 0.95 !important;
 }
@@ -428,7 +428,7 @@
   padding: 10px 12px !important;
   border-radius: 6px !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  font-size: 14px !important;
+  font-size:16px !important;
   background: rgba(255, 255, 255, 0.08) !important;
   color: #fff !important;
 }
@@ -438,7 +438,7 @@
   border-radius: 6px !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
   font-weight: 600 !important;
-  font-size: 13px !important;
+  font-size:15px !important;
   cursor: pointer !important;
   background: rgba(255, 107, 53, 0.2) !important;
   color: #fff !important;
@@ -455,7 +455,7 @@
 }
 
 .budget-total-label {
-  font-size: 13px !important;
+  font-size:15px !important;
   font-weight: 600 !important;
   color: rgba(255, 255, 255, 0.8) !important;
   margin-bottom: 8px !important;
@@ -480,7 +480,7 @@
 }
 
 .stat-card .stat-label {
-  font-size: 12px !important;
+  font-size:14px !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
@@ -501,7 +501,7 @@
 
 .budget-categories h3 {
   margin: 0 0 14px 0 !important;
-  font-size: 14px !important;
+  font-size:16px !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
@@ -517,7 +517,7 @@
 .budget-form-section h3,
 .budget-expenses-section h3 {
   margin: 0 0 14px 0 !important;
-  font-size: 14px !important;
+  font-size:16px !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
@@ -543,17 +543,17 @@
 
 .expense-item div[style*="font-weight:700"] {
   margin-bottom: 2px !important;
-  font-size: 13px !important;
+  font-size:15px !important;
 }
 
-.expense-item div[style*="font-size:11px"] {
-  font-size: 11px !important;
+.expense-item div[style*="font-size:13px"] {
+  font-size:13px !important;
   line-height: 1.3 !important;
   margin: 0 !important;
 }
 
 .expense-item button {
   margin: 0 !important;
-  font-size: 11px !important;
+  font-size:13px !important;
   padding: 0 !important;
 }

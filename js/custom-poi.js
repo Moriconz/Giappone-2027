@@ -191,7 +191,7 @@
     if (typeof window.openSheet !== 'function') return;
     const catBtns = CATS.map((c, i) => `
       <button type="button" data-cpoi-cat="${c.id}" style="
-        padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;
+        padding:8px 10px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;
         background:${i === 0 ? 'var(--l-accent-soft)' : 'rgba(20,30,60,0.05)'};
         border:1.5px solid ${i === 0 ? 'var(--l-accent-brd)' : 'var(--l-hair)'};
         color:var(--l-ink);display:flex;align-items:center;gap:6px;">
@@ -201,31 +201,31 @@
 
     const html = `
       <div style="padding:6px 2px;display:flex;flex-direction:column;gap:14px;">
-        <p style="margin:0;color:var(--l-muted);font-size:12.5px;line-height:1.5;">
+        <p style="margin:0;color:var(--l-muted);font-size:14px;line-height:1.5;">
           ${T('cpoi.intro', 'Crea un posto personalizzato in questa posizione. Apparirà sulla mappa e potrai aggiungerlo all\'itinerario.')}
         </p>
-        <div style="font-size:11px;color:var(--l-faint);font-family:'SF Mono',Menlo,monospace;">
+        <div style="font-size:13px;color:var(--l-faint);font-family:'SF Mono',Menlo,monospace;">
           📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}
         </div>
         <div>
-          <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:6px;font-weight:600;">${T('cpoi.name', 'Nome')}</label>
+          <label style="display:block;color:var(--l-muted);font-size:14px;margin-bottom:6px;font-weight:600;">${T('cpoi.name', 'Nome')}</label>
           <input id="cpoi-name" type="text" maxlength="80" placeholder="${T('cpoi.namePh', 'Es. Onsen segreto')}" style="
             width:100%;padding:10px;background:rgba(20,30,60,0.045);border:1px solid var(--l-hair);
-            border-radius:8px;color:var(--l-ink);font-size:14px;box-sizing:border-box;">
+            border-radius:8px;color:var(--l-ink);font-size:16px;box-sizing:border-box;">
         </div>
         <div>
-          <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:6px;font-weight:600;">${T('cpoi.cat', 'Categoria')}</label>
+          <label style="display:block;color:var(--l-muted);font-size:14px;margin-bottom:6px;font-weight:600;">${T('cpoi.cat', 'Categoria')}</label>
           <div id="cpoi-cats" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">${catBtns}</div>
         </div>
         <div>
-          <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:6px;font-weight:600;">${T('cpoi.note', 'Nota (opzionale)')}</label>
+          <label style="display:block;color:var(--l-muted);font-size:14px;margin-bottom:6px;font-weight:600;">${T('cpoi.note', 'Nota (opzionale)')}</label>
           <textarea id="cpoi-note" maxlength="280" rows="2" placeholder="${T('cpoi.notePh', 'Dettagli, come arrivare...')}" style="
             width:100%;padding:10px;background:rgba(20,30,60,0.045);border:1px solid var(--l-hair);
-            border-radius:8px;color:var(--l-ink);font-size:13px;box-sizing:border-box;resize:vertical;font-family:inherit;"></textarea>
+            border-radius:8px;color:var(--l-ink);font-size:15px;box-sizing:border-box;resize:vertical;font-family:inherit;"></textarea>
         </div>
         <button id="cpoi-save" style="
           padding:12px;background:var(--l-accent);border:none;border-radius:9px;
-          color:#fff;font-weight:700;font-size:14px;cursor:pointer;">
+          color:#fff;font-weight:700;font-size:16px;cursor:pointer;">
           📌 ${T('cpoi.create', 'Crea posto')}
         </button>
       </div>
@@ -266,18 +266,18 @@
           <div style="font-size:30px;">${cat.icon}</div>
           <div>
             <div style="font-size:17px;font-weight:700;color:var(--l-ink);">${_esc(poi.name)}</div>
-            <div style="font-size:12px;color:var(--l-muted);">${cat.label()} · ${T('cpoi.custom', 'posto personalizzato')}</div>
+            <div style="font-size:14px;color:var(--l-muted);">${cat.label()} · ${T('cpoi.custom', 'posto personalizzato')}</div>
           </div>
         </div>
-        ${poi.note ? `<div style="padding:12px;background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:8px;color:var(--l-ink);font-size:13px;line-height:1.5;">${_esc(poi.note)}</div>` : ''}
-        <div style="font-size:11px;color:var(--l-faint);font-family:'SF Mono',Menlo,monospace;">📍 ${poi.lat.toFixed(5)}, ${poi.lng.toFixed(5)}</div>
+        ${poi.note ? `<div style="padding:12px;background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:8px;color:var(--l-ink);font-size:15px;line-height:1.5;">${_esc(poi.note)}</div>` : ''}
+        <div style="font-size:13px;color:var(--l-faint);font-family:'SF Mono',Menlo,monospace;">📍 ${poi.lat.toFixed(5)}, ${poi.lng.toFixed(5)}</div>
         <div style="display:flex;gap:8px;">
-          <button id="cpoi-add-itin" style="flex:1;padding:11px;background:rgba(22,163,74,0.12);border:1.5px solid rgba(22,163,74,0.4);border-radius:8px;color:#16a34a;font-weight:600;font-size:13px;cursor:pointer;">
+          <button id="cpoi-add-itin" style="flex:1;padding:11px;background:rgba(22,163,74,0.12);border:1.5px solid rgba(22,163,74,0.4);border-radius:8px;color:#16a34a;font-weight:600;font-size:15px;cursor:pointer;">
             ➕ ${T('cpoi.addItin', 'Aggiungi a itinerario')}
           </button>
-          <button id="cpoi-delete" aria-label="${T('common.delete', 'Elimina')}" style="padding:11px 14px;background:rgba(220,38,38,0.1);border:1.5px solid rgba(220,38,38,0.3);border-radius:8px;color:#dc2626;font-weight:600;font-size:13px;cursor:pointer;">🗑️</button>
+          <button id="cpoi-delete" aria-label="${T('common.delete', 'Elimina')}" style="padding:11px 14px;background:rgba(220,38,38,0.1);border:1.5px solid rgba(220,38,38,0.3);border-radius:8px;color:#dc2626;font-weight:600;font-size:15px;cursor:pointer;">🗑️</button>
         </div>
-        <a href="https://maps.google.com/?q=${poi.lat},${poi.lng}" target="_blank" rel="noopener" style="text-align:center;font-size:12px;color:#0284c7;text-decoration:none;">🗺️ ${T('cpoi.openMaps', 'Apri in Google Maps')}</a>
+        <a href="https://maps.google.com/?q=${poi.lat},${poi.lng}" target="_blank" rel="noopener" style="text-align:center;font-size:14px;color:#0284c7;text-decoration:none;">🗺️ ${T('cpoi.openMaps', 'Apri in Google Maps')}</a>
       </div>
     `;
     window.openSheet(poi.name, html);

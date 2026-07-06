@@ -32,8 +32,8 @@
           <h3 style="margin:0 0 12px 0;color:var(--l-accent);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📍 Aggiungi a Itinerario di Gruppo</h3>
 
           <div style="background:#E8F4FF;border:2px solid #16a34a;border-radius:8px;padding:12px;margin-bottom:12px;">
-            <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:14px">Stanza: ${window.escapeHtml(roomId)}</p>
-            <p style="margin:0;color:#666;font-size:12px">Aggiungi <strong>${window.escapeHtml(poi.name)}</strong> all'itinerario di gruppo</p>
+            <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:16px">Stanza: ${window.escapeHtml(roomId)}</p>
+            <p style="margin:0;color:#666;font-size:14px">Aggiungi <strong>${window.escapeHtml(poi.name)}</strong> all'itinerario di gruppo</p>
           </div>
 
           <div style="display:flex;gap:8px">

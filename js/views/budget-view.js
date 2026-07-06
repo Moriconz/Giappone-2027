@@ -155,11 +155,11 @@
         <div class="budget-header">
           <div class="budget-title-row">
             <h2 style="margin:0">${T('budget.title')}</h2>
-            <select id="currency-select" style="padding:6px 10px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:12px;cursor:pointer">
+            <select id="currency-select" style="padding:6px 10px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:14px;cursor:pointer">
               ${Object.keys(CURRENCIES).map(c => `<option value="${c}" ${c === db.currency ? 'selected' : ''}>${c}</option>`).join('')}
             </select>
           </div>
-          ${db.currency !== 'JPY' ? `<div style="font-size:11px;color:var(--y2k-muted);margin-top:4px;">
+          ${db.currency !== 'JPY' ? `<div style="font-size:13px;color:var(--y2k-muted);margin-top:4px;">
             1 ${db.currency} = ¥${Math.round(1 / CURRENCIES[db.currency].rate).toLocaleString()}
             ${_rateAge() ? `<span style="opacity:0.6;">· aggiornato ${_rateAge()}</span>` : ''}
           </div>` : ''}
@@ -168,12 +168,12 @@
           <div class="budget-progress-section">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <span style="color:var(--y2k-ink);font-weight:700">${T('budget.spentVs')}</span>
-              <span style="color:var(--y2k-muted);font-size:12px">${percentSpent}%</span>
+              <span style="color:var(--y2k-muted);font-size:14px">${percentSpent}%</span>
             </div>
             <div class="budget-progress-bar">
               <div class="budget-progress-fill" style="width:${Math.min(percentSpent, 100)}%"></div>
             </div>
-            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px">
+            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:14px">
               <span style="color:var(--y2k-muted)">${T('budget.spent')}: <strong>${displayCurr(totalSpent)}</strong></span>
               <span style="color:var(--y2k-muted)">${T('budget.remaining')}: <strong style="color:${remaining < 0 ? '#FF6B6B' : '#00AA55'}">${displayCurr(remaining)}</strong></span>
             </div>
@@ -185,14 +185,14 @@
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
             <div style="font-size:24px">💰</div>
             <div style="flex:1">
-              <div style="color:var(--y2k-ink);font-weight:700;font-size:14px;margin-bottom:2px">${T('budget.setTitle')}</div>
-              <div style="color:var(--y2k-muted);font-size:12px">${T('budget.setDesc')}</div>
+              <div style="color:var(--y2k-ink);font-weight:700;font-size:16px;margin-bottom:2px">${T('budget.setTitle')}</div>
+              <div style="color:var(--y2k-muted);font-size:14px">${T('budget.setDesc')}</div>
             </div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
-            <input id="config-total-budget-inline" type="number" value="${convertCurrency(db.totalBudget, 'JPY', db.currency).toFixed(0)}" placeholder="${convertCurrency(300000, 'JPY', db.currency).toFixed(0)}" style="flex:2;padding:10px 12px;background:#fff;border:2px solid #FF1493;border-radius:8px;color:var(--y2k-ink);font-weight:700;font-size:14px;box-sizing:border-box" />
-            <span style="color:var(--y2k-muted);font-weight:700;font-size:14px">${curr.symbol}</span>
-            <button id="config-save-inline" class="btn primary" style="padding:10px 20px;font-size:13px;flex:0.8">OK</button>
+            <input id="config-total-budget-inline" type="number" value="${convertCurrency(db.totalBudget, 'JPY', db.currency).toFixed(0)}" placeholder="${convertCurrency(300000, 'JPY', db.currency).toFixed(0)}" style="flex:2;padding:10px 12px;background:#fff;border:2px solid #FF1493;border-radius:8px;color:var(--y2k-ink);font-weight:700;font-size:16px;box-sizing:border-box" />
+            <span style="color:var(--y2k-muted);font-weight:700;font-size:16px">${curr.symbol}</span>
+            <button id="config-save-inline" class="btn primary" style="padding:10px 20px;font-size:15px;flex:0.8">OK</button>
           </div>
         </div>
 
@@ -214,7 +214,7 @@
 
         <!-- Category Breakdown -->
         <div class="budget-categories">
-          <h3 style="margin:0 0 14px 0;color:#A8005A;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;font-weight:700">${T('budget.byCategory')}</h3>
+          <h3 style="margin:0 0 14px 0;color:#A8005A;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">${T('budget.byCategory')}</h3>
           ${EXPENSE_CATEGORIES.map(cat => {
             const budgeted = db.categoryBudgets[cat.id] || 0;
             const spent    = spentByCategory[cat.id]    || 0;
@@ -224,13 +224,13 @@
                 <div style="display:flex;align-items:center;gap:8px;flex:1">
                   <div class="category-dot" style="background:${cat.color}"></div>
                   <div style="flex:1">
-                    <div style="font-weight:700;color:var(--y2k-ink);font-size:13px">${cat.name}</div>
-                    <div style="font-size:11px;color:var(--y2k-muted)">${T('budget.budgetLabel')}: ${displayCurr(budgeted)}</div>
+                    <div style="font-weight:700;color:var(--y2k-ink);font-size:15px">${cat.name}</div>
+                    <div style="font-size:13px;color:var(--y2k-muted)">${T('budget.budgetLabel')}: ${displayCurr(budgeted)}</div>
                   </div>
                 </div>
                 <div style="text-align:right">
-                  <div style="font-weight:700;color:var(--y2k-ink);font-size:13px">${displayCurr(spent)}</div>
-                  <div style="font-size:11px;color:var(--y2k-muted)">${pct}%</div>
+                  <div style="font-weight:700;color:var(--y2k-ink);font-size:15px">${displayCurr(spent)}</div>
+                  <div style="font-size:13px;color:var(--y2k-muted)">${pct}%</div>
                 </div>
               </div>
             `;
@@ -239,31 +239,31 @@
 
         <!-- Add Expense Form -->
         <div class="budget-form-section">
-          <h3 style="margin:0 0 14px 0;color:#A8005A;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;font-weight:700">${T('budget.addExpense')}</h3>
+          <h3 style="margin:0 0 14px 0;color:#A8005A;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">${T('budget.addExpense')}</h3>
           <div class="budget-form">
             <div class="form-row">
               <label>${T('budget.category')}</label>
-              <select id="expense-category" style="width:100%;padding:8px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:13px">
+              <select id="expense-category" style="width:100%;padding:8px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:15px">
                 ${EXPENSE_CATEGORIES.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
               </select>
             </div>
             <div class="form-row">
               <label>${T('budget.amount')} (${db.currency})</label>
-              <input id="expense-amount" type="number" placeholder="0" min="0" style="width:100%;padding:8px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:13px;box-sizing:border-box" />
+              <input id="expense-amount" type="number" placeholder="0" min="0" style="width:100%;padding:8px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:15px;box-sizing:border-box" />
             </div>
             <div class="form-row">
               <label>${T('budget.descOpt')}</label>
-              <input id="expense-description" type="text" placeholder="es. Ramen a Shibuya" style="width:100%;padding:8px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:13px;box-sizing:border-box" />
+              <input id="expense-description" type="text" placeholder="es. Ramen a Shibuya" style="width:100%;padding:8px;background:#fff;border:2px solid #C8BDFF;border-radius:6px;color:var(--y2k-ink);font-weight:700;font-size:15px;box-sizing:border-box" />
             </div>
-            <button id="expense-add-btn" class="btn primary" style="width:100%;padding:12px;font-size:14px">${T('budget.saveExpense')}</button>
+            <button id="expense-add-btn" class="btn primary" style="width:100%;padding:12px;font-size:16px">${T('budget.saveExpense')}</button>
           </div>
         </div>
 
         <!-- Recent Expenses -->
         <div class="budget-expenses-section">
-          <h3 style="margin:0 0 14px 0;color:#A8005A;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;font-weight:700">${T('budget.recent')}</h3>
+          <h3 style="margin:0 0 14px 0;color:#A8005A;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">${T('budget.recent')}</h3>
           ${db.expenses.length === 0 ? `
-            <div style="text-align:center;padding:20px;color:var(--y2k-muted);font-size:13px">${T('budget.noExpenses')}</div>
+            <div style="text-align:center;padding:20px;color:var(--y2k-muted);font-size:15px">${T('budget.noExpenses')}</div>
           ` : `
             <div style="display:flex;flex-direction:column;gap:10px">
               ${db.expenses.slice(-5).reverse().map((exp) => {
@@ -277,12 +277,12 @@
                 return `
                   <div class="expense-item">
                     <div style="flex:1;min-width:0">
-                      <div style="font-weight:700;color:var(--l-ink);font-size:11px;margin-bottom:1px">${exp.description || catInfo.name}</div>
-                      <div style="font-size:12px;color:var(--l-muted)">${date}${originalHint}</div>
+                      <div style="font-weight:700;color:var(--l-ink);font-size:13px;margin-bottom:1px">${exp.description || catInfo.name}</div>
+                      <div style="font-size:14px;color:var(--l-muted)">${date}${originalHint}</div>
                     </div>
                     <div style="text-align:right;flex-shrink:0">
-                      <div style="font-weight:700;color:var(--l-ink);font-size:12px">${displayCurr(exp.amount)}</div>
-                      <button class="expense-delete-btn" data-expense-index="${db.expenses.indexOf(exp)}" style="background:none;border:none;color:#FF6B6B;font-size:12px;cursor:pointer;font-weight:700;text-decoration:underline;padding:0;margin-top:1px">${T('common.delete')}</button>
+                      <div style="font-weight:700;color:var(--l-ink);font-size:14px">${displayCurr(exp.amount)}</div>
+                      <button class="expense-delete-btn" data-expense-index="${db.expenses.indexOf(exp)}" style="background:none;border:none;color:#FF6B6B;font-size:14px;cursor:pointer;font-weight:700;text-decoration:underline;padding:0;margin-top:1px">${T('common.delete')}</button>
                     </div>
                   </div>
                 `;

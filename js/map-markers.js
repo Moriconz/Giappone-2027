@@ -180,11 +180,11 @@
           <div style="text-align: center; pointer-events: auto;">
             <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
             <h2 style="font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.95); margin: 0 0 8px 0;">Nessun POI trovato</h2>
-            <p style="font-size: 14px; color: rgba(255,255,255,0.6); margin: 0 0 16px 0; line-height: 1.5; max-width: 240px;">Prova a cambiare i filtri o a zoomare fuori per vedere più posti.</p>
+            <p style="font-size:16px; color: rgba(255,255,255,0.6); margin: 0 0 16px 0; line-height: 1.5; max-width: 240px;">Prova a cambiare i filtri o a zoomare fuori per vedere più posti.</p>
             <button id="map-empty-reset-filters" style="
               padding: 10px 20px; background: rgba(214,69,80,0.20);
               border: 0.5px solid rgba(214,69,80,0.52); border-radius: 20px;
-              color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600;
+              color: rgba(255,255,255,0.9); font-size:15px; font-weight: 600;
               cursor: pointer; font-family: inherit;
             ">Resetta filtri</button>
           </div>

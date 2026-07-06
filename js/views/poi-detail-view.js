@@ -32,7 +32,7 @@ function renderEnhancedPoiSections(p) {
     const slides = p._photoNames.slice(0, 6).map((photo, idx) => {
       return `
         <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
-          <div style="width:100%;height:100%;background:linear-gradient(135deg,rgba(74,91,168,0.2),rgba(255,107,53,0.2));display:flex;align-items:center;justify-content:center;color:#999;font-size:12px">
+          <div style="width:100%;height:100%;background:linear-gradient(135deg,rgba(74,91,168,0.2),rgba(255,107,53,0.2));display:flex;align-items:center;justify-content:center;color:#999;font-size:14px">
             📷 Foto ${idx + 1}
           </div>
         </div>
@@ -41,11 +41,11 @@ function renderEnhancedPoiSections(p) {
 
     sections.push(`
       <div style="background:linear-gradient(135deg,rgba(74,91,168,0.06),rgba(30,50,80,0.06));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:14px;padding:14px;margin-bottom:16px">
-        <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:14px;font-weight:700">📸 Galleria Foto</h3>
+        <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:16px;font-weight:700">📸 Galleria Foto</h3>
         <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%">
           ${slides}
         </div>
-        <div style="font-size:11px;color:var(--l-muted);text-align:center;margin-top:8px">${p._photoNames.length} foto disponibili</div>
+        <div style="font-size:13px;color:var(--l-muted);text-align:center;margin-top:8px">${p._photoNames.length} foto disponibili</div>
       </div>
     `);
   }
@@ -57,18 +57,18 @@ function renderEnhancedPoiSections(p) {
       return `
         <div style="background:rgba(20,30,60,0.04);border:1px solid var(--l-hair);border-radius:10px;padding:12px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
-            <div style="font-weight:600;color:var(--l-ink);font-size:13px">${review.author}</div>
-            <div style="color:#b45309;font-size:12px">${stars}</div>
+            <div style="font-weight:600;color:var(--l-ink);font-size:15px">${review.author}</div>
+            <div style="color:#b45309;font-size:14px">${stars}</div>
           </div>
-          <div style="color:var(--l-ink);font-size:12px;line-height:1.5;margin-bottom:4px">"${review.text.substring(0, 120)}${review.text.length > 120 ? '...' : ''}"</div>
-          <div style="color:var(--l-muted);font-size:12px">${review.relativePublishTimeDescription}</div>
+          <div style="color:var(--l-ink);font-size:14px;line-height:1.5;margin-bottom:4px">"${review.text.substring(0, 120)}${review.text.length > 120 ? '...' : ''}"</div>
+          <div style="color:var(--l-muted);font-size:14px">${review.relativePublishTimeDescription}</div>
         </div>
       `;
     }).join('');
 
     sections.push(`
       <div style="background:linear-gradient(135deg,rgba(74,91,168,0.06),rgba(30,50,80,0.06));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:14px;padding:14px;margin-bottom:16px">
-        <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:14px;font-weight:700">⭐ Recensioni (${details.reviews.length} totali)</h3>
+        <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:16px;font-weight:700">⭐ Recensioni (${details.reviews.length} totali)</h3>
         ${reviewCards}
       </div>
     `);
@@ -82,7 +82,7 @@ function renderEnhancedPoiSections(p) {
     let hoursHtml = '';
     if (weekdayText.length > 0) {
       hoursHtml = weekdayText.map((day, idx) => {
-        return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--l-hair);color:var(--l-ink);font-size:12px">
+        return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--l-hair);color:var(--l-ink);font-size:14px">
           <span>${day.split(':')[0]}</span>
           <span style="font-weight:600;color:#b45309">${day.includes(':') ? day.split(': ')[1] : 'Chiuso'}</span>
         </div>`;
@@ -92,7 +92,7 @@ function renderEnhancedPoiSections(p) {
     if (hoursHtml) {
       sections.push(`
         <div style="background:linear-gradient(135deg,rgba(74,91,168,0.06),rgba(30,50,80,0.06));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:14px;padding:14px;margin-bottom:16px">
-          <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:14px;font-weight:700">⏰ Orari (Prossimi 7 giorni)</h3>
+          <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:16px;font-weight:700">⏰ Orari (Prossimi 7 giorni)</h3>
           ${hoursHtml}
         </div>
       `);
@@ -113,14 +113,14 @@ function renderEnhancedPoiSections(p) {
 
   if (activeAttrs.length > 0) {
     const chips = activeAttrs.map(attr => `
-      <span style="background:linear-gradient(135deg,rgba(255,107,53,0.16),var(--l-accent-soft));border:1px solid rgba(255,107,53,0.5);color:var(--l-ink);padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block">
+      <span style="background:linear-gradient(135deg,rgba(255,107,53,0.16),var(--l-accent-soft));border:1px solid rgba(255,107,53,0.5);color:var(--l-ink);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;display:inline-block">
         ${attr.label}
       </span>
     `).join('');
 
     sections.push(`
       <div style="background:linear-gradient(135deg,rgba(74,91,168,0.06),rgba(30,50,80,0.06));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:14px;padding:14px;margin-bottom:16px">
-        <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:14px;font-weight:700">🏷️ Caratteristiche</h3>
+        <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:16px;font-weight:700">🏷️ Caratteristiche</h3>
         <div style="display:flex;flex-wrap:wrap;gap:8px">
           ${chips}
         </div>
@@ -140,15 +140,15 @@ function renderEnhancedPoiSections(p) {
 
     if (accessibilityItems.length > 0) {
       const items = accessibilityItems.map(item => `
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;color:var(--l-ink);font-size:12px;border-bottom:1px solid var(--l-hair)">
-          <span style="font-size:14px">✓</span>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;color:var(--l-ink);font-size:14px;border-bottom:1px solid var(--l-hair)">
+          <span style="font-size:16px">✓</span>
           <span>${item}</span>
         </div>
       `).join('');
 
       sections.push(`
         <div style="background:linear-gradient(135deg,rgba(74,124,89,0.08),rgba(100,150,110,0.08));backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1.5px solid rgba(22,163,74,0.25);border-radius:14px;padding:14px;margin-bottom:16px">
-          <h3 style="margin:0 0 12px 0;color:#16a34a;font-size:14px;font-weight:700">♿ Accessibilità</h3>
+          <h3 style="margin:0 0 12px 0;color:#16a34a;font-size:16px;font-weight:700">♿ Accessibilità</h3>
           ${items}
         </div>
       `);
@@ -299,7 +299,7 @@ function poiDetailHTML(p){
           border: 1px solid var(--l-hair);
           border-radius: 8px;
           padding: 8px 10px;
-          font-size: 12px;
+          font-size:14px;
           color: var(--l-muted);
           opacity: 0.85;
         ">
@@ -349,7 +349,7 @@ function poiDetailHTML(p){
     ${poiSubtypeLabel ? `
       <div style="
         padding: 0 16px;
-        font-size: 12px;
+        font-size:14px;
         color: var(--l-muted);
         font-weight: 500;
         margin-bottom: 0;
@@ -383,7 +383,7 @@ function poiDetailHTML(p){
 
     <!-- 9. RATING (stars) -->
     <div style="padding:0 16px;margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:16px">
-      <label style="font-size:13px;color:var(--l-muted);font-weight:600;white-space:nowrap">La tua valutazione</label>
+      <label style="font-size:15px;color:var(--l-muted);font-weight:600;white-space:nowrap">La tua valutazione</label>
       ${stars}
     </div>
 
@@ -396,7 +396,7 @@ function poiDetailHTML(p){
     <!-- 10. MAIN CTA: ADD TO ITINERARY (prominent, ruggine saturo) -->
     <div style="padding:0 16px;margin:16px 0">
       <button id="add-to-itinerary-btn" class="btn-cta">${window.t ? window.t('poi.addToItinerary') : "📅 Aggiungi all'itinerario"}</button>
-      <button id="propose-to-group-btn" style="width:100%;margin-top:8px;padding:12px;background:rgba(22,163,74,0.12);border:1.5px solid rgba(22,163,74,0.4);border-radius:10px;color:var(--l-ink);font-size:14px;font-weight:700;cursor:pointer;">🗳️ ${window.t ? window.t('poi.proposeGroup', 'Proponi al gruppo') : 'Proponi al gruppo'}</button>
+      <button id="propose-to-group-btn" style="width:100%;margin-top:8px;padding:12px;background:rgba(22,163,74,0.12);border:1.5px solid rgba(22,163,74,0.4);border-radius:10px;color:var(--l-ink);font-size:16px;font-weight:700;cursor:pointer;">🗳️ ${window.t ? window.t('poi.proposeGroup', 'Proponi al gruppo') : 'Proponi al gruppo'}</button>
     </div>
 
     <!-- 11. PERSONAL NOTES (collapsible by default) -->
@@ -424,7 +424,7 @@ function poiDetailHTML(p){
           border-radius:8px;
           cursor:pointer;
           font-weight:600;
-          font-size:12px;
+          font-size:14px;
           display:flex;
           align-items:center;
           justify-content:center;
@@ -461,7 +461,7 @@ function poiDetailHTML(p){
             padding:12px 16px;
             color:#fff;
             text-decoration:none;
-            font-size:13px;
+            font-size:15px;
             border-bottom:1px solid rgba(255,255,255,0.05);
             transition:background 0.2s;
           " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
@@ -472,7 +472,7 @@ function poiDetailHTML(p){
             padding:12px 16px;
             color:#fff;
             text-decoration:none;
-            font-size:13px;
+            font-size:15px;
             transition:background 0.2s;
           " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
             🍎 Apple Maps
@@ -489,7 +489,7 @@ function poiDetailHTML(p){
         border-radius:8px;
         cursor:pointer;
         font-weight:500;
-        font-size:12px;
+        font-size:14px;
         display:flex;
         align-items:center;
         justify-content:center;
@@ -506,7 +506,7 @@ function poiDetailHTML(p){
         border-radius:8px;
         cursor:pointer;
         font-weight:500;
-        font-size:12px;
+        font-size:14px;
         display:flex;
         align-items:center;
         justify-content:center;
@@ -547,9 +547,9 @@ function loadPOIPhotos(p){
   };
   const photoFallbackHtml = (label, poi) => `
     <div style="margin-bottom:12px;padding:14px;background:var(--surface-2);border-radius:8px;text-align:center">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📷 ${label}</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:8px">📷 ${label}</div>
       <a href="${googleImagesUrl(window.getPoiDisplayName(poi), poi.city)}" target="_blank" rel="noopener"
-         class="btn" style="font-size:12px">🔎 Cerca foto su Google Images</a>
+         class="btn" style="font-size:14px">🔎 Cerca foto su Google Images</a>
     </div>
   `;
 
@@ -597,7 +597,7 @@ function loadPOIPhotos(p){
             <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:8px;padding:0;scroll-behavior:smooth;width:100%;margin-bottom:6px">
               ${slides}
             </div>
-            <div style="font-size:11px;color:var(--muted);text-align:center">${sourceLabel}</div>
+            <div style="font-size:13px;color:var(--muted);text-align:center">${sourceLabel}</div>
           </div>
         `;
       } else {
@@ -865,7 +865,7 @@ function openPOI(id){
                     const openMinutes = openHour * 60 + openMin;
                     const closeMinutes = closeHour * 60 + closeMin;
                     if (inputMinutes < openMinutes || inputMinutes >= closeMinutes) {
-                      hoursWarning = `<div style="background:rgba(180,83,9,0.12);border:1px solid rgba(180,83,9,0.35);border-radius:5px;padding:10px;margin-top:10px;font-size:11px;color:#b45309">⚠️ Questo luogo apre ${hoursStr}. Vuoi continuare?</div>`;
+                      hoursWarning = `<div style="background:rgba(180,83,9,0.12);border:1px solid rgba(180,83,9,0.35);border-radius:5px;padding:10px;margin-top:10px;font-size:13px;color:#b45309">⚠️ Questo luogo apre ${hoursStr}. Vuoi continuare?</div>`;
                     }
                   }
                 }
@@ -874,7 +874,7 @@ function openPOI(id){
                 <div style="padding: 16px;">
                   <p style="color: var(--l-ink); margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step2') : "🕐 STEP 2/4 — Scegli l'orario"}</p>
                   <div style="margin-bottom: 16px;">
-                    <label style="display: block; color: var(--l-muted); font-size: 12px; margin-bottom: 8px;">Orario (HH:MM)</label>
+                    <label style="display: block; color: var(--l-muted); font-size:14px; margin-bottom: 8px;">Orario (HH:MM)</label>
                     <input type="text" id="wizard-time-input" value="${wizardState.selectedTime}" placeholder="14:30" maxlength="5" style="
                       width: 100%;
                       padding: 10px;
@@ -886,10 +886,10 @@ function openPOI(id){
                       box-sizing: border-box;
                       font-family: 'Courier New', monospace;
                     ">
-                    <p style="color: var(--l-muted); font-size: 11px; margin-top: 6px;">Formato: HH:MM (es: 14:30, 09:45)</p>
+                    <p style="color: var(--l-muted); font-size:13px; margin-top: 6px;">Formato: HH:MM (es: 14:30, 09:45)</p>
                     ${hoursWarning}
                   </div>
-                  <p style="color: var(--l-muted); font-size: 12px; margin-top: 16px;">Giorno selezionato: <strong style="color: var(--m-accent);">Day ${wizardState.selectedDay + 1}</strong></p>
+                  <p style="color: var(--l-muted); font-size:14px; margin-top: 16px;">Giorno selezionato: <strong style="color: var(--m-accent);">Day ${wizardState.selectedDay + 1}</strong></p>
                 </div>
               `;
             } else if (wizardState.step === 3) {
@@ -899,7 +899,7 @@ function openPOI(id){
                   <p style="color: var(--l-ink); margin-bottom: 16px; font-weight: 600;">${window.t ? window.t('wizard.step3') : '📋 STEP 3/4 — Dettagli (opzionali)'}</p>
 
                   <div style="margin-bottom: 14px;">
-                    <label style="display: block; color: var(--l-muted); font-size: 12px; margin-bottom: 8px;">${window.t ? window.t('wizard.duration') : '⏱️ Durata (minuti)'}</label>
+                    <label style="display: block; color: var(--l-muted); font-size:14px; margin-bottom: 8px;">${window.t ? window.t('wizard.duration') : '⏱️ Durata (minuti)'}</label>
                     <div style="display: flex; gap: 6px; margin-bottom: 8px;">
                       ${[30, 60, 90, 120, 180].map(d => `
                         <button class="duration-preset" data-duration="${d}" style="
@@ -909,7 +909,7 @@ function openPOI(id){
                           border: 1px solid ${wizardState.duration === d ? 'rgba(74,124,89,0.6)' : 'var(--l-hair)'};
                           color: ${wizardState.duration === d ? '#16a34a' : 'var(--l-muted)'};
                           border-radius: 4px;
-                          font-size: 11px;
+                          font-size:13px;
                           font-weight: 500;
                           cursor: pointer;
                           transition: all 0.2s;
@@ -925,13 +925,13 @@ function openPOI(id){
                       border: 1px solid var(--l-hair);
                       border-radius: 4px;
                       color: var(--l-ink);
-                      font-size: 12px;
+                      font-size:14px;
                       box-sizing: border-box;
                     ">
                   </div>
 
                   <div style="margin-bottom: 14px;">
-                    <label style="display: block; color: var(--l-muted); font-size: 12px; margin-bottom: 8px;">💰 Costo (opzionale)</label>
+                    <label style="display: block; color: var(--l-muted); font-size:14px; margin-bottom: 8px;">💰 Costo (opzionale)</label>
                     <input type="number" id="wizard-cost-input" value="${wizardState.cost}" min="0" placeholder="Es: 15.50" style="
                       width: 100%;
                       padding: 8px;
@@ -939,13 +939,13 @@ function openPOI(id){
                       border: 1px solid var(--l-hair);
                       border-radius: 4px;
                       color: var(--l-ink);
-                      font-size: 12px;
+                      font-size:14px;
                       box-sizing: border-box;
                     ">
                   </div>
 
                   <div style="margin-bottom: 14px;">
-                    <label style="display: block; color: var(--l-muted); font-size: 12px; margin-bottom: 8px;">🏷️ Categoria</label>
+                    <label style="display: block; color: var(--l-muted); font-size:14px; margin-bottom: 8px;">🏷️ Categoria</label>
                     <select id="wizard-tag-select" style="
                       width: 100%;
                       padding: 8px;
@@ -953,7 +953,7 @@ function openPOI(id){
                       border: 1px solid var(--l-hair);
                       border-radius: 4px;
                       color: var(--l-ink);
-                      font-size: 12px;
+                      font-size:14px;
                       box-sizing: border-box;
                     ">
                       <option value="cibo" ${wizardState.tag === 'cibo' ? 'selected' : ''}>🍽️ Cibo</option>
@@ -965,7 +965,7 @@ function openPOI(id){
                   </div>
 
                   <div>
-                    <label style="display: block; color: var(--l-muted); font-size: 12px; margin-bottom: 8px;">📝 Note personalizzate (opzionale)</label>
+                    <label style="display: block; color: var(--l-muted); font-size:14px; margin-bottom: 8px;">📝 Note personalizzate (opzionale)</label>
                     <textarea id="wizard-notes-input" placeholder="Es: Prenotare in anticipo, glutine-free disponibile..." style="
                       width: 100%;
                       padding: 8px;
@@ -973,7 +973,7 @@ function openPOI(id){
                       border: 1px solid var(--l-hair);
                       border-radius: 4px;
                       color: var(--l-ink);
-                      font-size: 12px;
+                      font-size:14px;
                       resize: vertical;
                       min-height: 60px;
                       box-sizing: border-box;
@@ -994,44 +994,44 @@ function openPOI(id){
 
                   <div style="background: rgba(20,30,60,0.04); border: 1px solid var(--l-hair); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
                     <div style="margin-bottom: 10px;">
-                      <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📌 Punto di interesse</div>
-                      <div style="font-size: 14px; color: var(--l-ink); font-weight: 600;">${poiName}</div>
+                      <div style="font-size:13px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📌 Punto di interesse</div>
+                      <div style="font-size:16px; color: var(--l-ink); font-weight: 600;">${poiName}</div>
                     </div>
 
                     <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid var(--l-hair);">
-                      <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📅 Data e orario</div>
-                      <div style="font-size: 13px; color: var(--l-ink);">
+                      <div style="font-size:13px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📅 Data e orario</div>
+                      <div style="font-size:15px; color: var(--l-ink);">
                         <strong>Day ${wizardState.selectedDay + 1}</strong> · ${dayLabel}<br>
                         <strong>${wizardState.selectedTime}</strong>
                       </div>
                     </div>
 
                     <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid var(--l-hair);">
-                      <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">⏱️ Durata</div>
-                      <div style="font-size: 13px; color: var(--l-ink);"><strong>${wizardState.duration}</strong> minuti</div>
+                      <div style="font-size:13px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">⏱️ Durata</div>
+                      <div style="font-size:15px; color: var(--l-ink);"><strong>${wizardState.duration}</strong> minuti</div>
                     </div>
 
                     <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid var(--l-hair);">
-                      <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">🏷️ Categoria</div>
-                      <div style="font-size: 13px; color: var(--l-ink);"><strong>${['cibo', 'trasporti', 'ingressi', 'shopping', 'altro'].includes(wizardState.tag) ? wizardState.tag.charAt(0).toUpperCase() + wizardState.tag.slice(1) : 'Altro'}</strong></div>
+                      <div style="font-size:13px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">🏷️ Categoria</div>
+                      <div style="font-size:15px; color: var(--l-ink);"><strong>${['cibo', 'trasporti', 'ingressi', 'shopping', 'altro'].includes(wizardState.tag) ? wizardState.tag.charAt(0).toUpperCase() + wizardState.tag.slice(1) : 'Altro'}</strong></div>
                     </div>
 
                     ${wizardState.cost > 0 ? `
                       <div style="margin-bottom: 10px; padding-top: 10px; border-top: 1px solid var(--l-hair);">
-                        <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">💰 Costo</div>
-                        <div style="font-size: 13px; color: var(--l-ink);"><strong>¥${wizardState.cost}</strong></div>
+                        <div style="font-size:13px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">💰 Costo</div>
+                        <div style="font-size:15px; color: var(--l-ink);"><strong>¥${wizardState.cost}</strong></div>
                       </div>
                     ` : ''}
 
                     ${wizardState.notes ? `
                       <div style="padding-top: 10px; border-top: 1px solid var(--l-hair);">
-                        <div style="font-size: 11px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📝 Note</div>
-                        <div style="font-size: 12px; color: var(--l-ink); line-height: 1.4;">${wizardState.notes}</div>
+                        <div style="font-size:13px; color: var(--l-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">📝 Note</div>
+                        <div style="font-size:14px; color: var(--l-ink); line-height: 1.4;">${wizardState.notes}</div>
                       </div>
                     ` : ''}
                   </div>
 
-                  <p style="color: var(--l-muted); font-size: 12px; text-align: center;">Conferma per aggiungere alla tappa</p>
+                  <p style="color: var(--l-muted); font-size:14px; text-align: center;">Conferma per aggiungere alla tappa</p>
                 </div>
               `;
             }
@@ -1094,7 +1094,7 @@ function openPOI(id){
                   color: var(--l-muted);
                   border-radius: 4px;
                   cursor: pointer;
-                  font-size: 11px;
+                  font-size:13px;
                   font-weight: 500;
                   transition: all 0.2s;
                   white-space: nowrap;
@@ -1110,7 +1110,7 @@ function openPOI(id){
                     color: var(--l-muted);
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 11px;
+                    font-size:13px;
                     font-weight: 500;
                     transition: all 0.2s;
                     white-space: nowrap;
@@ -1131,7 +1131,7 @@ function openPOI(id){
                     color: var(--m-accent);
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 12px;
+                    font-size:14px;
                     font-weight: 600;
                     transition: all 0.2s;
                     white-space: nowrap;
@@ -1146,7 +1146,7 @@ function openPOI(id){
                     color: #16a34a;
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 12px;
+                    font-size:14px;
                     font-weight: 600;
                     transition: all 0.2s;
                     white-space: nowrap;
@@ -1425,7 +1425,7 @@ function openPOI(id){
                 color: var(--l-muted);
                 border-radius: 4px;
                 cursor: pointer;
-                font-size: 11px;
+                font-size:13px;
                 font-weight: 500;
                 transition: all 0.2s;
                 white-space: nowrap;
@@ -1441,7 +1441,7 @@ function openPOI(id){
                   color: var(--l-muted);
                   border-radius: 4px;
                   cursor: pointer;
-                  font-size: 11px;
+                  font-size:13px;
                   font-weight: 500;
                   transition: all 0.2s;
                   white-space: nowrap;
@@ -1462,7 +1462,7 @@ function openPOI(id){
                   color: var(--m-accent);
                   border-radius: 4px;
                   cursor: pointer;
-                  font-size: 12px;
+                  font-size:14px;
                   font-weight: 600;
                   transition: all 0.2s;
                   white-space: nowrap;
@@ -1477,7 +1477,7 @@ function openPOI(id){
                   color: #16a34a;
                   border-radius: 4px;
                   cursor: pointer;
-                  font-size: 12px;
+                  font-size:14px;
                   font-weight: 600;
                   transition: all 0.2s;
                   white-space: nowrap;
@@ -1531,7 +1531,7 @@ function openPOI(id){
           .filter(([k]) => k !== 'all')
           .map(([k, v]) => {
             const isSelected = (window.state.userCategoryOverrides?.[id] || p.cat) === k;
-            return `<button class="btn" data-cat="${k}" style="font-size:11px;padding:8px;text-align:center;background:${isSelected ? '#e0414e' : '#f0f0f0'};color:${isSelected ? 'white' : '#333'};border:none;border-radius:4px;cursor:pointer">
+            return `<button class="btn" data-cat="${k}" style="font-size:13px;padding:8px;text-align:center;background:${isSelected ? '#e0414e' : '#f0f0f0'};color:${isSelected ? 'white' : '#333'};border:none;border-radius:4px;cursor:pointer">
               ${v.icon}<br>${v.label}
             </button>`;
           })
@@ -1574,11 +1574,11 @@ function openPOI(id){
         const ratingHtml = document.createElement('div');
         ratingHtml.style.cssText = 'background:var(--surface-2);padding:10px;border-radius:8px;margin:10px 0;border-left:3px solid var(--accent)';
         ratingHtml.innerHTML = `
-          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">📍 Google Places Data</div>
+          <div style="font-size:14px;color:var(--muted);margin-bottom:4px">📍 Google Places Data</div>
           <div style="font-weight:600;color:var(--text)">⭐ ${enriched.rating.toFixed(1)} (${enriched.review_count} recensioni)</div>
-          ${enriched.phone ? `<div style="font-size:12px;margin-top:4px">📞 ${enriched.phone}</div>` : ''}
-          ${enriched.website ? `<div style="font-size:12px;margin-top:4px"><a href="${enriched.website}" target="_blank" style="color:var(--accent)">🌐 Website</a></div>` : ''}
-          ${enriched.is_open !== null ? `<div style="font-size:12px;margin-top:4px;color:${enriched.is_open ? 'var(--success)' : 'var(--danger)'}">⏰ ${enriched.is_open ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
+          ${enriched.phone ? `<div style="font-size:14px;margin-top:4px">📞 ${enriched.phone}</div>` : ''}
+          ${enriched.website ? `<div style="font-size:14px;margin-top:4px"><a href="${enriched.website}" target="_blank" style="color:var(--accent)">🌐 Website</a></div>` : ''}
+          ${enriched.is_open !== null ? `<div style="font-size:14px;margin-top:4px;color:${enriched.is_open ? 'var(--success)' : 'var(--danger)'}">⏰ ${enriched.is_open ? 'Aperto ora' : 'Chiuso ora'}</div>` : ''}
         `;
         sheetBody.insertBefore(ratingHtml, sheetBody.firstChild);
       }
@@ -1645,7 +1645,7 @@ function openPOI(id){
           const gfHtml = `
             <h3>🌾 Analisi Gluten-Free</h3>
             <p><span class="tag ${cls}">${label}</span></p>
-            <p style="font-size:12px;color:var(--muted);">Confidenza: ${gfStatus.confidence}% • ${gfStatus.mentions} menzioni su ${gfStatus.total_reviews} review</p>
+            <p style="font-size:14px;color:var(--muted);">Confidenza: ${gfStatus.confidence}% • ${gfStatus.mentions} menzioni su ${gfStatus.total_reviews} review</p>
             <div class="action-row" style="margin-top:8px">
               <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent((p.name || displayName) + ' ' + (p.city || '') + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
             </div>
@@ -1675,7 +1675,7 @@ function openPOI(id){
           const gfHtml = `
             <h3>🌾 Gluten-Free</h3>
             <p><span class="tag gf-none">❌ Nessun dato disponibile</span></p>
-            <p style="font-size:12px;color:var(--muted);">Impossibile verificare lo stato gluten-free da Google Reviews. Verifica manualmente:</p>
+            <p style="font-size:14px;color:var(--muted);">Impossibile verificare lo stato gluten-free da Google Reviews. Verifica manualmente:</p>
             <div class="action-row" style="margin-top:8px">
               <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent((p.name || displayName) + ' ' + (p.city || '') + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
             </div>
@@ -1696,7 +1696,7 @@ function openPOI(id){
         const gfHtml = `
           <h3>🌾 Gluten-Free</h3>
           <p><span class="tag gf-none">❓ Nessun dato disponibile</span></p>
-          <p style="font-size:12px;color:var(--muted);">Verifica lo status gluten-free:</p>
+          <p style="font-size:14px;color:var(--muted);">Verifica lo status gluten-free:</p>
           <div class="action-row" style="margin-top:8px">
             <a class="btn" href="https://www.findmeglutenfree.com/search?q=${encodeURIComponent((p.name || displayName) + ' ' + (p.city || '') + ' Japan')}" target="_blank" rel="noopener">🔍 Find Me Gluten Free</a>
           </div>

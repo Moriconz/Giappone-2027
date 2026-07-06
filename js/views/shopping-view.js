@@ -100,7 +100,7 @@
       ? poi.photos.slice(0, 3).map((ph, i) =>
           `<img src="${ph.url}" loading="lazy" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:10px" alt="Foto ${i+1}" onerror="this.style.display='none'">`
         ).join('')
-      : '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Nessuna foto disponibile</p>';
+      : '<p style="color:var(--muted);font-size:14px;text-align:center;padding:20px">Nessuna foto disponibile</p>';
 
     const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${poi.lat},${poi.lng}`;
     const appleMapsUrl = `maps://maps.apple.com/?q=${encodeURIComponent(poi.name)}&ll=${poi.lat},${poi.lng}`;
@@ -115,12 +115,12 @@
       <div class="sc-hours" style="margin-top:10px">📍 ${window.fmtDist(dist)} da te</div>
       ${poi.ratingCount ? `<div class="sc-hours" style="margin-top:4px">📊 ${poi.ratingCount} recensioni</div>` : ''}
       <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
-        <h4 style="margin:0 0 8px;font-size:13px;color:var(--accent)">📸 Foto</h4>
+        <h4 style="margin:0 0 8px;font-size:15px;color:var(--accent)">📸 Foto</h4>
         ${photosHtml}
       </div>
       <div style="display:flex;gap:8px;margin-top:12px">
-        <a href="${googleMapsUrl}" target="_blank" style="flex:1;padding:10px;background:linear-gradient(135deg, var(--l-accent), var(--l-accent-600));color:white;border:none;border-radius:6px;text-align:center;text-decoration:none;font-weight:600;font-size:12px">🗺️ Google Maps</a>
-        <a href="${appleMapsUrl}" target="_blank" style="flex:1;padding:10px;background:linear-gradient(135deg, #00FF88, #C0FF9F);color:#2D3B7D;border:none;border-radius:6px;text-align:center;text-decoration:none;font-weight:600;font-size:12px">🍎 Mappe Apple</a>
+        <a href="${googleMapsUrl}" target="_blank" style="flex:1;padding:10px;background:linear-gradient(135deg, var(--l-accent), var(--l-accent-600));color:white;border:none;border-radius:6px;text-align:center;text-decoration:none;font-weight:600;font-size:14px">🗺️ Google Maps</a>
+        <a href="${appleMapsUrl}" target="_blank" style="flex:1;padding:10px;background:linear-gradient(135deg, #00FF88, #C0FF9F);color:#2D3B7D;border:none;border-radius:6px;text-align:center;text-decoration:none;font-weight:600;font-size:14px">🍎 Mappe Apple</a>
       </div>
     </div>`;
   }
@@ -149,7 +149,7 @@
     const lng = window.state.gpsCurrentLng;
     const makeRows = (pois, icon) => pois.length
       ? pois.map(p => _poiRow(p, icon)).join('')
-      : '<p style="font-size:12px;color:var(--muted)">Nessun negozio trovato</p>';
+      : '<p style="font-size:14px;color:var(--muted)">Nessun negozio trovato</p>';
 
     if (!query) {
       const reg = document.getElementById('regular-shops');
@@ -177,8 +177,8 @@
     if (!s.gpsCurrentLat || !s.gpsCurrentLng) {
       window.openSheet('🛍️ Shopping', `
         <div style="padding:20px;text-align:center;color:var(--muted)">
-          <div style="font-size:14px;margin-bottom:10px">📍 GPS necessario</div>
-          <p style="font-size:12px;margin:0">Abilita il GPS per vedere negozi entro 20km (50km per vintage/thrift) dalla tua posizione.</p>
+          <div style="font-size:16px;margin-bottom:10px">📍 GPS necessario</div>
+          <p style="font-size:14px;margin:0">Abilita il GPS per vedere negozi entro 20km (50km per vintage/thrift) dalla tua posizione.</p>
         </div>`);
       return;
     }
@@ -187,7 +187,7 @@
       window.openSheet('🛍️ Shopping', `
         <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
           ${Array.from({length: 6}).map(() => '<div class="skeleton" style="height:68px;border-radius:12px;"></div>').join('')}
-          <p style="color:var(--l-muted, var(--muted));text-align:center;font-size:12px;margin:4px 0 0;">⏳ Caricamento negozi in corso…</p>
+          <p style="color:var(--l-muted, var(--muted));text-align:center;font-size:14px;margin:4px 0 0;">⏳ Caricamento negozi in corso…</p>
         </div>`);
       return;
     }
@@ -210,11 +210,11 @@
 
     const regularHtml = regular.length
       ? regular.map(p => _poiRow(p, '🛍️')).join('')
-      : '<p style="font-size:12px;color:var(--muted)">Nessun negozio trovato entro 20km</p>';
+      : '<p style="font-size:14px;color:var(--muted)">Nessun negozio trovato entro 20km</p>';
 
     const vintageHtml = vintage.length
       ? vintage.map(p => _poiRow(p, '👕')).join('')
-      : '<p style="font-size:12px;color:var(--muted)">Nessun negozio vintage/thrift trovato entro 50km</p>';
+      : '<p style="font-size:14px;color:var(--muted)">Nessun negozio vintage/thrift trovato entro 50km</p>';
 
     window.openSheet('🛍️ Shopping', `
       <div style="position:sticky;top:0;background:var(--surface);padding:10px 0;margin-bottom:10px;z-index:100">
@@ -223,10 +223,10 @@
       </div>
 
       <div style="display:flex;gap:8px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">
-        <button id="tab-general" style="flex:1;padding:10px;border:none;background:var(--surface-2);color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;font-weight:600;font-size:13px">
+        <button id="tab-general" style="flex:1;padding:10px;border:none;background:var(--surface-2);color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;font-weight:600;font-size:15px">
           🛍️ Negozi Generali
         </button>
-        <button id="tab-vintage" style="flex:1;padding:10px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-weight:600;font-size:13px">
+        <button id="tab-vintage" style="flex:1;padding:10px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-weight:600;font-size:15px">
           👕 Vintage & Second-Hand
         </button>
       </div>
@@ -252,14 +252,14 @@
     const tabVin = document.getElementById('tab-vintage');
     if (tabGen && tabVin) {
       tabGen.onclick = () => {
-        tabGen.style.cssText = 'flex:1;padding:10px;border:none;background:var(--surface-2);color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;font-weight:600;font-size:13px';
-        tabVin.style.cssText = 'flex:1;padding:10px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-weight:600;font-size:13px';
+        tabGen.style.cssText = 'flex:1;padding:10px;border:none;background:var(--surface-2);color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;font-weight:600;font-size:15px';
+        tabVin.style.cssText = 'flex:1;padding:10px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-weight:600;font-size:15px';
         document.getElementById('tab-content-general').style.display = '';
         document.getElementById('tab-content-vintage').style.display = 'none';
       };
       tabVin.onclick = () => {
-        tabVin.style.cssText = 'flex:1;padding:10px;border:none;background:var(--surface-2);color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;font-weight:600;font-size:13px';
-        tabGen.style.cssText = 'flex:1;padding:10px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-weight:600;font-size:13px';
+        tabVin.style.cssText = 'flex:1;padding:10px;border:none;background:var(--surface-2);color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;font-weight:600;font-size:15px';
+        tabGen.style.cssText = 'flex:1;padding:10px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-weight:600;font-size:15px';
         document.getElementById('tab-content-general').style.display = 'none';
         document.getElementById('tab-content-vintage').style.display = '';
       };

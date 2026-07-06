@@ -127,7 +127,7 @@ function createFilterChips() {
     border: 1px solid rgba(255, 107, 53, 0.4);
     color: rgba(255, 255, 255, 0.9);
     border-radius: 20px;
-    font-size: 12px;
+    font-size:14px;
     font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
@@ -149,7 +149,7 @@ function createFilterChips() {
       border: 1px solid rgba(255,255,255,0.1);
       color: rgba(255, 255, 255, 0.65);
       border-radius: 20px;
-      font-size: 12px;
+      font-size:14px;
       font-weight: 500;
       cursor: pointer;
       white-space: nowrap;

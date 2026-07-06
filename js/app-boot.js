@@ -204,7 +204,7 @@
       } else {
         instructions = `
           <h2 style="margin: 0 0 20px 0; font-size: 18px;">🖥️ Installa su Desktop</h2>
-          <p style="text-align: left; font-size: 14px; line-height: 1.8;">
+          <p style="text-align: left; font-size:16px; line-height: 1.8;">
             Guarda in <strong>alto a destra della barra indirizzi</strong> — dovresti vedere l'icona di installazione ⊕
           </p>
         `;
@@ -278,7 +278,7 @@
     `;
 
     const text = document.createElement('span');
-    text.style.cssText = `font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 500; flex: 1;`;
+    text.style.cssText = `font-size:15px; color: rgba(255,255,255,0.85); font-weight: 500; flex: 1;`;
     text.textContent = 'Nuova versione disponibile';
 
     const btnGroup = document.createElement('div');
@@ -292,7 +292,7 @@
       color: #fff;
       border: none;
       border-radius: 8px;
-      font-size: 13px;
+      font-size:15px;
       font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
@@ -383,13 +383,13 @@
 
     const title = document.createElement('div');
     title.style.cssText = `
-      font-size: 12px;
+      font-size:14px;
       font-weight: 700;
       color: #fff;
       letter-spacing: 0.5px;
       text-align: center;
     `;
-    title.innerHTML = '🗣️ セリアック病 - 店員様へ<br><span style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:400;">Celiac Disease - For the Waiter</span>';
+    title.innerHTML = '🗣️ セリアック病 - 店員様へ<br><span style="font-size:14px;color:rgba(255,255,255,0.7);font-weight:400;">Celiac Disease - For the Waiter</span>';
 
     const phraseJP = document.createElement('div');
     phraseJP.style.cssText = `
@@ -408,7 +408,7 @@
 
     const translation = document.createElement('div');
     translation.style.cssText = `
-      font-size: 11px;
+      font-size:13px;
       color: rgba(255,255,255,0.8);
       text-align: center;
       line-height: 1.5;
@@ -422,13 +422,13 @@
       background: rgba(255,20,147,0.15);
       border: 1.5px solid rgba(255,20,147,0.5);
       border-radius: 10px;
-      font-size: 11px;
+      font-size:13px;
       color: #FFB6D9;
       font-weight: 600;
       text-align: center;
       line-height: 1.5;
     `;
-    warning.innerHTML = '⚠️ 重篤な医学的症状です<br><span style="font-size:11px;color:rgba(255,182,211,0.8);">Serious medical condition</span><br>少量のグルテンでも腸に損傷を起こします<br><span style="font-size:11px;color:rgba(255,182,211,0.8);">Even tiny gluten amounts cause intestinal damage</span><br>交差汚染（小麦との接触）は危険です<br><span style="font-size:11px;color:rgba(255,182,211,0.8);">Cross-contamination is NOT safe</span>';
+    warning.innerHTML = '⚠️ 重篤な医学的症状です<br><span style="font-size:13px;color:rgba(255,182,211,0.8);">Serious medical condition</span><br>少量のグルテンでも腸に損傷を起こします<br><span style="font-size:13px;color:rgba(255,182,211,0.8);">Even tiny gluten amounts cause intestinal damage</span><br>交差汚染（小麦との接触）は危険です<br><span style="font-size:13px;color:rgba(255,182,211,0.8);">Cross-contamination is NOT safe</span>';
 
     // FOODS TO AVOID
     const foodsSection = document.createElement('div');
@@ -437,19 +437,19 @@
       background: rgba(100,149,237,0.1);
       border: 1px solid rgba(100,149,237,0.3);
       border-radius: 10px;
-      font-size: 9.5px;
+      font-size:11px;
       color: rgba(255,255,255,0.9);
       line-height: 1.6;
     `;
     foodsSection.innerHTML = `<strong style="color:#87CEEB;">🚫 絶対に避けるべき食べ物：</strong><br>
-<span style="font-size:11px;color:rgba(135,206,235,0.8);">Foods to Strictly Avoid:</span><br>
-• パン・パスタ・うどん（小麦製品） <span style="font-size:11px;color:rgba(135,206,235,0.7);">(Bread, pasta, noodles - wheat)</span><br>
-• 麦類（大麦・ライ麦） <span style="font-size:11px;color:rgba(135,206,235,0.7);">(Barley, rye)</span><br>
-• 小麦粉・ケーキ・クッキー・ビール <span style="font-size:11px;color:rgba(135,206,235,0.7);">(Flour, cakes, cookies, beer)</span><br>
-• 醤油（小麦を含む） <span style="font-size:11px;color:rgba(135,206,235,0.7);">(Soy sauce - contains wheat)</span><br>
-• グレービー・ソース・ドレッシング <span style="font-size:11px;color:rgba(135,206,235,0.7);">(Gravy, sauces, dressings)</span><br>
-• 揚げ物（共有の油で揚げたもの） <span style="font-size:11px;color:rgba(135,206,235,0.7);">(Fried foods - shared fryer)</span><br>
-• 加工肉・チーズ（成分確認が必要） <span style="font-size:11px;color:rgba(135,206,235,0.7);">(Processed meats, cheeses)</span>`;
+<span style="font-size:13px;color:rgba(135,206,235,0.8);">Foods to Strictly Avoid:</span><br>
+• パン・パスタ・うどん（小麦製品） <span style="font-size:13px;color:rgba(135,206,235,0.7);">(Bread, pasta, noodles - wheat)</span><br>
+• 麦類（大麦・ライ麦） <span style="font-size:13px;color:rgba(135,206,235,0.7);">(Barley, rye)</span><br>
+• 小麦粉・ケーキ・クッキー・ビール <span style="font-size:13px;color:rgba(135,206,235,0.7);">(Flour, cakes, cookies, beer)</span><br>
+• 醤油（小麦を含む） <span style="font-size:13px;color:rgba(135,206,235,0.7);">(Soy sauce - contains wheat)</span><br>
+• グレービー・ソース・ドレッシング <span style="font-size:13px;color:rgba(135,206,235,0.7);">(Gravy, sauces, dressings)</span><br>
+• 揚げ物（共有の油で揚げたもの） <span style="font-size:13px;color:rgba(135,206,235,0.7);">(Fried foods - shared fryer)</span><br>
+• 加工肉・チーズ（成分確認が必要） <span style="font-size:13px;color:rgba(135,206,235,0.7);">(Processed meats, cheeses)</span>`;
 
     // CROSS-CONTAMINATION WARNING
     const crossContam = document.createElement('div');
@@ -458,18 +458,18 @@
       background: rgba(255,69,0,0.1);
       border: 1.5px solid rgba(255,69,0,0.4);
       border-radius: 10px;
-      font-size: 9.5px;
+      font-size:11px;
       color: rgba(255,255,255,0.9);
       font-weight: 600;
       line-height: 1.6;
     `;
     crossContam.innerHTML = `<strong style="color:#FF6B6B;">⚡ 交差汚染（こうさおせん）の危険性：</strong><br>
-<span style="font-size:11px;color:rgba(255,107,107,0.8);">Cross-Contamination Risk:</span><br>
-❌ 共有のナイフ・まな板を使わないでください <span style="font-size:11px;color:rgba(255,107,107,0.7);">(No shared knives/cutting boards)</span><br>
-❌ 共有の油で揚げないでください <span style="font-size:11px;color:rgba(255,107,107,0.7);">(No shared fryer)</span><br>
-❌ 小麦と同じ鍋・フライパンを使わないでください <span style="font-size:11px;color:rgba(255,107,107,0.7);">(No same pans as wheat)</span><br>
-✅ 清潔で別々の調理器具のみを使用してください <span style="font-size:11px;color:rgba(255,107,107,0.7);">(Use CLEAN, SEPARATE equipment only)</span><br>
-⚠️ パン粉一粒でも危険です <span style="font-size:11px;color:rgba(255,107,107,0.7);">(Even 1 bread crumb = danger)</span>`;
+<span style="font-size:13px;color:rgba(255,107,107,0.8);">Cross-Contamination Risk:</span><br>
+❌ 共有のナイフ・まな板を使わないでください <span style="font-size:13px;color:rgba(255,107,107,0.7);">(No shared knives/cutting boards)</span><br>
+❌ 共有の油で揚げないでください <span style="font-size:13px;color:rgba(255,107,107,0.7);">(No shared fryer)</span><br>
+❌ 小麦と同じ鍋・フライパンを使わないでください <span style="font-size:13px;color:rgba(255,107,107,0.7);">(No same pans as wheat)</span><br>
+✅ 清潔で別々の調理器具のみを使用してください <span style="font-size:13px;color:rgba(255,107,107,0.7);">(Use CLEAN, SEPARATE equipment only)</span><br>
+⚠️ パン粉一粒でも危険です <span style="font-size:13px;color:rgba(255,107,107,0.7);">(Even 1 bread crumb = danger)</span>`;
 
     // SAFE FOODS
     const safeSection = document.createElement('div');
@@ -478,20 +478,20 @@
       background: rgba(34,139,34,0.1);
       border: 1px solid rgba(34,139,34,0.3);
       border-radius: 10px;
-      font-size: 9.5px;
+      font-size:11px;
       color: rgba(200,255,200,1);
       line-height: 1.6;
     `;
     safeSection.innerHTML = `<strong style="color:#7FFF7F;">✅ 安全な食べ物：</strong><br>
-<span style="font-size:11px;color:rgba(127,255,127,0.8);">Safe Foods:</span><br>
-• ご飯・ジャガイモ・トウモロコシ <span style="font-size:11px;color:rgba(127,255,127,0.7);">(Rice, potatoes, corn)</span><br>
-• 新鮮な肉・魚・卵・乳製品 <span style="font-size:11px;color:rgba(127,255,127,0.7);">(Fresh meat, fish, eggs, dairy)</span><br>
-• 野菜・果物・豆・ナッツ <span style="font-size:11px;color:rgba(127,255,127,0.7);">(Vegetables, fruits, beans, nuts)</span><br>
-• グルテンフリー認証製品のみ <span style="font-size:11px;color:rgba(127,255,127,0.7);">(Gluten-free certified products only)</span>`;
+<span style="font-size:13px;color:rgba(127,255,127,0.8);">Safe Foods:</span><br>
+• ご飯・ジャガイモ・トウモロコシ <span style="font-size:13px;color:rgba(127,255,127,0.7);">(Rice, potatoes, corn)</span><br>
+• 新鮮な肉・魚・卵・乳製品 <span style="font-size:13px;color:rgba(127,255,127,0.7);">(Fresh meat, fish, eggs, dairy)</span><br>
+• 野菜・果物・豆・ナッツ <span style="font-size:13px;color:rgba(127,255,127,0.7);">(Vegetables, fruits, beans, nuts)</span><br>
+• グルテンフリー認証製品のみ <span style="font-size:13px;color:rgba(127,255,127,0.7);">(Gluten-free certified products only)</span>`;
 
     const hint = document.createElement('div');
     hint.style.cssText = `
-      font-size: 11px;
+      font-size:13px;
       color: rgba(255,255,255,0.55);
       text-align: center;
       margin-top: 8px;

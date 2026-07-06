@@ -88,7 +88,7 @@
     const errs = _read().slice().reverse();
 
     const body = errs.length === 0
-      ? `<div style="padding:24px 14px;text-align:center;color:rgba(255,255,255,0.55);font-size:13px;">
+      ? `<div style="padding:24px 14px;text-align:center;color:rgba(255,255,255,0.55);font-size:15px;">
            <div style="font-size:36px;margin-bottom:8px;">✅</div>
            <p style="margin:0;">${T('err.empty', 'Nessun errore registrato. Tutto liscio!')}</p>
          </div>`
@@ -97,26 +97,26 @@
           return `
           <div style="padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-left:3px solid ${tone};border-radius:8px;">
             <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;">
-              <span style="font-size:10px;font-weight:700;color:${tone};text-transform:uppercase;letter-spacing:.4px;">${e.kind}</span>
-              <span style="font-size:10.5px;color:rgba(255,255,255,0.45);font-family:'SF Mono',Menlo,monospace;">${_fmtTime(e.ts)}</span>
+              <span style="font-size:12px;font-weight:700;color:${tone};text-transform:uppercase;letter-spacing:.4px;">${e.kind}</span>
+              <span style="font-size:12px;color:rgba(255,255,255,0.45);font-family:'SF Mono',Menlo,monospace;">${_fmtTime(e.ts)}</span>
             </div>
-            <div style="font-size:12.5px;color:#fff;margin-top:4px;word-break:break-word;">${_esc(e.message)}</div>
-            ${e.source ? `<div style="font-size:10.5px;color:rgba(255,255,255,0.5);margin-top:3px;font-family:'SF Mono',Menlo,monospace;">${_esc(e.source)}:${e.line}:${e.col}</div>` : ''}
-            ${e.stack ? `<details style="margin-top:5px;"><summary style="font-size:10.5px;color:rgba(255,255,255,0.5);cursor:pointer;">stack</summary><pre style="font-size:10px;color:rgba(255,255,255,0.6);white-space:pre-wrap;word-break:break-word;margin:4px 0 0;">${_esc(e.stack)}</pre></details>` : ''}
+            <div style="font-size:14px;color:#fff;margin-top:4px;word-break:break-word;">${_esc(e.message)}</div>
+            ${e.source ? `<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:3px;font-family:'SF Mono',Menlo,monospace;">${_esc(e.source)}:${e.line}:${e.col}</div>` : ''}
+            ${e.stack ? `<details style="margin-top:5px;"><summary style="font-size:12px;color:rgba(255,255,255,0.5);cursor:pointer;">stack</summary><pre style="font-size:12px;color:rgba(255,255,255,0.6);white-space:pre-wrap;word-break:break-word;margin:4px 0 0;">${_esc(e.stack)}</pre></details>` : ''}
           </div>`;
         }).join('');
 
     const html = `
       <div style="display:flex;flex-direction:column;gap:10px;padding:4px 0;">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-          <span style="font-size:12px;color:rgba(255,255,255,0.6);">${errs.length} ${T('err.count', 'errori registrati (solo locali)')}</span>
+          <span style="font-size:14px;color:rgba(255,255,255,0.6);">${errs.length} ${T('err.count', 'errori registrati (solo locali)')}</span>
           <div style="display:flex;gap:6px;">
-            <button id="err-copy" style="padding:6px 11px;background:rgba(100,150,255,0.2);border:1px solid rgba(100,150,255,0.45);border-radius:6px;color:#fff;font-size:11.5px;font-weight:600;cursor:pointer;">📋 ${T('err.copy', 'Copia')}</button>
-            <button id="err-clear" style="padding:6px 11px;background:rgba(255,107,107,0.18);border:1px solid rgba(255,107,107,0.4);border-radius:6px;color:#fff;font-size:11.5px;font-weight:600;cursor:pointer;">🗑️ ${T('err.clear', 'Pulisci')}</button>
+            <button id="err-copy" style="padding:6px 11px;background:rgba(100,150,255,0.2);border:1px solid rgba(100,150,255,0.45);border-radius:6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">📋 ${T('err.copy', 'Copia')}</button>
+            <button id="err-clear" style="padding:6px 11px;background:rgba(255,107,107,0.18);border:1px solid rgba(255,107,107,0.4);border-radius:6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">🗑️ ${T('err.clear', 'Pulisci')}</button>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">${body}</div>
-        <p style="font-size:10px;color:rgba(255,255,255,0.50);text-align:center;margin-top:6px;">${T('err.privacy', 'Gli errori restano sul tuo dispositivo. Nessun invio esterno.')}</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.50);text-align:center;margin-top:6px;">${T('err.privacy', 'Gli errori restano sul tuo dispositivo. Nessun invio esterno.')}</p>
       </div>
     `;
     window.openSheet(T('err.title', '🐞 Errori (debug)'), html);

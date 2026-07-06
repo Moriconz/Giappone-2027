@@ -59,39 +59,39 @@
 
         <!-- CREATE MODE -->
         <div id="create-mode" style="display:block">
-          <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:600;color:var(--l-accent)">Il codice della tua stanza</label>
+          <label style="display:block;margin-bottom:8px;font-size:15px;font-weight:600;color:var(--l-accent)">Il codice della tua stanza</label>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap;">
             <div id="room-code-display" style="padding:16px 12px;background:#FFF0F8;border:2px solid var(--l-accent);border-radius:8px;font-size:24px;font-weight:700;letter-spacing:6px;color:var(--l-accent);text-align:center;font-family:monospace;cursor:default;user-select:all;min-width:160px;flex-shrink:0;">------</div>
             <button id="copy-code-btn" aria-label="Copia codice stanza" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Copia codice">📋</button>
             <button id="regen-code-btn" aria-label="Genera nuovo codice stanza" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Genera nuovo codice">🔄</button>
           </div>
-          <div style="font-size:11px;color:#888;margin-top:6px;">Condividi questo codice con chi vuoi far entrare. Solo chi lo ha può entrare.</div>
+          <div style="font-size:13px;color:#888;margin-top:6px;">Condividi questo codice con chi vuoi far entrare. Solo chi lo ha può entrare.</div>
         </div>
 
         <!-- JOIN MODE -->
         <div id="join-mode" style="display:none">
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#2D3B7D">Codice stanza</label>
+          <label style="display:block;margin-bottom:4px;font-size:15px;font-weight:600;color:#2D3B7D">Codice stanza</label>
           <input id="group-room-join" placeholder="Es. ABC123" maxlength="6" style="width:100%;padding:12px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:22px;font-weight:700;letter-spacing:6px;text-transform:uppercase;font-family:monospace;text-align:center;">
-          <div style="font-size:11px;color:#888;margin-top:4px;">Inserisci il codice a 6 lettere ricevuto dal creatore della stanza.</div>
+          <div style="font-size:13px;color:#888;margin-top:4px;">Inserisci il codice a 6 lettere ricevuto dal creatore della stanza.</div>
         </div>
 
         <!-- COMMON FIELDS -->
         <div>
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#333">Il tuo nome</label>
-          <input id="group-name" placeholder="Es. Marco" style="width:100%;padding:10px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:13px;" value="${state.group?.myName||''}">
+          <label style="display:block;margin-bottom:4px;font-size:15px;font-weight:600;color:#333">Il tuo nome</label>
+          <input id="group-name" placeholder="Es. Marco" style="width:100%;padding:10px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:15px;" value="${state.group?.myName||''}">
         </div>
         <div>
-          <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;color:#333">Avatar profilo (opzionale)</label>
-          <input id="group-avatar" type="text" placeholder="URL immagine (es. https://example.com/avatar.png)" style="width:100%;padding:10px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:13px;margin-bottom:6px;" value="${state.group?.myAvatar?.startsWith('data:') || state.group?.myAvatar?.startsWith('http') ? state.group.myAvatar.substring(0,50) + '...' : state.group?.myAvatar || ''}">
-          <button id="gallery-upload-btn" style="width:100%;padding:10px;background:#E8F4FF;border:2px solid #16a34a;color:#2D3B7D;border-radius:6px;font-weight:600;cursor:pointer;margin-bottom:6px;box-sizing:border-box;font-size:13px;">
+          <label style="display:block;margin-bottom:4px;font-size:15px;font-weight:600;color:#333">Avatar profilo (opzionale)</label>
+          <input id="group-avatar" type="text" placeholder="URL immagine (es. https://example.com/avatar.png)" style="width:100%;padding:10px;border:2px solid #FFE5B4;background:#fff;color:#333;border-radius:8px;box-sizing:border-box;font-size:15px;margin-bottom:6px;" value="${state.group?.myAvatar?.startsWith('data:') || state.group?.myAvatar?.startsWith('http') ? state.group.myAvatar.substring(0,50) + '...' : state.group?.myAvatar || ''}">
+          <button id="gallery-upload-btn" style="width:100%;padding:10px;background:#E8F4FF;border:2px solid #16a34a;color:#2D3B7D;border-radius:6px;font-weight:600;cursor:pointer;margin-bottom:6px;box-sizing:border-box;font-size:15px;">
             🎨 Scegli dalla Galleria
           </button>
           <input id="avatar-file-input" type="file" accept="image/*" style="display:none">
-          <div style="font-size:11px;color:#999;">Lascia vuoto per generare un avatar con le tue iniziali.</div>
+          <div style="font-size:13px;color:#999;">Lascia vuoto per generare un avatar con le tue iniziali.</div>
         </div>
 
-        <button id="group-start" style="width:100%;padding:12px;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));color:white;border:2px solid var(--l-accent-600);border-radius:8px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;box-sizing:border-box;font-size:14px;">✅ Connetti</button>
-        <div id="peer-status-box" style="color:#999;font-size:13px;">Pronto a connettersi...</div>
+        <button id="group-start" style="width:100%;padding:12px;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));color:white;border:2px solid var(--l-accent-600);border-radius:8px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;box-sizing:border-box;font-size:16px;">✅ Connetti</button>
+        <div id="peer-status-box" style="color:#999;font-size:15px;">Pronto a connettersi...</div>
       </div>
     `;
 

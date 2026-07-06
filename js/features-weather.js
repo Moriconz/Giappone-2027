@@ -72,7 +72,7 @@ const WEATHER_FEATURES = {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          font-size: 12px;
+          font-size:14px;
           color: rgba(255,200,100,0.95);
         ">
           <span>${alert.message}</span>
@@ -81,7 +81,7 @@ const WEATHER_FEATURES = {
             border: none;
             color: rgba(255,200,100,0.7);
             cursor: pointer;
-            font-size: 14px;
+            font-size:16px;
             padding: 0;
             margin-left: 8px;
           " onclick="event.stopPropagation()">✕</button>

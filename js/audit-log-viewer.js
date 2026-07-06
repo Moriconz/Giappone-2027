@@ -143,7 +143,7 @@
     const ini = _initials(e.by);
     const extras = [];
     if (e.extra?.note) extras.push(`<span style="opacity:.75">"${_esc(String(e.extra.note).slice(0, 80))}${e.extra.note.length > 80 ? '…' : ''}"</span>`);
-    if (e.extra?.field) extras.push(`<code style="opacity:.7;font-size:11px">${_esc(e.extra.field)}</code>`);
+    if (e.extra?.field) extras.push(`<code style="opacity:.7;font-size:13px">${_esc(e.extra.field)}</code>`);
 
     return `
       <div style="
@@ -154,26 +154,26 @@
           flex:0 0 auto;width:32px;height:32px;border-radius:50%;
           background:${color};color:#fff;
           display:flex;align-items:center;justify-content:center;
-          font-size:12px;font-weight:700;font-family:'SF Mono',Menlo,monospace;
+          font-size:14px;font-weight:700;font-family:'SF Mono',Menlo,monospace;
           letter-spacing:-.5px;">
           ${_esc(ini)}
         </div>
         <div style="flex:1;min-width:0;">
           <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap;">
-            <div style="font-size:13px;color:#fff;">
+            <div style="font-size:15px;color:#fff;">
               <strong>${_esc(e.by)}</strong>
-              <span style="background:${meta.tone};padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:600;margin:0 4px;">
+              <span style="background:${meta.tone};padding:2px 7px;border-radius:999px;font-size:12px;font-weight:600;margin:0 4px;">
                 ${meta.icon} ${_esc(meta.label)}
               </span>
             </div>
-            <div style="font-size:10.5px;color:rgba(255,255,255,0.5);font-family:'SF Mono',Menlo,monospace;white-space:nowrap;">
+            <div style="font-size:12px;color:rgba(255,255,255,0.5);font-family:'SF Mono',Menlo,monospace;white-space:nowrap;">
               ${_timeAgo(e.at)}
             </div>
           </div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:3px;line-height:1.4;">
+          <div style="font-size:14px;color:rgba(255,255,255,0.75);margin-top:3px;line-height:1.4;">
             ${_esc(e.poiName)}
           </div>
-          ${extras.length ? `<div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:4px;">${extras.join(' ')}</div>` : ''}
+          ${extras.length ? `<div style="font-size:13px;color:rgba(255,255,255,0.55);margin-top:4px;">${extras.join(' ')}</div>` : ''}
         </div>
       </div>
     `;
@@ -189,10 +189,10 @@
 
     if (events.length === 0) {
       const empty = `
-        <div style="padding:24px 14px;text-align:center;color:rgba(255,255,255,0.55);font-size:13px;line-height:1.6;">
+        <div style="padding:24px 14px;text-align:center;color:rgba(255,255,255,0.55);font-size:15px;line-height:1.6;">
           <div style="font-size:36px;margin-bottom:8px;">📭</div>
           <p style="margin:0;">${T('audit.empty', 'Nessuna modifica registrata in questo gruppo.')}</p>
-          <p style="margin:6px 0 0;font-size:11.5px;color:rgba(255,255,255,0.42);">
+          <p style="margin:6px 0 0;font-size:13px;color:rgba(255,255,255,0.42);">
             ${T('audit.emptyHint', 'Gli eventi appaiono qui appena qualcuno modifica una tappa dell\'itinerario condiviso.')}
           </p>
         </div>
@@ -203,7 +203,7 @@
 
     const filtered = opts.filterAction;
     const filterChips = `
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;font-size:11.5px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;font-size:13px;">
         <button data-audit-filter="" style="
           padding:6px 11px;border-radius:999px;cursor:pointer;
           background:${!filtered ? 'rgba(255,107,53,0.25)' : 'rgba(255,255,255,0.05)'};
@@ -240,14 +240,14 @@
 
     const html = `
       <div style="padding:4px 0;display:flex;flex-direction:column;gap:10px;">
-        <div style="font-size:11.5px;color:rgba(255,255,255,0.6);">
+        <div style="font-size:13px;color:rgba(255,255,255,0.6);">
           ${events.length} ${countText}
         </div>
         ${filterChips}
         <div style="display:flex;flex-direction:column;gap:8px;">
           ${rows}
         </div>
-        <p style="text-align:center;font-size:10.5px;color:rgba(255,255,255,0.50);margin-top:6px;">
+        <p style="text-align:center;font-size:12px;color:rgba(255,255,255,0.50);margin-top:6px;">
           ${T('audit.footer', 'Cronologia salvata solo localmente. Si propaga via MQTT quando i membri sono online.')}
         </p>
       </div>

@@ -171,15 +171,15 @@
 
     const permGranted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
     const permBtn = !permGranted ? `
-      <button id="rem-enable-btn" style="width:100%;padding:10px;background:linear-gradient(135deg,var(--m-accent),#FF5E1F);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:12px;">
+      <button id="rem-enable-btn" style="width:100%;padding:10px;background:linear-gradient(135deg,var(--m-accent),#FF5E1F);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:12px;">
         🔔 ${T('reminder.enableBtn', 'Attiva notifiche OS')}
       </button>` : `
-      <div style="padding:8px 12px;background:rgba(22,163,74,0.12);border:1px solid rgba(22,163,74,0.4);border-radius:8px;font-size:12px;color:#15803d;margin-bottom:12px;">
+      <div style="padding:8px 12px;background:rgba(22,163,74,0.12);border:1px solid rgba(22,163,74,0.4);border-radius:8px;font-size:14px;color:#15803d;margin-bottom:12px;">
         ✅ ${T('reminder.active', 'Notifiche OS attive')}
       </div>`;
 
     const rows = upcoming.length === 0
-      ? `<div style="text-align:center;padding:20px;color:var(--l-muted);font-size:13px;">
+      ? `<div style="text-align:center;padding:20px;color:var(--l-muted);font-size:15px;">
            ${T('reminder.none', 'Nessuna tappa con orario nelle prossime 48h.')}
          </div>`
       : upcoming.map(({ entry, dayIndex, tappaTime }) => {
@@ -188,8 +188,8 @@
           const hh = _pad(tappaTime.getHours()), mm = _pad(tappaTime.getMinutes());
           return `
           <div style="padding:10px 12px;background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:8px;">
-            <div style="font-size:13px;font-weight:600;color:var(--l-ink);">${name}</div>
-            <div style="font-size:11px;color:var(--l-muted);margin-top:3px;">
+            <div style="font-size:15px;font-weight:600;color:var(--l-ink);">${name}</div>
+            <div style="font-size:13px;color:var(--l-muted);margin-top:3px;">
               📅 Day ${dayIndex + 1} · 🕐 ${hh}:${mm} · ⏳ ${mins < 60 ? mins + ' min' : Math.round(mins / 60) + 'h'}
             </div>
           </div>`;
@@ -198,7 +198,7 @@
     const html = `
       <div style="display:flex;flex-direction:column;gap:10px;padding:4px 0;">
         ${permBtn}
-        <p style="font-size:11.5px;color:var(--l-muted);margin:0;">
+        <p style="font-size:13px;color:var(--l-muted);margin:0;">
           ${T('reminder.hint', `Ricevi un avviso ${ADVANCE_MIN} minuti prima di ogni tappa con orario impostato.`)}
         </p>
         <div style="display:flex;flex-direction:column;gap:8px;">${rows}</div>

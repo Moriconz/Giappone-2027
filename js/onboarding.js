@@ -77,7 +77,7 @@ function showOnboardingChoiceModal() {
 
         <!-- SUBTITLE -->
         <p style="
-          font-size: 14px;
+          font-size:16px;
           color: rgba(255,255,255,0.65);
           text-align: center;
           margin: 0;
@@ -126,7 +126,7 @@ function showOnboardingChoiceModal() {
 
         <!-- INFO -->
         <p style="
-          font-size: 12px;
+          font-size:14px;
           color: rgba(255,255,255,0.5);
           text-align: center;
           margin: 0;
@@ -221,7 +221,7 @@ function showOnboarding() {
           justify-content: center;
         ">
           <div id="step-indicator" style="
-            font-size: 12px;
+            font-size:14px;
             font-weight: 600;
             color: rgba(255,165,100,0.8);
             letter-spacing: 0.5px;
@@ -262,7 +262,7 @@ function showOnboarding() {
             <div style="margin-bottom: 28px;">
               <label style="
                 display: block;
-                font-size: 13px;
+                font-size:15px;
                 font-weight: 600;
                 color: rgba(255,255,255,0.7);
                 margin-bottom: 10px;
@@ -294,7 +294,7 @@ function showOnboarding() {
             <div>
               <label style="
                 display: block;
-                font-size: 13px;
+                font-size:15px;
                 font-weight: 600;
                 color: rgba(255,255,255,0.7);
                 margin-bottom: 10px;
@@ -328,7 +328,7 @@ function showOnboarding() {
             <div>
               <label style="
                 display: block;
-                font-size: 13px;
+                font-size:15px;
                 font-weight: 600;
                 color: rgba(255,255,255,0.7);
                 margin-bottom: 10px;
@@ -362,7 +362,7 @@ function showOnboarding() {
           <div class="onboarding-step" data-step="2" style="display: none;">
             <label style="
               display: block;
-              font-size: 13px;
+              font-size:15px;
               font-weight: 600;
               color: rgba(255,255,255,0.7);
               margin-bottom: 16px;
@@ -457,7 +457,7 @@ function showOnboarding() {
           <div class="onboarding-step" data-step="3" style="display: none;">
             <label style="
               display: block;
-              font-size: 13px;
+              font-size:15px;
               font-weight: 600;
               color: rgba(255,255,255,0.7);
               margin-bottom: 16px;
@@ -489,7 +489,7 @@ function showOnboarding() {
                       accent-color: var(--m-accent);
                     "
                   >
-                  <span style="font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 500;">${_To('ob.int.'+interest.toLowerCase(), interest)}</span>
+                  <span style="font-size:16px; color: rgba(255,255,255,0.85); font-weight: 500;">${_To('ob.int.'+interest.toLowerCase(), interest)}</span>
                 </label>
               `).join('')}
             </div>
@@ -499,7 +499,7 @@ function showOnboarding() {
           <div class="onboarding-step" data-step="4" style="display: none;">
             <label style="
               display: block;
-              font-size: 13px;
+              font-size:15px;
               font-weight: 600;
               color: rgba(255,255,255,0.7);
               margin-bottom: 16px;
@@ -622,7 +622,7 @@ function showOnboarding() {
             <div style="margin-bottom: 28px;">
               <label style="
                 display: block;
-                font-size: 13px;
+                font-size:15px;
                 font-weight: 600;
                 color: rgba(255,255,255,0.7);
                 margin-bottom: 10px;
@@ -659,7 +659,7 @@ function showOnboarding() {
               border: 1px solid rgba(255,165,100,0.2);
               border-radius: 10px;
             ">
-              <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 4px;">${_To('ob.budgetTotal','Budget totale')}</div>
+              <div style="font-size:14px; color: rgba(255,255,255,0.6); margin-bottom: 4px;">${_To('ob.budgetTotal','Budget totale')}</div>
               <div style="font-size: 24px; color: var(--m-accent); font-weight: 700;">€<span id="budget-total">400</span></div>
             </div>
           </div>
@@ -677,7 +677,7 @@ function showOnboarding() {
                 border: 1px solid rgba(255,165,100,0.2);
                 border-radius: 10px;
                 color: rgba(255,255,255,0.8);
-                font-size: 14px;
+                font-size:16px;
                 font-weight: 600;
                 cursor: pointer;
                 transition: all 0.3s ease;
@@ -696,7 +696,7 @@ function showOnboarding() {
                 border: none;
                 border-radius: 10px;
                 color: #fff;
-                font-size: 14px;
+                font-size:16px;
                 font-weight: 700;
                 cursor: pointer;
                 transition: all 0.3s ease;
@@ -730,7 +730,7 @@ function showOnboarding() {
 
         <!-- FOOTER TEXT -->
         <p style="
-          font-size: 12px;
+          font-size:14px;
           color: rgba(255,255,255,0.50);
           text-align: center;
           margin-top: 28px;

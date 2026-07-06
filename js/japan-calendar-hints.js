@@ -259,7 +259,7 @@
             display:flex;align-items:center;gap:10px;
             padding:9px 12px;
             background:${pal.bg};border:1.5px solid ${pal.border};border-radius:10px;
-            color:${pal.fg};font-size:12.5px;font-weight:600;
+            color:${pal.fg};font-size:14px;font-weight:600;
             cursor:pointer;text-align:left;
             transition:all 0.15s;width:100%;"
           onmouseover="this.style.transform='translateY(-1px)'"
@@ -267,11 +267,11 @@
           <span style="font-size:18px;flex:0 0 auto;">${h.icon}</span>
           <span style="flex:1;line-height:1.4;">
             <strong>${_esc(label)}</strong>
-            <span style="display:block;font-size:11px;color:var(--l-muted);font-weight:500;font-family:'SF Mono',Menlo,monospace;">
+            <span style="display:block;font-size:13px;color:var(--l-muted);font-weight:500;font-family:'SF Mono',Menlo,monospace;">
               ${_fmtDateRange(h.actualStart, h.actualEnd)}
             </span>
           </span>
-          <span style="flex:0 0 auto;color:var(--l-muted);font-size:14px;">→</span>
+          <span style="flex:0 0 auto;color:var(--l-muted);font-size:16px;">→</span>
         </button>
       `;
     }).join('');
@@ -281,8 +281,8 @@
         padding:14px;margin:14px 0;
         background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:12px;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:10px;flex-wrap:wrap;">
-          <div style="font-weight:700;color:var(--l-ink);font-size:13.5px;">${headerLabel}</div>
-          <div style="font-size:11px;color:var(--l-muted);">${_esc(subtitle)}</div>
+          <div style="font-weight:700;color:var(--l-ink);font-size:15px;">${headerLabel}</div>
+          <div style="font-size:13px;color:var(--l-muted);">${_esc(subtitle)}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">
           ${cards}
@@ -307,7 +307,7 @@
           <div style="font-size:32px;flex:0 0 auto;">${hint.icon}</div>
           <div>
             <div style="font-size:16px;font-weight:700;color:var(--l-ink);">${_esc(label)}</div>
-            <div style="font-size:12px;color:var(--l-muted);font-family:'SF Mono',Menlo,monospace;margin-top:2px;">
+            <div style="font-size:14px;color:var(--l-muted);font-family:'SF Mono',Menlo,monospace;margin-top:2px;">
               ${_fmtDateRange(hint.actualStart, hint.actualEnd)}
             </div>
           </div>
@@ -315,11 +315,11 @@
         <div style="
           padding:14px;background:rgba(20,30,60,0.03);
           border:1px solid var(--l-hair);border-radius:10px;
-          color:var(--l-ink);font-size:13px;line-height:1.6;">
+          color:var(--l-ink);font-size:15px;line-height:1.6;">
           ${_esc(message)}
         </div>
         ${hint.severity === 'info' ? `
-          <p style="font-size:10.5px;color:var(--l-faint);text-align:center;margin-top:12px;line-height:1.5;">
+          <p style="font-size:12px;color:var(--l-faint);text-align:center;margin-top:12px;line-height:1.5;">
             ⚠️ ${T('jpcal.estimateDisclaimer', 'Date stimate, calibrate su pattern 2020–2024. Le date reali sono pubblicate dalla JMA a febbraio dell\'anno stesso.')}
           </p>` : ''}
       </div>

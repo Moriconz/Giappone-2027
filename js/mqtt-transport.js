@@ -139,7 +139,7 @@ console.log('[MQTT] Loading MQTT transport...');
           avatar: data.avatar || null,
           lastUpdate: data.ts || Date.now(),
         };
-        console.log(`%c[MQTT] 📍 GPS ricevuto da ${data.from}: (${data.lat.toFixed(4)}, ${data.lng.toFixed(4)})`, 'background:#FF69B4;color:white;padding:4px 8px;border-radius:3px;font-size:11px');
+        console.log(`%c[MQTT] 📍 GPS ricevuto da ${data.from}: (${data.lat.toFixed(4)}, ${data.lng.toFixed(4)})`, 'background:#FF69B4;color:white;padding:4px 8px;border-radius:3px;font-size:13px');
         // Emit event for map update
         document.dispatchEvent(new CustomEvent('map_markers_updated', {
           detail: { markers: window.state.gpsRemoteMarkers }

@@ -49,8 +49,8 @@
     const menuHTML = `
       <div style="display: flex; flex-direction: column; gap: 8px; padding: 0;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;">
-          <span style="font-size:14px;">🌐 ${T('menu.language', 'Lingua')}</span>
-          <select id="lang-switcher-drawer" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:inherit;padding:4px 8px;font-size:13px;">
+          <span style="font-size:16px;">🌐 ${T('menu.language', 'Lingua')}</span>
+          <select id="lang-switcher-drawer" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:inherit;padding:4px 8px;font-size:15px;">
             <option value="it">🇮🇹 IT</option>
             <option value="en">🇬🇧 EN</option>
             <option value="ja">🇯🇵 日本語</option>
@@ -66,7 +66,7 @@
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 10px;
             color: rgba(255,255,255,0.85);
-            font-size: 14px;
+            font-size:16px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;

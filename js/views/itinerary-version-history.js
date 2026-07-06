@@ -105,7 +105,7 @@
       window.openSheet?.('📷 ' + T('vh.title', 'Versioni itinerario'), `
         <div style="padding:32px 16px;text-align:center;color:var(--l-muted);">
           <div style="font-size:40px;margin-bottom:14px;">🗄️</div>
-          <p style="margin:0;font-size:14px;line-height:1.5;">
+          <p style="margin:0;font-size:16px;line-height:1.5;">
             ${T('vh.empty',
               'Nessuna versione salvata ancora.<br>Le versioni vengono create automaticamente ad ogni modifica all\'itinerario di gruppo.')}
           </p>
@@ -137,26 +137,26 @@
             width:32px;height:32px;border-radius:50%;
             background:${color};
             display:flex;align-items:center;justify-content:center;
-            font-weight:700;font-size:13px;flex-shrink:0;color:#000;
+            font-weight:700;font-size:15px;flex-shrink:0;color:#000;
           ">${initial}</div>
 
           <!-- Info -->
           <div style="flex:1;min-width:0;">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
               <span style="font-size:16px;">${icon}</span>
-              <span style="color:var(--l-ink);font-weight:600;font-size:13px;">${_esc(entry.peerId || 'sconosciuto')}</span>
+              <span style="color:var(--l-ink);font-weight:600;font-size:15px;">${_esc(entry.peerId || 'sconosciuto')}</span>
               ${isCurrent ? `
                 <span style="
                   background:rgba(22,163,74,0.12);border:1px solid rgba(22,163,74,0.4);
-                  border-radius:20px;padding:1px 8px;font-size:11px;
+                  border-radius:20px;padding:1px 8px;font-size:13px;
                   color:#16a34a;font-weight:700;
                 ">${T('vh.current', 'ATTUALE')}</span>` : ''}
             </div>
-            <div style="color:var(--l-muted);font-size:12px;margin-bottom:4px;">
+            <div style="color:var(--l-muted);font-size:14px;margin-bottom:4px;">
               ${desc}
               &nbsp;·&nbsp;${pois} ${T('vh.pois', 'tappe')}
             </div>
-            <div style="color:var(--l-faint);font-size:11px;">${when}</div>
+            <div style="color:var(--l-faint);font-size:13px;">${when}</div>
           </div>
 
           <!-- Ripristina -->
@@ -167,7 +167,7 @@
                 flex-shrink:0;padding:6px 10px;
                 background:rgba(2,132,199,0.1);
                 border:1px solid rgba(2,132,199,0.3);
-                border-radius:7px;color:#0284c7;font-size:12px;font-weight:600;
+                border-radius:7px;color:#0284c7;font-size:14px;font-weight:600;
                 cursor:pointer;transition:all 0.2s;white-space:nowrap;
               "
               onmouseover="this.style.background='rgba(2,132,199,0.18)'"
@@ -181,7 +181,7 @@
       <div style="padding:4px 0;">
         <p style="
           margin:0 0 14px;
-          color:var(--l-muted);font-size:12px;line-height:1.5;
+          color:var(--l-muted);font-size:14px;line-height:1.5;
         ">
           ${T('vh.desc',
             'Ogni modifica all\'itinerario di gruppo crea un checkpoint automatico. Puoi tornare a qualsiasi versione precedente.')}

@@ -304,20 +304,20 @@ window.groupChat = (() => {
           ${!isOwn ? avatarHtml : ''}
 
           <div style="max-width: 70%;">
-            ${!isOwn ? `<div style="font-size: 12px; font-weight: 600; margin-bottom: 3px; padding: 0 8px; color: ${senderColor};">${escapeHtml(messageFrom)}</div>` : ''}
+            ${!isOwn ? `<div style="font-size:14px; font-weight: 600; margin-bottom: 3px; padding: 0 8px; color: ${senderColor};">${escapeHtml(messageFrom)}</div>` : ''}
             <div style="
               background: ${isOwn ? 'var(--l-accent)' : '#e0e0e0'};
               color: ${isOwn ? '#fff' : '#333'};
               padding: 8px 12px;
               border-radius: 8px;
               word-wrap: break-word;
-              font-size: 13px;
+              font-size:15px;
               font-weight: ${isOwn ? '500' : '400'};
             ">
               ${escapeHtml(messageText)}
             </div>
             <div style="
-              font-size: 11px;
+              font-size:13px;
               opacity: 0.6;
               margin-top: 3px;
               padding: 0 8px;

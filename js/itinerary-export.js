@@ -136,11 +136,11 @@
       <style>body{font-family:Arial,sans-serif;margin:20px;color:#333}
         h1{color:#1A3C5E;border-bottom:3px solid #C85C3B;padding-bottom:10px}
         h2{color:#1A3C5E;margin-top:24px;border-left:4px solid #C85C3B;padding-left:10px}
-        .daycost{float:right;font-size:13px;color:#C85C3B;font-weight:normal;}
+        .daycost{float:right;font-size:15px;color:#C85C3B;font-weight:normal;}
         .stop{margin:12px 0;padding:12px;background:#f5f5f5;border-left:3px solid #E8A838}
-        .stop h3{margin:0 0 6px;color:#1A3C5E}.meta{font-size:12px;color:#666;margin:4px 0}
+        .stop h3{margin:0 0 6px;color:#1A3C5E}.meta{font-size:14px;color:#666;margin:4px 0}
         .notes{font-style:italic;color:#666;margin-top:6px}a{color:#1A3C5E}</style>
-      </head><body>${body}<div style="margin-top:30px;border-top:1px solid #ccc;padding-top:10px;font-size:11px;color:#999">Esportato da Tabi</div></body></html>`;
+      </head><body>${body}<div style="margin-top:30px;border-top:1px solid #ccc;padding-top:10px;font-size:13px;color:#999">Esportato da Tabi</div></body></html>`;
 
     const w = window.open('', '_blank');
     if (!w) { window.toast(T('toast.popupBlocked', '⚠️ Consenti i popup per esportare il PDF')); return; }
@@ -186,7 +186,7 @@
       <div style="position:fixed;inset:0;z-index:3001;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px" id="export-modal">
         <div style="background:var(--surface);border-radius:12px;padding:20px;max-width:380px;width:100%;max-height:70vh;overflow-y:auto">
           <h3 style="margin:0 0 14px;color:var(--accent)">📋 Itinerario da Esportare</h3>
-          <pre style="background:var(--surface-2);padding:12px;border-radius:8px;font-size:11px;color:var(--text);overflow-x:auto;max-height:300px">${text.replace(/</g,'&lt;')}</pre>
+          <pre style="background:var(--surface-2);padding:12px;border-radius:8px;font-size:13px;color:var(--text);overflow-x:auto;max-height:300px">${text.replace(/</g,'&lt;')}</pre>
           <div style="display:flex;gap:8px;margin-top:14px">
             <button onclick="document.getElementById('export-modal').remove()" style="flex:1;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">Chiudi</button>
             <button onclick="navigator.clipboard.writeText(this.dataset.t);window.toast?.('✅ Copiato!')" data-t="${text.replace(/"/g,'&quot;')}" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600">📋 Copia</button>
@@ -208,7 +208,7 @@
         </select></div>
       <div class="action-row"><button class="btn primary" id="cal-export">📥 Scarica .ics</button></div>
       <div class="section" style="margin-top:14px"><h3>ℹ️ Come usare il file .ics</h3>
-        <p style="font-size:12px;color:var(--muted)">Scarica il file e aprilo col tuo telefono: Google Calendar, Apple Calendar e Outlook lo importano automaticamente.</p>
+        <p style="font-size:14px;color:var(--muted)">Scarica il file e aprilo col tuo telefono: Google Calendar, Apple Calendar e Outlook lo importano automaticamente.</p>
       </div>`;
     window.openSheet('📅 Aggiungi a calendario', html);
     document.getElementById('cal-export').onclick = () => {

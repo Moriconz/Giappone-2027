@@ -43,7 +43,7 @@
 
   function showMedicalCard() {
     const cardContent = `
-      <div style="font-family:monospace;white-space:pre-wrap;font-size:11px;line-height:1.4;background:rgba(20,30,60,0.05);color:var(--l-ink);padding:12px;border-radius:8px;margin:12px 0;overflow-x:auto;">
+      <div style="font-family:monospace;white-space:pre-wrap;font-size:13px;line-height:1.4;background:rgba(20,30,60,0.05);color:var(--l-ink);padding:12px;border-radius:8px;margin:12px 0;overflow-x:auto;">
 ╔════════════════════════════════════════════════╗
 ║        セリアック病医療カード               ║
 ║     (Celiac Disease Medical Card)          ║
@@ -69,7 +69,7 @@ ____________________
 
 血液型 (Blood Type): _____
       </div>
-      <p style="font-size:12px;color:var(--muted);margin-top:12px;">📋 Puoi stampare e completare questa tessera manualmente.</p>
+      <p style="font-size:14px;color:var(--muted);margin-top:12px;">📋 Puoi stampare e completare questa tessera manualmente.</p>
     `;
     if (typeof window.openSheet === 'function') {
       window.openSheet('Tessera Medica', cardContent);
@@ -124,10 +124,10 @@ Data di creazione (Date Created): ${new Date().toLocaleDateString()}
         <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;padding:14px;background:#fff;border:1.5px solid var(--l-hair);border-radius:14px;box-shadow:0 2px 10px rgba(28,40,71,.06);">
           <div style="flex:0 0 auto;font-size:32px;padding-top:4px;">🚑</div>
           <div style="flex:1;">
-            <div style="font-weight:700;color:var(--l-accent-600);margin-bottom:6px;font-size:12px;letter-spacing:0.5px;">AMBULANZA / 救急車</div>
+            <div style="font-weight:700;color:var(--l-accent-600);margin-bottom:6px;font-size:14px;letter-spacing:0.5px;">AMBULANZA / 救急車</div>
             <div style="font-size:20px;font-weight:800;color:var(--l-accent-600);letter-spacing:3px;margin-bottom:8px;">119</div>
-            <div style="font-size:12px;color:var(--l-muted);margin-bottom:10px;line-height:1.5;">Numero di emergenza nazionale giapponese</div>
-            <button onclick="copyToClipboard('119')" style="padding:8px 14px;background:var(--l-accent);color:#fff;border:2px solid var(--l-accent);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;width:100%;">📱 Copia Numero</button>
+            <div style="font-size:14px;color:var(--l-muted);margin-bottom:10px;line-height:1.5;">Numero di emergenza nazionale giapponese</div>
+            <button onclick="copyToClipboard('119')" style="padding:8px 14px;background:var(--l-accent);color:#fff;border:2px solid var(--l-accent);border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;width:100%;">📱 Copia Numero</button>
           </div>
         </div>
 
@@ -135,14 +135,14 @@ Data di creazione (Date Created): ${new Date().toLocaleDateString()}
         <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;padding:14px;background:#fff;border:1.5px solid var(--l-hair);border-radius:14px;box-shadow:0 2px 10px rgba(28,40,71,.06);">
           <div style="flex:0 0 auto;font-size:32px;padding-top:4px;">🗣️</div>
           <div style="flex:1;">
-            <div style="font-weight:700;color:var(--l-ink);margin-bottom:8px;font-size:12px;letter-spacing:0.5px;">FRASE DI EMERGENZA</div>
-            <div style="font-size:13px;font-weight:700;color:var(--l-ink);margin-bottom:8px;line-height:1.5;padding:8px;background:rgba(20,30,60,0.05);border:1px solid var(--l-hair);border-radius:6px;">${jp}</div>
-            <div style="font-size:11px;color:var(--l-muted);margin-bottom:10px;font-style:italic;">Mostra al cameriere o medico in caso di dubbio</div>
+            <div style="font-weight:700;color:var(--l-ink);margin-bottom:8px;font-size:14px;letter-spacing:0.5px;">FRASE DI EMERGENZA</div>
+            <div style="font-size:15px;font-weight:700;color:var(--l-ink);margin-bottom:8px;line-height:1.5;padding:8px;background:rgba(20,30,60,0.05);border:1px solid var(--l-hair);border-radius:6px;">${jp}</div>
+            <div style="font-size:13px;color:var(--l-muted);margin-bottom:10px;font-style:italic;">Mostra al cameriere o medico in caso di dubbio</div>
             <div style="display:flex;gap:8px">
-              <button onclick="showWaiterCard('${jp}')" style="flex:1;padding:8px 14px;background:var(--l-accent);color:#fff;border:2px solid var(--l-accent);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;">🗣️ Mostra al Cameriere</button>
-              <button onclick="copyToClipboard('${jp}')" style="flex:1;padding:8px 14px;background:rgba(20,30,60,0.055);color:var(--l-ink);border:1.5px solid var(--l-hair);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;">📋 Copia</button>
+              <button onclick="showWaiterCard('${jp}')" style="flex:1;padding:8px 14px;background:var(--l-accent);color:#fff;border:2px solid var(--l-accent);border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;">🗣️ Mostra al Cameriere</button>
+              <button onclick="copyToClipboard('${jp}')" style="flex:1;padding:8px 14px;background:rgba(20,30,60,0.055);color:var(--l-ink);border:1.5px solid var(--l-hair);border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;">📋 Copia</button>
             </div>
-            <button onclick="window.loadScript('./js/allergy-cards.js').then(() => window.openAllergyCard?.(window.I18N?.lang || 'ja'))" style="width:100%;margin-top:8px;padding:8px 14px;background:rgba(37,99,235,0.12);color:#1d4ed8;border:1.5px solid rgba(37,99,235,0.35);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;">🌐 Carta Allergie Multilingua (JA/EN/IT/ZH/KO)</button>
+            <button onclick="window.loadScript('./js/allergy-cards.js').then(() => window.openAllergyCard?.(window.I18N?.lang || 'ja'))" style="width:100%;margin-top:8px;padding:8px 14px;background:rgba(37,99,235,0.12);color:#1d4ed8;border:1.5px solid rgba(37,99,235,0.35);border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;">🌐 Carta Allergie Multilingua (JA/EN/IT/ZH/KO)</button>
           </div>
         </div>
 
@@ -150,11 +150,11 @@ Data di creazione (Date Created): ${new Date().toLocaleDateString()}
         <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;padding:14px;background:#fff;border:1.5px solid var(--l-hair);border-radius:14px;box-shadow:0 2px 10px rgba(28,40,71,.06);">
           <div style="flex:0 0 auto;font-size:32px;padding-top:4px;">🏥</div>
           <div style="flex:1;">
-            <div style="font-weight:700;color:var(--l-ink);margin-bottom:8px;font-size:12px;letter-spacing:0.5px;">OSPEDALE PRINCIPALE</div>
-            <div style="font-size:12px;color:var(--l-ink);margin-bottom:4px;font-weight:600;">St. Luke's International Hospital</div>
-            <div style="font-size:11px;color:var(--l-muted);margin-bottom:6px;line-height:1.4;">9-1 Akashicho, Chuo-ku, Tokyo</div>
-            <div style="font-size:11px;color:var(--l-muted);margin-bottom:10px;line-height:1.4;">☎️ +81-3-3541-5151</div>
-            <button onclick="openGoogleMaps('St. Luke\\'s International Hospital, Tokyo')" style="padding:8px 14px;background:rgba(20,30,60,0.055);color:var(--l-ink);border:1.5px solid var(--l-hair);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;width:100%;">🗺️ Apri in Maps</button>
+            <div style="font-weight:700;color:var(--l-ink);margin-bottom:8px;font-size:14px;letter-spacing:0.5px;">OSPEDALE PRINCIPALE</div>
+            <div style="font-size:14px;color:var(--l-ink);margin-bottom:4px;font-weight:600;">St. Luke's International Hospital</div>
+            <div style="font-size:13px;color:var(--l-muted);margin-bottom:6px;line-height:1.4;">9-1 Akashicho, Chuo-ku, Tokyo</div>
+            <div style="font-size:13px;color:var(--l-muted);margin-bottom:10px;line-height:1.4;">☎️ +81-3-3541-5151</div>
+            <button onclick="openGoogleMaps('St. Luke\\'s International Hospital, Tokyo')" style="padding:8px 14px;background:rgba(20,30,60,0.055);color:var(--l-ink);border:1.5px solid var(--l-hair);border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;width:100%;">🗺️ Apri in Maps</button>
           </div>
         </div>
 
@@ -162,16 +162,16 @@ Data di creazione (Date Created): ${new Date().toLocaleDateString()}
         <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;padding:14px;background:#fff;border:1.5px solid var(--l-hair);border-radius:14px;box-shadow:0 2px 10px rgba(28,40,71,.06);">
           <div style="flex:0 0 auto;font-size:32px;padding-top:4px;">🆔</div>
           <div style="flex:1;">
-            <div style="font-weight:700;color:var(--l-ink);margin-bottom:10px;font-size:12px;letter-spacing:0.5px;">TESSERA MEDICA</div>
-            <button onclick="showMedicalCard()" style="width:100%;padding:8px 14px;background:rgba(20,30,60,0.055);color:var(--l-ink);border:1.5px solid var(--l-hair);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;margin-bottom:6px;">📄 Visualizza / Stampa</button>
-            <button onclick="downloadMedicalCard()" style="width:100%;padding:8px 14px;background:rgba(20,30,60,0.055);color:var(--l-ink);border:1.5px solid var(--l-hair);border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;">⬇️ Scarica</button>
+            <div style="font-weight:700;color:var(--l-ink);margin-bottom:10px;font-size:14px;letter-spacing:0.5px;">TESSERA MEDICA</div>
+            <button onclick="showMedicalCard()" style="width:100%;padding:8px 14px;background:rgba(20,30,60,0.055);color:var(--l-ink);border:1.5px solid var(--l-hair);border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:6px;">📄 Visualizza / Stampa</button>
+            <button onclick="downloadMedicalCard()" style="width:100%;padding:8px 14px;background:rgba(20,30,60,0.055);color:var(--l-ink);border:1.5px solid var(--l-hair);border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;">⬇️ Scarica</button>
           </div>
         </div>
 
         <!-- CONSIGLI RAPIDI -->
         <div style="padding:14px;background:#fff;border:1.5px solid var(--l-hair);border-radius:14px;margin-bottom:16px;box-shadow:0 2px 10px rgba(28,40,71,.06);">
-          <div style="font-weight:700;color:var(--l-ink);margin-bottom:10px;font-size:12px;letter-spacing:0.5px;">💡 CONSIGLI DI SICUREZZA</div>
-          <div style="line-height:1.8;color:var(--l-muted);font-size:12px;">
+          <div style="font-weight:700;color:var(--l-ink);margin-bottom:10px;font-size:14px;letter-spacing:0.5px;">💡 CONSIGLI DI SICUREZZA</div>
+          <div style="line-height:1.8;color:var(--l-muted);font-size:14px;">
             • Mostra frase <strong>PRIMA</strong> di mangiare<br>
             • Porta tessera sempre con te<br>
             • Salva contatto ospedale nel telefono<br>

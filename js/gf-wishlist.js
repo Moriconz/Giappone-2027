@@ -150,7 +150,7 @@
       const dist = (it.lat && it.lng && window.state?.gpsCurrentLat)
         ? ' · ' + window.fmtDist?.(window.haversineKm(window.state.gpsCurrentLat, window.state.gpsCurrentLng, it.lat, it.lng)) : '';
       const btn = (choice, emoji, label, color) => `
-        <button onclick="window.GFWishlist.vote('${_esc(it.id)}','${choice}')" style="flex:1;padding:7px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:700;
+        <button onclick="window.GFWishlist.vote('${_esc(it.id)}','${choice}')" style="flex:1;padding:7px;border-radius:7px;cursor:pointer;font-size:14px;font-weight:700;
           background:${myVote === choice ? color : 'rgba(20,30,60,0.05)'};
           border:1.5px solid ${myVote === choice ? color.replace('0.35', '0.7') : 'rgba(20,30,60,0.14)'};color:${myVote === choice ? '#171b24' : 'var(--l-ink)'};">
           ${emoji} ${label} ${({ yes: t.yes, maybe: t.maybe, no: t.no })[choice] || 0}</button>`;
@@ -159,7 +159,7 @@
           <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
             <div style="flex:1;min-width:0;">
               <div style="font-size:15px;font-weight:700;color:var(--l-ink);">${gfBadge(it.gf)} ${_esc(it.name)}</div>
-              <div style="font-size:11px;color:var(--l-muted);margin-top:2px;">${_esc(it.city)}${dist} · ${T('wish.by', 'da')} ${_esc(it.proposedBy)}</div>
+              <div style="font-size:13px;color:var(--l-muted);margin-top:2px;">${_esc(it.city)}${dist} · ${T('wish.by', 'da')} ${_esc(it.proposedBy)}</div>
             </div>
             <div style="font-size:18px;font-weight:800;color:${_score(it) > 0 ? '#16a34a' : _score(it) < 0 ? '#dc2626' : 'var(--l-faint)'};">${_score(it) > 0 ? '+' : ''}${_score(it)}</div>
           </div>
@@ -169,16 +169,16 @@
             ${btn('no', '👎', T('wish.no', 'No'), 'rgba(239,68,68,0.35)')}
           </div>
           <div style="display:flex;gap:6px;">
-            <button onclick="window.GFWishlist.addToItinerary('${_esc(it.id)}')" style="flex:1;padding:7px;background:rgba(255,107,53,0.2);border:1.5px solid rgba(255,107,53,0.45);border-radius:7px;color:#7a2e0e;font-size:12px;font-weight:700;cursor:pointer;">➕ ${T('wish.toItinerary', 'In itinerario')}</button>
-            ${it.proposedBy === me ? `<button onclick="window.GFWishlist.remove('${_esc(it.id)}')" style="padding:7px 12px;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.14);border-radius:7px;color:var(--l-muted);font-size:12px;cursor:pointer;">🗑️</button>` : ''}
+            <button onclick="window.GFWishlist.addToItinerary('${_esc(it.id)}')" style="flex:1;padding:7px;background:rgba(255,107,53,0.2);border:1.5px solid rgba(255,107,53,0.45);border-radius:7px;color:#7a2e0e;font-size:14px;font-weight:700;cursor:pointer;">➕ ${T('wish.toItinerary', 'In itinerario')}</button>
+            ${it.proposedBy === me ? `<button onclick="window.GFWishlist.remove('${_esc(it.id)}')" style="padding:7px 12px;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.14);border-radius:7px;color:var(--l-muted);font-size:14px;cursor:pointer;">🗑️</button>` : ''}
           </div>
         </div>`;
     }).join('');
 
     const html = `
       <div id="gf-wishlist-body" style="padding:4px 2px;">
-        ${!inGroup ? `<div style="background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;color:#92400e;">⚠️ ${T('wish.joinHint', 'Entra in un gruppo per votare insieme. Puoi comunque proporre locali.')}</div>` : ''}
-        <p style="font-size:12px;color:var(--l-muted);margin:0 0 14px;">${T('wish.intro', 'Proponi locali gluten-free, votate insieme dove andare, e aggiungete i preferiti all itinerario.')}</p>
+        ${!inGroup ? `<div style="background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:15px;color:#92400e;">⚠️ ${T('wish.joinHint', 'Entra in un gruppo per votare insieme. Puoi comunque proporre locali.')}</div>` : ''}
+        <p style="font-size:14px;color:var(--l-muted);margin:0 0 14px;">${T('wish.intro', 'Proponi locali gluten-free, votate insieme dove andare, e aggiungete i preferiti all itinerario.')}</p>
         ${items.length ? rows : `<div style="text-align:center;padding:40px 20px;color:var(--l-faint);"><div style="font-size:42px;margin-bottom:12px;">🗳️</div>${T('wish.empty', 'Nessun locale proposto. Aprite un POI GF e toccate "Proponi al gruppo".')}</div>`}
       </div>`;
     window.openSheet('🗳️ ' + T('wish.title', 'Wishlist GF del gruppo'), html);

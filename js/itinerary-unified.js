@@ -65,7 +65,7 @@ function renderItineraryUnified() {
       if (!poiNameDisplay) {
         poiNameDisplay = entry.city ? `Luogo in ${entry.city}` : `POI #${entry.poi_id.substring(0, 8)}`;
       }
-      const costBadge = entry.cost > 0 ? `<span style="background:rgba(255,107,53,0.3);color:#FF9966;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">¥${entry.cost}</span>` : '';
+      const costBadge = entry.cost > 0 ? `<span style="background:rgba(255,107,53,0.3);color:#FF9966;padding:2px 8px;border-radius:4px;font-size:13px;font-weight:600">¥${entry.cost}</span>` : '';
       const durationColor = entry.duration < 30 ? 'rgba(76,175,80,0.7)' : entry.duration < 120 ? 'rgba(255,193,7,0.7)' : 'rgba(255,107,53,0.7)';
       return `
         <div class="itinerary-poi" draggable="true" data-poi-id="${entry.poi_id}" data-day="${dayIndex}" style="
@@ -84,24 +84,24 @@ function renderItineraryUnified() {
 
           <!-- ROW 1: Number + Name + Menu/VisitedStatus -->
           <div style="display:flex;align-items:center;gap:8px;width:100%;overflow:hidden;opacity:${entry.status === 'visited' ? '0.7' : '1'}" class="itinerary-poi-header">
-            <span style="flex-shrink:0;width:24px;height:24px;background:linear-gradient(135deg, var(--m-accent), var(--m-accent));color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${idx + 1}</span>
+            <span style="flex-shrink:0;width:24px;height:24px;background:linear-gradient(135deg, var(--m-accent), var(--m-accent));color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">${idx + 1}</span>
             <div style="flex:1;min-width:0;overflow:hidden">
-              <div style="font-size:14px;color:var(--l-ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:${entry.status === 'visited' ? 'line-through' : 'none'}">${poiNameDisplay}</div>
-              ${entry.addedBy ? `<div style="font-size:10px;color:var(--l-muted);white-space:nowrap">da ${entry.addedBy}</div>` : ''}
+              <div style="font-size:16px;color:var(--l-ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:${entry.status === 'visited' ? 'line-through' : 'none'}">${poiNameDisplay}</div>
+              ${entry.addedBy ? `<div style="font-size:12px;color:var(--l-muted);white-space:nowrap">da ${entry.addedBy}</div>` : ''}
             </div>
             ${entry.status === 'visited'
-              ? `<span style="flex-shrink:0;background:rgba(22,163,74,0.15);color:#16a34a;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px">✅ Visitato</span>`
-              : `<button class="mark-visited-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;min-width:auto;height:32px;background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.3);border-radius:5px;color:#16a34a;cursor:pointer;font-size:12px;padding:0 10px;transition:background 0.15s,border-color 0.15s;margin-left:auto;margin-right:6px" onmouseover="this.style.background='rgba(22,163,74,0.18)';this.style.borderColor='rgba(22,163,74,0.5)'" onmouseout="this.style.background='rgba(22,163,74,0.1)';this.style.borderColor='rgba(22,163,74,0.3)'">✅ Segna visitato</button>`
+              ? `<span style="flex-shrink:0;background:rgba(22,163,74,0.15);color:#16a34a;padding:4px 10px;border-radius:5px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px">✅ Visitato</span>`
+              : `<button class="mark-visited-btn" data-poi-id="${entry.poi_id}" style="flex-shrink:0;min-width:auto;height:32px;background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.3);border-radius:5px;color:#16a34a;cursor:pointer;font-size:14px;padding:0 10px;transition:background 0.15s,border-color 0.15s;margin-left:auto;margin-right:6px" onmouseover="this.style.background='rgba(22,163,74,0.18)';this.style.borderColor='rgba(22,163,74,0.5)'" onmouseout="this.style.background='rgba(22,163,74,0.1)';this.style.borderColor='rgba(22,163,74,0.3)'">✅ Segna visitato</button>`
             }
             <button class="itinerary-menu-btn" data-poi-id="${entry.poi_id}" aria-label="Opzioni tappa" style="flex-shrink:0;min-width:44px;min-height:44px;background:transparent;border:none;border-radius:8px;color:var(--l-muted);cursor:pointer;font-size:18px;padding:0;transition:background 0.15s,color 0.15s;opacity:1" onmouseover="this.style.background='rgba(20,30,60,0.08)';this.style.color='var(--l-ink)'" onmouseout="this.style.background='transparent';this.style.color='var(--l-muted)'">⋮</button>
           </div>
 
           <!-- ROW 2: Time, Duration, Cost badges -->
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <span style="background:rgba(22,163,74,0.15);color:#16a34a;padding:4px 10px;border-radius:5px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px">
+            <span style="background:rgba(22,163,74,0.15);color:#16a34a;padding:4px 10px;border-radius:5px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:4px">
               ⏰ ${entry.time}
             </span>
-            <span style="background:${durationColor === 'rgba(76,175,80,0.7)' ? 'rgba(76,175,80,0.25)' : durationColor === 'rgba(255,193,7,0.7)' ? 'rgba(255,193,7,0.25)' : 'rgba(255,107,53,0.25)'};color:${durationColor};padding:4px 10px;border-radius:5px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px">
+            <span style="background:${durationColor === 'rgba(76,175,80,0.7)' ? 'rgba(76,175,80,0.25)' : durationColor === 'rgba(255,193,7,0.7)' ? 'rgba(255,193,7,0.25)' : 'rgba(255,107,53,0.25)'};color:${durationColor};padding:4px 10px;border-radius:5px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:4px">
               ⏱️ ${entry.duration}m
             </span>
             ${costBadge}
@@ -116,11 +116,11 @@ function renderItineraryUnified() {
             const fareColor = (r.cost > 0) ? '#c2410c' : '#16a34a';
             return `
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:6px 10px;background:rgba(100,150,200,0.1);border-radius:6px;margin-top:4px">
-              <span style="font-size:10px;color:var(--l-muted);font-weight:700;text-transform:uppercase">↳ spostamento</span>
-              <span style="font-size:11px;color:#0284c7;font-weight:600">${em} ${lbl}</span>
-              <span style="font-size:11px;color:#0284c7;font-weight:600">⏱️ ${r.duration_min} min</span>
-              <span style="font-size:11px;color:#0284c7">📍 ${r.distance_km} km</span>
-              <span style="font-size:11px;font-weight:700;color:${fareColor}">${fare}</span>
+              <span style="font-size:12px;color:var(--l-muted);font-weight:700;text-transform:uppercase">↳ spostamento</span>
+              <span style="font-size:13px;color:#0284c7;font-weight:600">${em} ${lbl}</span>
+              <span style="font-size:13px;color:#0284c7;font-weight:600">⏱️ ${r.duration_min} min</span>
+              <span style="font-size:13px;color:#0284c7">📍 ${r.distance_km} km</span>
+              <span style="font-size:13px;font-weight:700;color:${fareColor}">${fare}</span>
             </div>`;
           })() : ''}
 
@@ -131,7 +131,7 @@ function renderItineraryUnified() {
             const color = w.severity === 'closed' ? 'var(--m-danger)' : 'var(--m-warning)';
             const severityClass = w.severity === 'closed' ? 'is-closed' : 'is-closing-soon';
             return `
-            <div class="itin-closing-warning ${severityClass}" style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:color-mix(in srgb, ${color} 14%, transparent);border:1px solid color-mix(in srgb, ${color} 40%, transparent);border-radius:6px;font-size:12px;font-weight:600">
+            <div class="itin-closing-warning ${severityClass}" style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:color-mix(in srgb, ${color} 14%, transparent);border:1px solid color-mix(in srgb, ${color} 40%, transparent);border-radius:6px;font-size:14px;font-weight:600">
               ⚠️ ${w.message}
             </div>`;
           })()}
@@ -140,17 +140,17 @@ function renderItineraryUnified() {
           ${(entry.opening_hours || entry.price_level) ? `
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               ${entry.opening_hours ? `
-                <span style="background:rgba(2,132,199,0.15);color:#0284c7;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;white-space:nowrap">
+                <span style="background:rgba(2,132,199,0.15);color:#0284c7;padding:4px 10px;border-radius:5px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px;white-space:nowrap">
                   🕐 ${Array.isArray(entry.opening_hours) ? 'Orari disponibili' : (entry.opening_hours.substring(0, 30) + (entry.opening_hours.length > 30 ? '...' : ''))}
                 </span>
               ` : ''}
               ${entry.price_level ? `
-                <span style="background:rgba(255,193,7,0.2);color:#ffc107;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px">
+                <span style="background:rgba(255,193,7,0.2);color:#ffc107;padding:4px 10px;border-radius:5px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px">
                   💰 ${entry.price_level}
                 </span>
               ` : ''}
               ${entry.ticket_cost ? `
-                <span style="background:rgba(220,38,38,0.14);color:#dc2626;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px">
+                <span style="background:rgba(220,38,38,0.14);color:#dc2626;padding:4px 10px;border-radius:5px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px">
                   🎫 ¥${entry.ticket_cost}
                 </span>
               ` : ''}
@@ -159,13 +159,13 @@ function renderItineraryUnified() {
 
           <!-- ROW 4: Notes (if present) -->
           ${entry.notes ? `
-            <div style="padding:8px 10px;background:rgba(20,30,60,0.04);border-left:3px solid rgba(180,83,9,0.4);border-radius:4px;font-size:12px;color:var(--l-ink);line-height:1.4">
+            <div style="padding:8px 10px;background:rgba(20,30,60,0.04);border-left:3px solid rgba(180,83,9,0.4);border-radius:4px;font-size:14px;color:var(--l-ink);line-height:1.4">
               <strong style="color:#b45309">📝 Nota:</strong> ${entry.notes}
             </div>
           ` : ''}
         </div>
       `;
-    }).join('') : '<p style="color:var(--l-muted);font-size:12px;padding:12px;text-align:center">📍 Nessun POI aggiunto. Clicca [+] per aggiungerlo</p>';
+    }).join('') : '<p style="color:var(--l-muted);font-size:14px;padding:12px;text-align:center">📍 Nessun POI aggiunto. Clicca [+] per aggiungerlo</p>';
 
     return `
       <div class="itinerary-day-accordion" style="margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid var(--l-hair);box-shadow:0 2px 8px rgba(0,0,0,0.06)">
@@ -191,17 +191,17 @@ function renderItineraryUnified() {
             <span>${dayLabel}</span>
           </span>
           <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-            <span style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--l-muted)">
+            <span style="display:flex;align-items:center;gap:12px;font-size:15px;color:var(--l-muted)">
               <span style="background:rgba(22,163,74,0.15);color:#16a34a;padding:3px 10px;border-radius:4px;font-weight:600">${dayPOIs.length} POI</span>
               <span style="background:rgba(255,107,53,0.18);color:#c2410c;padding:3px 10px;border-radius:4px;font-weight:600">⏱ ${(dayDuration / 60).toFixed(1)}h</span>
               ${costByDay[dayIndex] > 0 ? `<span style="background:rgba(2,132,199,0.15);color:#0284c7;padding:3px 10px;border-radius:4px;font-weight:600">¥${costByDay[dayIndex]}</span>` : ''}
               ${distanceByDay[dayIndex] > 0 ? `<span style="background:rgba(2,132,199,0.15);color:#0e7490;padding:3px 10px;border-radius:4px;font-weight:600">🚶 ${distanceByDay[dayIndex].toFixed(1)}km</span>` : ''}
             </span>
-            ${dayPOIs.length >= 2 ? `<span style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--l-muted);font-weight:600">
+            ${dayPOIs.length >= 2 ? `<span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--l-muted);font-weight:600">
               <span title="visite vs spostamenti" style="display:inline-flex;height:6px;width:84px;border-radius:3px;overflow:hidden;background:rgba(255,107,53,0.3)"><span style="height:100%;width:${100 - _transitPct}%;background:#16a34a"></span></span>
               <span>${(_visitMin / 60).toFixed(1)}h visite · ${(_transitMin / 60).toFixed(1)}h spost. (${_transitPct}%)</span>
             </span>` : ''}
-            ${_dense ? `<span style="font-size:11px;color:#b45309;font-weight:700;background:rgba(180,83,9,0.12);border:1px solid rgba(180,83,9,0.35);padding:2px 8px;border-radius:5px">⚠️ Giornata molto densa (${(_loadMin / 60).toFixed(1)}h)</span>` : ''}
+            ${_dense ? `<span style="font-size:13px;color:#b45309;font-weight:700;background:rgba(180,83,9,0.12);border:1px solid rgba(180,83,9,0.35);padding:2px 8px;border-radius:5px">⚠️ Giornata molto densa (${(_loadMin / 60).toFixed(1)}h)</span>` : ''}
           </div>
         </button>
         <div class="itinerary-day-content" data-day="${dayIndex}" style="
@@ -221,7 +221,7 @@ function renderItineraryUnified() {
             border-radius:8px;
             color:#16a34a;
             font-weight:700;
-            font-size:13px;
+            font-size:15px;
             cursor:pointer;
             transition:background 0.2s ease,border-color 0.2s ease;
             display:flex;
@@ -234,7 +234,7 @@ function renderItineraryUnified() {
           ${dayPOIs.length >= 3 ? `<button class="itinerary-optimize-btn" data-day="${dayIndex}" style="
             width:100%;margin-top:8px;padding:9px 14px;min-height:40px;
             background:rgba(255,107,53,0.14);border:1px solid rgba(255,107,53,0.4);
-            border-radius:8px;color:#c2410c;font-weight:700;font-size:13px;cursor:pointer;
+            border-radius:8px;color:#c2410c;font-weight:700;font-size:15px;cursor:pointer;
             display:flex;align-items:center;justify-content:center;gap:6px">
             <span style="font-size:15px">🧭</span> Ottimizza il giro (meno spostamenti)
           </button>` : ''}
@@ -260,8 +260,8 @@ function renderItineraryUnified() {
         align-items: center;
       ">
         <div>
-          <div style="font-size: 13px; font-weight: 600; color: var(--l-ink);">${entry.name || (poi ? poi.name : '?')}</div>
-          <div style="font-size: 11px; color: var(--l-muted);">${entry.city || (poi ? poi.city : '?')}${dayStr}${timeStr}</div>
+          <div style="font-size:15px; font-weight: 600; color: var(--l-ink);">${entry.name || (poi ? poi.name : '?')}</div>
+          <div style="font-size:13px; color: var(--l-muted);">${entry.city || (poi ? poi.city : '?')}${dayStr}${timeStr}</div>
         </div>
         <button data-remove-itinerary="${entry.id}" style="
           padding: 6px 10px;
@@ -269,7 +269,7 @@ function renderItineraryUnified() {
           border: 1px solid rgba(220,38,38,0.35);
           border-radius: 6px;
           color: #dc2626;
-          font-size: 11px;
+          font-size:13px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
@@ -278,8 +278,8 @@ function renderItineraryUnified() {
     `;
   }).join('') : `<div style="text-align:center;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:12px">
     <span style="font-size:36px">👥</span>
-    <p style="color:var(--l-muted);font-size:13px;margin:0;line-height:1.5">Nessuna tappa condivisa ancora.<br>Unisciti o crea un gruppo per sincronizzare l'itinerario.</p>
-    <button onclick="window.renderGroupView?.()" style="padding:8px 18px;background:rgba(99,102,241,0.14);border:1.5px solid rgba(99,102,241,0.4);border-radius:16px;color:var(--l-ink);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">👥 Vai al Gruppo</button>
+    <p style="color:var(--l-muted);font-size:15px;margin:0;line-height:1.5">Nessuna tappa condivisa ancora.<br>Unisciti o crea un gruppo per sincronizzare l'itinerario.</p>
+    <button onclick="window.renderGroupView?.()" style="padding:8px 18px;background:rgba(99,102,241,0.14);border:1.5px solid rgba(99,102,241,0.4);border-radius:16px;color:var(--l-ink);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">👥 Vai al Gruppo</button>
   </div>`;
 
   // Render weather alerts
@@ -303,24 +303,24 @@ function renderItineraryUnified() {
         padding:12px 14px;
       ">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <span style="font-weight:600;color:var(--l-ink);font-size:13px">${budgetModel.title}</span>
-          <span style="font-size:11px;color:var(--l-muted)">${days} giorni</span>
+          <span style="font-weight:600;color:var(--l-ink);font-size:15px">${budgetModel.title}</span>
+          <span style="font-size:13px;color:var(--l-muted)">${days} giorni</span>
         </div>
 
         <!-- Primary metric: Total manual costs -->
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
-          <div style="font-size:11px;color:var(--l-muted)">${budgetModel.primaryLabel}</div>
+          <div style="font-size:13px;color:var(--l-muted)">${budgetModel.primaryLabel}</div>
           <div style="font-size:18px;color:#16a34a;font-weight:700">${budgetModel.primaryValue}</div>
         </div>
 
         <!-- Secondary metric: POI with costs -->
-        <div style="font-size:11px;color:var(--l-muted);margin-bottom:8px">
+        <div style="font-size:13px;color:var(--l-muted);margin-bottom:8px">
           ${budgetModel.secondaryLabel}
         </div>
 
         <!-- Info note: what's NOT yet included -->
         <div style="
-          font-size:10px;
+          font-size:12px;
           color:var(--l-muted);
           padding:6px 8px;
           background:rgba(180,83,9,0.08);
@@ -334,12 +334,12 @@ function renderItineraryUnified() {
       <!-- SECTION 1: YOUR ITINERARY -->
       <div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 12px 0;">
-          <h3 style="font-size:14px;font-weight:700;color:var(--l-ink);margin:0;">📅 Il Tuo Itinerario</h3>
+          <h3 style="font-size:16px;font-weight:700;color:var(--l-ink);margin:0;">📅 Il Tuo Itinerario</h3>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="padding:5px 10px;background:rgba(255,107,53,0.15);border:1.5px solid rgba(255,107,53,0.5);border-radius:20px;color:var(--m-accent);font-size:11px;font-weight:600;cursor:pointer;" title="Riorganizza per zone geografiche">🧭 Ottimizza</button>` : ''}
-            <button onclick="window.loadScript('./js/itinerary-suggest.js').then(()=>window.openItinerarySuggest?.())" style="padding:5px 10px;background:rgba(100,150,255,0.12);border:1.5px solid rgba(100,150,255,0.4);border-radius:20px;color:rgba(150,180,255,1);font-size:11px;font-weight:600;cursor:pointer;" title="Suggerimenti POI da aggiungere">✨ Suggerimenti</button>
-            <button onclick="window.loadScript('./js/views/itinerary-version-history.js').then(()=>window.openItineraryVersionHistory?.())" style="padding:5px 10px;background:rgba(180,120,255,0.1);border:1.5px solid rgba(180,120,255,0.35);border-radius:20px;color:rgba(200,160,255,1);font-size:11px;font-weight:600;cursor:pointer;" title="Storico versioni itinerario">⏮ Storico</button>
-            <button onclick="window.loadScript('./js/itinerary-reminders.js').then(()=>window.openItineraryReminders?.())" style="padding:5px 10px;background:rgba(255,200,50,0.1);border:1.5px solid rgba(255,200,50,0.35);border-radius:20px;color:rgba(255,210,80,1);font-size:11px;font-weight:600;cursor:pointer;" title="Promemoria tappe">🔔 Promemoria</button>
+            ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="padding:5px 10px;background:rgba(255,107,53,0.15);border:1.5px solid rgba(255,107,53,0.5);border-radius:20px;color:var(--m-accent);font-size:13px;font-weight:600;cursor:pointer;" title="Riorganizza per zone geografiche">🧭 Ottimizza</button>` : ''}
+            <button onclick="window.loadScript('./js/itinerary-suggest.js').then(()=>window.openItinerarySuggest?.())" style="padding:5px 10px;background:rgba(100,150,255,0.12);border:1.5px solid rgba(100,150,255,0.4);border-radius:20px;color:rgba(150,180,255,1);font-size:13px;font-weight:600;cursor:pointer;" title="Suggerimenti POI da aggiungere">✨ Suggerimenti</button>
+            <button onclick="window.loadScript('./js/views/itinerary-version-history.js').then(()=>window.openItineraryVersionHistory?.())" style="padding:5px 10px;background:rgba(180,120,255,0.1);border:1.5px solid rgba(180,120,255,0.35);border-radius:20px;color:rgba(200,160,255,1);font-size:13px;font-weight:600;cursor:pointer;" title="Storico versioni itinerario">⏮ Storico</button>
+            <button onclick="window.loadScript('./js/itinerary-reminders.js').then(()=>window.openItineraryReminders?.())" style="padding:5px 10px;background:rgba(255,200,50,0.1);border:1.5px solid rgba(255,200,50,0.35);border-radius:20px;color:rgba(255,210,80,1);font-size:13px;font-weight:600;cursor:pointer;" title="Promemoria tappe">🔔 Promemoria</button>
           </div>
         </div>
         <div class="itinerary-accordion">${accordionHTML}</div>
@@ -351,7 +351,7 @@ function renderItineraryUnified() {
       <!-- SECTION 2: SHARING CONTROLS -->
       <div>
         <h3 style="
-          font-size: 14px;
+          font-size:16px;
           font-weight: 700;
           color: var(--l-ink);
           margin: 0 0 12px 0;
@@ -363,7 +363,7 @@ function renderItineraryUnified() {
             border: 1.5px solid rgba(2,132,199,0.4);
             border-radius: 8px;
             color: var(--l-ink);
-            font-size: 13px;
+            font-size:15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -376,7 +376,7 @@ function renderItineraryUnified() {
             border: 1.5px solid rgba(22,163,74,0.4);
             border-radius: 8px;
             color: var(--l-ink);
-            font-size: 13px;
+            font-size:15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -389,7 +389,7 @@ function renderItineraryUnified() {
             border: 1.5px solid rgba(126,90,190,0.4);
             border-radius: 8px;
             color: var(--l-ink);
-            font-size: 13px;
+            font-size:15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -402,7 +402,7 @@ function renderItineraryUnified() {
             border: 1.5px solid var(--l-accent-brd);
             border-radius: 8px;
             color: var(--l-ink);
-            font-size: 13px;
+            font-size:15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -415,13 +415,13 @@ function renderItineraryUnified() {
       <!-- SECTION 3: SHARED ITINERARY -->
       <div>
         <h3 style="
-          font-size: 14px;
+          font-size:16px;
           font-weight: 700;
           color: var(--l-ink);
           margin: 0 0 12px 0;
         ">👥 Itinerario Condiviso</h3>
         <p style="
-          font-size: 12px;
+          font-size:14px;
           color: var(--l-muted);
           margin: 0 0 12px 0;
         ">Tappe condivise con i membri del gruppo (tempo reale)</p>
@@ -506,7 +506,7 @@ window.handleExportHTML = function() {
         th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
         th { background: #f0f0f0; font-weight: bold; }
         .summary { background: #f9f9f9; padding: 12px; border-radius: 4px; margin-bottom: 20px; }
-        .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; font-size: 12px; color: #666; }
+        .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; font-size:14px; color: #666; }
         @media print { body { padding: 0; } }
       </style>
     </head>
@@ -536,7 +536,7 @@ window.handleExportHTML = function() {
                 <td>${entry.time}</td>
                 <td>${entry.duration}m</td>
                 <td>${entry.cost > 0 ? '¥' + entry.cost : '-'}</td>
-                <td style="font-size:11px">${entry.notes || '-'}</td>
+                <td style="font-size:13px">${entry.notes || '-'}</td>
               </tr>
             `).join('')}
             <tr style="background:#f0f0f0">
@@ -638,7 +638,7 @@ window.openSharedItineraryPreview = function(payload) {
   const count = (payload && payload.items && payload.items.length) || 0;
   window.__sharedPayload = payload;
   const html = `<div style="padding:8px">
-    <p style="color:var(--l-ink);font-size:14px;margin:0 0 14px">Qualcuno ha condiviso un itinerario con <strong>${count}</strong> tappe.</p>
+    <p style="color:var(--l-ink);font-size:16px;margin:0 0 14px">Qualcuno ha condiviso un itinerario con <strong>${count}</strong> tappe.</p>
     <button onclick="window.importSharedItinerary(window.__sharedPayload); window.closeSheet&&window.closeSheet();" class="btn primary" style="width:100%;padding:13px;font-weight:700">📥 Importa nel mio itinerario</button>
   </div>`;
   window.openSheet?.('🔗 Itinerario condiviso', html);
@@ -800,7 +800,7 @@ function showEmptyItineraryModal() {
 
       <!-- Description -->
       <p style="
-        font-size: 14px;
+        font-size:16px;
         color: var(--l-muted);
         margin: 0 0 32px 0;
         line-height: 1.6;
@@ -822,7 +822,7 @@ function showEmptyItineraryModal() {
           border: 1px solid rgba(255,107,53,0.4) !important;
           border-radius: 5px !important;
           color: var(--m-accent) !important;
-          font-size: 13px !important;
+          font-size:15px !important;
           font-weight: 600 !important;
           cursor: pointer !important;
           transition: all 0.2s ease !important;
@@ -840,7 +840,7 @@ function showEmptyItineraryModal() {
           border: 1px solid rgba(22,163,74,0.4) !important;
           border-radius: 5px !important;
           color: #16a34a !important;
-          font-size: 13px !important;
+          font-size:15px !important;
           font-weight: 600 !important;
           cursor: pointer !important;
           transition: all 0.2s ease !important;
@@ -997,7 +997,7 @@ function showItineraryPOIMenu(poiId) {
         border-radius:4px;
         color:var(--l-ink);
         cursor:pointer;
-        font-size:12px;
+        font-size:14px;
         transition:all 0.2s;
         font-weight:${isCurrentDay ? '600' : '400'};
       " onmouseover="this.style.background='rgba(255,107,53,0.4)'" onmouseout="this.style.background='${isCurrentDay ? 'rgba(255,107,53,0.3)' : 'rgba(20,30,60,0.06)'}'">
@@ -1010,12 +1010,12 @@ function showItineraryPOIMenu(poiId) {
     <div style="padding:20px;display:flex;flex-direction:column;gap:16px;">
       <div>
         <h3 style="margin:0 0 12px 0;color:var(--l-ink);font-size:15px;font-weight:700">📋 ${poiName}</h3>
-        <p style="margin:0;color:var(--l-muted);font-size:12px">Opzioni disponibili</p>
+        <p style="margin:0;color:var(--l-muted);font-size:14px">Opzioni disponibili</p>
       </div>
 
       <!-- Orario -->
       <div>
-        <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:6px;font-weight:600">⏰ Orario</label>
+        <label style="display:block;color:var(--l-muted);font-size:14px;margin-bottom:6px;font-weight:600">⏰ Orario</label>
         <input type="text" class="itinerary-menu-time" placeholder="HH:MM" value="${poiData.time}" style="
           width:100%;
           padding:8px 10px;
@@ -1023,14 +1023,14 @@ function showItineraryPOIMenu(poiId) {
           border:1px solid var(--l-hair);
           border-radius:4px;
           color:var(--l-ink);
-          font-size:13px;
+          font-size:15px;
           box-sizing:border-box;
         " />
       </div>
 
       <!-- Durata -->
       <div>
-        <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:6px;font-weight:600">⏱️ Durata (minuti)</label>
+        <label style="display:block;color:var(--l-muted);font-size:14px;margin-bottom:6px;font-weight:600">⏱️ Durata (minuti)</label>
         <input type="number" class="itinerary-menu-duration" placeholder="60" value="${poiData.duration}" style="
           width:100%;
           padding:8px 10px;
@@ -1038,14 +1038,14 @@ function showItineraryPOIMenu(poiId) {
           border:1px solid var(--l-hair);
           border-radius:4px;
           color:var(--l-ink);
-          font-size:13px;
+          font-size:15px;
           box-sizing:border-box;
         " />
       </div>
 
       <!-- Costo -->
       <div>
-        <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:6px;font-weight:600">💰 Costo (¥)</label>
+        <label style="display:block;color:var(--l-muted);font-size:14px;margin-bottom:6px;font-weight:600">💰 Costo (¥)</label>
         <input type="number" class="itinerary-menu-cost" placeholder="0" value="${poiData.cost || 0}" style="
           width:100%;
           padding:8px 10px;
@@ -1053,14 +1053,14 @@ function showItineraryPOIMenu(poiId) {
           border:1px solid var(--l-hair);
           border-radius:4px;
           color:var(--l-ink);
-          font-size:13px;
+          font-size:15px;
           box-sizing:border-box;
         " />
       </div>
 
       <!-- Note -->
       <div>
-        <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:6px;font-weight:600">📝 Note</label>
+        <label style="display:block;color:var(--l-muted);font-size:14px;margin-bottom:6px;font-weight:600">📝 Note</label>
         <textarea class="itinerary-menu-notes" placeholder="Aggiungi una nota..." style="
           width:100%;
           padding:8px 10px;
@@ -1068,7 +1068,7 @@ function showItineraryPOIMenu(poiId) {
           border:1px solid var(--l-hair);
           border-radius:4px;
           color:var(--l-ink);
-          font-size:13px;
+          font-size:15px;
           box-sizing:border-box;
           resize:vertical;
           min-height:60px;
@@ -1078,7 +1078,7 @@ function showItineraryPOIMenu(poiId) {
 
       <!-- Sposta a un altro giorno -->
       <div>
-        <label style="display:block;color:var(--l-muted);font-size:12px;margin-bottom:8px;font-weight:600">📅 Sposta a</label>
+        <label style="display:block;color:var(--l-muted);font-size:14px;margin-bottom:8px;font-weight:600">📅 Sposta a</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
           ${daysOptions}
         </div>
@@ -1094,7 +1094,7 @@ function showItineraryPOIMenu(poiId) {
           border-radius:6px;
           color:#16a34a;
           font-weight:600;
-          font-size:13px;
+          font-size:15px;
           cursor:pointer;
           transition:all 0.2s;
         " onmouseover="this.style.background='rgba(22,163,74,0.25)'" onmouseout="this.style.background='rgba(22,163,74,0.15)'">
@@ -1108,7 +1108,7 @@ function showItineraryPOIMenu(poiId) {
           border-radius:6px;
           color:#dc2626;
           font-weight:600;
-          font-size:13px;
+          font-size:15px;
           cursor:pointer;
           transition:all 0.2s;
         " onmouseover="this.style.background='rgba(220,38,38,0.2)'" onmouseout="this.style.background='rgba(220,38,38,0.12)'">
