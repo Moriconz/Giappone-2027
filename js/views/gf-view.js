@@ -159,8 +159,9 @@
 
     window.openSheet("💚 GF Guide", html);
 
-    // Mostra subito i dati hardcoded
-    window.renderGFList("all", "");
+    // Nessun dato hardcoded da mostrare subito: solo skeleton finché non
+    // arrivano risultati live (sotto). renderGFList("all","") qui darebbe
+    // solo una lista vuota finché window.allGlutenFreeShops non si popola.
 
     // Load GF shops: PRIORITÀ GPS → Vicini → Rest (non blocca UI)
     (async () => {

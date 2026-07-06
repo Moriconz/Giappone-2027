@@ -1,6 +1,14 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.10 — Via i dati editoriali statici: solo live (2026-07-04, Attuale)
+## v3.11 — Rimosso terzo elenco hardcoded + redesign card GF Guide (2026-07-04, Attuale)
+
+### 🔧 Fix
+- Trovato un **terzo** elenco GF scritto a mano (`GF_RESTAURANTS` in `js/views/gf-restaurants.js`, 10 locali con gli stessi nomi del file già rimosso in v3.10) — era quello che alimentava davvero la schermata "GF Guide" vista dall'utente, sfuggito all'audit precedente. Rimosso: la lista ora arriva solo da `window.allGlutenFreeShops` (Google Places Text Search live, quota-gated) e `window.GFPlaces.getAll()` (derivato dal review-scan live, v3.10). Le note editoriali finte tipo "Primo locale certificato GIG in Asia" sono sparite insieme al dato inventato che le portava.
+
+### 🎨 Redesign
+- Card della GF Guide: prima bordo arancione + box nota verde piatto + bottone "Mappe" enorme + link scollegato sotto — colori in conflitto, gerarchia confusa. Ora: un solo accento (verde, coerente con il resto del sistema GF nell'app), gerarchia chiara nome→meta→indirizzo→azione, singolo bottone Maps, etichetta onesta della fonte dato ("📍 Google Places" o "💬 Rilevato da recensioni — verifica sul posto") invece di finte certificazioni.
+
+## v3.10 — Via i dati editoriali statici: solo live (2026-07-04)
 
 Policy: niente più dati gluten-free scritti a priori nel codice — decisione dell'utente dopo v3.9. Un ristorante può chiudere o cambiare gestione da un giorno all'altro; un elenco scritto a mano invecchia silenziosamente. Meglio nessun dato che un dato falso su dove un celiaco può mangiare in sicurezza.
 
