@@ -1,6 +1,13 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.12 — Testo troppo piccolo in tutta l'app: bump globale (2026-07-04, Attuale)
+## v3.13 — Bottoni Apri mappa/Salva/Calendario disallineati (2026-07-04, Attuale)
+
+### 🔧 Fix
+Nel dettaglio POI, "Apri mappa" era visibilmente più stretto di "Salva"/"Calendario" a schermi mobile (375px: 83.6px vs 117.7px), pur avendo tutti e tre `flex:1`. Causa: asimmetria di markup — "Apri mappa" era avvolto in un `<div>` extra per contenere il menu a tendina (Google/Apple Maps), gli altri due erano `<button>` diretti nella riga flex. Chrome calcola la distribuzione flex diversamente per un contenitore-div-con-bottone-dentro rispetto a un bottone diretto, anche con `flex:1` identico su entrambi.
+
+Fix in `js/views/poi-detail-view.js`: rimosso il `<div>` wrapper, "Apri mappa" è ora un `<button>` flex diretto come gli altri due. Il menu a tendina resta posizionato `absolute` ma come fratello fuori flusso (non conta nel calcolo flex), non più come contenitore. Verificato: tutti e tre i bottoni ora 106.3px esatti a 375px di viewport, dropdown ancora funzionante.
+
+## v3.12 — Testo troppo piccolo in tutta l'app: bump globale (2026-07-04)
 
 Segnalato dall'utente sulla card GF Guide, verificato essere sistemico: 88 punti in tutto il CSS a 13px o meno (33 a 12px, 26 a 13px, 12 a 11px, 11 a 10px, 5 a 9px, 1 a 8px) — sotto i 13-14px il testo è oggettivamente piccolo su mobile.
 

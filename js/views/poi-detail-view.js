@@ -412,72 +412,76 @@ function poiDetailHTML(p){
     </div>
 
     <!-- 12. SECONDARY ACTIONS (save, calendar, maps) -->
+    <!-- I tre bottoni sono flex child DIRETTI dello stesso tipo/box-model
+         (prima "Apri mappa" era avvolto in un <div> per il dropdown, mentre
+         gli altri due erano <button> diretti: quell'asimmetria di markup
+         faceva calcolare a Chrome larghezze diverse a schermi stretti, anche
+         con flex:1 identico su tutti — bottoni visibilmente disallineati.
+         Il menu a tendina resta assoluto rispetto alla riga (posizionamento
+         invariato), ma ora è un fratello fuori flusso, non un contenitore. -->
     <div style="display:flex;gap:8px;margin:12px 16px;justify-content:space-between;position:relative">
-      <!-- Maps dropdown -->
-      <div style="flex:1;position:relative">
-        <button class="btn-maps-dropdown" data-poi-id="${p.id}" style="
-          width:100%;
-          height:36px;
-          background:transparent;
-          border:1px solid var(--l-hair);
-          color:var(--l-muted);
-          border-radius:8px;
-          cursor:pointer;
-          font-weight:600;
-          font-size:14px;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          gap:6px;
-          transition:all 0.2s;
-        " onmouseover="this.style.borderColor='rgba(20,30,60,0.3)';this.style.color='var(--l-ink)'" onmouseout="this.style.borderColor='var(--l-hair)';this.style.color='var(--l-muted)'">
-          🧭 Apri mappa
-        </button>
+      <button class="btn-maps-dropdown" data-poi-id="${p.id}" style="
+        flex:1;
+        height:36px;
+        background:transparent;
+        border:1px solid var(--l-hair);
+        color:var(--l-muted);
+        border-radius:8px;
+        cursor:pointer;
+        font-weight:600;
+        font-size:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:6px;
+        transition:all 0.2s;
+      " onmouseover="this.style.borderColor='rgba(20,30,60,0.3)';this.style.color='var(--l-ink)'" onmouseout="this.style.borderColor='var(--l-hair)';this.style.color='var(--l-muted)'">
+        🧭 Apri mappa
+      </button>
 
-        <!-- Dropdown menu (hidden by default) -->
-        <div class="maps-dropdown-menu" data-poi-id="${p.id}" style="
-          display:none;
-          position:absolute;
-          top:100%;
-          left:0;
-          background:rgba(30,30,35,0.95);
-          border:1px solid rgba(255,255,255,0.1);
-          border-radius:8px;
-          box-shadow:0 4px 16px rgba(0,0,0,0.3);
-          z-index:1000;
-          min-width:180px;
-          margin-top:4px;
-          overflow:hidden;
-          animation:slideDown 0.2s ease-out;
-        ">
-          <style>
-            @keyframes slideDown {
-              from { opacity:0; transform:translateY(-8px); }
-              to { opacity:1; transform:translateY(0); }
-            }
-          </style>
-          <a href="https://maps.google.com/?q=${p.lat},${p.lon}&z=17" target="_blank" style="
-            display:block;
-            padding:12px 16px;
-            color:#fff;
-            text-decoration:none;
-            font-size:15px;
-            border-bottom:1px solid rgba(255,255,255,0.05);
-            transition:background 0.2s;
-          " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
-            🗺️ Google Maps
-          </a>
-          <a href="https://maps.apple.com/?ll=${p.lat},${p.lon}" target="_blank" style="
-            display:block;
-            padding:12px 16px;
-            color:#fff;
-            text-decoration:none;
-            font-size:15px;
-            transition:background 0.2s;
-          " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
-            🍎 Apple Maps
-          </a>
-        </div>
+      <!-- Dropdown menu (hidden by default) — fuori flusso, non conta nel flex -->
+      <div class="maps-dropdown-menu" data-poi-id="${p.id}" style="
+        display:none;
+        position:absolute;
+        top:100%;
+        left:0;
+        background:rgba(30,30,35,0.95);
+        border:1px solid rgba(255,255,255,0.1);
+        border-radius:8px;
+        box-shadow:0 4px 16px rgba(0,0,0,0.3);
+        z-index:1000;
+        min-width:180px;
+        margin-top:4px;
+        overflow:hidden;
+        animation:slideDown 0.2s ease-out;
+      ">
+        <style>
+          @keyframes slideDown {
+            from { opacity:0; transform:translateY(-8px); }
+            to { opacity:1; transform:translateY(0); }
+          }
+        </style>
+        <a href="https://maps.google.com/?q=${p.lat},${p.lon}&z=17" target="_blank" style="
+          display:block;
+          padding:12px 16px;
+          color:#fff;
+          text-decoration:none;
+          font-size:15px;
+          border-bottom:1px solid rgba(255,255,255,0.05);
+          transition:background 0.2s;
+        " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
+          🗺️ Google Maps
+        </a>
+        <a href="https://maps.apple.com/?ll=${p.lat},${p.lon}" target="_blank" style="
+          display:block;
+          padding:12px 16px;
+          color:#fff;
+          text-decoration:none;
+          font-size:15px;
+          transition:background 0.2s;
+        " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
+          🍎 Apple Maps
+        </a>
       </div>
 
       <button class="btn-secondary" id="save-poi" style="
