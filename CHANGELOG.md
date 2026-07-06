@@ -1,6 +1,14 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.9 — Ricollegato il DB curato dei 17 ristoranti GF (2026-07-04, Attuale)
+## v3.10 — Via i dati editoriali statici: solo live (2026-07-04, Attuale)
+
+Policy: niente più dati gluten-free scritti a priori nel codice — decisione dell'utente dopo v3.9. Un ristorante può chiudere o cambiare gestione da un giorno all'altro; un elenco scritto a mano invecchia silenziosamente. Meglio nessun dato che un dato falso su dove un celiaco può mangiare in sicurezza.
+
+### 🔧 Modifiche
+- **`js/gf-places-loader.js`** riscritto: non carica più `fmgf_japan_restaurants.json` (rimosso, era hardcoded). La lista "posti GF" si ricostruisce ora dall'incrocio fra POI già caricati live (Google Places, già in memoria) e la cache del review-scan live di `gfDetector.js` — zero chiamate API nuove, zero dati scritti a priori. Le aggiunte manuali dell'utente/gruppo restano supportate.
+- **`js/jr-pass-calculator.js`**: i prezzi del JR Pass restano una stima di riferimento (JR Group non ha un'API pubblica, nessun fetch live possibile per CORS) ma ora con disclaimer esplicito e link diretti a jrpass.com / smart-ex.jp per il prezzo reale prima di comprare.
+
+## v3.9 — Ricollegato il DB curato dei 17 ristoranti GF (2026-07-04)
 
 ### 🔧 Fix
 - `js/gf-places-loader.js` puntava a `./data/gf-places-seed.json`, file/cartella mai esistiti — il DB curato dei posti gluten-free partiva sempre vuoto (404 silenzioso). Il file reale con 17 ristoranti curati (safety_level, certificazioni, telefono, maps_url) era `fmgf_japan_restaurants.json`, alla radice del progetto, mai referenziato da nessun altro file. Corretto il path e adattata la forma dati (array nudo, non `{places:[...]}`).

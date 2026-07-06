@@ -34,7 +34,11 @@
 (function () {
   'use strict';
 
-  // Prezzi Ordinary JR Pass, ottobre 2023 (post-aumento +70%)
+  // Prezzi Ordinary JR Pass — SNAPSHOT ottobre 2023, non live: JR Group non
+  // offre un'API pubblica, nessun fetch da browser è possibile (CORS). Sono
+  // un riferimento per il calcolo di convenienza, non il prezzo attuale —
+  // l'UI rimanda sempre al sito ufficiale per il prezzo vero al momento
+  // dell'acquisto (vedi link in openPanel()).
   const PASSES = [
     { days: 7,  price: 50000, name: '7 giorni' },
     { days: 14, price: 80000, name: '14 giorni' },
@@ -206,7 +210,7 @@
           border-radius:10px;display:flex;flex-direction:column;gap:6px;">
           <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;">
             <div style="font-weight:700;color:var(--l-ink);font-size:14px;">🎫 ${T('jrpass.pass', 'JR Pass')} ${_esc(rec.name)}</div>
-            <div style="font-size:13px;color:var(--l-ink);">${_fmtYen(rec.price)}</div>
+            <div style="font-size:13px;color:var(--l-ink);">~${_fmtYen(rec.price)}</div>
           </div>
           <div style="font-size:12px;color:var(--l-muted);">${verdict}</div>
           ${coverageNote}
@@ -263,9 +267,13 @@
         </div>
 
         <p style="font-size:10.5px;color:var(--l-faint);text-align:center;line-height:1.5;margin:6px 0 0;">
-          ⚠️ ${T('jrpass.disclaimer', 'Stime approssimative ±20%. Per il calcolo ufficiale consulta jrpass.com / smartex.jp.')}<br>
-          ${T('jrpass.priceNote', 'Prezzi JR Pass Ordinary, post-aumento ottobre 2023.')}
+          ⚠️ ${T('jrpass.disclaimer', 'Stime approssimative ±20%, tratte e distanze calcolate localmente.')}<br>
+          ${T('jrpass.priceNote', 'Prezzi indicati: riferimento ottobre 2023, non aggiornati in tempo reale (JR Group non offre un\'API pubblica). Verifica il prezzo attuale prima di comprare:')}
         </p>
+        <div style="display:flex;gap:8px;justify-content:center;">
+          <a href="https://www.jrpass.com/" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:var(--l-accent-600);text-decoration:underline;">jrpass.com →</a>
+          <a href="https://www.smart-ex.jp/" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:var(--l-accent-600);text-decoration:underline;">smart-ex.jp →</a>
+        </div>
       </div>
     `;
 
