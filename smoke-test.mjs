@@ -300,5 +300,57 @@ R.checks.i18nNewKeys = await page.evaluate(() => {
   } catch (e) { return { error: e.message }; }
 });
 
+// ── FLUSSO 18: invarianti GF + pannelli (regressioni note) ────────────
+R.checks.gfDetectorCap = await page.evaluate(async () => {
+  try {
+    // Il detector non deve MAI dire 'confirmed': tetto a 'likely' (v3.8)
+    const fakeReviews = [{ text: 'amazing gluten free menu, celiac friendly!' }, { text: 'great gluten-free ramen' }];
+    const r = await window.GlutenFreeDetector.detectGlutenFree({ name: '_t' }, '_smoke_gf_cap', {}, fakeReviews);
+    localStorage.removeItem('gf_status__smoke_gf_cap');
+    return { status: r.status, ok: r.status !== 'confirmed' };
+  } catch (e) { return { error: e.message }; }
+});
+
+R.checks.singlePanelInvariant = await page.evaluate(async () => {
+  try {
+    // Cambio card: mai 2 .y2k-win nel DOM (v3.6)
+    window.openSheet('primo', '<p>a</p>');
+    window.openSheet('secondo', '<p>b</p>');
+    const n = document.querySelectorAll('.y2k-win').length;
+    window.closeSheet();
+    await new Promise(r => setTimeout(r, 350));
+    return { panels: n, ok: n === 1 };
+  } catch (e) { return { error: e.message }; }
+});
+
+R.checks.gfNearDay = await page.evaluate(async () => {
+  try {
+    window.ITINERARY.addPOIToDay('_s1', 'Stop A', 0, '09:00', 60, '', 0, 'altro', 35.6812, 139.7671);
+    window.allGlutenFreeShops = [{ place_id: '_gfs', name: 'GF Test Place', city: 'Tokyo', lat: 35.6809, lng: 139.7673, source: 'google_places' }];
+    window.showGFNearDay(0);
+    await new Promise(r => setTimeout(r, 250));
+    const body = document.querySelector('.y2k-win-body')?.textContent || '';
+    window.closeSheet();
+    return { ok: body.includes('GF Test Place') };
+  } catch (e) { return { error: e.message }; }
+});
+
+R.checks.gfCrowdDetails = await page.evaluate(() => {
+  try {
+    const rep = window.GFCrowd.addReport('_smokepoi', 'X', 'safe', '', { sepKitchen: 'yes', staffAware: 'no' });
+    const back = window.GFCrowd.getReports('_smokepoi').find(r => r.id === rep.id);
+    return { ok: back?.details?.sepKitchen === 'yes' && back?.details?.staffAware === 'no' };
+  } catch (e) { return { error: e.message }; }
+});
+
 await browser.close();
 console.log(JSON.stringify(R, null, 2));
+
+// ── Exit code: prima stampava e basta, la CI passava anche con errori ──
+const failedChecks = Object.entries(R.checks)
+  .filter(([, v]) => v && typeof v === 'object' && (v.error || v.ok === false))
+  .map(([k]) => k);
+if (R.pageErrors.length || failedChecks.length) {
+  console.error(`\nSMOKE FAILED — pageErrors: ${R.pageErrors.length}, checks falliti: ${failedChecks.join(', ') || 'nessuno'}`);
+  process.exit(1);
+}

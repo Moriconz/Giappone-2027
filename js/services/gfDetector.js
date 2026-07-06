@@ -130,7 +130,7 @@ async function detectGlutenFree(poi, placeId, details = {}, reviews = []) {
     score: points
   };
 
-  console.debug('[GF Detector] Result:', status, '(score:', totalScore, ')');
+  console.debug('[GF Detector] Result:', status, '(score:', points, ')');
 
   // Cache
   setCachedGFStatus(placeId, result.status, result.source);
