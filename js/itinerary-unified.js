@@ -238,6 +238,13 @@ function renderItineraryUnified() {
             display:flex;align-items:center;justify-content:center;gap:6px">
             <span style="font-size:15px">🧭</span> Ottimizza il giro (meno spostamenti)
           </button>` : ''}
+          ${dayPOIs.some(p => typeof p.lat === 'number' && typeof p.lng === 'number') ? `<button class="itinerary-gf-btn" data-day="${dayIndex}" style="
+            width:100%;margin-top:8px;padding:9px 14px;min-height:40px;
+            background:rgba(74,222,128,0.10);border:1px solid rgba(74,222,128,0.35);
+            border-radius:8px;color:#16a34a;font-weight:700;font-size:15px;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;gap:6px">
+            <span style="font-size:15px">🌾</span> Dove mangio GF vicino alle tappe?
+          </button>` : ''}
         </div>
       </div>
     `;
@@ -727,6 +734,15 @@ function setupGlobalEventDelegation() {
     }
   }, false);
 
+  // GF vicino alle tappe del giorno (posti da fonti live: Google Places +
+  // review-scan, vedi gf-places-loader.js — nessun elenco scritto a mano)
+  sheetBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('.itinerary-gf-btn');
+    if (!btn) return;
+    e.stopPropagation();
+    window.showGFNearDay?.(parseInt(btn.dataset.day, 10));
+  }, false);
+
   // Menu button (modifica, sposta, cancella)
   sheetBody.addEventListener('click', (e) => {
     const btn = e.target.closest('.itinerary-menu-btn');
@@ -1193,6 +1209,81 @@ function showItineraryPOIMenu(poiId) {
     });
   }, 50);
 }
+
+// ── GF vicino alle tappe di un giorno ────────────────────────────────────
+// Incrocia le tappe del giorno (lat/lng) con i posti GF da fonti LIVE
+// (Google Places già caricati + review-scan, via GFPlaces/allGlutenFreeShops)
+// e li propone con distanza dalla tappa più vicina + aggiunta one-tap come
+// pasto. Nessuna chiamata API nuova: solo dati già in memoria/cache.
+function showGFNearDay(dayIndex) {
+  const RADIUS_KM = 1.5;
+  const stops = (window.state?.itineraryByDay?.[dayIndex] || [])
+    .filter(p => typeof p.lat === 'number' && typeof p.lng === 'number');
+  if (!stops.length) { window.toast?.('⚠️ Nessuna tappa con posizione in questo giorno'); return; }
+
+  const seen = new Set();
+  const candidates = [
+    ...(window.allGlutenFreeShops || []).map(r => ({ ...r, id: r.place_id || r.id })),
+    ...((window.GFPlaces?.getAll?.() || []))
+  ].filter(p => {
+    if (!p || typeof p.lat !== 'number' || typeof p.lng !== 'number') return false;
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
+
+  const near = candidates.map(p => {
+    let best = Infinity, bestStop = null;
+    for (const s of stops) {
+      const d = window.haversineKm(s.lat, s.lng, p.lat, p.lng);
+      if (d < best) { best = d; bestStop = s; }
+    }
+    return { ...p, _distKm: best, _nearStop: bestStop?.poi_name || bestStop?.name || '' };
+  }).filter(p => p._distKm <= RADIUS_KM).sort((a, b) => a._distKm - b._distKm).slice(0, 12);
+
+  const dayN = dayIndex + 1;
+  if (!near.length) {
+    window.openSheet(`🌾 GF vicino — Giorno ${dayN}`, `
+      <div style="padding:24px 16px;text-align:center;">
+        <div style="font-size:40px;margin-bottom:12px;">🌾</div>
+        <div style="font-weight:700;color:var(--l-ink);margin-bottom:6px;">Nessun posto GF noto entro ${RADIUS_KM} km dalle tappe</div>
+        <p style="font-size:14px;color:var(--l-muted);margin:0 0 14px;">I dati sono live: apri la <strong>GF Guide</strong> per caricare i locali della zona, poi riprova.</p>
+        <button onclick="window.closeSheet();setTimeout(()=>window.renderGFView?.(),250)" style="padding:10px 18px;background:rgba(74,222,128,0.14);border:1.5px solid rgba(74,222,128,0.4);border-radius:10px;color:#16a34a;font-weight:700;cursor:pointer;">💚 Apri GF Guide</button>
+      </div>`);
+    return;
+  }
+
+  const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  const rows = near.map(p => `
+    <div style="padding:12px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:12px;display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
+        <div style="min-width:0;">
+          <div style="font-weight:700;color:var(--l-ink);">${esc(p.name)}</div>
+          <div style="font-size:13px;color:var(--l-muted);">${window.fmtDist(p._distKm)} da ${esc(p._nearStop)}${p.rating ? ` · ⭐ ${p.rating}` : ''}</div>
+        </div>
+        <button data-gf-add='${esc(JSON.stringify({ id: p.id, name: p.name, lat: p.lat, lng: p.lng }))}' data-day="${dayIndex}" style="flex-shrink:0;padding:8px 12px;background:rgba(74,222,128,0.14);border:1px solid rgba(74,222,128,0.4);border-radius:8px;color:#16a34a;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;">➕ Pasto</button>
+      </div>
+    </div>`).join('');
+
+  window.openSheet(`🌾 GF vicino — Giorno ${dayN}`, `
+    <div style="display:flex;flex-direction:column;gap:10px;padding:4px 0;">
+      <p style="font-size:13px;color:var(--l-faint);margin:0;">Posti gluten-free entro ${RADIUS_KM} km dalle tappe del giorno (fonti live — verifica sempre sul posto).</p>
+      ${rows}
+    </div>`);
+
+  const body = document.querySelector('.y2k-win-body');
+  body?.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-gf-add]');
+    if (!b) return;
+    let info; try { info = JSON.parse(b.dataset.gfAdd); } catch (_) { return; }
+    const ok = window.ITINERARY?.addPOIToDay?.(info.id, info.name, parseInt(b.dataset.day, 10), '12:30', 60, '', 0, 'cibo', info.lat, info.lng);
+    if (ok !== false) {
+      window.toast?.(`🌾 ${info.name} aggiunto al giorno ${parseInt(b.dataset.day, 10) + 1}`);
+      b.disabled = true; b.textContent = '✓ Aggiunto'; b.style.opacity = '0.6';
+    }
+  });
+}
+window.showGFNearDay = showGFNearDay;
 
 // Expose to window
 window.renderItineraryUnified = renderItineraryUnified;
