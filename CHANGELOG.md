@@ -1,6 +1,14 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.8 — Fix falso "confermato" nel rilevamento gluten-free (2026-07-04, Attuale)
+## v3.9 — Ricollegato il DB curato dei 17 ristoranti GF (2026-07-04, Attuale)
+
+### 🔧 Fix
+- `js/gf-places-loader.js` puntava a `./data/gf-places-seed.json`, file/cartella mai esistiti — il DB curato dei posti gluten-free partiva sempre vuoto (404 silenzioso). Il file reale con 17 ristoranti curati (safety_level, certificazioni, telefono, maps_url) era `fmgf_japan_restaurants.json`, alla radice del progetto, mai referenziato da nessun altro file. Corretto il path e adattata la forma dati (array nudo, non `{places:[...]}`).
+
+### ✨ Dati
+- Geocodificati via Nominatim i 6 locali con indirizzo abbastanza specifico (via/quartiere/stazione) per una posizione affidabile. Gli 11 con indirizzo generico ("Kyoto", "Osaka", "Nara" da soli, senza via/quartiere) sono stati **lasciati senza coordinate** invece di piazzarli su un centro-città fittizio spacciato per posizione esatta — impreciso e potenzialmente fuorviante per chi deve arrivarci fisicamente con esigenze di sicurezza alimentare reali. Ogni voce ha ora un campo `geo_precision` (`geocoded_address` / `geocoded_landmark` / `needs_address`) che documenta onestamente il livello di affidabilità della posizione.
+
+## v3.8 — Fix falso "confermato" nel rilevamento gluten-free (2026-07-04)
 
 ### 🔧 Fix (sicurezza/accuratezza)
 - `js/services/gfDetector.js` dichiarava 3 fonti ma solo una funzionava: la fonte "Find Me Gluten Free" faceva un `fetch()` diretto al loro sito, sempre bloccato da CORS lato browser — non ha mai prodotto un risultato reale, era dead code. La fonte "attributi Places" contava `servesVegetarianFood`/`servesVeganFood` come evidenza gluten-free, ma vegetariano ≠ senza glutine (pasta, pane, seitan sono comuni in cucina vegetariana): rischio concreto di falso positivo per un celiaco.

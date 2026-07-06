@@ -16,9 +16,10 @@
     "phone": "+81-3-xxxx-xxxx",
     "maps_url": "https://maps.google.com/?q=Gluten+Free+Ts+Kitchen+Roppongi+Tokyo",
     "notes": "Primo locale certificato GIG in Asia. Menu 100% gluten-free, utensili separati",
-    "lat": null,
-    "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "lat": 35.6633156,
+    "lng": 139.7342248,
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "geocoded_address"
   },
   {
     "id": "tokyo-002",
@@ -34,9 +35,10 @@
     ],
     "address": "Akihabara, Tokyo",
     "notes": "Menu completamente senza glutine, preparazione sicura",
-    "lat": null,
-    "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "lat": 35.7018928,
+    "lng": 139.7743684,
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "geocoded_address"
   },
   {
     "id": "tokyo-003",
@@ -52,9 +54,10 @@
     ],
     "address": "Tokyo Station Ichibangai B1F",
     "notes": "Ramen con brodo GF disponibile, ma verificare contaminazione crociata",
-    "lat": null,
-    "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "lat": 35.6826841,
+    "lng": 139.7651043,
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "geocoded_landmark"
   },
   {
     "id": "tokyo-004",
@@ -71,9 +74,10 @@
     ],
     "address": "Kichijoji, Tokyo",
     "notes": "Catena con 3 location. Piatti vegan GF, molto attenti alla contaminazione",
-    "lat": null,
-    "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "lat": 35.7031413,
+    "lng": 139.5803077,
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "geocoded_address"
   },
   {
     "id": "tokyo-005",
@@ -90,9 +94,10 @@
     ],
     "address": "Harajuku, Tokyo",
     "notes": "Waffles, curries, baked goods. Molte opzioni GF ma verificare ingredienti",
-    "lat": null,
-    "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "lat": 35.6687049,
+    "lng": 139.7053357,
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "geocoded_address"
   },
   {
     "id": "kyoto-001",
@@ -111,7 +116,8 @@
     "notes": "100% gluten-free. Okonomiyaki con farina di riso, piatti giapponesi tradizionali",
     "lat": null,
     "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "needs_address"
   },
   {
     "id": "kyoto-002",
@@ -129,7 +135,8 @@
     "notes": "Crepes gluten-free, piatti GF giapponesi",
     "lat": null,
     "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "needs_address"
   },
   {
     "id": "kyoto-003",
@@ -149,7 +156,8 @@
     "notes": "Vegan, gluten-free, e dog-friendly. Ambiente tranquillo",
     "lat": null,
     "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "needs_address"
   },
   {
     "id": "kyoto-004",
@@ -167,7 +175,8 @@
     "notes": "Dumpling soup ottimo, ramen GF disponibile",
     "lat": null,
     "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "needs_address"
   },
   {
     "id": "kyoto-005",
@@ -185,7 +194,8 @@
     "notes": "Varietà opzioni GF, cucinano carne con torcia davanti a te",
     "lat": null,
     "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "needs_address"
   },
   {
     "id": "kyoto-006",
@@ -204,7 +214,8 @@
     "notes": "Stesso standard di Tokyo. Piatti vegan GF curati",
     "lat": null,
     "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "needs_address"
   },
   {
     "id": "osaka-001",
@@ -220,9 +231,10 @@
     ],
     "address": "Namba, Osaka",
     "notes": "Okonomiyaki senza glutine con farina di riso",
-    "lat": null,
-    "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "lat": 34.6636625,
+    "lng": 135.5017751,
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "geocoded_address"
   },
   {
     "id": "osaka-002",
@@ -240,7 +252,8 @@
     "notes": "Haven for gluten-sensitive foodies. Varie opzioni",
     "lat": null,
     "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "needs_address"
   },
   {
     "id": "osaka-003",
@@ -258,7 +271,8 @@
     "notes": "Menu simile a Kyoto, dumplings gyoza (regolari), ramen black miso ottimo",
     "lat": null,
     "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "needs_address"
   },
   {
     "id": "nara-001",
@@ -276,7 +290,8 @@
     "notes": "Verifica disponibilità opzioni GF",
     "lat": null,
     "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "needs_address"
   },
   {
     "id": "sapporo-001",
@@ -292,7 +307,8 @@
     "notes": "Pochi locali certificati - consigliato cercare su Find Me Gluten Free per updated info",
     "lat": null,
     "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "needs_address"
   },
   {
     "id": "jojoen-chain",
@@ -310,6 +326,7 @@
     "notes": "Catena high-end. Ben equipaggiati per allergie. Verificare opzioni GF con cameriere",
     "lat": null,
     "lng": null,
-    "source": "Find Me Gluten Free / Community Database"
+    "source": "Find Me Gluten Free / Community Database",
+    "geo_precision": "needs_address"
   }
 ]

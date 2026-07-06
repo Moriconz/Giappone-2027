@@ -4,7 +4,10 @@
  */
 
 const GF_DB_KEY = 'safeEats_gf_places_v1';
-const GF_SEED_URL = './data/gf-places-seed.json';
+// Prima puntava a ./data/gf-places-seed.json, che non è mai esistito: il seed
+// non si è mai caricato, il DB curato GF partiva sempre vuoto. Il file reale
+// coi 17 locali curati (safety_level, certificazioni) è alla radice.
+const GF_SEED_URL = './fmgf_japan_restaurants.json';
 
 /**
  * Initialize GF places database with seed
@@ -26,7 +29,8 @@ async function initGFPlacesDatabase() {
     }
 
     const seedData = await response.json();
-    const places = seedData.places || [];
+    // fmgf_japan_restaurants.json è un array nudo, non {places:[...]}
+    const places = Array.isArray(seedData) ? seedData : (seedData.places || []);
 
     // Save to localStorage
     localStorage.setItem(GF_DB_KEY, JSON.stringify(places));
