@@ -8,6 +8,10 @@
 
   const DICT = {
     it: {
+      'gfc.lastVerified': 'Ultima verifica', 'gfc.yes': 'Sì', 'gfc.no': 'No', 'gfc.unk': 'Non so',
+      'gfc.safeTitle': 'Confermi GF safe — due dettagli utili', 'gfc.qKitchen': 'Preparazione/cucina separata dal glutine?',
+      'gfc.qStaff': 'Staff consapevole della celiachia?', 'gfc.confirm': 'Salva riscontro', 'gfc.cancel': 'Annulla',
+      'gfc.btnSafe': 'Safe', 'gfc.btnWarn': 'Problema', 'gfc.btnNote': 'Nota',
       'menu.timeline': 'Timeline viaggio', 'menu.search': 'Cerca ovunque', 'menu.battery': 'Risparmio batteria',
       'tl.title': '🗓️ Timeline viaggio', 'tl.empty': 'Nessuna tappa in itinerario. Aggiungi tappe dai POI sulla mappa!', 'tl.day': 'Giorno', 'tl.stops': 'tappe', 'tl.min': 'min', 'tl.unknown': 'Tappa',
       'gs.placeholder': 'Cerca luoghi, ristoranti GF, tappe…', 'gs.typeMore': 'Digita almeno 2 caratteri…', 'gs.noResults': 'Nessun risultato', 'gs.pois': 'Luoghi', 'gs.itinerary': 'Itinerario',
@@ -145,6 +149,10 @@
       'gfp.synced': '🔄 Posti GF sincronizzati dal peer'
     },
     en: {
+      'gfc.lastVerified': 'Last verified', 'gfc.yes': 'Yes', 'gfc.no': 'No', 'gfc.unk': "Don't know",
+      'gfc.safeTitle': 'Confirming GF safe — two useful details', 'gfc.qKitchen': 'Separate gluten-free prep/kitchen?',
+      'gfc.qStaff': 'Staff aware of celiac disease?', 'gfc.confirm': 'Save report', 'gfc.cancel': 'Cancel',
+      'gfc.btnSafe': 'Safe', 'gfc.btnWarn': 'Issue', 'gfc.btnNote': 'Note',
       'menu.timeline': 'Trip timeline', 'menu.search': 'Search everywhere', 'menu.battery': 'Battery saver',
       'tl.title': '🗓️ Trip timeline', 'tl.empty': 'No stops in your itinerary. Add stops from POIs on the map!', 'tl.day': 'Day', 'tl.stops': 'stops', 'tl.min': 'min', 'tl.unknown': 'Stop',
       'gs.placeholder': 'Search places, GF restaurants, stops…', 'gs.typeMore': 'Type at least 2 characters…', 'gs.noResults': 'No results', 'gs.pois': 'Places', 'gs.itinerary': 'Itinerary',
@@ -282,6 +290,10 @@
       'gfp.synced': '🔄 GF places synced from peer'
     },
     ja: {
+      'gfc.lastVerified': '最終確認', 'gfc.yes': 'はい', 'gfc.no': 'いいえ', 'gfc.unk': '不明',
+      'gfc.safeTitle': 'GFセーフ確認 — 役立つ2つの詳細', 'gfc.qKitchen': 'グルテンと分離された調理場ですか？',
+      'gfc.qStaff': 'スタッフはセリアック病を理解していますか？', 'gfc.confirm': '報告を保存', 'gfc.cancel': 'キャンセル',
+      'gfc.btnSafe': 'セーフ', 'gfc.btnWarn': '問題あり', 'gfc.btnNote': 'メモ',
       'menu.timeline': '旅のタイムライン', 'menu.search': '全体検索', 'menu.battery': 'バッテリーセーバー',
       'tl.title': '🗓️ 旅のタイムライン', 'tl.empty': '旅程にまだスポットがありません。地図のPOIから追加してください！', 'tl.day': '日目', 'tl.stops': 'か所', 'tl.min': '分', 'tl.unknown': 'スポット',
       'gs.placeholder': '場所・GFレストラン・旅程を検索…', 'gs.typeMore': '2文字以上入力してください…', 'gs.noResults': '結果なし', 'gs.pois': '場所', 'gs.itinerary': '旅程',
