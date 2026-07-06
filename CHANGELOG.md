@@ -1,6 +1,19 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.15 — Fix sistemico UI mobile: via i 3 appiattitori CSS + zona azioni POI (2026-07-04, Attuale)
+## v3.16 — Roadmap qualità: cache PWA, GF nel planner, riscontri celiaco-critici, GF globale, test veri (2026-07-04, Attuale)
+
+Sei interventi in un giro solo (punti 1-6 della roadmap concordata):
+
+1. **Cache PWA (`sw.js` v10)** — network-first non bastava: `fetch()` passava dalla cache HTTP del browser e coi max-age di GitHub Pages/Vercel tornava il file vecchio anche "dalla rete". Ora l'app-shell usa `cache:'no-cache'` (revalidation ETag/304): dopo un deploy gli utenti vedono la versione nuova alla prima navigazione.
+2. **GF dentro il planner** — nuovo bottone per giorno "🌾 Dove mangio GF vicino alle tappe?": incrocia le tappe geolocalizzate con i posti GF da fonti live (zero chiamate API nuove), lista entro 1.5km con distanza dalla tappa più vicina e aggiunta one-tap come pasto.
+3. **Riscontri celiaco-critici** — al tap su "Safe" un follow-up chiede cucina separata e staff consapevole (sì/no/non so); i dettagli viaggiano nel sync di gruppo esistente e si mostrano colorati nei riscontri, con "Ultima verifica: Xg fa" nell'header.
+4. **GF Guide globale** — le chip non sono più 37 città giapponesi fisse ma zone (~25km) derivate dalle tappe reali del viaggio (fallback Giappone a itinerario vuoto); il backend non appende più " Japan" alle query — àncora il location bias lat/lng.
+5. **Test con i denti** — smoke-test ora esce con codice 1 su errori/check falliti (prima la CI passava sempre) + 4 invarianti nuovi. Il primo run ha trovato un bug reale: `gfDetector` referenziava una variabile rimossa nel refactor v3.8 → il rilevamento GF era **rotto in produzione** (ReferenceError a ogni detection). Fixato.
+6. **i18n** — chiavi `gfc.*` del nuovo follow-up in it/en/ja.
+
+Punto 7 (refactor dei file monolitici) preparato come task separato in worktree isolato.
+
+## v3.15 — Fix sistemico UI mobile: via i 3 appiattitori CSS + zona azioni POI (2026-07-04)
 
 Segnalati dall'utente: "Aggiungi una nota" fuori asse rispetto ai CTA, bottoni troppo attaccati, layout "sconnesso" in ogni card su mobile, lag visivo alla chiusura.
 
