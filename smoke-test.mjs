@@ -365,6 +365,23 @@ R.checks.dayConflicts = await page.evaluate(async () => {
   } catch (e) { return { error: e.message }; }
 });
 
+R.checks.weatherAlertWiring = await page.evaluate(async () => {
+  try {
+    const d0 = new Date(window.state?.tripProfile?.startDate || '2027-04-10');
+    const iso0 = `${d0.getFullYear()}-${String(d0.getMonth() + 1).padStart(2, '0')}-${String(d0.getDate()).padStart(2, '0')}`;
+    window.fetchWeatherData = async () => ({ daily: { time: [iso0], weather_code: [82], precipitation_sum: [12] } });
+    window.state.itineraryByDay[0] = [];
+    window.ITINERARY.addPOIToDay('_w1', 'Test Park', 0, '10:00', 60, '', 0, 'altro', 35.7141, 139.7744);
+    window.state.itineraryByDay[0][0].poi_type = 'park';
+    window._weatherSyncedOnce = false;
+    await window.syncItineraryWeather();
+    const ok = window.state.weather?.forecast?.[0]?.condition === 'Pioggia'
+      && window.WEATHER_FEATURES.checkWeatherAlerts().some(a => a.day === 0);
+    window.state.itineraryByDay[0] = [];
+    return { ok, forecast0: window.state.weather?.forecast?.[0] };
+  } catch (e) { return { error: e.message }; }
+});
+
 R.checks.gfCrowdDetails = await page.evaluate(() => {
   try {
     const rep = window.GFCrowd.addReport('_smokepoi', 'X', 'safe', '', { sepKitchen: 'yes', staffAware: 'no' });

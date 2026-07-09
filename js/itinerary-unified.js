@@ -17,6 +17,15 @@ function renderItineraryUnified() {
   }
 
   ITINERARY.initState();
+
+  // Meteo del giorno (punto 4 roadmap planner): fetch async, il primo render
+  // parte senza forecast (banner assente), poi si ridisegna da solo quando
+  // arriva — un solo giro per apertura pannello, non ad ogni render.
+  if (!window._weatherSyncedOnce && typeof window.syncItineraryWeather === 'function') {
+    window._weatherSyncedOnce = true;
+    window.syncItineraryWeather().then(() => renderItineraryUnified());
+  }
+
   const tripProfile = window.state?.tripProfile || {};
   const days = tripProfile.days || 8;
   const _tripStart = tripProfile.startDate ? new Date(tripProfile.startDate) : new Date(2027, 3, 10);

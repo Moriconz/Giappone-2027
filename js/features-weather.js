@@ -4,7 +4,55 @@
  * checkWeatherAlerts: Compares weather forecast with itinerary POI types
  *  - If rain/storm forecasted for a day with outdoor POI → shows warning banner
  *  - Banner is collapsible, dismissal state saved in sessionStorage
+ *
+ * Punto 4 roadmap planner: il banner esisteva già ma window.state.weather
+ * era scritto da NESSUN file — checkWeatherAlerts leggeva sempre [], il
+ * banner non compariva mai. syncItineraryWeather() lo popola davvero, via
+ * Open-Meteo (già usato altrove, gratis, nessuna quota) sulla località di
+ * ogni giorno (base/hotel o prima tappa nota). Forecast reale disponibile
+ * solo entro ~16gg: i giorni oltre restano senza dato, nessun alert (corretto
+ * di default, non un errore).
  */
+let _weatherSyncInFlight = false;
+async function syncItineraryWeather() {
+  if (_weatherSyncInFlight || !window.state || typeof window.fetchWeatherData !== 'function') return;
+  _weatherSyncInFlight = true;
+  try {
+    const days = window.state.tripProfile?.days || 8;
+    const tripStart = window.state.tripProfile?.startDate ? new Date(window.state.tripProfile.startDate) : new Date(2027, 3, 10);
+    const itineraryByDay = window.state.itineraryByDay || {};
+    window.state.weather = window.state.weather || {};
+    window.state.weather.forecast = window.state.weather.forecast || [];
+
+    const cache = new Map(); // una fetch per coordinata (~1 decimale), riusata tra giorni nella stessa città
+    for (let d = 0; d < days; d++) {
+      const dayDate = new Date(tripStart); dayDate.setDate(dayDate.getDate() + d);
+      // Data locale, NON toISOString(): la data locale in fusi UTC+ (Giappone
+      // incluso) slitta di un giorno indietro passando per UTC, disallineando
+      // il match con daily.time (calendario di timezone=Asia/Tokyo dell'API).
+      const iso = `${dayDate.getFullYear()}-${String(dayDate.getMonth() + 1).padStart(2, '0')}-${String(dayDate.getDate()).padStart(2, '0')}`;
+      const base = window.ITINERARY?.getDayBase?.(d);
+      const firstStop = (itineraryByDay[d] || []).find(e => typeof e.lat === 'number' && typeof e.lng === 'number');
+      const loc = base || firstStop;
+      if (!loc) continue;
+
+      const key = `${loc.lat.toFixed(1)},${loc.lng.toFixed(1)}`;
+      try {
+        let data = cache.get(key);
+        if (!data) { data = await window.fetchWeatherData(loc.lat, loc.lng, ''); cache.set(key, data); }
+        const idx = data?.daily?.time?.indexOf(iso);
+        if (idx == null || idx < 0) continue;
+        window.state.weather.forecast[d] = {
+          condition: window.getWeatherConditionName?.(data.daily.weather_code[idx]) || '',
+          precip_mm: data.daily.precipitation_sum?.[idx] ?? 0,
+        };
+      } catch (_) { /* rete assente: giorno resta senza forecast, nessun alert falso */ }
+    }
+  } finally {
+    _weatherSyncInFlight = false;
+  }
+}
+window.syncItineraryWeather = syncItineraryWeather;
 
 const WEATHER_FEATURES = {
   /**

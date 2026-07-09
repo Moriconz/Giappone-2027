@@ -1,6 +1,15 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.19 — Conflitti orari del giorno: overlap + pasto mancante (2026-07-04, Attuale)
+## v3.20 — Meteo che influenza il piano: banner mai apparso, ora reale (2026-07-04, Attuale)
+
+Punto 4 roadmap planner. Il banner "pioggia prevista, hai tappe outdoor" esisteva già (UI completa, dismissibile) ma `window.state.weather.forecast` **non veniva mai scritto da nessun file** — il banner era morto dal giorno in cui è stato costruito, sempre `[]`.
+
+### 🔧 Fix
+`syncItineraryWeather()` in `js/features-weather.js`: per ogni giorno con una località nota (base/hotel o prima tappa), fetch Open-Meteo daily (già usato altrove, gratis, nessuna quota) e popola il forecast reale. Match per data di calendario, non offset sequenziale — forecast reale disponibile solo entro ~16gg, i giorni oltre restano senza dato (nessun alert falso, non un bug). Richiamato una volta ad apertura del pannello itinerario, poi si ridisegna da solo quando arriva.
+
+Nel costruire il fix, un bug concreto: il confronto data usava `toISOString()`, che per fusi orari UTC+ (Giappone incluso) fa slittare la data di un giorno indietro passando per UTC — avrebbe disallineato silenziosamente ogni match. Sostituito con lettura calendario locale diretta. Invariante `weatherAlertWiring` nello smoke test, che ha proprio catturato questo bug al primo run.
+
+## v3.19 — Conflitti orari del giorno: overlap + pasto mancante (2026-07-04)
 
 Punto 3 roadmap planner. Il warning chiusure copriva solo la singola tappa; mancava la validazione del giorno intero. Aggiunti due badge nell'header di ogni giorno (riusano `route_from_prev`/`dayDuration` già calcolati, zero costo aggiuntivo): "⛔ N tappa/e sovrapposte" quando l'orario di una tappa cade prima che finiscano visita+spostamento della precedente, "🍽️ Nessun pasto in giornata" quando ci sono oltre 4h di visite senza una tappa taggata cibo. Invariante `dayConflicts` nello smoke test.
 
