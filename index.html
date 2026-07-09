@@ -227,7 +227,13 @@
 <script defer src="./js/itinerary-snapshots.js"></script>
 <script defer src="./js/itinerary-undo-redo.js"></script>
 <script defer src="./js/itinerary-tickets.js"></script>
-<!-- Lazy-loaded on demand: itinerary-suggest.js, itinerary-reminders.js, jr-pass-calculator.js, japan-calendar-hints.js -->
+<!-- Lazy-loaded on demand: itinerary-suggest.js, itinerary-reminders.js, jr-pass-calculator.js -->
+<!-- japan-calendar-hints.js: NON lazy nonostante il commento sopra dicesse
+     il contrario — nessun file chiamava mai il loadScript(), il widget
+     Golden Week/Obon/Shogatsu/festività live non è mai apparso a nessuno.
+     Serve ad ogni render dell'itinerario (renderItineraryUnified lo chiama
+     incondizionatamente), quindi va caricato come i suoi moduli fratelli. -->
+<script defer src="./js/japan-calendar-hints.js"></script>
 <script defer src="./js/itinerary-add-wizard.js"></script>
 <script defer src="./js/test-helpers.js"></script>
 <script defer src="./js/onboarding.js"></script>

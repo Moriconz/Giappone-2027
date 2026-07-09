@@ -1,6 +1,17 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.22 — Export .ics del viaggio intero + sfoltita sezione Condividi (2026-07-04, Attuale)
+## v3.23 — Festività globali live: il widget calendario non era mai apparso (2026-07-04, Attuale)
+
+Punto 6 roadmap planner, ultimo della lista. Come il banner meteo (v3.20), un'altra feature completa e mai vista da nessuno: `js/japan-calendar-hints.js` (widget Golden Week/Obon/Shogatsu/Sakura/Koyo, ~360 righe) era dichiarato "lazy-loaded on demand" in un commento di `index.html`, ma **nessun file chiamava mai quel `loadScript()`** — `window.JapanCalendarHints` restava sempre `undefined`, il widget non ha mai reso una riga di HTML in produzione.
+
+### 🔧 Fix
+- `index.html`: script caricato normalmente (come i suoi moduli fratelli), non più lazy senza trigger.
+- `syncGlobalHolidays()`: festività ufficiali del paese del viaggio via Nager.Date (API pubblica, gratis, CORS-ok, nessuna chiave) — si aggiungono a Golden Week/Obon/Shogatsu già coperte a mano, che restano (sono specifiche del Giappone e hanno commentario dedicato). Default paese `JP` finché non esiste un selettore destinazione in UI — nessuna regressione, festività reali in più per il trip Giappone attuale. Cache 30gg in localStorage, stesso pattern del resto dell'app.
+- Bug trovato scrivendo il test: un doppio guard "una volta sola" (uno nel modulo, uno nel chiamante) bloccava ogni retry successivo senza modo di resettarlo — il guard interno era ridondante (`_fetchHolidays` è già idempotente via cache), rimosso.
+
+Con questo si chiude la roadmap qualità completa (punti 1-6) più il decluttering UI richiesto.
+
+## v3.22 — Export .ics del viaggio intero + sfoltita sezione Condividi (2026-07-04)
 
 Punto 5 roadmap planner. `buildICS`/`downloadICS` esistevano già ma solo per la singola tappa (promptAddToCalendar) — accettavano già un array di eventi, riusati as-is: `exportItineraryICS()` genera un evento per ogni tappa di ogni giorno (orario/durata/coordinate reali) e scarica un unico file importabile in Google/Apple/Outlook Calendar.
 

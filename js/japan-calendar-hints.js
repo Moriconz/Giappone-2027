@@ -175,10 +175,69 @@
     return out;
   }
 
+  // ─── Festività globali live (punto 6 roadmap planner) ─────────────────
+  // RECURRING_PERIODS/SEASONAL_2027 sopra sono Giappone-only, scritte a
+  // mano. Per il pivot a planner globale (memoria progetto: GF è layer
+  // opzionale, il planner è per qualunque destinazione), le festività
+  // ufficiali del paese del viaggio arrivano da Nager.Date — API pubblica,
+  // gratis, CORS-ok, nessuna chiave. Default 'JP' finché non esiste un
+  // selettore paese in UI (mantiene invariato il comportamento attuale,
+  // aggiunge festività reali oltre a GW/Obon/Shogatsu già coperte a mano).
+  const _holidayCache = new Map(); // "CC-YYYY" -> array grezzo API
+  async function _fetchHolidays(countryCode, year) {
+    const key = `${countryCode}-${year}`;
+    if (_holidayCache.has(key)) return _holidayCache.get(key);
+    const lsKey = `holidays_v1_${key}`;
+    try {
+      const cached = JSON.parse(localStorage.getItem(lsKey) || 'null');
+      if (cached && cached.expires > Date.now()) { _holidayCache.set(key, cached.data); return cached.data; }
+    } catch (_) {}
+    try {
+      const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`);
+      const data = res.ok ? await res.json() : [];
+      _holidayCache.set(key, data);
+      try { localStorage.setItem(lsKey, JSON.stringify({ data, expires: Date.now() + 30 * 24 * 3600 * 1000 })); } catch (_) {}
+      return data;
+    } catch (_) { return []; }
+  }
+
+  // Niente guard "una volta sola" qui: _fetchHolidays sopra è già
+  // idempotente (cache in-memory + localStorage 30gg), un secondo giro
+  // costa un lookup in cache, non un fetch. Un guard duplicato qui aveva
+  // solo effetto di bloccare permanentemente ogni retry senza modo di
+  // resettarlo dall'esterno — trovato proprio scrivendo il test.
+  async function syncGlobalHolidays() {
+    const { start, end } = getTripDateRange();
+    const cc = window.state?.tripProfile?.countryCode || 'JP';
+    for (let y = start.getFullYear(); y <= end.getFullYear(); y++) {
+      await _fetchHolidays(cc, y);
+    }
+  }
+
+  function _liveHolidayHints(start, end) {
+    const cc = window.state?.tripProfile?.countryCode || 'JP';
+    const out = [];
+    for (let y = start.getFullYear(); y <= end.getFullYear(); y++) {
+      const list = _holidayCache.get(`${cc}-${y}`) || [];
+      list.forEach(h => {
+        const d = new Date(h.date + 'T00:00:00');
+        if (d >= start && d <= end) {
+          out.push({
+            id: `holiday-${cc}-${h.date}`, severity: 'info', icon: '🎌',
+            labelKey: null, labelFallback: h.localName || h.name,
+            messageKey: null, messageFallback: `Festività nazionale (${cc}). Possibili chiusure di uffici/negozi, trasporti più affollati del solito.`,
+            actualStart: d, actualEnd: d
+          });
+        }
+      });
+    }
+    return out;
+  }
+
   // Restituisce gli hint applicabili a un range di date del viaggio
   function getHintsForRange(start, end) {
     if (!start || !end) return [];
-    const hints = [];
+    const hints = [..._liveHolidayHints(start, end)];
 
     // Periodi ricorrenti
     RECURRING_PERIODS.forEach(p => {
@@ -353,6 +412,7 @@
     renderHintsHTML,
     openDetailPanel,
     getTripDateRange,
+    syncGlobalHolidays,
     RECURRING_PERIODS,
     SEASONAL_2027
   };

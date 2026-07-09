@@ -25,6 +25,11 @@ function renderItineraryUnified() {
     window._weatherSyncedOnce = true;
     window.syncItineraryWeather().then(() => renderItineraryUnified());
   }
+  // Festività globali live (punto 6 roadmap planner): stesso pattern.
+  if (!window._holidaysSyncedOnce && typeof window.JapanCalendarHints?.syncGlobalHolidays === 'function') {
+    window._holidaysSyncedOnce = true;
+    window.JapanCalendarHints.syncGlobalHolidays().then(() => renderItineraryUnified());
+  }
 
   const tripProfile = window.state?.tripProfile || {};
   const days = tripProfile.days || 8;

@@ -397,6 +397,31 @@ R.checks.icsExport = await page.evaluate(() => {
   } catch (e) { return { error: e.message }; }
 });
 
+R.checks.globalHolidays = await page.evaluate(async () => {
+  try {
+    if (!window.JapanCalendarHints) return { error: 'JapanCalendarHints non caricato (script mancante in index.html?)' };
+    // countryCode fittizia: garantisce una chiave di cache mai toccata da
+    // un eventuale sync reale già scattato in un render precedente di
+    // questo stesso test (la cache in-memory non è resettabile da fuori).
+    window.state.tripProfile = window.state.tripProfile || {};
+    const savedCC = window.state.tripProfile.countryCode;
+    window.state.tripProfile.countryCode = 'ZZ_SMOKE';
+    const origFetch = window.fetch;
+    window.fetch = async (url, ...args) => {
+      if (String(url).includes('date.nager.at')) {
+        return new Response(JSON.stringify([{ date: '2027-04-12', localName: 'Smoke Holiday', name: 'Smoke Holiday' }]), { status: 200 });
+      }
+      return origFetch(url, ...args);
+    };
+    await window.JapanCalendarHints.syncGlobalHolidays();
+    const { start, end } = window.JapanCalendarHints.getTripDateRange();
+    const hints = window.JapanCalendarHints.getHintsForRange(start, end);
+    window.fetch = origFetch;
+    window.state.tripProfile.countryCode = savedCC;
+    return { ok: hints.some(h => h.labelFallback === 'Smoke Holiday') };
+  } catch (e) { return { error: e.message }; }
+});
+
 R.checks.gfCrowdDetails = await page.evaluate(() => {
   try {
     const rep = window.GFCrowd.addReport('_smokepoi', 'X', 'safe', '', { sepKitchen: 'yes', staffAware: 'no' });
