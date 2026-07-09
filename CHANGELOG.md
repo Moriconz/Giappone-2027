@@ -1,6 +1,12 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.25 — Righe con emoji ancora strette dopo v3.24: padding + line-height (2026-07-04, Attuale)
+## v3.26 — Padding laterale insufficiente su tutti i pannelli (2026-07-04, Attuale)
+
+Precisazione dell'utente su v3.25: non era altezza/line-height, era il **padding laterale** — contenuti senza card wrapper (titoli, righe bottoni) restavano attaccati al bordo sinistro/destro del pannello.
+
+Causa: `.y2k-win-body` — il contenitore condiviso da OGNI pannello dell'app — aveva `padding:16px` uniforme. Bump mirato solo sui lati: `padding:16px 20px` in entrambi i punti dove la regola è definita (legacy-skin.css + modern-2026.css, stesso valore, evita incoerenze tra i due). Un solo fix nel contenitore condiviso, si applica a ogni schermata dell'app in un colpo — nessuna card va toccata singolarmente.
+
+## v3.25 — Righe con emoji ancora strette dopo v3.24: padding + line-height (2026-07-04)
 
 L'utente ha segnalato con screenshot puntuali che 4 zone (riscontri gruppo, titolo itinerario, header giorno, widget calendario) restavano strette anche dopo il fix della regola CSS in v3.24. Causa: quei padding erano SEMPRE stati genuinamente stretti nel sorgente (14px, 9px 12px) — non un secondo bug nascosto, solo valori piccoli — più `line-height` di default che lascia poco margine verticale ai glifi emoji (che spesso hanno un bounding box diverso dal testo).
 

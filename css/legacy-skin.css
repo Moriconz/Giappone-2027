@@ -2043,7 +2043,11 @@ main {
    Y2K WINDOW BODY — Spacing in group panel
 ══════════════════════════════════════════════════════════════════ */
 .y2k-win-body {
-  padding: 16px !important;
+  /* Padding laterale maggiore del verticale: contenuti "nudi" (titoli,
+     righe bottoni senza card wrapper) restavano visivamente attaccati al
+     bordo del pannello — è l'inset condiviso da OGNI pannello dell'app,
+     un solo fix qui vale per tutte le schermate. */
+  padding: 16px 20px !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch !important;

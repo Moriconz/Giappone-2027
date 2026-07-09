@@ -326,7 +326,8 @@ body.panel-open { overflow: hidden; }
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px !important;
+  /* Laterale > verticale: vedi commento gemello in legacy-skin.css */
+  padding: 16px 20px !important;
   color: var(--m-text) !important;
   background: transparent !important;
 }
