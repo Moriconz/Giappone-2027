@@ -1,251 +1,22 @@
 // ============================================================================
-// gf-places-panel.js — GroqMenuAnalyzer, GFSuggestionsDB, GFPlacesDB,
-//   openGroqPanel, analyzeMenuGroq, gfEditMode, openGFPlacesPanel,
-//   startEditGFPlace, saveGFPlace, handleDeepLink, geocodeRestaurant,
-//   parseSharedRestaurantData, geocodeGFPlace, deleteGFPlace, editGFPlace,
-//   openGFSuggestionPanel, submitGFSuggestion, onDataChannelMessage hook
-// Extracted from app-core.js. Deps (all window.*):
-//   toast, openSheet, refreshGFPlacesLayer, broadcastToPeers, VisionImageAnalyzer
+// gf-places-panel.js — openGroqPanel, analyzeMenuGroq, gfEditMode,
+//   openGFPlacesPanel, startEditGFPlace, saveGFPlace, handleDeepLink,
+//   geocodeRestaurant, parseSharedRestaurantData, geocodeGFPlace,
+//   deleteGFPlace, openGFSuggestionPanel, submitGFSuggestion,
+//   onDataChannelMessage hook
+// Extracted from app-core.js. GroqMenuAnalyzer → js/gf-menu-analyzer.js,
+// GFSuggestionsDB/GFPlacesDB → js/gf-places-db.js. Deps (all window.*):
+//   toast, openSheet, refreshGFPlacesLayer, VisionImageAnalyzer,
+//   GroqMenuAnalyzer, GFSuggestionsDB, GFPlacesDB
 // ============================================================================
 (function () {
   'use strict';
 
   const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
-
-/* ================= GROQ MENU ANALYZER ================= */
-const GroqMenuAnalyzer = {
-  CACHE_KEY: 'groq_menu_cache',
-  
-  async analyzeMenu(menuText) {
-    if (!menuText.trim()) {
-      window.toast(T('groq.noMenu', '⚠️ Inserisci il menu da analizzare'));
-      return null;
-    }
-    
-    const hash = btoa(menuText).substring(0, 16);
-    const cached = this.getFromCache(hash);
-    if (cached) {
-      window.toast(T('groq.cached', '✅ Risultato da cache offline'));
-      return cached;
-    }
-    
-    try {
-      window.toast(T('groq.analyzing', '🔄 Analizzando menu con Groq...'));
-      const resp = await fetch('/api/groqAnalyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ menuText })
-      });
-      
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        window.toast(`❌ Groq error: ${err.error || 'server error'}`);
-        return null;
-      }
-
-      const data = await resp.json();
-      const result = data.result;
-      if (!result) {
-        window.toast(T('groq.badResponse', '❌ Groq error: risposta non valida'));
-        return null;
-      }
-
-      this.saveToCache(hash, result);
-      window.toast(T('groq.done', '✅ Menu analizzato!'));
-      return result;
-    } catch (err) {
-      console.error('[Groq]', err);
-      window.toast(`❌ Errore: ${err.message}`);
-      return null;
-    }
-  },
-
-  async analyzeImage(imageBase64, imageLabels = [], menuText = '') {
-    if (!imageBase64) {
-      window.toast(T('groq.noPhoto', '⚠️ Nessuna foto caricata'));
-      return null;
-    }
-
-    if (!imageLabels.length && !menuText.trim()) {
-      window.toast('⚠️ Carica una foto e/o inserisci un testo per l\'analisi');
-      return null;
-    }
-
-    window.toast(T('groq.analyzingPhoto', '🔄 Analizzando foto con Groq...'));
-    try {
-      const resp = await fetch('/api/groqImageAnalyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ imageBase64, imageLabels, menuText })
-      });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        const errorMessage = err.error || 'server error';
-        if (imageLabels.length) {
-          window.toast(T('groq.offline', '⚠️ Groq non disponibile, uso analisi locale'));
-          return this.localAnalyzeFromLabels(imageLabels, menuText);
-        }
-        window.toast(`❌ Errore immagine: ${errorMessage}`);
-        return null;
-      }
-
-      const data = await resp.json();
-      const result = data.result;
-      if (!result) {
-        if (imageLabels.length) {
-          window.toast(T('groq.invalid', '⚠️ Risposta Groq invalida, uso analisi locale'));
-          return this.localAnalyzeFromLabels(imageLabels, menuText);
-        }
-        window.toast(T('groq.imgError', '❌ Errore: risposta immagine non valida'));
-        return null;
-      }
-
-      window.toast(T('groq.photoDone', '✅ Foto analizzata!'));
-      return result;
-    } catch (err) {
-      console.error('[GroqImage]', err);
-      if (imageLabels.length) {
-        window.toast(T('groq.fallback', '⚠️ Errore Groq, uso analisi locale'));
-        return this.localAnalyzeFromLabels(imageLabels, menuText);
-      }
-      window.toast(`❌ Errore immagine: ${err.message}`);
-      return null;
-    }
-  },
-
-  localAnalyzeFromLabels(labels = [], menuText = '') {
-    const labelText = labels.join(' ').toLowerCase();
-    const normalized = labelText.replace(/[^a-z0-9\s]/g, ' ');
-    const safe = [];
-    const risk = [];
-    const avoid = [];
-    const dishName = labels[0] || 'Piatto non identificato';
-
-    const addUnique = (arr, value) => {
-      if (value && !arr.includes(value)) arr.push(value);
-    };
-
-    const patterns = {
-      safe: ['sashimi', 'salad', 'vegetable', 'grilled fish', 'grilled chicken', 'steak', 'tofu', 'fruit', 'rice dish', 'seafood'],
-      risk: ['sushi', 'soy sauce', 'teriyaki', 'yakitori', 'gyoza', 'dumpling', 'curry', 'tempura', 'fried rice', 'asian noodle', 'udon', 'soba', 'ramen'],
-      avoid: ['pizza', 'pasta', 'spaghetti', 'lasagna', 'bread', 'sandwich', 'burger', 'roll', 'cake', 'donut', 'cookie', 'croissant', 'dumpling', 'ramen', 'udon', 'soba', 'tempura']
-    };
-
-    if (patterns.avoid.some(term => normalized.includes(term))) {
-      addUnique(avoid, `${dishName} (probabile glutine)`);
-    } else if (patterns.risk.some(term => normalized.includes(term))) {
-      addUnique(risk, `${dishName} (possibile salsa di soia o contaminazione)`);
-    } else if (patterns.safe.some(term => normalized.includes(term))) {
-      addUnique(safe, `${dishName} (probabilmente GF se preparato senza pane)`);
-    } else {
-      addUnique(risk, `${dishName} (non identificato, procedi con cautela)`);
-    }
-
-    return {
-      piatti_sicuri: safe,
-      rischi: risk,
-      sconsigliato: avoid
-    };
-  },
-  
-  getFromCache(hash) {
-    try {
-      const cache = JSON.parse(localStorage.getItem(this.CACHE_KEY) || '{}');
-      return cache[hash] || null;
-    } catch { return null; }
-  },
-  
-  saveToCache(hash, result) {
-    try {
-      const cache = JSON.parse(localStorage.getItem(this.CACHE_KEY) || '{}');
-      cache[hash] = result;
-      localStorage.setItem(this.CACHE_KEY, JSON.stringify(cache));
-    } catch (err) { console.error('[Cache save]', err); }
-  }
-};
-
-/* ================= GF PLACES DATABASE ================= */
-
-function _makeLocalDB(storeKey) {
-  return {
-    STORE_KEY: storeKey,
-    getAll() {
-      try { return JSON.parse(localStorage.getItem(storeKey) || '[]'); } catch { return []; }
-    },
-    _save(items) { localStorage.setItem(storeKey, JSON.stringify(items)); },
-    delete(id) {
-      try {
-        this._save(this.getAll().filter(x => x.id !== id));
-        return true;
-      } catch (err) { console.error('[LocalDB.delete]', err); return false; }
-    }
-  };
-}
-
-const GFSuggestionsDB = Object.assign(_makeLocalDB('gf_suggestions_submitted'), {
-  add(suggestion) {
-    try {
-      const list = this.getAll();
-      suggestion.id = 'gfs_' + Date.now();
-      suggestion.submittedAt = new Date().toISOString();
-      suggestion.status = 'pending';
-      list.push(suggestion);
-      this._save(list);
-      window.broadcastToPeers?.({ type: 'gf_suggestion_add', suggestion });
-      return suggestion;
-    } catch (err) { console.error('[GFSuggestionsDB.add]', err); return null; }
-  }
-});
-
-const GFPlacesDB = Object.assign(_makeLocalDB('gf_custom_places'), {
-  add(place) {
-    try {
-      const places = this.getAll();
-      place.id = 'gf_' + Date.now();
-      place.createdAt = new Date().toISOString();
-      places.push(place);
-      this._save(places);
-      window.broadcastToPeers?.({ type: 'gf_place_add', place });
-      return place;
-    } catch (err) { console.error('[GFPlacesDB.add]', err); return null; }
-  },
-  edit(id, updates) {
-    try {
-      const places = this.getAll();
-      const idx = places.findIndex(p => p.id === id);
-      if (idx < 0) return null;
-      places[idx] = { ...places[idx], ...updates, updatedAt: new Date().toISOString() };
-      this._save(places);
-      window.broadcastToPeers?.({ type: 'gf_place_edit', id, updates });
-      return places[idx];
-    } catch (err) { console.error('[GFPlacesDB.edit]', err); return null; }
-  },
-  delete(id) {
-    try {
-      const places = this.getAll().filter(p => p.id !== id);
-      this._save(places);
-      window.broadcastToPeers?.({ type: 'gf_place_delete', id });
-      return true;
-    } catch (err) { console.error('[GFPlacesDB.delete]', err); return false; }
-  },
-  sync(incoming) {
-    try {
-      const merged = [...this.getAll()];
-      for (const item of incoming) {
-        const ex = merged.find(p => p.id === item.id);
-        if (!ex) merged.push(item);
-        else if (new Date(item.updatedAt) > new Date(ex.updatedAt)) Object.assign(ex, item);
-      }
-      this._save(merged);
-      return merged;
-    } catch (err) { console.error('[GFPlacesDB.sync]', err); return this.getAll(); }
-  }
-});
+  // Moduli estratti, caricati prima di questo file (ordine <script defer> in index.html)
+  const GroqMenuAnalyzer = window.GroqMenuAnalyzer;
+  const GFSuggestionsDB = window.GFSuggestionsDB;
+  const GFPlacesDB = window.GFPlacesDB;
 
 /* ================= UI HANDLERS ================= */
 
@@ -966,7 +737,4 @@ window.onDataChannelMessage = function(msg) {
   }
 };
 
-  window.GroqMenuAnalyzer = GroqMenuAnalyzer;
-  window.GFSuggestionsDB = GFSuggestionsDB;
-  window.GFPlacesDB = GFPlacesDB;
 })();
