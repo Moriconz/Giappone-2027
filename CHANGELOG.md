@@ -1,6 +1,12 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.23 — Festività globali live: il widget calendario non era mai apparso (2026-07-04, Attuale)
+## v3.24 — Trovata la causa vera dei padding stretti in tutta l'app (2026-07-04, Attuale)
+
+Segnalato dall'utente: padding troppo stretti su container di testo/immagini. Non erano 150 valori scollegati da sistemare uno per uno — una singola regola in `css/legacy-skin.css`, pensata per un solo pannello (il gruppo), aveva un selettore troppo largo: `.y2k-win-body div[style*="border"]`. "Qualunque div con la parola border nello style inline" intercetta di fatto **quasi ogni card dell'app** (praticamente tutte hanno un bordo inline) e forzava 8px 10px con `!important`, indipendentemente dal padding reale scelto da ogni componente (es. `budget-summary` diceva 12px 14px nel sorgente, ne applicava 8px 10px). Stessa famiglia di bug dei 3 "appiattitori" bottoni rimossi in v3.15 — stavolta sui container invece che sui bottoni.
+
+Rimossa la regola. Verificato visivamente su dettaglio POI e pannello itinerario: le card respirano, il box immagine POI e le card testo hanno ora il padding che il loro stesso sorgente specifica.
+
+## v3.23 — Festività globali live: il widget calendario non era mai apparso (2026-07-04)
 
 Punto 6 roadmap planner, ultimo della lista. Come il banner meteo (v3.20), un'altra feature completa e mai vista da nessuno: `js/japan-calendar-hints.js` (widget Golden Week/Obon/Shogatsu/Sakura/Koyo, ~360 righe) era dichiarato "lazy-loaded on demand" in un commento di `index.html`, ma **nessun file chiamava mai quel `loadScript()`** — `window.JapanCalendarHints` restava sempre `undefined`, il widget non ha mai reso una riga di HTML in produzione.
 

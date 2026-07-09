@@ -2053,9 +2053,13 @@ main {
   margin-bottom: 14px !important;
 }
 
-.y2k-win-body div[style*="border"] {
-  padding: 8px 10px !important;
-}
+/* Rimossa: `.y2k-win-body div[style*="border"] { padding:8px 10px !important; }`.
+   Il selettore "qualunque div con 'border' nello style inline" pensato per un
+   solo pannello (gruppo) intercettava di fatto QUALUNQUE card con bordo in
+   TUTTI i pannelli dell'app (quasi ogni card lo ha) — schiacciava a 8px 10px
+   il padding scelto da ogni componente, indipendentemente dal valore reale
+   nel sorgente (es. budget-summary 12px 14px, jpcal-hints-widget 14px).
+   Causa radice dei container "troppo stretti" segnalati. */
 
 /* ══════════════════════════════════════════════════════════════════
    GF CITY FILTER — Force compact width
