@@ -1,6 +1,10 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.17 — Fix vero lag chiusura card + base/hotel del giorno (2026-07-04, Attuale)
+## v3.18 — Deep-link indicazioni reali tra tappe consecutive (2026-07-04, Attuale)
+
+Punto 2 roadmap planner. Le tratte tra tappe erano solo stime (haversine + ¥/km euristici, già etichettate come tali) senza modo di navigarle davvero. API transit vere costano quota; via gratis: link "🧭 Indicazioni" nella riga spostamento di ogni tappa, che apre Google Maps con origine/destinazione = coordinate reali delle due tappe consecutive e travelmode coerente (walking se a piedi, transit altrimenti). Zero chiamate API, compare solo se entrambe le tappe hanno coordinate note.
+
+## v3.17 — Fix vero lag chiusura card + base/hotel del giorno (2026-07-04)
 
 ### 🔧 Lag chiusura card (causa radice, finalmente)
 L'animazione di uscita **non era mai esistita**: `.y2k-win-closing` riusava la stessa keyframe dell'entrata (`m-sheet-up reverse`) — ma un'animazione con lo stesso nome non riparte mai (per CSS è già completata sull'elemento). La card restava congelata finché il timer di sicurezza non la rimuoveva: il freeze segnalato più volte. In più `transform: none !important` sulla base bloccava anche lo slide di ENTRATA (un transform `!important` vince sulle keyframes), e il pannello aveva un `backdrop-filter` ridondante (la mappa sotto è già sfocata) ricalcolato ad ogni frame su 88vh. Fix: keyframe di uscita dedicata (`l-sheet-down` mobile, `l-modal-out` desktop), via i transform `!important`, via il blur del pannello (sfondo quasi opaco `--l-glass-strong`). Misurato in foreground: uscita 9→218ms con slide reale.

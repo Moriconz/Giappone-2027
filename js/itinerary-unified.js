@@ -114,6 +114,14 @@ function renderItineraryUnified() {
             const lbl = r.mode === 'walking' ? 'a piedi' : r.mode === 'driving' ? 'treno' : 'mezzi';
             const fare = (r.cost > 0) ? `💴 ¥${r.cost}` : 'gratis';
             const fareColor = (r.cost > 0) ? '#c2410c' : '#16a34a';
+            // Deep-link Google Maps Indicazioni: nessuna API transit (costa
+            // quota), ma tra due coordinate reali il link apre le indicazioni
+            // vere — zero chiamate, funziona sempre.
+            const prev = dayPOIs[idx - 1];
+            const travelMode = r.mode === 'walking' ? 'walking' : r.mode === 'driving' ? 'transit' : 'transit';
+            const dirLink = (prev && typeof prev.lat === 'number' && typeof entry.lat === 'number')
+              ? `<a href="https://www.google.com/maps/dir/?api=1&origin=${prev.lat},${prev.lng}&destination=${entry.lat},${entry.lng}&travelmode=${travelMode}" target="_blank" rel="noopener noreferrer" style="font-size:13px;font-weight:700;color:#0284c7;text-decoration:underline;margin-left:auto;">🧭 Indicazioni</a>`
+              : '';
             return `
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:6px 10px;background:rgba(100,150,200,0.1);border-radius:6px;margin-top:4px">
               <span style="font-size:12px;color:var(--l-muted);font-weight:700;text-transform:uppercase">↳ spostamento</span>
@@ -121,6 +129,7 @@ function renderItineraryUnified() {
               <span style="font-size:13px;color:#0284c7;font-weight:600">⏱️ ${r.duration_min} min</span>
               <span style="font-size:13px;color:#0284c7">📍 ${r.distance_km} km</span>
               <span style="font-size:13px;font-weight:700;color:${fareColor}">${fare}</span>
+              ${dirLink}
             </div>`;
           })() : ''}
 
