@@ -352,17 +352,18 @@ nav.bottom button.active span{ color:var(--l-accent) !important; }
 .sheet .sheet-handle{ background:rgba(128,128,140,.3) !important; }
 #sheet-close{ background:rgba(128,128,140,.14) !important; color:var(--l-muted) !important; }
 
-/* ── BOTTONI dentro i pannelli ── */
+/* ── BOTTONI dentro i pannelli ──
+   .btn-plain = opt-out per bottoni-layout (vedi modern-2026.css). */
 .btn,
-.y2k-win-body button:not(.btn-cta):not(.y2k-win-close):not(.menu-drawer-item),
-.sheet-body button:not(.y2k-win-close):not(.menu-drawer-item){
+.y2k-win-body button:not(.btn-cta):not(.y2k-win-close):not(.menu-drawer-item):not(.btn-plain),
+.sheet-body button:not(.y2k-win-close):not(.menu-drawer-item):not(.btn-plain){
   background:var(--l-btn-bg) !important;
   border:1px solid var(--l-hair) !important;
   color:var(--l-ink) !important;
 }
 .btn:hover,
-.y2k-win-body button:not(.btn-cta):not(.y2k-win-close):not(.menu-drawer-item):hover,
-.sheet-body button:hover{
+.y2k-win-body button:not(.btn-cta):not(.y2k-win-close):not(.menu-drawer-item):not(.btn-plain):hover,
+.sheet-body button:not(.btn-plain):hover{
   background:var(--l-btn-bg-hover) !important;
 }
 .btn.primary, .btn-primary, .btn-cta,

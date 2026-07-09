@@ -393,9 +393,9 @@ header {
 
 /* ── Bottoni ────────────────────────────────────────────────────── */
 .btn,
-.y2k-win-body button,
-.sheet-body button,
-.sheet-inner button {
+.y2k-win-body button:not(.btn-plain),
+.sheet-body button:not(.btn-plain),
+.sheet-inner button:not(.btn-plain) {
   font-family: inherit !important;
   font-weight: 600 !important;
   border-radius: var(--m-r-md) !important;
@@ -403,18 +403,22 @@ header {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
+/* .btn-plain = opt-out dal riskin tema: bottoni-LAYOUT (header accordion,
+   righe cliccabili) che hanno già una card/wrapper con bordo proprio — il
+   riskin gli aggiungeva un secondo bordo+radius dentro il primo ("due
+   container sovrapposti", segnalato più volte). */
 .btn,
-.y2k-win-body button:not(.y2k-win-close),
-.sheet-body button {
+.y2k-win-body button:not(.y2k-win-close):not(.btn-plain),
+.sheet-body button:not(.btn-plain) {
   background: var(--m-surface-2) !important;
   color: var(--m-text) !important;
   border: 1px solid var(--m-border) !important;
 }
 .btn:hover,
-.y2k-win-body button:not(.y2k-win-close):hover,
-.sheet-body button:hover { background: var(--m-surface-3) !important; box-shadow: var(--m-shadow-sm) !important; }
+.y2k-win-body button:not(.y2k-win-close):not(.btn-plain):hover,
+.sheet-body button:not(.btn-plain):hover { background: var(--m-surface-3) !important; box-shadow: var(--m-shadow-sm) !important; }
 .btn:active,
-.y2k-win-body button:not(.y2k-win-close):active { transform: translateY(1px) !important; }
+.y2k-win-body button:not(.y2k-win-close):not(.btn-plain):active { transform: translateY(1px) !important; }
 
 .btn.primary, .btn-primary, .btn-cta,
 .y2k-win-body .btn.primary {
@@ -776,8 +780,8 @@ header {
   background: rgba(255, 255, 255, 0.07) !important;
   border: 1px solid var(--m-glass-brd) !important;
 }
-.y2k-win-body button:not(.btn-cta):not(.y2k-win-close),
-.y2k-win-body .btn:not(.primary), .sheet-body button {
+.y2k-win-body button:not(.btn-cta):not(.y2k-win-close):not(.btn-plain),
+.y2k-win-body .btn:not(.primary), .sheet-body button:not(.btn-plain) {
   background: var(--m-glass-3) !important;
   border: 1px solid var(--m-glass-brd) !important;
 }

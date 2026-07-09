@@ -204,11 +204,11 @@ function renderItineraryUnified() {
 
     return `
       <div class="itinerary-day-accordion" style="margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid var(--l-hair);box-shadow:0 2px 8px rgba(0,0,0,0.06)">
-        <button class="itinerary-day-header" data-day="${dayIndex}" style="
+        <button class="itinerary-day-header btn-plain" data-day="${dayIndex}" style="
           width:100%;
           padding:16px 18px;
           line-height:1.5;
-          background:linear-gradient(90deg, rgba(74,124,89,0.16), rgba(255,107,53,0.08));
+          background:transparent;
           border:none;
           border-bottom:1px solid var(--l-hair);
           color:var(--l-ink);
@@ -221,7 +221,7 @@ function renderItineraryUnified() {
           font-weight:700;
           font-size:15px;
           min-height:44px;
-        " onmouseover="this.style.background='linear-gradient(90deg, rgba(74,124,89,0.24), rgba(255,107,53,0.15))'" onmouseout="this.style.background='linear-gradient(90deg, rgba(74,124,89,0.16), rgba(255,107,53,0.08))'">
+        " onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
           <span style="display:flex;align-items:center;gap:8px">
             <span style="font-size:18px">📅</span>
             <span>${dayLabel}</span>

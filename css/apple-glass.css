@@ -162,18 +162,19 @@ nav.bottom button.active {
    CONTROLLI — bottoni, input, chip (linguaggio iOS)
    ════════════════════════════════════════════════════════════════ */
 
-/* Bottoni standard nei pannelli: materiale traslucido */
+/* Bottoni standard nei pannelli: materiale traslucido.
+   .btn-plain = opt-out per bottoni-layout (vedi modern-2026.css). */
 .btn,
-.y2k-win-body button:not(.btn-cta):not(.y2k-win-close),
-.sheet-body button {
+.y2k-win-body button:not(.btn-cta):not(.y2k-win-close):not(.btn-plain),
+.sheet-body button:not(.btn-plain) {
   background: rgba(255, 255, 255, 0.10) !important;
   border: 0.5px solid var(--m-glass-brd) !important;
   border-radius: var(--m-r-md) !important;
   color: var(--m-text) !important;
 }
 .btn:hover,
-.y2k-win-body button:not(.btn-cta):not(.y2k-win-close):hover,
-.sheet-body button:hover {
+.y2k-win-body button:not(.btn-cta):not(.y2k-win-close):not(.btn-plain):hover,
+.sheet-body button:not(.btn-plain):hover {
   background: rgba(255, 255, 255, 0.16) !important;
   box-shadow: none !important;
 }

@@ -1,6 +1,15 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.27 — "Due container sovrapposti": margine nativo dei bottoni mai azzerato (2026-07-04, Attuale)
+## v3.28 — Doppio container: era il riskin tema su ogni <button> (2026-07-04, Attuale)
+
+Il fix del margine (v3.27) era giusto ma non bastava — ispezionando il box model del bottone header è emersa la causa principale: i tre file tema (modern-2026, apple-glass, liquid-light) riskinnano con `!important` **qualunque** `<button>` dentro i pannelli — sfondo pill, bordo proprio, radius 14px. Giusto per i bottoni-azione; sbagliato per i bottoni-LAYOUT come l'header dell'accordion giorni, che vive già dentro una card con bordo e radius 10px: il risultato erano due bordi arrotondati annidati — i "due container sovrapposti" segnalati tre volte.
+
+### 🔧 Fix
+- Nuova classe opt-out `.btn-plain`: esclusa da tutti i selettori di riskin bottoni nei 3 temi (5 blocchi). I bottoni-layout la dichiarano e mantengono il loro stile inline.
+- `.itinerary-day-header` marcato `btn-plain` + sfondo portato a `transparent` (il vecchio gradient inline verde/arancio era rimasto invisibile per mesi proprio perché il tema lo copriva — riemergendo era pesante e fuori palette).
+- Verificato con screenshot: ogni riga giorno è ora un solo box con un solo bordo.
+
+## v3.27 — "Due container sovrapposti": margine nativo dei bottoni mai azzerato (2026-07-04)
 
 L'utente ha notato con uno screenshot ravvicinato l'indizio decisivo: sembravano "due container uno sopra l'altro" attorno all'icona del giorno. Aveva ragione — letteralmente due box. Causa: **nessun file in tutto il progetto azzerava il margine nativo di `<button>`/`<input>`/`<select>`/`<textarea>`**. Il margine di default del browser su un bottone dentro un contenitore con bordo (accordion giorni, card POI, chip, praticamente ogni bottone dell'app) crea un gap visibile tra il bottone e il suo wrapper — letto per l'appunto come due caselle sovrapposte invece di una sola.
 
