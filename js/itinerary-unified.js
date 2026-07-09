@@ -366,28 +366,25 @@ function renderItineraryUnified() {
           ${budgetModel.secondaryLabel}
         </div>
 
-        <!-- Info note: what's NOT yet included -->
-        <div style="
-          font-size:12px;
-          color:var(--l-muted);
-          padding:6px 8px;
-          background:rgba(180,83,9,0.08);
-          border-radius:4px;
-          border-left:2px solid rgba(180,83,9,0.4);
-        ">
-          ⓘ ${budgetModel.infoText}
-        </div>
+        <!-- Info note: what's NOT yet included. Prima era in un box arancio
+             stile-warning — troppo peso visivo per un'informazione neutra,
+             non urgente. Ora testo semplice, coerente col resto della card. -->
+        <div style="font-size:13px;color:var(--l-faint);">ⓘ ${budgetModel.infoText}</div>
       </div>
 
       <!-- SECTION 1: YOUR ITINERARY -->
+      <!-- Prima: 4 bottoni a colori diversi (arancio/blu/viola/giallo) in riga
+           che wrappava su schermi stretti — la causa principale della
+           "confusione" segnalata. Ora: stile unico neutro, scroll orizzontale
+           invece di wrap, titolo su riga propria (mai in competizione con i
+           bottoni per lo spazio). -->
       <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 12px 0;">
-          <h3 style="font-size:16px;font-weight:700;color:var(--l-ink);margin:0;">📅 Il Tuo Itinerario</h3>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="padding:5px 10px;background:rgba(255,107,53,0.15);border:1.5px solid rgba(255,107,53,0.5);border-radius:20px;color:var(--m-accent);font-size:13px;font-weight:600;cursor:pointer;" title="Riorganizza per zone geografiche">🧭 Ottimizza</button>` : ''}
-            <button onclick="window.loadScript('./js/itinerary-suggest.js').then(()=>window.openItinerarySuggest?.())" style="padding:5px 10px;background:rgba(100,150,255,0.12);border:1.5px solid rgba(100,150,255,0.4);border-radius:20px;color:rgba(150,180,255,1);font-size:13px;font-weight:600;cursor:pointer;" title="Suggerimenti POI da aggiungere">✨ Suggerimenti</button>
-            <button onclick="window.loadScript('./js/views/itinerary-version-history.js').then(()=>window.openItineraryVersionHistory?.())" style="padding:5px 10px;background:rgba(180,120,255,0.1);border:1.5px solid rgba(180,120,255,0.35);border-radius:20px;color:rgba(200,160,255,1);font-size:13px;font-weight:600;cursor:pointer;" title="Storico versioni itinerario">⏮ Storico</button>
-            <button onclick="window.loadScript('./js/itinerary-reminders.js').then(()=>window.openItineraryReminders?.())" style="padding:5px 10px;background:rgba(255,200,50,0.1);border:1.5px solid rgba(255,200,50,0.35);border-radius:20px;color:rgba(255,210,80,1);font-size:13px;font-weight:600;cursor:pointer;" title="Promemoria tappe">🔔 Promemoria</button>
+        <h3 style="font-size:16px;font-weight:700;color:var(--l-ink);margin:0 0 8px 0;">📅 Il Tuo Itinerario</h3>
+        <div style="display:flex;gap:6px;margin:0 0 12px 0;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;">
+            ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="flex-shrink:0;padding:6px 12px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:20px;color:var(--l-muted);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;" title="Riorganizza per zone geografiche">🧭 Ottimizza</button>` : ''}
+            <button onclick="window.loadScript('./js/itinerary-suggest.js').then(()=>window.openItinerarySuggest?.())" style="flex-shrink:0;padding:6px 12px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:20px;color:var(--l-muted);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;" title="Suggerimenti POI da aggiungere">✨ Suggerimenti</button>
+            <button onclick="window.loadScript('./js/views/itinerary-version-history.js').then(()=>window.openItineraryVersionHistory?.())" style="flex-shrink:0;padding:6px 12px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:20px;color:var(--l-muted);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;" title="Storico versioni itinerario">⏮ Storico</button>
+            <button onclick="window.loadScript('./js/itinerary-reminders.js').then(()=>window.openItineraryReminders?.())" style="flex-shrink:0;padding:6px 12px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:20px;color:var(--l-muted);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;" title="Promemoria tappe">🔔 Promemoria</button>
           </div>
         </div>
         <div class="itinerary-accordion">${accordionHTML}</div>

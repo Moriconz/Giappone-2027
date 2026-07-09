@@ -1,6 +1,14 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.20 — Meteo che influenza il piano: banner mai apparso, ora reale (2026-07-04, Attuale)
+## v3.21 — Sfoltita la schermata Itinerario (2026-07-04, Attuale)
+
+Segnalata dall'utente come "confusionaria". Verificato con un audit rapido su tutte le schermate (conteggio colori distinti nei bottoni per file): `itinerary-unified.js` ne aveva 15, ogni altra schermata 0-4 — era l'unica davvero fuori scala.
+
+### 🔧 Fix
+- 4 bottoni azione (Ottimizza/Suggerimenti/Storico/Promemoria) avevano 4 colori diversi e `flex-wrap` — su schermi stretti andavano su due righe disordinate. Ora stile unico neutro, riga singola con scroll orizzontale, titolo sopra su riga propria (non più in competizione per lo spazio).
+- Nota "Trasporti non ancora inclusi" era in un box arancio stile-warning per un'informazione neutra, non urgente. Ora testo semplice.
+
+## v3.20 — Meteo che influenza il piano: banner mai apparso, ora reale (2026-07-04)
 
 Punto 4 roadmap planner. Il banner "pioggia prevista, hai tappe outdoor" esisteva già (UI completa, dismissibile) ma `window.state.weather.forecast` **non veniva mai scritto da nessun file** — il banner era morto dal giorno in cui è stato costruito, sempre `[]`.
 
