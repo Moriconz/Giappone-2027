@@ -311,8 +311,12 @@ nav.bottom button.active span{ color:var(--l-accent) !important; }
    PANNELLI (.y2k-win / .sheet) — contenitore condiviso da ogni vista
    ════════════════════════════════════════════════════════════════ */
 .y2k-win{
-  background:var(--l-glass) !important;
-  -webkit-backdrop-filter:var(--l-blur) !important; backdrop-filter:var(--l-blur) !important;
+  /* glass-strong (quasi opaco) al posto di glass+backdrop-filter: la mappa
+     sotto è già sfocata da #map.blur, e il backdrop-filter su un pannello a
+     88vh in slide si ricalcola ad ogni frame — era il peso principale del
+     lag di apertura/chiusura su telefono. */
+  background:var(--l-glass-strong) !important;
+  -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
   border:1px solid var(--l-border) !important;
   border-bottom:none !important;
   box-shadow:
@@ -448,12 +452,27 @@ nav.bottom button.active span{ color:var(--l-accent) !important; }
 }
 
 /* ════════════════════════════════════════════════════════════════
-   USCITA PANNELLO — simmetrica all'entrata "m-sheet-up" (modern-2026.css),
-   riusata al contrario invece di una nuova keyframe. Sempre attiva,
-   indipendente dal tema. prefers-reduced-motion la azzera già
-   globalmente (regola universale in modern-2026.css).
+   USCITA PANNELLO — keyframe DEDICATA, non "m-sheet-up reverse": riusare
+   lo stesso animation-name dell'entrata non fa MAI ripartire l'animazione
+   (per CSS è già completata sull'elemento) → l'uscita non era mai esistita:
+   card congelata finché il timer di sicurezza non la rimuoveva (il "lag" di
+   chiusura segnalato più volte). Un nome nuovo garantisce il restart.
+   prefers-reduced-motion la azzera già globalmente (modern-2026.css).
    ════════════════════════════════════════════════════════════════ */
+@keyframes l-sheet-down{
+  from{ transform:translateY(0); opacity:1; }
+  to{ transform:translateY(100%); opacity:.6; }
+}
 .y2k-win-closing{
-  animation:m-sheet-up .22s var(--m-ease) reverse forwards !important;
+  animation:l-sheet-down .22s var(--m-ease) forwards !important;
   pointer-events:none !important;
+}
+/* Desktop: il pannello è un modal centrato (left/top 50%), lo slide-down
+   userebbe coordinate sbagliate → dissolvenza breve */
+@media (min-width: 680px){
+  @keyframes l-modal-out{
+    from{ transform:translate(-50%,-50%) scale(1); opacity:1; }
+    to{ transform:translate(-50%,-48%) scale(.98); opacity:0; }
+  }
+  .y2k-win-closing{ animation:l-modal-out .18s var(--m-ease) forwards !important; }
 }

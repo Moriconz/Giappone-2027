@@ -260,7 +260,11 @@ body.panel-open { overflow: hidden; }
   min-width: 0 !important;
   max-width: 100vw !important;       /* hard-cap: mai più largo del viewport (mobile) */
   box-sizing: border-box !important;
-  transform: none !important;
+  /* NIENTE transform !important qui: un transform con !important vince sulle
+     keyframes e uccide le animazioni di entrata/uscita (m-sheet-up anima
+     proprio transform) — la card appariva/spariva di colpo dopo un freeze
+     invece di scorrere. Nessuno stile legacy imposta transform su .y2k-win
+     (verificato), quindi il "reset difensivo" non serviva a nulla. */
 }
 .y2k-win::before { display: none !important; } /* via la linea retro */
 
@@ -335,7 +339,9 @@ body.panel-open { overflow: hidden; }
     right: auto;
     top: 50%;
     bottom: auto;
-    transform: translate(-50%, -50%) !important;
+    /* senza !important: le keyframes m-modal-in animano transform e con
+       !important verrebbero ignorate (modal che appare di colpo) */
+    transform: translate(-50%, -50%);
     width: min(680px, 92vw);
     max-height: 86vh;
     border: 1px solid var(--m-border) !important;

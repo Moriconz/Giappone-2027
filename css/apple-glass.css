@@ -118,8 +118,10 @@ nav.bottom button.active {
    ════════════════════════════════════════════════════════════════ */
 .y2k-win {
   background: var(--m-glass) !important;
-  -webkit-backdrop-filter: var(--m-blur) !important;
-  backdrop-filter: var(--m-blur) !important;
+  /* Niente backdrop-filter sul pannello: la mappa sotto è GIÀ sfocata da
+     #map.blur, quindi il vetro era ridondante — e un backdrop-filter su un
+     elemento a 88vh che scorre (slide in/out) si ricalcola ad ogni frame:
+     era il peso principale del lag di apertura/chiusura su telefono. */
   border: 0.5px solid var(--m-glass-brd) !important;
   border-bottom: none !important;
   border-radius: var(--m-r-sheet) var(--m-r-sheet) 0 0 !important;
