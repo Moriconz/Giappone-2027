@@ -401,46 +401,15 @@ function renderItineraryUnified() {
           color: var(--l-ink);
           margin: 0 0 12px 0;
         ">📤 Condividi con il Gruppo</h3>
+        <!-- Prima: 4 bottoni pieni, 4 colori diversi, tutti stesso peso
+             visivo — stessa confusione della riga azioni sopra. Un solo
+             stile neutro, l'azione "Condividi con Gruppo" (la principale)
+             resta l'unica accentata. -->
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <button id="btn-export-html-unified" onclick="handleExportHTML()" style="
-            padding: 12px 16px;
-            background: rgba(2,132,199,0.14);
-            border: 1.5px solid rgba(2,132,199,0.4);
-            border-radius: 8px;
-            color: var(--l-ink);
-            font-size:15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-          " onmouseover="this.style.background='rgba(2,132,199,0.22)'" onmouseout="this.style.background='rgba(2,132,199,0.14)'">
-            📄 Esporta (stampabile)
-          </button>
-          <button id="btn-export-whatsapp-unified" onclick="handleExportWhatsApp()" style="
-            padding: 12px 16px;
-            background: rgba(22,163,74,0.14);
-            border: 1.5px solid rgba(22,163,74,0.4);
-            border-radius: 8px;
-            color: var(--l-ink);
-            font-size:15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-          " onmouseover="this.style.background='rgba(22,163,74,0.22)'" onmouseout="this.style.background='rgba(22,163,74,0.14)'">
-            📤 Esporta su WhatsApp
-          </button>
-          <button id="btn-share-link-unified" onclick="handleShareLink()" style="
-            padding: 12px 16px;
-            background: rgba(126,90,190,0.14);
-            border: 1.5px solid rgba(126,90,190,0.4);
-            border-radius: 8px;
-            color: var(--l-ink);
-            font-size:15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-          " onmouseover="this.style.background='rgba(126,90,190,0.22)'" onmouseout="this.style.background='rgba(126,90,190,0.14)'">
-            🔗 Copia link condivisibile
-          </button>
+          <button id="btn-export-html-unified" onclick="handleExportHTML()" style="padding:12px 16px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:8px;color:var(--l-ink);font-size:15px;font-weight:600;cursor:pointer;text-align:left;">📄 Esporta (stampabile)</button>
+          <button id="btn-export-ics-unified" onclick="window.exportItineraryICS?.()" style="padding:12px 16px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:8px;color:var(--l-ink);font-size:15px;font-weight:600;cursor:pointer;text-align:left;">📅 Esporta calendario (.ics)</button>
+          <button id="btn-export-whatsapp-unified" onclick="handleExportWhatsApp()" style="padding:12px 16px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:8px;color:var(--l-ink);font-size:15px;font-weight:600;cursor:pointer;text-align:left;">📤 Esporta su WhatsApp</button>
+          <button id="btn-share-link-unified" onclick="handleShareLink()" style="padding:12px 16px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:8px;color:var(--l-ink);font-size:15px;font-weight:600;cursor:pointer;text-align:left;">🔗 Copia link condivisibile</button>
           <button id="btn-share-group-unified" onclick="handleShareGroup()" style="
             padding: 12px 16px;
             background: var(--l-accent-soft);

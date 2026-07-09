@@ -382,6 +382,21 @@ R.checks.weatherAlertWiring = await page.evaluate(async () => {
   } catch (e) { return { error: e.message }; }
 });
 
+R.checks.icsExport = await page.evaluate(() => {
+  try {
+    // buildICS pura (no anchor/click reale: in headless a.click() su un
+    // <a download> puo' agganciarsi al download-handling di Chrome e
+    // bloccare la pagina, visto durante lo sviluppo di questo check)
+    const ics = window.buildICS([
+      { id: 'x1', title: 'Stop A', location: 'Tokyo, Giappone', desc: '', lat: 35.68, lng: 139.76, start: new Date('2027-04-10T09:00:00'), end: new Date('2027-04-10T10:00:00') },
+      { id: 'x2', title: 'Stop B', location: 'Kyoto, Giappone', desc: '', lat: 35.01, lng: 135.77, start: new Date('2027-04-11T10:00:00'), end: new Date('2027-04-11T11:30:00') },
+    ]);
+    const ok = typeof window.exportItineraryICS === 'function'
+      && ics.includes('BEGIN:VCALENDAR') && ics.includes('SUMMARY:Stop A') && ics.includes('SUMMARY:Stop B') && ics.includes('END:VCALENDAR');
+    return { ok };
+  } catch (e) { return { error: e.message }; }
+});
+
 R.checks.gfCrowdDetails = await page.evaluate(() => {
   try {
     const rep = window.GFCrowd.addReport('_smokepoi', 'X', 'safe', '', { sepKitchen: 'yes', staffAware: 'no' });

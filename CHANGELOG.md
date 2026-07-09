@@ -1,6 +1,12 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.21 — Sfoltita la schermata Itinerario (2026-07-04, Attuale)
+## v3.22 — Export .ics del viaggio intero + sfoltita sezione Condividi (2026-07-04, Attuale)
+
+Punto 5 roadmap planner. `buildICS`/`downloadICS` esistevano già ma solo per la singola tappa (promptAddToCalendar) — accettavano già un array di eventi, riusati as-is: `exportItineraryICS()` genera un evento per ogni tappa di ogni giorno (orario/durata/coordinate reali) e scarica un unico file importabile in Google/Apple/Outlook Calendar.
+
+Nel farlo, decluttering coerente col resto: la sezione "Condividi con il Gruppo" aveva 4 bottoni a 4 colori diversi (stesso anti-pattern della riga azioni sistemata in v3.21) — stile unico neutro, resta accentata solo "Condividi con Gruppo" (l'azione principale). Invariante `icsExport` nello smoke test (su `buildICS` puro, non sul click reale: in headless Chrome un `<a download>` cliccato può agganciarsi al download-handling e bloccare la pagina — imparato durante lo sviluppo di questo check).
+
+## v3.21 — Sfoltita la schermata Itinerario (2026-07-04)
 
 Segnalata dall'utente come "confusionaria". Verificato con un audit rapido su tutte le schermate (conteggio colori distinti nei bottoni per file): `itinerary-unified.js` ne aveva 15, ogni altra schermata 0-4 — era l'unica davvero fuori scala.
 

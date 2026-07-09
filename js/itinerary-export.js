@@ -228,6 +228,37 @@
     };
   }
 
+  // ── Export: intero viaggio in .ics (punto 5 roadmap planner) ────────────────
+  // buildICS/downloadICS accettano già un array di eventi (usato finora solo
+  // per la singola tappa in promptAddToCalendar) — un evento per tappa,
+  // stesso builder, zero nuova infrastruttura.
+  function exportItineraryICS() {
+    const days = _getAllDaysSorted();
+    if (!days.length) {
+      window.toast(T('toast.addStopsFirst', '⚠️ Aggiungi tappe prima di esportare'));
+      return;
+    }
+    const notes = window.state?.notes || {};
+    const events = [];
+    days.forEach(({ dayIdx, entries }) => {
+      const dayDate = _getDayDate(dayIdx);
+      entries.forEach(e => {
+        const [h, m] = (e.time || '10:00').split(':').map(Number);
+        const start = new Date(dayDate);
+        start.setHours(h || 10, m || 0, 0, 0);
+        const end = new Date(start.getTime() + (e.duration || 60) * 60000);
+        events.push({
+          id: e.poi_id + '_d' + dayIdx, title: e.poi_name || e.poi_id,
+          location: (e.city || '') + ', Giappone',
+          desc: (e.notes || notes[e.poi_id] || ''),
+          lat: e.lat, lng: e.lng, start, end
+        });
+      });
+    });
+    downloadICS('tabi-itinerario.ics', buildICS(events));
+    window.toast(T('toast.icsExported', '📅 Calendario del viaggio scaricato'));
+  }
+
   // ── Share itinerary in group ─────────────────────────────────────────────────
   function shareItineraryInGroup() {
     if (!_totalPOIs()) {
@@ -261,6 +292,7 @@
   window.downloadICS = downloadICS;
   window.exportItineraryJSON = exportItineraryJSON;
   window.exportItineraryPDF = exportItineraryPDF;
+  window.exportItineraryICS = exportItineraryICS;
   window.promptAddToCalendar = promptAddToCalendar;
   window.exportItineraryWhatsApp = exportItineraryWhatsApp;
   window.shareItineraryInGroup = shareItineraryInGroup;
