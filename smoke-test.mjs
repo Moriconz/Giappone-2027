@@ -351,6 +351,20 @@ R.checks.dayBaseSeed = await page.evaluate(() => {
   } catch (e) { return { error: e.message }; }
 });
 
+R.checks.dayConflicts = await page.evaluate(async () => {
+  try {
+    window.state.itineraryByDay[6] = [];
+    window.ITINERARY.addPOIToDay('_o1', 'A', 6, '10:00', 90, '', 0, 'altro', 35.6812, 139.7671);
+    window.ITINERARY.addPOIToDay('_o2', 'B', 6, '11:00', 60, '', 0, 'altro', 35.6595, 139.7005);
+    window.ITINERARY.computeDayRouting(6);
+    window.renderItineraryUnified();
+    await new Promise(r => setTimeout(r, 250));
+    const txt = document.querySelectorAll('.itinerary-day-header')[6]?.textContent || '';
+    window.state.itineraryByDay[6] = [];
+    return { ok: txt.includes('sovrapposte') };
+  } catch (e) { return { error: e.message }; }
+});
+
 R.checks.gfCrowdDetails = await page.evaluate(() => {
   try {
     const rep = window.GFCrowd.addReport('_smokepoi', 'X', 'safe', '', { sepKitchen: 'yes', staffAware: 'no' });

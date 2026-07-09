@@ -55,6 +55,18 @@ function renderItineraryUnified() {
     const _loadMin = _visitMin + _transitMin;
     const _dense = _loadMin > 12 * 60; // finestra attiva 12h (allineata a itinerary-suggest)
     const _transitPct = _loadMin > 0 ? Math.round(_transitMin / _loadMin * 100) : 0;
+    // Conflitti orari del giorno: overlap tra tappe consecutive (riusa
+    // route_from_prev già calcolato sopra, zero costo aggiuntivo) + pasto
+    // mancante su una giornata piena di visite. Punto 3 roadmap planner.
+    const toMin = s => { const [h, m] = (s || '').split(':').map(Number); return (h || 0) * 60 + (m || 0); };
+    const _overlapCount = dayPOIs.reduce((n, e, i) => {
+      if (i === 0 || !e.route_from_prev) return n;
+      const prev = dayPOIs[i - 1];
+      const prevEnd = toMin(prev.time) + (prev.duration || 0) + (e.route_from_prev.duration_min || 0);
+      return n + (toMin(e.time) < prevEnd ? 1 : 0);
+    }, 0);
+    const _hasMeal = dayPOIs.some(e => e.tag === 'cibo' || e.tag === 'food');
+    const _needsMeal = _visitMin > 4 * 60 && !_hasMeal;
     const poiListHTML = dayPOIs.length ? dayPOIs.map((entry, idx) => {
       // Get POI name: first try entry.poi_name, then search allPOIs, fallback to ID
       let poiNameDisplay = entry.poi_name;
@@ -211,6 +223,8 @@ function renderItineraryUnified() {
               <span>${(_visitMin / 60).toFixed(1)}h visite · ${(_transitMin / 60).toFixed(1)}h spost. (${_transitPct}%)</span>
             </span>` : ''}
             ${_dense ? `<span style="font-size:13px;color:#b45309;font-weight:700;background:rgba(180,83,9,0.12);border:1px solid rgba(180,83,9,0.35);padding:2px 8px;border-radius:5px">⚠️ Giornata molto densa (${(_loadMin / 60).toFixed(1)}h)</span>` : ''}
+            ${_overlapCount > 0 ? `<span style="font-size:13px;color:#dc2626;font-weight:700;background:rgba(220,38,38,0.12);border:1px solid rgba(220,38,38,0.35);padding:2px 8px;border-radius:5px">⛔ ${_overlapCount} tappa/e sovrapposte</span>` : ''}
+            ${_needsMeal ? `<span style="font-size:13px;color:#0e7490;font-weight:700;background:rgba(14,116,144,0.12);border:1px solid rgba(14,116,144,0.35);padding:2px 8px;border-radius:5px">🍽️ Nessun pasto in giornata</span>` : ''}
           </div>
         </button>
         <div class="itinerary-day-content" data-day="${dayIndex}" style="
