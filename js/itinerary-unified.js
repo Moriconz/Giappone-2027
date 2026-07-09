@@ -212,6 +212,15 @@ function renderItineraryUnified() {
           contain:layout style paint;
         ">
           <div class="itinerary-poi-list" style="margin-bottom:12px">${poiListHTML}</div>
+          ${(() => {
+            const base = window.ITINERARY?.getDayBase?.(dayIndex);
+            return base
+              ? `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin-bottom:8px;background:rgba(96,125,199,0.10);border:1px solid rgba(96,125,199,0.3);border-radius:8px;font-size:14px;color:var(--l-ink);">
+                   <span>🏨</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${base.name}</span>
+                   <button class="itinerary-base-btn" data-day="${dayIndex}" style="padding:4px 10px;background:transparent;border:1px solid var(--l-hair);border-radius:6px;color:var(--l-muted);font-size:13px;cursor:pointer;min-height:0;">Cambia</button>
+                 </div>`
+              : `<button class="itinerary-base-btn" data-day="${dayIndex}" style="width:100%;margin-bottom:8px;padding:8px 12px;background:transparent;border:1px dashed var(--l-hair);border-radius:8px;color:var(--l-muted);font-size:14px;cursor:pointer;">🏨 Imposta base/hotel del giorno</button>`;
+          })()}
           <button class="itinerary-add-btn" data-day="${dayIndex}" style="
             width:100%;
             padding:10px 14px;
@@ -741,6 +750,14 @@ function setupGlobalEventDelegation() {
     if (!btn) return;
     e.stopPropagation();
     window.showGFNearDay?.(parseInt(btn.dataset.day, 10));
+  }, false);
+
+  // Base/hotel del giorno: prompt → geocode Nominatim (gratis, CORS ok) → salva
+  sheetBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('.itinerary-base-btn');
+    if (!btn) return;
+    e.stopPropagation();
+    window.setDayBaseFlow?.(parseInt(btn.dataset.day, 10));
   }, false);
 
   // Menu button (modifica, sposta, cancella)
@@ -1284,6 +1301,46 @@ function showGFNearDay(dayIndex) {
   });
 }
 window.showGFNearDay = showGFNearDay;
+
+// ── Flow "imposta base/hotel del giorno" ─────────────────────────────────
+// Prompt nome/indirizzo → geocoding Nominatim live (nessun dato scritto a
+// mano) → conferma col nome risolto → salva; opzione "applica a tutti i
+// giorni" perché nella maggior parte dei viaggi la base cambia poco.
+async function setDayBaseFlow(dayIndex) {
+  const ask = window.modalPrompt || ((m, o) => Promise.resolve(prompt(m, o?.defaultValue || '')));
+  const confirmFn = window.modalConfirm || ((m) => Promise.resolve(confirm(m)));
+  const current = window.ITINERARY?.getDayBase?.(dayIndex);
+
+  const q = await ask('Hotel/indirizzo della base (es. "APA Hotel Shinjuku"):', { defaultValue: current?.name || '' });
+  if (!q || !q.trim()) return;
+
+  window.toast?.('🔎 Cerco la posizione…');
+  let results;
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?' + new URLSearchParams({ q: q.trim(), format: 'json', limit: 1 });
+    results = await (await fetch(url)).json();
+  } catch (_) { window.toast?.('❌ Geocoding non raggiungibile, riprova'); return; }
+  if (!Array.isArray(results) || !results.length) {
+    window.toast?.('❌ Posizione non trovata — prova con un indirizzo più specifico');
+    return;
+  }
+  const hit = results[0];
+  const shortName = q.trim().slice(0, 60);
+  const ok = await confirmFn(`Trovato: ${hit.display_name}\n\nUsare come base del giorno ${dayIndex + 1}?`);
+  if (!ok) return;
+
+  const base = { name: shortName, lat: parseFloat(hit.lat), lng: parseFloat(hit.lon) };
+  window.ITINERARY.setDayBase(dayIndex, base);
+
+  const allDays = await confirmFn('Applicare la stessa base a TUTTI i giorni del viaggio?');
+  if (allDays) {
+    const n = Object.keys(window.state?.itineraryByDay || {}).length;
+    for (let i = 0; i < n; i++) window.ITINERARY.setDayBase(i, base);
+  }
+  window.toast?.(`🏨 Base impostata: ${shortName}`);
+  renderItineraryUnified();
+}
+window.setDayBaseFlow = setDayBaseFlow;
 
 // Expose to window
 window.renderItineraryUnified = renderItineraryUnified;

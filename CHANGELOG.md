@@ -1,6 +1,14 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.16 — Roadmap qualità: cache PWA, GF nel planner, riscontri celiaco-critici, GF globale, test veri (2026-07-04, Attuale)
+## v3.17 — Fix vero lag chiusura card + base/hotel del giorno (2026-07-04, Attuale)
+
+### 🔧 Lag chiusura card (causa radice, finalmente)
+L'animazione di uscita **non era mai esistita**: `.y2k-win-closing` riusava la stessa keyframe dell'entrata (`m-sheet-up reverse`) — ma un'animazione con lo stesso nome non riparte mai (per CSS è già completata sull'elemento). La card restava congelata finché il timer di sicurezza non la rimuoveva: il freeze segnalato più volte. In più `transform: none !important` sulla base bloccava anche lo slide di ENTRATA (un transform `!important` vince sulle keyframes), e il pannello aveva un `backdrop-filter` ridondante (la mappa sotto è già sfocata) ricalcolato ad ogni frame su 88vh. Fix: keyframe di uscita dedicata (`l-sheet-down` mobile, `l-modal-out` desktop), via i transform `!important`, via il blur del pannello (sfondo quasi opaco `--l-glass-strong`). Misurato in foreground: uscita 9→218ms con slide reale.
+
+### ✨ Planner: base/hotel del giorno (punto 1 roadmap planner)
+La giornata reale parte dall'alloggio, non dalla prima tappa. Nuovo per ogni giorno: "🏨 Imposta base/hotel" → geocoding live Nominatim (nessun dato scritto a mano) → opzione "applica a tutti i giorni". "Ottimizza il giro" ora usa la base come punto di partenza del nearest-neighbor. Invariante nel test (`dayBaseSeed`).
+
+## v3.16 — Roadmap qualità: cache PWA, GF nel planner, riscontri celiaco-critici, GF globale, test veri (2026-07-04)
 
 Sei interventi in un giro solo (punti 1-6 della roadmap concordata):
 

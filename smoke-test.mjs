@@ -335,6 +335,22 @@ R.checks.gfNearDay = await page.evaluate(async () => {
   } catch (e) { return { error: e.message }; }
 });
 
+R.checks.dayBaseSeed = await page.evaluate(() => {
+  try {
+    // optimizeDay parte dalla base del giorno (hotel) se impostata
+    window.state.itineraryByDay[7] = [];
+    window.ITINERARY.addPOIToDay('_w', 'Ovest', 7, '09:00', 60, '', 0, 'altro', 35.68, 139.60);
+    window.ITINERARY.addPOIToDay('_c', 'Centro', 7, '10:00', 60, '', 0, 'altro', 35.68, 139.70);
+    window.ITINERARY.addPOIToDay('_e', 'Est', 7, '11:00', 60, '', 0, 'altro', 35.68, 139.80);
+    window.ITINERARY.setDayBase(7, { name: 'H', lat: 35.68, lng: 139.82 });
+    window.ITINERARY.optimizeDay(7);
+    const first = window.state.itineraryByDay[7][0]?.poi_name;
+    window.ITINERARY.clearDayBase(7);
+    window.state.itineraryByDay[7] = [];
+    return { first, ok: first === 'Est' };
+  } catch (e) { return { error: e.message }; }
+});
+
 R.checks.gfCrowdDetails = await page.evaluate(() => {
   try {
     const rep = window.GFCrowd.addReport('_smokepoi', 'X', 'safe', '', { sepKitchen: 'yes', staffAware: 'no' });

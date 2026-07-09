@@ -290,6 +290,26 @@ const ITINERARY_SYSTEM = {
    * Le coordinate si leggono dall'entry o, in fallback, da allPOIs(). Le tappe
    * senza coordinate restano in coda.
    */
+  // ── Base del giorno (hotel/alloggio) ──────────────────────────────────
+  // La giornata reale parte dall'alloggio, non dalla prima tappa: la base è
+  // il seed del nearest-neighbor in optimizeDay. Storage: state.dayBases.
+  setDayBase(dayIdx, base) {
+    if (!window.state) return false;
+    if (!window.state.dayBases || typeof window.state.dayBases !== 'object') window.state.dayBases = {};
+    if (!base || typeof base.lat !== 'number' || typeof base.lng !== 'number') return false;
+    window.state.dayBases[dayIdx] = { name: String(base.name || 'Base').slice(0, 60), lat: base.lat, lng: base.lng };
+    window.saveState?.();
+    return true;
+  },
+
+  clearDayBase(dayIdx) {
+    if (window.state?.dayBases) { delete window.state.dayBases[dayIdx]; window.saveState?.(); }
+  },
+
+  getDayBase(dayIdx) {
+    return window.state?.dayBases?.[dayIdx] || null;
+  },
+
   optimizeDay(dayIdx) {
     const day = window.state?.itineraryByDay?.[dayIdx];
     if (!day || day.length < 3) return false;
@@ -305,9 +325,24 @@ const ITINERARY_SYSTEM = {
     const withoutCoords = day.filter(e => !coordOf(e));
     if (withCoords.length < 2) return false;
 
-    // Nearest-neighbor partendo dalla prima tappa
-    const remaining = withCoords.slice(1);
-    const ordered = [withCoords[0]];
+    // Nearest-neighbor. Seed: la base del giorno (hotel) se impostata —
+    // il giro reale parte da lì — altrimenti la prima tappa.
+    const base = this.getDayBase(dayIdx);
+    let remaining, ordered;
+    if (base) {
+      remaining = withCoords.slice();
+      ordered = [];
+      let bi = 0, bd = Infinity;
+      remaining.forEach((e, i) => {
+        const c = coordOf(e);
+        const d = R.estimateDistanceHaversine(base.lat, base.lng, c[0], c[1]);
+        if (d < bd) { bd = d; bi = i; }
+      });
+      ordered.push(remaining.splice(bi, 1)[0]);
+    } else {
+      remaining = withCoords.slice(1);
+      ordered = [withCoords[0]];
+    }
     while (remaining.length) {
       const last = coordOf(ordered[ordered.length - 1]);
       let bi = 0, bd = Infinity;
