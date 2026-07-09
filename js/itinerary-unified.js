@@ -206,7 +206,8 @@ function renderItineraryUnified() {
       <div class="itinerary-day-accordion" style="margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid var(--l-hair);box-shadow:0 2px 8px rgba(0,0,0,0.06)">
         <button class="itinerary-day-header" data-day="${dayIndex}" style="
           width:100%;
-          padding:14px 16px;
+          padding:16px 18px;
+          line-height:1.5;
           background:linear-gradient(90deg, rgba(74,124,89,0.16), rgba(255,107,53,0.08));
           border:none;
           border-bottom:1px solid var(--l-hair);
@@ -384,7 +385,7 @@ function renderItineraryUnified() {
            invece di wrap, titolo su riga propria (mai in competizione con i
            bottoni per lo spazio). -->
       <div>
-        <h3 style="font-size:16px;font-weight:700;color:var(--l-ink);margin:0 0 8px 0;">📅 Il Tuo Itinerario</h3>
+        <h3 style="font-size:16px;font-weight:700;color:var(--l-ink);margin:0 0 8px 0;line-height:1.5;">📅 Il Tuo Itinerario</h3>
         <div style="display:flex;gap:6px;margin:0 0 12px 0;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;">
             ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="flex-shrink:0;padding:6px 12px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:20px;color:var(--l-muted);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;" title="Riorganizza per zone geografiche">🧭 Ottimizza</button>` : ''}
             <button onclick="window.loadScript('./js/itinerary-suggest.js').then(()=>window.openItinerarySuggest?.())" style="flex-shrink:0;padding:6px 12px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:20px;color:var(--l-muted);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;" title="Suggerimenti POI da aggiungere">✨ Suggerimenti</button>

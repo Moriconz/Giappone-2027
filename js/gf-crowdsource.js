@@ -168,8 +168,8 @@
       </div>`;
 
     return `
-      <div style="background:rgba(74,91,168,0.06);border:1.5px solid rgba(20,30,60,0.1);border-radius:14px;padding:14px;margin:8px 16px 16px;">
-        <h3 style="margin:0 0 4px 0;color:var(--l-ink);font-size:16px;font-weight:700;">🤝 ${T('gfc.title', 'Riscontri del gruppo')}</h3>
+      <div style="background:rgba(74,91,168,0.06);border:1.5px solid rgba(20,30,60,0.1);border-radius:14px;padding:16px;margin:8px 16px 16px;">
+        <h3 style="margin:0 0 4px 0;color:var(--l-ink);font-size:16px;font-weight:700;line-height:1.5;">🤝 ${T('gfc.title', 'Riscontri del gruppo')}</h3>
         <p style="margin:0 0 10px 0;font-size:13px;color:var(--l-faint);">${inGroup ? T('gfc.subIn', 'Condivisi con il tuo gruppo') : T('gfc.subOut', 'Salvati in locale (unisciti a un gruppo per condividerli)')}</p>
         ${lastVerified}
         ${summaryChips}
@@ -221,7 +221,7 @@
         </div>
       </div>`;
     return `
-      <div style="background:rgba(74,91,168,0.06);border:1.5px solid rgba(76,175,80,0.35);border-radius:14px;padding:14px;margin:8px 16px 16px;">
+      <div style="background:rgba(74,91,168,0.06);border:1.5px solid rgba(76,175,80,0.35);border-radius:14px;padding:16px;margin:8px 16px 16px;">
         <h3 style="margin:0;color:var(--l-ink);font-size:16px;font-weight:700;">✅ ${T('gfc.safeTitle', 'Confermi GF safe — due dettagli utili')}</h3>
         ${q('sepKitchen', '🔪 ' + T('gfc.qKitchen', 'Preparazione/cucina separata dal glutine?'))}
         ${q('staffAware', '🗣 ' + T('gfc.qStaff', 'Staff consapevole della celiachia?'))}

@@ -1,6 +1,12 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.24 — Trovata la causa vera dei padding stretti in tutta l'app (2026-07-04, Attuale)
+## v3.25 — Righe con emoji ancora strette dopo v3.24: padding + line-height (2026-07-04, Attuale)
+
+L'utente ha segnalato con screenshot puntuali che 4 zone (riscontri gruppo, titolo itinerario, header giorno, widget calendario) restavano strette anche dopo il fix della regola CSS in v3.24. Causa: quei padding erano SEMPRE stati genuinamente stretti nel sorgente (14px, 9px 12px) — non un secondo bug nascosto, solo valori piccoli — più `line-height` di default che lascia poco margine verticale ai glifi emoji (che spesso hanno un bounding box diverso dal testo).
+
+Bump mirato sulle 4 zone: card riscontri gruppo e widget calendario 14px→16px, riga bottone hint calendario 9px 12px→12px 14px, header giorno itinerario 14px 16px→16px 18px, `line-height:1.5` sui titoli con emoji in testa.
+
+## v3.24 — Trovata la causa vera dei padding stretti in tutta l'app (2026-07-04)
 
 Segnalato dall'utente: padding troppo stretti su container di testo/immagini. Non erano 150 valori scollegati da sistemare uno per uno — una singola regola in `css/legacy-skin.css`, pensata per un solo pannello (il gruppo), aveva un selettore troppo largo: `.y2k-win-body div[style*="border"]`. "Qualunque div con la parola border nello style inline" intercetta di fatto **quasi ogni card dell'app** (praticamente tutte hanno un bordo inline) e forzava 8px 10px con `!important`, indipendentemente dal padding reale scelto da ogni componente (es. `budget-summary` diceva 12px 14px nel sorgente, ne applicava 8px 10px). Stessa famiglia di bug dei 3 "appiattitori" bottoni rimossi in v3.15 — stavolta sui container invece che sui bottoni.
 

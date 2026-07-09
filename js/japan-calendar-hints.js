@@ -316,7 +316,7 @@
           data-jpcal-id="${_esc(h.id)}"
           style="
             display:flex;align-items:center;gap:10px;
-            padding:9px 12px;
+            padding:12px 14px;
             background:${pal.bg};border:1.5px solid ${pal.border};border-radius:10px;
             color:${pal.fg};font-size:14px;font-weight:600;
             cursor:pointer;text-align:left;
@@ -337,10 +337,10 @@
 
     return `
       <div id="jpcal-hints-widget" style="
-        padding:14px;margin:14px 0;
+        padding:16px;margin:14px 0;
         background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:12px;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:10px;flex-wrap:wrap;">
-          <div style="font-weight:700;color:var(--l-ink);font-size:15px;">${headerLabel}</div>
+          <div style="font-weight:700;color:var(--l-ink);font-size:15px;line-height:1.5;">${headerLabel}</div>
           <div style="font-size:13px;color:var(--l-muted);">${_esc(subtitle)}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">
