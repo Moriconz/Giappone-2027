@@ -1,6 +1,13 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.28 — Doppio container: era il riskin tema su ogni <button> (2026-07-04, Attuale)
+## v3.29 — LA causa dei margini rotti in tutta l'app: `* { padding:0 !important }` (2026-07-04, Attuale)
+
+Trovata con una sonda Puppeteer (misure reali del box model, non a occhio): perfino un div sintetico con `padding:12px` inline appeso al body risultava con padding computato **0px**. In cima a `legacy-skin.css` c'era `html, body, * { margin:0 !important; padding:0 !important }` — l'asterisco con `!important` **azzerava padding e margin di ogni elemento della pagina, battendo qualunque style inline**. Ogni spaziatura visibile nell'app sopravviveva solo grazie alle ~3000 righe di regole-cerotto `div[style*="..."]` più sotto nello stesso file, che re-iniettano i valori uno per uno per substring dello style inline. Questa è la radice comune di tutta la saga spaziature (v3.24-v3.28): i componenti hanno sempre dichiarato padding/margin corretti nel sorgente, il reset li ha sempre mangiati.
+
+### 🔧 Fix
+Reset ridotto al legittimo: `html, body` + default UA dei blocchi di testo (h1-h6, p, ul, ol, figure, blockquote), **senza** `!important` — componenti e inline style possono finalmente sovrascrivere. Le regole-cerotto restano innocue (impostano valori simili agli inline che ora funzionano da soli). Misurato dopo: header giorno 16px 18px ✓, card budget 12px 14px ✓, margine tra card 14px ✓ — i valori che il sorgente ha sempre chiesto. Verificato visivamente su itinerario e dettaglio POI: trasformazione netta, nessuna regressione, smoke test verde.
+
+## v3.28 — Doppio container: era il riskin tema su ogni <button> (2026-07-04)
 
 Il fix del margine (v3.27) era giusto ma non bastava — ispezionando il box model del bottone header è emersa la causa principale: i tre file tema (modern-2026, apple-glass, liquid-light) riskinnano con `!important` **qualunque** `<button>` dentro i pannelli — sfondo pill, bordo proprio, radius 14px. Giusto per i bottoni-azione; sbagliato per i bottoni-LAYOUT come l'header dell'accordion giorni, che vive già dentro una card con bordo e radius 10px: il risultato erano due bordi arrotondati annidati — i "due container sovrapposti" segnalati tre volte.
 

@@ -56,9 +56,23 @@
 }
 
 /* ── RESET FONT + SPACING ─────────────────────────────────────────── */
-html, body, * {
-  margin: 0 !important;
-  padding: 0 !important;
+/* Reset sano. La versione precedente era `html, body, * { margin:0
+   !important; padding:0 !important }`: l'asterisco con !important azzerava
+   il padding/margin di OGNI elemento della pagina battendo qualunque style
+   inline — per questo l'app era piena di scritte/immagini attaccate ai bordi
+   nonostante i componenti dichiarassero padding corretti nel sorgente, e per
+   questo questo stesso file è pieno di regole-cerotto `div[style*="..."]`
+   che re-iniettano i valori uno per uno (restano innocue: impostano valori
+   simili agli inline che ora tornano a funzionare). Il reset legittimo è
+   solo su html/body + azzerare i default UA dei blocchi di testo, SENZA
+   !important così componenti e inline style possono sovrascrivere. */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+h1, h2, h3, h4, h5, h6, p, ul, ol, figure, blockquote {
+  margin: 0;
+  padding: 0;
 }
 
 /* EXCEPTION: Allow margin and padding on specific boxes */
