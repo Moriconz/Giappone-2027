@@ -1,6 +1,13 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.26 — Padding laterale insufficiente su tutti i pannelli (2026-07-04, Attuale)
+## v3.27 — "Due container sovrapposti": margine nativo dei bottoni mai azzerato (2026-07-04, Attuale)
+
+L'utente ha notato con uno screenshot ravvicinato l'indizio decisivo: sembravano "due container uno sopra l'altro" attorno all'icona del giorno. Aveva ragione — letteralmente due box. Causa: **nessun file in tutto il progetto azzerava il margine nativo di `<button>`/`<input>`/`<select>`/`<textarea>`**. Il margine di default del browser su un bottone dentro un contenitore con bordo (accordion giorni, card POI, chip, praticamente ogni bottone dell'app) crea un gap visibile tra il bottone e il suo wrapper — letto per l'appunto come due caselle sovrapposte invece di una sola.
+
+### 🔧 Fix
+`css/base.css`: `button, input, select, textarea { margin: 0; }` — reset standard, mai stato presente. Misurato prima/dopo: margine bottone header giorno passato da un valore non nullo a `0px`, gap residuo tra bottone e card ridotto a 1px (solo il bordo della card, corretto). Sistemico: risolve lo stesso artefatto su ogni bottone dell'app, non solo sull'header dei giorni dove è stato notato per primo.
+
+## v3.26 — Padding laterale insufficiente su tutti i pannelli (2026-07-04)
 
 Precisazione dell'utente su v3.25: non era altezza/line-height, era il **padding laterale** — contenuti senza card wrapper (titoli, righe bottoni) restavano attaccati al bordo sinistro/destro del pannello.
 

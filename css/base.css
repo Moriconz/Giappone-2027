@@ -2,6 +2,17 @@
    base.css — stili estratti dai blocchi <style> inline di index.html
    (caricato PRIMA di modern-2026.css, che ne sovrascrive la pelle)
    ============================================================ */
+
+/* Reset margine nativo dei form control: senza questo, ogni <button>
+   dentro un contenitore con bordo/radius (accordion giorni, card POI, chip)
+   mostra un gap visibile tra il bottone e il contenitore che lo avvolge —
+   letto come "due container sovrapposti". Nessun file in tutto il progetto
+   azzerava questo margine: bug sistemico su ogni bottone dell'app, non
+   solo sull'header dei giorni dove è stato notato per primo. */
+button, input, select, textarea {
+  margin: 0;
+}
+
   /* EXCLUDE MAP AND CRITICAL ELEMENTS FROM GLASSMORPHISM */
   #map,
   canvas,
