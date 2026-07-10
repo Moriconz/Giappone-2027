@@ -15,6 +15,12 @@
   'use strict';
   const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
   const _esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // Per valori dentro onclick="fn('...')": _esc() da solo non basta, l'HTML
+  // decodifica le entity dell'attributo prima che il JS venga eseguito. Gli
+  // id sono generati internamente ma un peer malevolo può spedire una entry
+  // con un id arbitrario via MQTT (receive() la accetta senza validare il
+  // formato) — vettore reale, non solo teorico.
+  const _escJs = (s) => _esc(String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
   const _me = () => window.state?.group?.myName || null;
   const _yen = (n) => '¥' + Math.round(n).toLocaleString('it-IT');
 
@@ -146,7 +152,7 @@
           <div style="color:var(--l-muted);font-size:13px;">${T('exp.paidBy', 'pagato da')} ${_esc(e.paidBy)} · ${T('exp.splitN', 'diviso tra')} ${e.splitAmong.length}</div>
         </div>
         <div style="color:var(--l-ink);font-weight:700;font-size:16px;">${_yen(e.amount)}</div>
-        ${(e.by === me || e.paidBy === me) ? `<button onclick="window.GroupExpenses.remove('${_esc(e.id)}')" style="background:none;border:none;color:var(--l-faint);cursor:pointer;font-size:16px;padding:4px;">🗑️</button>` : ''}
+        ${(e.by === me || e.paidBy === me) ? `<button onclick="window.GroupExpenses.remove('${_escJs(e.id)}')" style="background:none;border:none;color:var(--l-faint);cursor:pointer;font-size:16px;padding:4px;">🗑️</button>` : ''}
       </div>`).join('');
 
     const html = `

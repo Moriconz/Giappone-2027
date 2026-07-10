@@ -32,6 +32,18 @@ function escapeHtml(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// Avatar (nome, URL, base64) arrivano da peer via MQTT (broker pubblico, zero
+// validazione lato server) e finiscono in src="${...}" in più punti
+// (group-chat.js, group-panel.js, live-presence.js). Un controllo di solo
+// prefisso ("https://...") non basta: un value tipo 'https://x/a.png"
+// onerror="...' passa il check ma rompe comunque l'attributo. Centralizzato
+// qui invece di re-implementare (o dimenticare) il controllo in ogni file.
+function sanitizeAvatarUrl(value) {
+  if (typeof value !== 'string') return null;
+  if (!(value.startsWith('data:image/') || value.startsWith('http://') || value.startsWith('https://'))) return null;
+  return escapeHtml(value);
+}
+
 function formatAIReply(text) {
   // Basic markdown → HTML: **bold**, bullet lines, newlines
   return escapeHtml(text)
@@ -224,6 +236,7 @@ function modalAlert(message, opts = {}) {
 
 window.renderAIChat = renderAIChat;
 window.escapeHtml = escapeHtml;
+window.sanitizeAvatarUrl = sanitizeAvatarUrl;
 window.formatAIReply = formatAIReply;
 window.modalConfirm = modalConfirm;
 window.modalPrompt = modalPrompt;

@@ -414,6 +414,25 @@
     window.openSheet(label, html);
   }
 
+  // Pannello standalone da menu ("📅 Calendario Giappone") — stessi dati e
+  // stessa card di renderHintsHTML (embedded nell'itinerario), ma sempre
+  // apribile: se non ci sono eventi nelle date del viaggio mostra un empty
+  // state invece di restare vuoto o nascondersi come fa il widget inline.
+  function openPanel() {
+    if (typeof window.openSheet !== 'function') return;
+    const { start, end } = getTripDateRange();
+    const hints = getHintsForRange(start, end);
+    if (!hints.length) {
+      window.openSheet(T('jpcal.title', '📅 Calendario giapponese'), `
+        <div style="padding:24px 16px;text-align:center;">
+          <div style="font-size:36px;margin-bottom:10px;">📅</div>
+          <p style="color:var(--l-muted);font-size:14px;margin:0;">${T('jpcal.empty', 'Nessun evento rilevante nelle date del tuo viaggio')} (${_fmtDateRange(start, end)}).</p>
+        </div>`);
+      return;
+    }
+    window.openSheet(T('jpcal.title', '📅 Calendario giapponese'), renderHintsHTML());
+  }
+
   // Click delegation per i bottoni hint
   function _installClickListener() {
     if (window.__jpcalListenerInstalled) return;
@@ -439,6 +458,7 @@
     getHintsForRange,
     renderHintsHTML,
     openDetailPanel,
+    openPanel,
     getTripDateRange,
     syncGlobalHolidays,
     getAvailableCountries,

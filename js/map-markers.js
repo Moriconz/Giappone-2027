@@ -174,7 +174,7 @@
           background: linear-gradient(180deg, rgba(10,8,5,0.85), rgba(15,12,8,0.85));
           backdrop-filter: blur(3px); display: flex; flex-direction: column;
           align-items: center; justify-content: center;
-          z-index: 100; padding: 20px; border-radius: 12px; pointer-events: none;
+          z-index: 100; padding: 20px 20px 200px 20px; border-radius: 12px; pointer-events: none;
         `;
         overlay.innerHTML = `
           <div style="text-align: center; pointer-events: auto;">

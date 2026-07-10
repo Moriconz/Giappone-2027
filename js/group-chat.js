@@ -268,7 +268,7 @@ window.groupChat = (() => {
       const messageFrom = msg?.from || 'Anonimo';
       const messageText = msg?.text || '';
       const messageTime = msg?.timestamp ? new Date(msg.timestamp) : new Date();
-      const avatar = isValidAvatarString(msg?.avatar) ? msg.avatar : null;
+      const avatar = window.sanitizeAvatarUrl ? window.sanitizeAvatarUrl(msg?.avatar) : null;
       const isOwn = myPeerId ? msg.fromPeerId === myPeerId : messageFrom === group?.myName;
       const time = messageTime.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
       const senderColor = getColorForName(messageFrom);

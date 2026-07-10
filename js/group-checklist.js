@@ -15,6 +15,12 @@
   'use strict';
   const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
   const _esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // Per valori dentro onclick="fn('...')": _esc() da solo non basta, l'HTML
+  // decodifica le entity dell'attributo prima che il JS venga eseguito. Gli
+  // id sono generati internamente ma un peer malevolo può spedire un item
+  // con un id arbitrario via MQTT (receive() lo accetta senza validare il
+  // formato) — vettore reale, non solo teorico.
+  const _escJs = (s) => _esc(String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
   const _me = () => window.state?.group?.myName || 'io';
 
   // Preset GF-centrici suggeriti al primo avvio
@@ -107,13 +113,13 @@
 
     const rows = items.map(it => `
       <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(20,30,60,0.03);border:1px solid rgba(20,30,60,0.08);border-radius:9px;margin-bottom:6px;">
-        <button onclick="window.GroupChecklist.toggle('${_esc(it.id)}')" style="flex-shrink:0;width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
+        <button onclick="window.GroupChecklist.toggle('${_escJs(it.id)}')" style="flex-shrink:0;width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
           background:${it.done ? 'rgba(22,163,74,0.18)' : 'rgba(20,30,60,0.05)'};border:1.5px solid ${it.done ? 'rgba(22,163,74,0.6)' : 'rgba(20,30,60,0.2)'};color:${it.done ? '#16a34a' : 'var(--l-ink)'};">${it.done ? '✓' : ''}</button>
         <div style="flex:1;min-width:0;">
           <div style="color:var(--l-ink);font-size:15px;${it.done ? 'text-decoration:line-through;opacity:0.55;' : ''}">${_esc(it.text)}</div>
           ${it.done && it.doneBy ? `<div style="font-size:12px;color:var(--l-faint);">${T('ck.doneBy', 'fatto da')} ${_esc(it.doneBy)}</div>` : ''}
         </div>
-        <button onclick="window.GroupChecklist.remove('${_esc(it.id)}')" style="background:none;border:none;color:var(--l-faint);cursor:pointer;font-size:15px;padding:4px;">🗑️</button>
+        <button onclick="window.GroupChecklist.remove('${_escJs(it.id)}')" style="background:none;border:none;color:var(--l-faint);cursor:pointer;font-size:15px;padding:4px;">🗑️</button>
       </div>`).join('');
 
     const html = `

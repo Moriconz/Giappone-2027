@@ -22,9 +22,11 @@ class PhotoGallery {
     }
 
     const galleryId = `gallery-${Date.now()}`;
+    const esc = window.escapeHtml || (s => String(s ?? ''));
     const photoUrls = this.photos
       .map(p => p.url || p)
-      .filter(url => url && typeof url === 'string');
+      .filter(url => url && typeof url === 'string')
+      .map(esc);
 
     if (photoUrls.length === 0) {
       return this.renderEmpty();

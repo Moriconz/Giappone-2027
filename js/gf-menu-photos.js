@@ -13,6 +13,10 @@
   'use strict';
   const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
   const _esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // Per valori dentro onclick="fn('...')": _esc() da solo non basta, l'HTML
+  // decodifica le entity dell'attributo prima che il JS venga eseguito (vedi
+  // stesso fix in gf-crowdsource.js). Escape JS-string prima, poi HTML sopra.
+  const _escJs = (s) => _esc(String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
   const _me = () => window.state?.group?.myName || 'io';
 
   function _db() {
@@ -123,18 +127,18 @@
       <div style="position:relative;flex-shrink:0;">
         <img src="${ph.data}" onclick="window.__gfMenuLightbox(this.src)" style="width:74px;height:90px;object-fit:cover;border-radius:8px;border:1px solid rgba(20,30,60,0.15);cursor:pointer;" />
         <div style="font-size:11px;color:var(--l-faint);text-align:center;margin-top:2px;">${_esc(ph.by)}</div>
-        ${ph.by === me ? `<button onclick="window.GFMenuPhotos.remove('${_esc(poiId)}','${ph.id}')" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:13px;cursor:pointer;line-height:1;">×</button>` : ''}
+        ${ph.by === me ? `<button onclick="window.GFMenuPhotos.remove('${_escJs(poiId)}','${_escJs(ph.id)}')" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:13px;cursor:pointer;line-height:1;">×</button>` : ''}
       </div>`).join('');
 
     const analyzeBtn = photos.length
-      ? `<button onclick="window.GFMenuPhotos.analyzePhotoForPoi('${_esc(poiId)}','${_esc(poiName)}')" style="width:100%;padding:10px;margin-top:8px;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.16);border-radius:8px;color:var(--l-ink);font-size:15px;font-weight:700;cursor:pointer;">🤖 ${T('gfm.analyze', 'Analizza con AI')}</button>`
+      ? `<button onclick="window.GFMenuPhotos.analyzePhotoForPoi('${_escJs(poiId)}','${_escJs(poiName)}')" style="width:100%;padding:10px;margin-top:8px;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.16);border-radius:8px;color:var(--l-ink);font-size:15px;font-weight:700;cursor:pointer;">🤖 ${T('gfm.analyze', 'Analizza con AI')}</button>`
       : '';
 
     el.innerHTML = `
       <div style="margin-top:6px;padding:14px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.3);border-radius:12px;">
         <div style="font-size:15px;font-weight:700;color:#16a34a;margin-bottom:10px;">📷 ${T('gfm.title', 'Foto menù GF del gruppo')}</div>
         ${photos.length ? `<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;">${thumbs}</div>` : `<div style="font-size:14px;color:var(--l-muted);margin-bottom:10px;">${T('gfm.empty', 'Nessuna foto. Fotografa il menù gluten-free per il gruppo.')}</div>`}
-        <button onclick="window.GFMenuPhotos.captureForPoi('${_esc(poiId)}','${_esc(poiName)}')" style="width:100%;padding:10px;background:rgba(74,222,128,0.18);border:1.5px solid rgba(74,222,128,0.45);border-radius:8px;color:#166534;font-size:15px;font-weight:700;cursor:pointer;">📷 ${T('gfm.add', 'Aggiungi foto menù')}</button>
+        <button onclick="window.GFMenuPhotos.captureForPoi('${_escJs(poiId)}','${_escJs(poiName)}')" style="width:100%;padding:10px;background:rgba(74,222,128,0.18);border:1.5px solid rgba(74,222,128,0.45);border-radius:8px;color:#166534;font-size:15px;font-weight:700;cursor:pointer;">📷 ${T('gfm.add', 'Aggiungi foto menù')}</button>
         ${analyzeBtn}
         <div id="gfm-ai-${_esc(poiId)}"></div>
       </div>`;
@@ -182,8 +186,8 @@
     // generato dall'AI (nomi piatti), più a rischio di contenere apostrofi
     // che romperebbero la stringa JS inline — l'attributo evita il problema.
     const cta = risky.length
-      ? `<button data-summary="${_esc(aiSummary)}" onclick="window.GFCrowd.promptNote('${_esc(poiId)}','${_esc(poiName)}',this.dataset.summary,'warning')" style="width:100%;margin-top:10px;padding:9px;background:rgba(255,180,80,0.18);border:1.5px solid rgba(255,180,80,0.45);border-radius:8px;color:#92400e;font-size:14px;font-weight:700;cursor:pointer;">⚠️ ${T('gfm.aiWarn', 'Segnala il problema')}</button>`
-      : `<button onclick="window.GFCrowd.askSafe('${_esc(poiId)}','${_esc(poiName)}')" style="width:100%;margin-top:10px;padding:9px;background:rgba(76,175,80,0.22);border:1.5px solid rgba(76,175,80,0.5);border-radius:8px;color:#166534;font-size:14px;font-weight:700;cursor:pointer;">✅ ${T('gfm.aiSafe', 'Sembra sicuro — conferma dettagli')}</button>`;
+      ? `<button data-summary="${_esc(aiSummary)}" onclick="window.GFCrowd.promptNote('${_escJs(poiId)}','${_escJs(poiName)}',this.dataset.summary,'warning')" style="width:100%;margin-top:10px;padding:9px;background:rgba(255,180,80,0.18);border:1.5px solid rgba(255,180,80,0.45);border-radius:8px;color:#92400e;font-size:14px;font-weight:700;cursor:pointer;">⚠️ ${T('gfm.aiWarn', 'Segnala il problema')}</button>`
+      : `<button onclick="window.GFCrowd.askSafe('${_escJs(poiId)}','${_escJs(poiName)}')" style="width:100%;margin-top:10px;padding:9px;background:rgba(76,175,80,0.22);border:1.5px solid rgba(76,175,80,0.5);border-radius:8px;color:#166534;font-size:14px;font-weight:700;cursor:pointer;">✅ ${T('gfm.aiSafe', 'Sembra sicuro — conferma dettagli')}</button>`;
 
     box.innerHTML = `
       <div style="margin-top:10px;padding:10px;background:rgba(20,30,60,0.04);border-radius:10px;">

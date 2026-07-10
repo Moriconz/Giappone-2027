@@ -39,8 +39,9 @@ window.groupPanel = (() => {
       return `<span style="color:#dc2626;font-weight:700">🔴 Non connesso</span>`;
     })();
     const membersList = members.map(m => {
-      const avatarHtml = m.avatar ? `
-        <img src="${m.avatar}" loading="lazy" decoding="async" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--primary);" />
+      const safeAvatar = window.sanitizeAvatarUrl ? window.sanitizeAvatarUrl(m.avatar) : null;
+      const avatarHtml = safeAvatar ? `
+        <img src="${safeAvatar}" loading="lazy" decoding="async" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--primary);" />
       ` : `
         <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
           ${escapeHtml((m.name || '?').charAt(0).toUpperCase())}

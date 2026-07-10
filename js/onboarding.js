@@ -196,11 +196,24 @@ function closeOnboardingChoiceModal() {
 }
 
 /**
- * Skip onboarding and go directly to map
+ * Skip onboarding and go directly to the group join flow
  */
 function skipOnboarding() {
-  console.log('[Onboarding] Skipped - going directly to map');
-  // Just close the choice modal, the app will load the map by default
+  console.log('[Onboarding] Skipped - opening group join flow');
+  // ponytail bugfix: prima non salvava nulla — initOnboarding() ritrovava
+  // 'tripProfile' assente ad ogni riavvio e riproponeva il modale di scelta
+  // all'infinito, e "Partecipare a un viaggio" non portava a nessuna UI di
+  // adesione reale (verificato: nessun listener oltre alla chiusura del
+  // modal). Marcatore minimo di completamento (stesso schema di
+  // showOnboarding più sotto) + apertura diretta di "Gruppo", che ha già un
+  // flusso "Entra Esistente" funzionante — non serve inventarne uno nuovo.
+  const tripProfile = { days: 8, joinedViaGroup: true, created_at: new Date().toISOString() };
+  localStorage.setItem('tripProfile', JSON.stringify(tripProfile));
+  if (window.state) {
+    window.state.tripProfile = tripProfile;
+    window.saveState?.();
+  }
+  setTimeout(() => window.renderGroupView?.(), 300);
 }
 
 function showOnboarding() {
@@ -875,8 +888,8 @@ function initOnboardingForm() {
       groupSize: formData.get('groupSize'),
       interests: interests,
       diet: formData.get('diet'),
-      budget_daily: parseInt(formData.get('budget')) || 50000,
-      budget_total: (parseInt(formData.get('budget')) || 50000) * (parseInt(formData.get('days')) || 8),
+      budget_daily: parseInt(formData.get('budget')) || 50,
+      budget_total: (parseInt(formData.get('budget')) || 50) * (parseInt(formData.get('days')) || 8),
       created_at: new Date().toISOString(),
     };
 

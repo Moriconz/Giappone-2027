@@ -234,16 +234,17 @@ R.checks.shoppingRender = await page.evaluate(() => {
   } catch (e) { return { error: e.message }; }
 });
 
-// ── FLUSSO 14: SOS view ───────────────────────────────────────────────
-R.checks.sosRender = await page.evaluate(() => {
+// ── FLUSSO 14: SOS view (lazy-loaded, vedi js/views/sos-view.js) ──────
+R.checks.sosRender = await page.evaluate(async () => {
   try {
     window.y2kWindows?.closeAll();
-    if (typeof window.renderSosView === 'function') {
-      window.renderSosView();
+    await window.loadScript('./js/views/sos-view.js');
+    if (typeof window.renderSOSPanel === 'function') {
+      window.renderSOSPanel();
       const body = document.querySelector('.y2k-win .y2k-win-body');
       return { ok: true, hasContent: !!(body && body.textContent.trim().length > 0) };
     }
-    return { skipped: 'renderSosView not found' };
+    return { skipped: 'renderSOSPanel not found' };
   } catch (e) { return { error: e.message }; }
 });
 

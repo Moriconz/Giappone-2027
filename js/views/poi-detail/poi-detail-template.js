@@ -43,16 +43,18 @@ function renderEnhancedPoiSections(p) {
 
   // ===== REVIEWS =====
   if (details.reviews && details.reviews.length > 0) {
+    const _esc = window.escapeHtml || (s => String(s ?? ''));
     const reviewCards = details.reviews.slice(0, 3).map(review => {
       const stars = Array(review.rating).fill('⭐').join('');
+      const text = review.text || '';
       return `
         <div style="background:rgba(20,30,60,0.04);border:1px solid var(--l-hair);border-radius:10px;padding:12px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
-            <div style="font-weight:600;color:var(--l-ink);font-size:15px">${review.author}</div>
+            <div style="font-weight:600;color:var(--l-ink);font-size:15px">${_esc(review.author)}</div>
             <div style="color:#b45309;font-size:14px">${stars}</div>
           </div>
-          <div style="color:var(--l-ink);font-size:14px;line-height:1.5;margin-bottom:4px">"${review.text.substring(0, 120)}${review.text.length > 120 ? '...' : ''}"</div>
-          <div style="color:var(--l-muted);font-size:14px">${review.relativePublishTimeDescription}</div>
+          <div style="color:var(--l-ink);font-size:14px;line-height:1.5;margin-bottom:4px">"${_esc(text.substring(0, 120))}${text.length > 120 ? '...' : ''}"</div>
+          <div style="color:var(--l-muted);font-size:14px">${_esc(review.relativePublishTimeDescription)}</div>
         </div>
       `;
     }).join('');
@@ -207,10 +209,11 @@ function poiDetailHTML(p){
     photoHtml = gallery.render();
   } else {
     // Fallback se PhotoGallery non disponibile
+    const _escUrl = window.escapeHtml || (s => String(s ?? ''));
     if (p.photos && Array.isArray(p.photos) && p.photos.length > 0) {
-      photoHtml = `<img src="${p.photos[0].url}" alt="${displayName}" loading="lazy" style="width:100%;height:260px;object-fit:cover;border-radius:12px 12px 0 0;margin-bottom:16px;display:block">`;
+      photoHtml = `<img src="${_escUrl(p.photos[0].url)}" alt="${_escUrl(displayName)}" loading="lazy" style="width:100%;height:260px;object-fit:cover;border-radius:12px 12px 0 0;margin-bottom:16px;display:block">`;
     } else if (p.photo) {
-      photoHtml = `<img src="${p.photo}" alt="${displayName}" loading="lazy" style="width:100%;height:260px;object-fit:cover;border-radius:12px 12px 0 0;margin-bottom:16px;display:block">`;
+      photoHtml = `<img src="${_escUrl(p.photo)}" alt="${_escUrl(displayName)}" loading="lazy" style="width:100%;height:260px;object-fit:cover;border-radius:12px 12px 0 0;margin-bottom:16px;display:block">`;
     } else {
       photoHtml = `<div style="width:100%;height:260px;background:linear-gradient(135deg,rgba(22,163,74,.06),var(--l-accent-soft));border-radius:12px 12px 0 0;margin-bottom:16px;display:flex;align-items:center;justify-content:center;color:var(--l-muted)">📷 Foto non disponibili</div>`;
     }

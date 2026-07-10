@@ -1,5 +1,31 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.45 — Audit completo: XSS critiche, bug logici, UI mobile (2026-07-11, Attuale)
+
+Sessione di audit sistematico su richiesta esplicita ("sistema ogni bug, analizza l'app da ogni punto di vista, controlla ogni vista su mobile"). Bug hunt statico (script di cross-reference proprietario, 0 falsi negativi confermati a mano) + 3 agenti paralleli in background su prospettive diverse (sicurezza/privacy, integrità dati/sync, bug logici itinerary/onboarding) + verifica manuale nel browser reale a viewport 375×812 su Mappa, Itinerario, Gruppo, Chat, GF Guide, Budget, Meteo, Shopping.
+
+### 🔒 Sicurezza — 5 vettori XSS reali, 8 file
+Il finding più grave della sessione. Tutti confermati con test round-trip (payload → escape → HTML decode simulato → parse JS) prima e dopo il fix.
+
+- **Zero-click via MQTT pubblico** (il più critico: nessuna interazione utente richiesta, si attiva da solo): `live-presence.js` (badge presenza, refresh automatico ogni 8s), `group-chat.js` (avatar messaggi), `group-panel.js` (avatar membri) — `avatar`/`name` di un peer finivano non sanificati in `src="${...}"`/`title="${...}"` via `innerHTML`. Aggiunto `window.sanitizeAvatarUrl()` condiviso in `ui-helpers.js` (allowlist schema `data:image/`/`http(s)://` + escape) invece di re-implementare (o dimenticare) il controllo in ogni file.
+- **Contenuto di terze parti**: `poi-detail-template.js` (recensioni Google Places: autore/testo di chiunque scriva una recensione sul locale) e `poi-photo-gallery.js`/`poi-detail-template.js` (URL foto) non escapati.
+- **onclick="fn('${_esc(x)}')" — l'HTML decodifica le entity dell'attributo PRIMA che il JS venga eseguito**, quindi `_esc()` (pensato per testo visibile) non protegge una stringa usata come argomento JS dentro un attributo onclick: `&#39;` torna `'` e rompe comunque fuori dalla stringa. Trovato in `gf-crowdsource.js`, `gf-menu-photos.js` (poiName da OSM/Overpass, editabile da chiunque), `gf-wishlist.js`, `group-checklist.js`, `group-expenses.js` (id generati internamente ma un peer malevolo può spedirne uno arbitrario via MQTT, `receive()` non valida il formato). Aggiunto `_escJs()` per-file (JS-string-escape backslash+apice, poi HTML-escape sopra per il livello attributo) — non è lo stesso escape usato per il testo visibile, servono due funzioni diverse per due contesti diversi.
+
+Non toccato (fuori scope, richiede ridisegno non un fix mirato): l'entropia del codice stanza a 6 caratteri per la chiave E2EE (~30 bit, PBKDF2 150k iter — chiunque ascolti `giap2027v2/#` sul broker pubblico può tentare il crack offline); la finestra in cui un messaggio parte in chiaro se `RoomCrypto.ready()` non è ancora vero all'avvio.
+
+### 🐛 Bug logici
+- `japan-calendar-hints.js`/`views/menu-drawer.js` — `window.JapanCalendarHints.openPanel()` chiamato ma mai esportato: il bottone menu "📅 Calendario Giappone" non faceva nulla, in silenzio (`?.()` ingoia l'errore). Aggiunta `openPanel()` che riusa `renderHintsHTML()`/`getHintsForRange()` esistenti + empty state se il viaggio non tocca nessun evento.
+- `smoke-test.mjs` — check SOS testava `window.renderSosView` (mai esistito) invece di `renderSOSPanel`, e non caricava lo script lazy prima del check: skippava sempre, falso silenzio nei test.
+- `itinerary.js` (`moveToDay`) — nessun bounds-check sul giorno di destinazione, a differenza di `addPOIToDay` che auto-estende. Se `itineraryByDay` non ha ancora l'indice (es. dopo un secondo onboarding con più giorni), trascinare un POI lì lo perdeva (già rimosso dal giorno sorgente) con un `TypeError` non gestito.
+- `onboarding.js` — "Partecipare a un viaggio" non salvava nulla: il modale di benvenuto riappariva a ogni riavvio all'infinito, e il bottone non portava a nessuna UI di adesione reale (verificato: zero listener oltre alla chiusura del modale). Ora salva un marcatore minimo di completamento e apre direttamente "Gruppo", che ha già un flusso "Entra Esistente" funzionante — riusato invece di costruirne uno nuovo.
+- `onboarding.js` — fallback `budget_daily`/`budget_total` a 50000 quando il parsing del campo fallisce, ma il campo stesso è in EUR con min=10 max=500 default 50 — 1000x fuori scala (residuo di una vecchia versione in JPY). Fallback corretto a 50.
+- `js/map-markers.js` — l'empty-state "Nessun POI trovato" (overlay centrato sull'intera mappa) veniva coperto dal widget meteo fluttuante (posizione fissa bottom-left, z-index 9999) su schermi stretti: il testo "zoomare **fuori** per..." e parte del bottone "Resetta filtri" erano illeggibili. Padding asimmetrico per spostare il centro verticale del testo lontano dalla zona del widget.
+
+### 📋 Trovato dagli agenti, documentato ma non risolto in questa sessione (vedi HANDOFF)
+Race condition di merge (cancellazioni "zombie" che resuscitano tra tab), gap di migrazione schema per `bookings`/`ai`/`gpsRemoteMarkers`, `QuotaExceededError` senza retry, validazione onboarding che non riporta l'utente allo step sbagliato, wraparound orario oltre mezzanotte in `itinerary-add-wizard.js`.
+
+Verificato: script di audit proprietario (0 falsi negativi dopo 2 iterazioni di fix del parser, verificati a mano), `node --check` su 17 file, lint-i18n verde, smoke test verde 4/4 run consecutivi (1 fallimento isolato in `custom-poi.js` risultato flaky/pre-esistente, non una regressione — confermato riproducendo su baseline pulita), verifica manuale nel browser reale a 375×812 su 8 viste con dati seedati realistici.
+
 ## v3.44 — Pulizia Y2K parte 2: gli ultimi file davvero intercettati (2026-07-10, Attuale)
 
 Continuazione v3.43. Prima di toccare altro codice, ricostruita la lista **precisa** dei colori che l'override in `legacy-skin.css` (righe ~2930-3186) caccia davvero via `[style*="..."]` — non tutto ciò che "sembra Y2K" lo è: `#FF69B4`/`#2D3B7D`/`#C85C3B`/`#4A5BA8` e altri comparivano nel file ma mai dentro un selettore attributo, quindi non c'entrano con l'override. Lista reale: `#00FF88`, `#1A2560`, `#6B5EA8`, `#C8BDFF`, `#E8E0FF`, `#FF1493`, `#FFD700`, `#FFF9E6`, `#FFFDF0`, `var(--y2k-ink/muted/pink)`.

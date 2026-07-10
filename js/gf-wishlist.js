@@ -16,6 +16,12 @@
   'use strict';
   const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
   const _esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // Per valori dentro onclick="fn('...')": _esc() da solo non basta, l'HTML
+  // decodifica le entity dell'attributo prima che il JS venga eseguito. Gli
+  // id sono generati internamente ma un peer malevolo può spedire un item
+  // con un id arbitrario via MQTT (receive() li accetta senza validare il
+  // formato) — vettore reale, non solo teorico.
+  const _escJs = (s) => _esc(String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
   const _me = () => window.state?.group?.myName || null;
 
   function _db() {
@@ -150,7 +156,7 @@
       const dist = (it.lat && it.lng && window.state?.gpsCurrentLat)
         ? ' · ' + window.fmtDist?.(window.haversineKm(window.state.gpsCurrentLat, window.state.gpsCurrentLng, it.lat, it.lng)) : '';
       const btn = (choice, emoji, label, color) => `
-        <button onclick="window.GFWishlist.vote('${_esc(it.id)}','${choice}')" style="flex:1;padding:7px;border-radius:7px;cursor:pointer;font-size:14px;font-weight:700;
+        <button onclick="window.GFWishlist.vote('${_escJs(it.id)}','${choice}')" style="flex:1;padding:7px;border-radius:7px;cursor:pointer;font-size:14px;font-weight:700;
           background:${myVote === choice ? color : 'rgba(20,30,60,0.05)'};
           border:1.5px solid ${myVote === choice ? color.replace('0.35', '0.7') : 'rgba(20,30,60,0.14)'};color:${myVote === choice ? '#171b24' : 'var(--l-ink)'};">
           ${emoji} ${label} ${({ yes: t.yes, maybe: t.maybe, no: t.no })[choice] || 0}</button>`;
@@ -169,8 +175,8 @@
             ${btn('no', '👎', T('wish.no', 'No'), 'rgba(239,68,68,0.35)')}
           </div>
           <div style="display:flex;gap:6px;">
-            <button onclick="window.GFWishlist.addToItinerary('${_esc(it.id)}')" style="flex:1;padding:7px;background:rgba(255,107,53,0.2);border:1.5px solid rgba(255,107,53,0.45);border-radius:7px;color:#7a2e0e;font-size:14px;font-weight:700;cursor:pointer;">➕ ${T('wish.toItinerary', 'In itinerario')}</button>
-            ${it.proposedBy === me ? `<button onclick="window.GFWishlist.remove('${_esc(it.id)}')" style="padding:7px 12px;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.14);border-radius:7px;color:var(--l-muted);font-size:14px;cursor:pointer;">🗑️</button>` : ''}
+            <button onclick="window.GFWishlist.addToItinerary('${_escJs(it.id)}')" style="flex:1;padding:7px;background:rgba(255,107,53,0.2);border:1.5px solid rgba(255,107,53,0.45);border-radius:7px;color:#7a2e0e;font-size:14px;font-weight:700;cursor:pointer;">➕ ${T('wish.toItinerary', 'In itinerario')}</button>
+            ${it.proposedBy === me ? `<button onclick="window.GFWishlist.remove('${_escJs(it.id)}')" style="padding:7px 12px;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.14);border-radius:7px;color:var(--l-muted);font-size:14px;cursor:pointer;">🗑️</button>` : ''}
           </div>
         </div>`;
     }).join('');

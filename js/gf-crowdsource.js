@@ -110,6 +110,20 @@
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
+  // Per valori interpolati dentro onclick="fn('...')": il browser decodifica
+  // le entity HTML dell'attributo PRIMA di eseguire il JS, quindi _esc() da
+  // solo (pensato per testo visibile) non protegge qui — &#39; torna ' e
+  // rompe comunque fuori dalla stringa JS. Servono ENTRAMBI i livelli: prima
+  // l'escape da stringa-JS (backslash, poi apice) così il decode HTML
+  // restituisce un `\'` letterale che il JS legge come apice innocuo dentro
+  // la stringa; poi l'escape HTML normale (_esc) per il livello attributo
+  // (es. una `"` nel nome romperebbe onclick="..." anche senza toccare il
+  // JS). poiName arriva da OSM/Overpass, editabile da chiunque — vettore
+  // reale, non solo teorico.
+  function _escJs(s) {
+    if (s == null) return '';
+    return _esc(String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
+  }
   function _timeAgo(ts) {
     const m = Math.floor((Date.now() - ts) / 60000);
     if (m < 1) return T('gfc.now', 'ora');
@@ -159,12 +173,13 @@
     const lastVerified = lastSafe
       ? `<div style="font-size:13px;color:var(--l-faint);margin-bottom:8px;">🕐 ${T('gfc.lastVerified', 'Ultima verifica')}: ${_timeAgo(lastSafe.ts)}</div>` : '';
 
-    const pn = _esc(poiName || '');
+    const pn = _escJs(poiName || '');
+    const pidJs = _escJs(poiId);
     const actions = `
       <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-        <button onclick="window.GFCrowd.askSafe('${_esc(poiId)}','${pn}')" style="flex:1 1 auto;padding:9px 8px;white-space:nowrap;background:rgba(76,175,80,0.22);border:1.5px solid rgba(76,175,80,0.5);border-radius:7px;color:#166534;font-size:14px;font-weight:600;cursor:pointer;">✅ ${T('gfc.btnSafe', 'Safe')}</button>
-        <button onclick="window.GFCrowd.addReport('${_esc(poiId)}','${pn}','warning')" style="flex:1 1 auto;padding:9px 8px;white-space:nowrap;background:rgba(255,180,80,0.18);border:1.5px solid rgba(255,180,80,0.45);border-radius:7px;color:#92400e;font-size:14px;font-weight:600;cursor:pointer;">⚠️ ${T('gfc.btnWarn', 'Problema')}</button>
-        <button onclick="window.GFCrowd.promptNote('${_esc(poiId)}','${pn}')" style="flex:1 1 auto;padding:9px 8px;white-space:nowrap;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.16);border-radius:7px;color:var(--l-ink);font-size:14px;font-weight:600;cursor:pointer;">💬 ${T('gfc.btnNote', 'Nota')}</button>
+        <button onclick="window.GFCrowd.askSafe('${pidJs}','${pn}')" style="flex:1 1 auto;padding:9px 8px;white-space:nowrap;background:rgba(76,175,80,0.22);border:1.5px solid rgba(76,175,80,0.5);border-radius:7px;color:#166534;font-size:14px;font-weight:600;cursor:pointer;">✅ ${T('gfc.btnSafe', 'Safe')}</button>
+        <button onclick="window.GFCrowd.addReport('${pidJs}','${pn}','warning')" style="flex:1 1 auto;padding:9px 8px;white-space:nowrap;background:rgba(255,180,80,0.18);border:1.5px solid rgba(255,180,80,0.45);border-radius:7px;color:#92400e;font-size:14px;font-weight:600;cursor:pointer;">⚠️ ${T('gfc.btnWarn', 'Problema')}</button>
+        <button onclick="window.GFCrowd.promptNote('${pidJs}','${pn}')" style="flex:1 1 auto;padding:9px 8px;white-space:nowrap;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.16);border-radius:7px;color:var(--l-ink);font-size:14px;font-weight:600;cursor:pointer;">💬 ${T('gfc.btnNote', 'Nota')}</button>
       </div>`;
 
     return `
@@ -206,7 +221,7 @@
 
   function _askingHTML(poiId) {
     const a = _asking[poiId];
-    const pid = _esc(poiId);
+    const pid = _escJs(poiId);
     const chip = (field, value, label) => {
       const on = a[field] === value;
       return `<button onclick="window.GFCrowd.setSafeDetail('${pid}','${field}','${value}')" style="padding:7px 12px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid ${on ? 'rgba(76,175,80,0.6)' : 'rgba(20,30,60,0.16)'};background:${on ? 'rgba(76,175,80,0.22)' : 'rgba(20,30,60,0.04)'};color:${on ? '#166534' : 'var(--l-muted)'};">${label}</button>`;

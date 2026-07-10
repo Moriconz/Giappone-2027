@@ -236,7 +236,11 @@ const ITINERARY_SYSTEM = {
       return false;
     }
 
-    // Add to new day
+    // Add to new day. ponytail: itineraryByDay può non avere ancora l'indice
+    // toDayIndex (es. onboarding rifatto con più giorni senza mai toccare
+    // itineraryByDay già esistente) — senza questa guardia si perdeva la
+    // tappa (già rimossa dal giorno sorgente) con un TypeError non gestito.
+    if (!Array.isArray(window.state.itineraryByDay[toDayIndex])) window.state.itineraryByDay[toDayIndex] = [];
     entry.lastModified = Date.now();
     window.state.itineraryByDay[toDayIndex].push(entry);
     console.log('[Itinerary] Moved', poiId, 'from day', fromDayIndex, 'to', toDayIndex);

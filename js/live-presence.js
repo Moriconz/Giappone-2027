@@ -66,14 +66,17 @@
     _prune();
     const peers = Object.values(active[view] || {});
     if (!peers.length) return '';
+    const esc = window.escapeHtml || (s => String(s));
     const chips = peers.slice(0, 5).map(p => {
-      const init = (p.name || '?').slice(0, 2).toUpperCase();
-      const img = p.avatar
-        ? `<img src="${p.avatar}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid #16a34a;" title="${p.name}" />`
-        : `<div title="${p.name}" style="width:26px;height:26px;border-radius:50%;background:#2196F3;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid #16a34a;">${init}</div>`;
+      const name = esc(p.name || '?');
+      const init = esc((p.name || '?').slice(0, 2).toUpperCase());
+      const safeAvatar = window.sanitizeAvatarUrl ? window.sanitizeAvatarUrl(p.avatar) : null;
+      const img = safeAvatar
+        ? `<img src="${safeAvatar}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid #16a34a;" title="${name}" />`
+        : `<div title="${name}" style="width:26px;height:26px;border-radius:50%;background:#2196F3;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid #16a34a;">${init}</div>`;
       return `<div style="margin-left:-8px;">${img}</div>`;
     }).join('');
-    const label = peers.length === 1 ? `${peers[0].name} ${T('pres.one', 'sta guardando')}` : `${peers.length} ${T('pres.many', 'stanno guardando')}`;
+    const label = peers.length === 1 ? `${esc(peers[0].name)} ${T('pres.one', 'sta guardando')}` : `${peers.length} ${T('pres.many', 'stanno guardando')}`;
     return `
       <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);border-radius:10px;margin-bottom:12px;">
         <div style="display:flex;align-items:center;padding-left:8px;">${chips}</div>
