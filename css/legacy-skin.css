@@ -2364,6 +2364,18 @@ main {
   }
 }
 
+/* Padding di .section unificato (era diviso in due regole dentro media
+   query diverse, 14px sotto i 768px e 12px sotto i 480px: sopra i 768px
+   restava senza padding, e sotto i 480px il testo risultava indentato
+   più dei fratelli non-.section nello stesso pannello — es. header
+   "Negozi & Mercati" più rientrato della barra di ricerca sopra di lui
+   nella stessa finestra Shopping). Stesso valore usato dalle altre card
+   dell'app (.budget-categories, .budget-form-section): 16px, sempre. */
+.section {
+  padding: 16px !important;
+  margin: 12px 0 !important;
+}
+
 /* ══════════════════════════════════════════════════════════════════
    CONTAINER QUERIES — 2026 Standard (Responsive by Container Size)
 ══════════════════════════════════════════════════════════════════ */
@@ -2556,11 +2568,6 @@ main {
   .weather-icon,
   .weather-temps {
     font-size:15px !important;
-  }
-
-  /* ── SPACING GENERALE ────────────────────────────────────────── */
-  .section {
-    padding: 14px !important;
   }
 
   /* ── TASTO CHIUSURA SHEET ────────────────────────────────────── */
@@ -2823,12 +2830,6 @@ main {
   /* ── CARD PADDING ────────────────────────────────────────────– */
   .card, [class*="card"] {
     padding: 14px 12px !important;
-  }
-
-  /* ── SECTION PADDING ─────────────────────────────────────────– */
-  .section {
-    padding: 12px !important;
-    margin: 12px 0 !important;
   }
 
   /* ── ICON BUTTONS ────────────────────────────────────────────– */

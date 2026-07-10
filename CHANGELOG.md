@@ -1,5 +1,12 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.31 — `.section` senza padding sopra i 768px, indentato in più sotto i 480px (2026-07-10, Attuale)
+
+Segnalato dall'utente: header "🛍️ Negozi & Mercati" più rientrato della search bar nello stesso pannello Shopping. Causa: `.section` (usato da Shopping, Biglietti, GF Restaurants, Tips, Prenota, list-view) aveva il padding definito SOLO dentro due `@media` diverse in legacy-skin.css — `14px` sotto 768px, `12px` sotto 480px (quest'ultimo vince per ordine sorgente sotto i 480px, ma niente vince sopra i 768px: card senza padding). Trovato con CDP `CSS.getMatchedStylesForNode` dopo che la ricerca testuale nel CSSOM non trovava nulla (le regole erano annidate in `@media`, invisibili al mio primo giro di grep).
+
+### 🔧 Fix
+Consolidato in un'unica regola incondizionata: `.section { padding: 16px; margin: 12px 0; }`, stesso valore di `.budget-categories`/`.budget-form-section`/`.budget-expenses-section` — coerente su tutti i pannelli e tutte le larghezze schermo, non solo sotto i 480px. Verificato su Shopping (header ora allineato con search bar/tab), Biglietti, Tips Viaggio: nessuna regressione, smoke test verde.
+
 ## v3.30 — Pulizia cerotti CSS: solo 3 erano davvero morti, il resto è tema attivo (2026-07-10, Attuale)
 
 La stima di v3.29 ("~3000 righe di regole-cerotto, quasi tutte ridondanti ora") era sbagliata. Verificato riga per riga contro il JS sorgente: il file ha solo 94 righe con selettori `[style*="..."]`, e la maggior parte (il blocco "INLINE STYLE OVERRIDES — Glassmorphism", righe ~2940-3220) non è un cerotto del bug margin/padding — è un layer di reskin attivo che converte i colori Y2K (rosa/oro) ancora hardcoded inline in `budget-view.js`, `group-panel.js`, `group-poi-view.js`, `poi-detail-view.js` nel tema glass arancione dell'app. Cancellarlo avrebbe fatto riapparire i colori Y2K — una regressione visiva, non una pulizia.
