@@ -1,5 +1,16 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.43 — Colori Y2K hardcoded → variabili adattive (2026-07-10, Attuale)
+
+Continuazione HANDOFF punto 4. Dei 3 file indicati, `poi-detail-view.js` era già pulito (verificato via grep, nessun residuo — probabilmente sistemato in una sessione precedente non documentata). Sistemati gli altri 2:
+
+- `js/views/budget-view.js`: `var(--y2k-ink)`/`var(--y2k-muted)` → `var(--l-ink)`/`var(--l-muted)` (19 occorrenze), bordi/sfondi `#C8BDFF`/`#FF1493`/`#fff` hardcoded su select/input → pattern adattivo `rgba(20,30,60,0.05)` + `var(--l-hair)` già usato altrove nel codebase (es. `group-checklist.js`). **Non toccato**: i 6 colori di `EXPENSE_CATEGORIES` (righe 31-36) — verificato che sono colori semantici di categoria (i pallini legenda), non intercettati dall'override CSS (nessun selettore `div[style*="background:#FF1493"]` generico in `legacy-skin.css`, solo su bordi/testo), cambiarli avrebbe rotto la distinzione visiva tra le 6 categorie.
+- `js/group-panel.js`: 4 bottoni (undo/redo/pulisci chat/esci stanza) con palette Y2K crema/oro/navy (`#FFE5B4`/`#FFD700`/`#2D3B7D`) → pattern neutro già usato nello stesso pannello 2 blocchi sotto (bottone "Copia link invito"), bottone "Esci" con accento arancio (stessa palette di "Ottimizza il giro" in itinerary-accordion-template.js).
+
+**Non fatto, deliberatamente fuori scope**: rimuovere il blocco override in `legacy-skin.css` (righe ~2940-3220). Grep su tutto `js/`: altri 13 file emettono ancora colori Y2K via inline style (`app-core.js`, `gf-places-panel.js`, `mqtt-transport.js`, `views/weather-view.js`, `views/shopping-view.js`, `views/list-view.js`, `views/group-share-view.js`, `poi-styles.js`, `gps-tracker.js`, `itinerary-export.js`, `app-boot.js`, `debug-panel.js` + i colori categoria di `budget-view.js`) — l'override resta necessario e funzionale, come dichiarato in HANDOFF. Ripulire tutti richiederebbe lo stesso trattamento file per file; non fatto qui perché fuori dallo scope dei 3 file esplicitamente indicati.
+
+Verificato: `node --check`, lint-i18n verde, smoke test verde, più verifica visiva nel browser reale (budget view completo: header, progress bar, 6 categorie con pallini colorati distinti, form spesa) — nessuna regressione visiva in dark mode.
+
 ## v3.42 — Refactor monolite itinerary-unified.js (2026-07-10, Attuale)
 
 Stesso trattamento di poi-detail-view.js/gf-places-panel.js in v3.34: 1363 righe (il file JS più grosso del progetto) diviso in 4 moduli satellite, nessun cambio di comportamento voluto.

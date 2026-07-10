@@ -1,4 +1,4 @@
-# HANDOFF — Tabi (Giappone 2027) · 2026-07-10 (v3, fine sessione v3.30→v3.42)
+# HANDOFF — Tabi (Giappone 2027) · 2026-07-10 (v3, fine sessione v3.30→v3.43)
 
 Prompt di ripartenza per nuova chat:
 > Continua il progetto Tabi. Leggi HANDOFF.md nella root del repo. Riparti dal primo punto di "Prossimi step".
@@ -6,12 +6,12 @@ Prompt di ripartenza per nuova chat:
 ## Cos'è l'app
 **Tabi** — travel planner PWA (vanilla JS, no framework, no bundler) con layer gluten-free opzionale. Planner **globale**, non solo Giappone; il trip Giappone 2027 è il caso d'uso di partenza. Collaborativa tra amici via MQTT (broker pubblico, zero backend); serverless Vercel solo come proxy API (Google Places/Groq, quota-gated in `js/api-quota.js`). **Regola utente ferrea: nessun dato hardcoded** — tutto da fonti live o da input umano (crowdsourcing di gruppo).
 
-## Stato attuale (tutto committato, push in sospeso per v3.42 — vedi sotto)
+## Stato attuale (tutto committato e pushato)
 - Deploy: Vercel (primario, funziona) + GitHub Pages (secondaria, irrilevante). Cartella deploy sincronizzata ad ogni commit: `/Users/riccardomoricone/Documents/GitHub/Giappone-2027`.
 - Test: `smoke-test.mjs` (Puppeteer, exit code reale) + `node scripts/lint-i18n.mjs` — entrambi verdi dopo ogni modifica di questa sessione.
 - SW `giappone-2027-v10` + nuova cache `giappone-2027-tiles-v1` (v3.40, tile mappa offline).
 
-### Fatto in questa sessione (v3.30 → v3.42, dettagli in CHANGELOG.md)
+### Fatto in questa sessione (v3.30 → v3.43, dettagli in CHANGELOG.md)
 1. **Pulizia cerotti CSS** (v3.30-3.32) — solo 3 regole erano davvero morte, non ~3000: il grosso di `legacy-skin.css` è un layer di reskin Y2K→glass tuttora attivo, verificato prima di toccarlo.
 2. **Selettore paese destinazione** (v3.33) — onboarding + menu, popolato live da Nager.Date.
 3. **Refactor monoliti** (v3.34) — `poi-detail-view.js` 1768→441 righe, `gf-places-panel.js` 972→740.
@@ -23,6 +23,7 @@ Prompt di ripartenza per nuova chat:
 9. **Offline regionale** (v3.40) — tile mappa + posti GF + POI per zona, verificato con richieste di rete reali.
 10. **i18n festività + errori Groq** (v3.41) — 17 chiavi `jpcal.*` mai tradotte + 3 chiavi Groq.
 11. **Refactor `itinerary-unified.js`** (v3.42) — 1363→372 righe, 4 moduli satellite, più un bug reale trovato e corretto (`_tripStart` fuori scope in `handleExportHTML`, mai intercettato dallo smoke test).
+12. **Colori Y2K → variabili adattive** (v3.43) — `budget-view.js` e `group-panel.js` sistemati (`poi-detail-view.js` era già pulito). Scoperto un backlog più ampio: altri 13 file emettono ancora colori Y2K (vedi Prossimi step).
 
 **Lezione ricorrente della sessione**: prima di ogni fix, verificare l'ipotesi con grep/misure reali invece di fidarsi della descrizione ereditata da una sessione precedente — 3 volte questa sessione la premessa iniziale ("~3000 righe morte", "basta la foto per l'analisi AI", "il riordino risolve gli avvisi") si è rivelata sbagliata o incompleta a un controllo diretto, e la versione corretta era più piccola/diversa dal previsto.
 
@@ -38,8 +39,8 @@ Prompt di ripartenza per nuova chat:
 ## Prossimi step (in ordine di valore)
 1. **i18n completo** — ancora parziale (v3.37→v3.41). Controllati e sistemati in v3.41: festività (`japan-calendar-hints.js`, 17 chiavi mancanti dal dizionario) ed errori Groq (`gf-menu-analyzer.js`). Form GF crowdsourcing e schermi v3.38-3.40 erano già a posto. Trovato ma non toccato (fuori scope, pre-esistente): `deletePersonalItinerary`/`requestUnshare` in `itinerary-features.js` (righe ~33-93, messaggi toast + `confirmText` hardcoded). Backlog resta ampio altrove — nessun modo rapido di trovare tutte le stringhe hardcoded via grep, serve navigare l'app in EN schermata per schermata.
 2. **Refactor monoliti rimanenti** — `js/itinerary-unified.js` fatto in v3.42 (1363→372 righe, 4 moduli satellite). Prossimi candidati per dimensione: `js/onboarding.js` (913 righe), `js/views/poi-detail/poi-itinerary-wizard.js` (811, già un satellite del v3.34 ma cresciuto), `js/views/weather-view.js` (805), `js/mqtt-transport.js` (780). Nessuno è ancora confermato "monolite da spezzare" — prima di procedere verificare se la dimensione riflette davvero sezioni indipendenti estraibili o solo tanta UI coesa (non ripetere l'errore v3.30 di assumere invece di misurare).
-3. **Rimozione selettiva zone offline** — limite noto dichiarato in v3.40: oggi si può solo svuotare tutta la cache tile (`giappone-2027-tiles-v1`), non una zona singola (le tile di zone diverse possono sovrapporsi nella cache condivisa). Serve solo se la gestione spazio diventa un problema reale per gli utenti.
-4. **Colori Y2K hardcoded residui** — per accorciare davvero il blocco glassmorphism-override di `legacy-skin.css` (righe ~2940-3220, oggi funzionale non morto) serve rimuovere i colori Y2K hardcoded rimasti in `budget-view.js`/`group-panel.js`/`poi-detail-view.js` e sostituirli con classi/variabili dirette — non toccare l'override finché quei colori esistono ancora nella sorgente.
+3. **Colori Y2K residui nel resto del codebase** — v3.43 ha sistemato i 3 file originariamente indicati (`budget-view.js`, `group-panel.js`; `poi-detail-view.js` era già pulito). Grep di verifica ha trovato altri 13 file che emettono ancora colori Y2K via inline style: `app-core.js`, `app-boot.js`, `debug-panel.js`, `gf-places-panel.js`, `gps-tracker.js`, `itinerary-export.js`, `mqtt-transport.js`, `poi-styles.js`, `views/group-share-view.js`, `views/list-view.js`, `views/weather-view.js`, `views/shopping-view.js` (+ i colori categoria di `budget-view.js`, quelli restano: sono semantici, non Y2K skin). Stesso trattamento file per file finché l'elenco non è vuoto — solo allora ha senso accorciare l'override in `legacy-skin.css` (righe ~2940-3220). Attenzione: alcuni di questi potrebbero essere colori legittimi (marker GPS, categorie) come i 6 di `EXPENSE_CATEGORIES` — verificare con grep su `legacy-skin.css` se il colore è davvero intercettato da un selettore prima di "correggerlo".
+4. **Rimozione selettiva zone offline** — limite noto dichiarato in v3.40: oggi si può solo svuotare tutta la cache tile (`giappone-2027-tiles-v1`), non una zona singola (le tile di zone diverse possono sovrapporsi nella cache condivisa). Serve solo se la gestione spazio diventa un problema reale per gli utenti — probabilmente da saltare finché non richiesto.
 5. **Idee prodotto**: tutte e 3 quelle discusse in precedenza sono ora implementate (v3.38-3.40). Prossimo giro: nuove idee da discutere con l'utente, non presenti in questo file.
 
 ## Problemi noti

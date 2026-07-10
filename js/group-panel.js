@@ -106,10 +106,10 @@ window.groupPanel = (() => {
             <p style="font-size:14px;color:var(--l-muted);margin:0;padding:8px">Nessun itinerario condiviso.</p>
           </div>
           <div style="display:flex;gap:6px;margin-bottom:10px">
-            <button id="undo-group-btn" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:6px;padding:8px;font-weight:600;cursor:pointer;font-size:14px;opacity:0.6" disabled title="Annulla ultimo cambio">
+            <button id="undo-group-btn" style="flex:1;background:rgba(20,30,60,0.06);border:1.5px solid rgba(20,30,60,0.18);color:var(--l-ink);border-radius:6px;padding:8px;font-weight:600;cursor:pointer;font-size:14px;opacity:0.6" disabled title="Annulla ultimo cambio">
               ⬅️ Annulla
             </button>
-            <button id="redo-group-btn" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:6px;padding:8px;font-weight:600;cursor:pointer;font-size:14px;opacity:0.6" disabled title="Rifai ultimo cambio">
+            <button id="redo-group-btn" style="flex:1;background:rgba(20,30,60,0.06);border:1.5px solid rgba(20,30,60,0.18);color:var(--l-ink);border-radius:6px;padding:8px;font-weight:600;cursor:pointer;font-size:14px;opacity:0.6" disabled title="Rifai ultimo cambio">
               ➡️ Rifai
             </button>
           </div>
@@ -124,7 +124,7 @@ window.groupPanel = (() => {
           <button class="btn primary" id="open-group-chat" style="width:100%;margin-bottom:8px;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));border:2px solid var(--l-accent-600);color:white;border-radius:8px;padding:10px;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer;box-shadow:0 0 12px var(--l-accent-soft)">
             💬 Apri chat stanza
           </button>
-          <button class="btn" id="clear-group-chat" style="width:100%;margin-bottom:10px;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
+          <button class="btn" id="clear-group-chat" style="width:100%;margin-bottom:10px;background:rgba(20,30,60,0.06);border:1.5px solid rgba(20,30,60,0.18);color:var(--l-ink);border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
             🧹 Pulisci chat
           </button>
           <p style="font-size:13px;color:var(--l-muted);margin:0">
@@ -151,7 +151,7 @@ window.groupPanel = (() => {
               🗑️ Elimina stanza (solo creatore)
             </button>
           ` : ''}
-          <button class="btn" id="exit-room" style="width:100%;background:#FFB84D;border:2px solid #FFB84D;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer">
+          <button class="btn" id="exit-room" style="width:100%;background:rgba(255,107,53,0.14);border:1.5px solid rgba(255,107,53,0.4);color:#c2410c;border-radius:8px;padding:10px;font-weight:600;cursor:pointer">
             ❌ Esci dalla stanza
           </button>
           <p style="font-size:13px;color:var(--l-muted);margin-top:8px;margin-bottom:0">
