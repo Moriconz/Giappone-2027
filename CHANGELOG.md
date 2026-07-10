@@ -1,5 +1,17 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.35 — Audit accenti/riskin: Gruppo mai migrato al tema adattivo, Meteo a due colori (2026-07-10, Attuale)
+
+Step 4 di HANDOFF.md: stessi criteri usati su itinerario/POI/GF Guide (un accento solo, niente riskin doppi) applicati a meteo/budget/gruppo/shopping. Budget e Shopping già puliti. Due bug reali trovati e risolti in Gruppo e Meteo.
+
+### 🔧 Fix — Gruppo (`group-view.js`)
+Il form "Crea Nuova / Entra Esistente" (prima connessione) non era mai stato migrato al sistema di token adattivi di `liquid-light.css` — usava ~15 colori Y2K hardcoded (`#FFF0F8`, `#FFE5B4`, `#FFD700`, `#2D3B7D`, `#fff`, `#333`...) che in dark mode restavano chiari/pastello in mezzo a un'app tutta scura. Sostituiti con i token `--l-*`/`--m-success` già usati da altri 45+ file. Trovato anche un riskin doppio: i 6 bottoni custom del form sono `<button>` dentro `.y2k-win-body`, quindi il riskin tema generico con `!important` schiacciava il loro stato attivo/inattivo — mai notato perché "Crea Nuova" (default attivo) e "Entra Esistente" (inattivo) finivano per sembrare identici, non perché fossero giusti. Aggiunta `.btn-plain` a tutti e 6 (convenzione già in HANDOFF.md). Trovato un terzo problema più subdolo mentre verificavo il secondo: il gradient rosso di "Crea Nuova"/Connetti conteneva letteralmente la sottostringa `background:linear-gradient`, intercettata da un'altra regola di override che lo smorzava ad arancione al primo render (poi tornava rosso corretto dopo un click tab, perché lì il JS serializza lo style con uno spazio che non matcha) — flicker di colore risolto passando a `background-image:`.
+
+### 🔧 Fix — Meteo (`weather-view.js`)
+I box PRECIP./UMIDITÀ/VENTO leggevano un tint quasi invisibile (`rgba(20,30,60,0.05)`, 5% di opacità) mentre le card giorno sotto nello stesso pannello hanno arancione al 15% — non un colore sbagliato, semplicemente troppo debole per emergere dal fondo scuro dell'app, letto a occhio come "blu" per contrasto con le card arancioni accanto. Portato allo stesso arancione 15%/bordo 30% delle card giorno. Rimossi anche 3 blocchi CSS in legacy-skin.css ("WEATHER GLASSMORPHISM MASTER") che sembravano la causa ma puntavano a gradient inline che weather-view.js non genera più da anni — confermato morto via grep su tutto js/, zero match.
+
+Verificato: Gruppo con tab toggle funzionante e colori coerenti in entrambi gli stati; Meteo con pannello a un solo accento; smoke test verde.
+
 ## v3.34 — Refactor monoliti: poi-detail-view.js 1768→441 righe (2026-07-10, Attuale)
 
 Lavoro preparato in una sessione precedente (worktree isolata, non ancora mergiata) e rimasto in coda come step 3 di HANDOFF.md. Nessun cambio di comportamento, solo split meccanico — verificato: i due commit erano già stati testati con smoke test al momento in cui furono scritti, e la worktree era ferma a 19 commit dietro main (nessuno dei quali toccava questi due file), quindi cherry-pick pulito senza conflitti.

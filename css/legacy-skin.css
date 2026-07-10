@@ -3046,46 +3046,16 @@ div[style*="border:1px solid var(--success)"] {
   border: 1px solid rgba(255, 107, 53, 0.4) !important;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   WEATHER GLASSMORPHISM MASTER — All weather UI with proper glass
-   ═══════════════════════════════════════════════════════════════ */
+/* Cerotti "WEATHER GLASSMORPHISM MASTER" rimossi: targettavano vecchi
+   gradient inline (Y2K pink/gold/lilla) che weather-view.js non genera più
+   da tempo — usa già rgba() piatti su var(--l-hair). Confermato morto con
+   grep su tutto js/, zero match. Il vero "due accenti" nel pannello Meteo
+   (dettagli blu-navy vs card giorno arancioni) era altrove: i box dettaglio
+   in weather-view.js avevano solo un tint 5% quasi invisibile, mentre le
+   card giorno hanno arancione 15% via regola .weather-day — risolto dando
+   ai box dettaglio lo stesso arancione 15%, direttamente nel sorgente.
 
-/* Weather stat boxes (PRECIPITAZIONI, UMIDITÀ, VENTO) */
-div[style*="background:linear-gradient(135deg,rgba(201,76,76"],
-div[style*="background:linear-gradient(135deg,rgba(0,255,136"],
-div[style*="background:linear-gradient(135deg,rgba(255,215,0"] {
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  background: rgba(74, 91, 168, 0.12) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
-}
-
-/* Weather forecast card daily cards (LUN, MAR, MER, etc.) */
-div[style*="background:linear-gradient(135deg, #FFFDF0"],
-div[style*="background:linear-gradient(135deg, #FFF9E6"],
-div[style*="background:linear-gradient(135deg, #F0F0F5"],
-div[style*="background:linear-gradient(135deg, #E6F2FF"],
-div[style*="background:linear-gradient(135deg, #F5F7FF"],
-div[style*="background:linear-gradient(135deg, #ECECF5"] {
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  background: rgba(74, 91, 168, 0.12) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
-}
-
-/* Weather hourly cards */
-div[style*="background:linear-gradient(135deg, #F0E6FF"] {
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  background: rgba(74, 91, 168, 0.12) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
-}
-
-/* ══ WEATHER MODAL WRAPPER ════════════════════════════════════════ */
+   ══ WEATHER MODAL WRAPPER ════════════════════════════════════════ */
 .y2k-win-body > div[style*="padding:0;"] {
   background: transparent !important;
   display: flex !important;

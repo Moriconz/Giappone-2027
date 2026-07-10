@@ -626,7 +626,7 @@
     const modalHtml = `
       <div style="padding:0;">
         <!-- Header -->
-        <div style="background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border-bottom:1.5px solid var(--l-hair);padding:14px 16px;margin-bottom:16px;">
+        <div style="background:rgba(20,30,60,0.05);backdrop-filter:blur(20px);border-bottom:1.5px solid var(--l-hair);padding:14px 16px;margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div style="display:flex;align-items:center;">
@@ -649,17 +649,17 @@
 
         <!-- Details Grid -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;padding:0 16px;">
-          <div style="background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+          <div style="background:rgba(255,107,53,0.15);backdrop-filter:blur(20px);border:1.5px solid rgba(255,107,53,0.3);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
             <div style="font-size:20px;line-height:1;">💧</div>
             <div style="font-size:13px;color:var(--l-muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Precip.</div>
             <div style="font-size:22px;font-weight:800;color:var(--l-ink);font-family:'Courier New',monospace;line-height:1.1;">${precip}<span style="font-size:15px;font-weight:600;margin-left:2px;">mm</span></div>
           </div>
-          <div style="background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+          <div style="background:rgba(255,107,53,0.15);backdrop-filter:blur(20px);border:1.5px solid rgba(255,107,53,0.3);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
             <div style="font-size:20px;line-height:1;">💦</div>
             <div style="font-size:13px;color:var(--l-muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Umidità</div>
             <div style="font-size:22px;font-weight:800;color:var(--l-ink);font-family:'Courier New',monospace;line-height:1.1;">${humidity}<span style="font-size:15px;font-weight:600;margin-left:2px;">%</span></div>
           </div>
-          <div style="background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+          <div style="background:rgba(255,107,53,0.15);backdrop-filter:blur(20px);border:1.5px solid rgba(255,107,53,0.3);border-radius:12px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
             <div style="font-size:20px;line-height:1;">💨</div>
             <div style="font-size:13px;color:var(--l-muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Vento</div>
             <div style="font-size:22px;font-weight:800;color:var(--l-ink);font-family:'Courier New',monospace;line-height:1.1;">${wind}<span style="font-size:15px;font-weight:600;margin-left:2px;">km/h</span></div>
