@@ -152,6 +152,7 @@
     }
 
     showInstallModal() {
+      const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
       // Crea overlay modal
       const overlay = document.createElement('div');
       overlay.id = 'install-modal-overlay';
@@ -185,27 +186,27 @@
       let instructions = '';
       if (this.isIOS) {
         instructions = `
-          <h2 style="margin: 0 0 20px 0; font-size: 20px;">📱 Installa su iPhone</h2>
+          <h2 style="margin: 0 0 20px 0; font-size: 20px;">📱 ${T('install.iosTitle','Installa su iPhone')}</h2>
           <ol style="text-align: left; font-size: 16px; line-height: 1.8;">
-            <li>Tocca <strong>Condividi</strong> (icona freccia in basso)</li>
-            <li>Scorri e tocca <strong>"Aggiungi a Schermata Iniziale"</strong></li>
-            <li>Tocca <strong>Aggiungi</strong></li>
+            <li>${T('install.iosStep1','Tocca <strong>Condividi</strong> (icona freccia in basso)')}</li>
+            <li>${T('install.iosStep2','Scorri e tocca <strong>"Aggiungi a Schermata Iniziale"</strong>')}</li>
+            <li>${T('install.iosStep3','Tocca <strong>Aggiungi</strong>')}</li>
           </ol>
         `;
       } else if (this.isAndroid || this.isMobile) {
         instructions = `
-          <h2 style="margin: 0 0 20px 0; font-size: 20px;">📲 Installa su Android</h2>
+          <h2 style="margin: 0 0 20px 0; font-size: 20px;">📲 ${T('install.androidTitle','Installa su Android')}</h2>
           <ol style="text-align: left; font-size: 16px; line-height: 1.8;">
-            <li>Tocca il menu <strong>⋮</strong> (tre puntini in alto a destra)</li>
-            <li>Tocca <strong>"Installa app"</strong> oppure <strong>"Aggiungi a schermata iniziale"</strong></li>
-            <li>Conferma</li>
+            <li>${T('install.androidStep1','Tocca il menu <strong>⋮</strong> (tre puntini in alto a destra)')}</li>
+            <li>${T('install.androidStep2','Tocca <strong>"Installa app"</strong> oppure <strong>"Aggiungi a schermata iniziale"</strong>')}</li>
+            <li>${T('install.androidStep3','Conferma')}</li>
           </ol>
         `;
       } else {
         instructions = `
-          <h2 style="margin: 0 0 20px 0; font-size: 18px;">🖥️ Installa su Desktop</h2>
+          <h2 style="margin: 0 0 20px 0; font-size: 18px;">🖥️ ${T('install.desktopTitle','Installa su Desktop')}</h2>
           <p style="text-align: left; font-size:16px; line-height: 1.8;">
-            Guarda in <strong>alto a destra della barra indirizzi</strong> — dovresti vedere l'icona di installazione ⊕
+            ${T('install.desktopStep','Guarda in <strong>alto a destra della barra indirizzi</strong> — dovresti vedere l\'icona di installazione ⊕')}
           </p>
         `;
       }
@@ -223,7 +224,7 @@
           font-weight: 700;
           cursor: pointer;
           width: 100%;
-        ">Capito! Chiudi</button>
+        ">${T('install.gotIt','Capito! Chiudi')}</button>
       `;
 
       overlay.appendChild(modal);

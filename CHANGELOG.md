@@ -1,5 +1,14 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.37 — i18n: 32 stringhe hardcoded tradotte in 5 file (2026-07-10, Attuale)
+
+Step 5 di HANDOFF.md: "molte stringhe nuove restano hardcoded in italiano nei template JS (EN/JA le mostrano in italiano)". Tradotte le stringhe più visibili trovate in questa sessione (non l'intero backlog — resta comunque ampio, vedi nota sotto).
+
+### 🔧 Fix
+32 nuove chiavi i18n (it/en/ja) in `js/app-boot.js` (istruzioni installa PWA iOS/Android/Desktop, prima ancora del tutto hardcoded), `js/views/gallery-view.js` (titolo, stato vuoto, upload, storage info), `js/itinerary-export.js` (modal export), `js/views/list-view.js` (dialog risultati ricerca + aggiungi tappa), `js/views/group-poi-view.js` (modal aggiungi a itinerario gruppo — trovati anche gli stessi colori Y2K hardcoded del bug Gruppo di v3.35, stesso fix). Verificato in EN via reload + screenshot: tutte le stringhe toccate ora seguono la lingua selezionata. Lint i18n verde (386 chiavi × 3 lingue).
+
+**Nota per la prossima sessione**: questo è un dent nel backlog, non la chiusura. La ricerca mirata (`grep` su parole italiane comuni non wrappate in `T()`) ha trovato solo pattern testuali semplici — molte altre stringhe (form GF crowdsourcing, festività, altri modal) probabilmente restano hardcoded. Non c'è modo rapido di trovarle tutte via grep; l'approccio più affidabile resta navigare l'app in EN schermata per schermata.
+
 ## v3.36 — GF Guide non riprova più le città dopo quota esaurita (2026-07-10, Attuale)
 
 Il loop che carica i negozi GF per ogni zona/città dell'itinerario (`renderGFView` in `gf-view.js`) non controllava mai la quota `searchGlutenFreeShops` (2/giorno): a quota esaurita continuava a chiamare `loadGlutenFreeShopsForCity` per OGNI città rimanente, ognuna delle quali veniva bloccata da `ApiQuota` (zero costo reale, il fetch non parte nemmeno) ma con un giro di log rumoroso ad ogni iterazione inutile.

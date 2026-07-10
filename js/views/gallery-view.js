@@ -14,6 +14,8 @@
 (function () {
   'use strict';
 
+  const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+
   const IDB_NAME  = 'gj2027-gallery';
   const IDB_VER   = 1;
   const IDB_STORE = 'photos';
@@ -111,9 +113,9 @@
     const photoGrid = photos.length === 0 ? `
       <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;padding:40px 20px;text-align:center;">
         <div style="font-size:52px;margin-bottom:14px">📷</div>
-        <div style="font-size:16px;font-weight:700;color:var(--m-text);margin-bottom:6px">Nessuna foto ancora</div>
-        <p style="font-size:15px;color:var(--m-text-3);margin:0 0 20px;max-width:240px;line-height:1.5">Cattura i momenti del viaggio e salvali qui. Le foto restano nel dispositivo.</p>
-        <button onclick="document.getElementById('gallery-file-input')?.click()" class="m-btn-cta">📁 Aggiungi la prima foto</button>
+        <div style="font-size:16px;font-weight:700;color:var(--m-text);margin-bottom:6px">${T('gallery.empty','Nessuna foto ancora')}</div>
+        <p style="font-size:15px;color:var(--m-text-3);margin:0 0 20px;max-width:240px;line-height:1.5">${T('gallery.emptyHint','Cattura i momenti del viaggio e salvali qui. Le foto restano nel dispositivo.')}</p>
+        <button onclick="document.getElementById('gallery-file-input')?.click()" class="m-btn-cta">📁 ${T('gallery.addFirst','Aggiungi la prima foto')}</button>
       </div>` : photos.map((photo, idx) => {
       const date = new Date(photo.date).toLocaleDateString('it-IT', { month: 'short', day: 'numeric' });
       return `
@@ -125,7 +127,7 @@
           </div>
           <div class="gallery-photo-actions">
             <button class="gallery-btn-edit"   data-id="${photo.id}" aria-label="Modifica descrizione">✏️</button>
-            <button class="gallery-btn-delete" data-id="${photo.id}" aria-label="Elimina foto">🗑️</button>
+            <button class="gallery-btn-delete" data-id="${photo.id}" aria-label="${T('gallery.deletePhoto','Elimina foto')}">🗑️</button>
           </div>
         </div>`;
     }).join('');
@@ -133,8 +135,8 @@
     const html = `
       <div class="gallery-container">
         <div class="gallery-header">
-          <h2 style="margin:0;color:var(--m-text);font-size:18px;font-weight:700">📸 Galleria</h2>
-          <div style="font-size:15px;color:var(--m-text-3);font-weight:600">${photos.length} foto · ${totalKB > 1024 ? (totalKB / 1024).toFixed(1) + ' MB' : totalKB + ' KB'}</div>
+          <h2 style="margin:0;color:var(--m-text);font-size:18px;font-weight:700">📸 ${T('gallery.title','Galleria')}</h2>
+          <div style="font-size:15px;color:var(--m-text-3);font-weight:600">${photos.length} ${T('gallery.photoCount','foto')} · ${totalKB > 1024 ? (totalKB / 1024).toFixed(1) + ' MB' : totalKB + ' KB'}</div>
         </div>
 
         <div class="gallery-upload-section">
@@ -142,8 +144,8 @@
             <input type="file" id="gallery-file-input" accept="image/*" multiple style="display:none" />
             <div style="text-align:center;padding:20px;cursor:pointer">
               <div style="font-size:32px;margin-bottom:8px">📷</div>
-              <div style="color:var(--m-text);font-weight:700;font-size:16px;margin-bottom:4px">Aggiungi Foto</div>
-              <div style="color:var(--m-text-3);font-size:14px">Clicca o trascina foto qui</div>
+              <div style="color:var(--m-text);font-weight:700;font-size:16px;margin-bottom:4px">${T('gallery.addPhoto','Aggiungi Foto')}</div>
+              <div style="color:var(--m-text-3);font-size:14px">${T('gallery.dropHint','Clicca o trascina foto qui')}</div>
             </div>
           </div>
         </div>
@@ -152,12 +154,12 @@
 
         <div class="gallery-stats">
           <div style="color:var(--m-text-3);font-size:14px">
-            Archiviato in IndexedDB — nessun limite di spazio
+            ${T('gallery.storageInfo','Archiviato in IndexedDB — nessun limite di spazio')}
           </div>
         </div>
       </div>`;
 
-    window.openSheet('📸 Galleria', html);
+    window.openSheet(`📸 ${T('gallery.title','Galleria')}`, html);
 
     async function handleFiles(files) {
       for (const file of files) {

@@ -185,11 +185,11 @@
     modal.innerHTML = `
       <div style="position:fixed;inset:0;z-index:3001;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px" id="export-modal">
         <div style="background:var(--surface);border-radius:12px;padding:20px;max-width:380px;width:100%;max-height:70vh;overflow-y:auto">
-          <h3 style="margin:0 0 14px;color:var(--accent)">📋 Itinerario da Esportare</h3>
+          <h3 style="margin:0 0 14px;color:var(--accent)">📋 ${T('export.title','Itinerario da Esportare')}</h3>
           <pre style="background:var(--surface-2);padding:12px;border-radius:8px;font-size:13px;color:var(--text);overflow-x:auto;max-height:300px">${text.replace(/</g,'&lt;')}</pre>
           <div style="display:flex;gap:8px;margin-top:14px">
-            <button onclick="document.getElementById('export-modal').remove()" style="flex:1;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">Chiudi</button>
-            <button onclick="navigator.clipboard.writeText(this.dataset.t);window.toast?.('✅ Copiato!')" data-t="${text.replace(/"/g,'&quot;')}" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600">📋 Copia</button>
+            <button onclick="document.getElementById('export-modal').remove()" style="flex:1;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">${T('common.close','Chiudi')}</button>
+            <button onclick="navigator.clipboard.writeText(this.dataset.t);window.toast?.('${T('export.copied','✅ Copiato!')}')" data-t="${text.replace(/"/g,'&quot;')}" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600">📋 ${T('export.copy','Copia')}</button>
           </div>
         </div>
       </div>`;

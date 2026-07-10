@@ -29,26 +29,26 @@
     const html = `
       <div style="padding: 0; min-width: 300px;">
         <div style="background:linear-gradient(135deg,rgba(74,124,89,.08),rgba(224,65,78,.06));border:1px solid rgba(20,30,60,.12);border-radius:10px;padding:14px;margin:12px;">
-          <h3 style="margin:0 0 12px 0;color:var(--l-accent);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📍 Aggiungi a Itinerario di Gruppo</h3>
+          <h3 style="margin:0 0 12px 0;color:var(--l-accent);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📍 ${T('groupPoi.title','Aggiungi a Itinerario di Gruppo')}</h3>
 
-          <div style="background:#E8F4FF;border:2px solid #16a34a;border-radius:8px;padding:12px;margin-bottom:12px;">
-            <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:16px">Stanza: ${window.escapeHtml(roomId)}</p>
-            <p style="margin:0;color:#666;font-size:14px">Aggiungi <strong>${window.escapeHtml(poi.name)}</strong> all'itinerario di gruppo</p>
+          <div style="background:var(--l-btn-bg);border:2px solid var(--m-success);border-radius:8px;padding:12px;margin-bottom:12px;">
+            <p style="margin:0 0 6px 0;color:var(--l-ink);font-weight:600;font-size:16px">${T('groupPoi.room','Stanza')}: ${window.escapeHtml(roomId)}</p>
+            <p style="margin:0;color:var(--l-muted);font-size:14px">${T('groupPoi.addHint','Aggiungi <strong>{name}</strong> all\'itinerario di gruppo').replace('{name}', window.escapeHtml(poi.name))}</p>
           </div>
 
           <div style="display:flex;gap:8px">
-            <button id="confirm-add-poi" style="flex:1;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));border:2px solid var(--l-accent-600);color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
-              ✅ Aggiungi
+            <button id="confirm-add-poi" class="btn-plain" style="flex:1;background-image:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));border:2px solid var(--l-accent-600);color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
+              ✅ ${T('common.add','Aggiungi')}
             </button>
-            <button id="cancel-add-poi" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
-              ❌ Annulla
+            <button id="cancel-add-poi" class="btn-plain" style="flex:1;background:var(--l-btn-bg);border:2px solid var(--l-hair);color:var(--l-ink);border-radius:8px;padding:10px;font-weight:600;cursor:pointer;">
+              ❌ ${T('common.cancel','Annulla')}
             </button>
           </div>
         </div>
       </div>
     `;
 
-    window.y2kWindows.open('group-selection-modal', 'Aggiungi al Gruppo', html);
+    window.y2kWindows.open('group-selection-modal', T('groupPoi.windowTitle','Aggiungi al Gruppo'), html);
 
     // Attach event listeners
     setTimeout(() => {

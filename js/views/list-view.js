@@ -85,9 +85,9 @@
     modal.innerHTML = `
       <div style="position:fixed;inset:0;z-index:3001;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px">
         <div style="background:var(--surface);border-radius:12px;padding:16px;max-width:380px;width:100%;max-height:70vh;overflow-y:auto">
-          <h3 style="margin:0 0 12px;color:var(--accent)">🌍 Risultati (${results.length})</h3>
+          <h3 style="margin:0 0 12px;color:var(--accent)">🌍 ${T('search.results','Risultati')} (${results.length})</h3>
           <div>${resultsList}</div>
-          <button onclick="this.parentElement.parentElement.remove()" style="width:100%;margin-top:12px;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">Chiudi</button>
+          <button onclick="this.parentElement.parentElement.remove()" style="width:100%;margin-top:12px;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">${T('common.close','Chiudi')}</button>
         </div>
       </div>
     `;
@@ -98,22 +98,22 @@
     const html = `
       <div style="position:fixed;inset:0;z-index:3000;background:rgba(20,30,80,.85);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto" id="add-itin-overlay">
         <div style="background:linear-gradient(170deg,#FFFDF0 0%,#FFF8DC 100%);border-top:3px solid var(--l-accent);border-radius:12px;padding:24px;max-width:380px;width:100%;margin:auto 0;box-shadow:0 -8px 40px rgba(224,65,78,.3)">
-          <h3 style="margin:0 0 16px;font-size:18px;color:#1A2560;font-weight:700;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">${poi.name || poi.bestname || 'Aggiungi tappa'}</h3>
+          <h3 style="margin:0 0 16px;font-size:18px;color:#1A2560;font-weight:700;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">${poi.name || poi.bestname || T('itin.addStopTitle','Aggiungi tappa')}</h3>
           <div class="form-row">
-            <label style="color:#6B5EA8;font-weight:700;font-size:14px;display:block;margin-bottom:6px">📅 Giorno del viaggio (1, 2, 3...)</label>
+            <label style="color:#6B5EA8;font-weight:700;font-size:14px;display:block;margin-bottom:6px">📅 ${T('itin.dayLabel','Giorno del viaggio (1, 2, 3...)')}</label>
             <input id="itin-day" type="number" placeholder="1" min="1" max="30" style="font-size:16px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
           </div>
           <div class="form-row">
-            <label style="color:#6B5EA8;font-weight:700;font-size:14px;display:block;margin-bottom:6px">⏰ Orario (es. 09:30)</label>
+            <label style="color:#6B5EA8;font-weight:700;font-size:14px;display:block;margin-bottom:6px">⏰ ${T('itin.timeLabel','Orario (es. 09:30)')}</label>
             <input id="itin-time" type="text" placeholder="09:30" style="font-size:16px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" autocomplete="off" />
           </div>
           <div class="form-row">
-            <label style="color:#6B5EA8;font-weight:700;font-size:14px;display:block;margin-bottom:6px">💰 Costo (es. 10€, opzionale)</label>
-            <input id="itin-cost" type="text" placeholder="Gratis" style="font-size:16px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
+            <label style="color:#6B5EA8;font-weight:700;font-size:14px;display:block;margin-bottom:6px">💰 ${T('itin.costLabel','Costo (es. 10€, opzionale)')}</label>
+            <input id="itin-cost" type="text" placeholder="${T('itin.free','Gratis')}" style="font-size:16px;width:100%;padding:8px;border:2px solid #C8BDFF;border-radius:8px;background:#fff;color:#1A2560;box-sizing:border-box" />
           </div>
           <div style="display:flex;gap:8px;margin-top:18px">
-            <button id="itin-cancel" style="flex:1;padding:11px;background:linear-gradient(135deg,#E8E0FF,#D8CCFF);border:2px solid #C8BDFF;border-radius:8px;color:#1A2560;cursor:pointer;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;transition:all 0.18s ease">Annulla</button>
-            <button id="itin-confirm" style="flex:1;padding:11px;background:linear-gradient(135deg,var(--l-accent),var(--l-accent-600));border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 0 16px rgba(224,65,78,.45);transition:all 0.18s ease">✓ Aggiungi</button>
+            <button id="itin-cancel" style="flex:1;padding:11px;background:linear-gradient(135deg,#E8E0FF,#D8CCFF);border:2px solid #C8BDFF;border-radius:8px;color:#1A2560;cursor:pointer;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;transition:all 0.18s ease">${T('common.cancel','Annulla')}</button>
+            <button id="itin-confirm" style="flex:1;padding:11px;background:linear-gradient(135deg,var(--l-accent),var(--l-accent-600));border:none;border-radius:8px;color:#fff;cursor:pointer;font-weight:600;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 0 16px rgba(224,65,78,.45);transition:all 0.18s ease">✓ ${T('common.add','Aggiungi')}</button>
           </div>
         </div>
       </div>

@@ -146,7 +146,20 @@
       'gfp.geoFail': '❌ Posizione non trovata. Riprova con un indirizzo più specifico.',
       'gfp.deleted': '✅ Posto eliminato', 'gfp.editHint': '⚠️ Edit in progress — salva come nuovo e elimina vecchio',
       'gfp.saveErr': '❌ Errore nel salvataggio', 'gfp.submitted': '🎉 Suggerimento inviato! Grazie per aver contribuito! 🙏',
-      'gfp.synced': '🔄 Posti GF sincronizzati dal peer'
+      'gfp.synced': '🔄 Posti GF sincronizzati dal peer',
+      'install.iosTitle': 'Installa su iPhone', 'install.iosStep1': 'Tocca <strong>Condividi</strong> (icona freccia in basso)', 'install.iosStep2': 'Scorri e tocca <strong>"Aggiungi a Schermata Iniziale"</strong>', 'install.iosStep3': 'Tocca <strong>Aggiungi</strong>',
+      'install.androidTitle': 'Installa su Android', 'install.androidStep1': 'Tocca il menu <strong>⋮</strong> (tre puntini in alto a destra)', 'install.androidStep2': 'Tocca <strong>"Installa app"</strong> oppure <strong>"Aggiungi a schermata iniziale"</strong>', 'install.androidStep3': 'Conferma',
+      'install.desktopTitle': 'Installa su Desktop', 'install.desktopStep': 'Guarda in <strong>alto a destra della barra indirizzi</strong> — dovresti vedere l\'icona di installazione ⊕',
+      'install.gotIt': 'Capito! Chiudi',
+      'gallery.addPhoto': 'Aggiungi Foto', 'gallery.dropHint': 'Clicca o trascina foto qui',
+      'gallery.title': 'Galleria', 'gallery.photoCount': 'foto', 'gallery.empty': 'Nessuna foto ancora',
+      'gallery.emptyHint': 'Cattura i momenti del viaggio e salvali qui. Le foto restano nel dispositivo.',
+      'gallery.addFirst': 'Aggiungi la prima foto', 'gallery.storageInfo': 'Archiviato in IndexedDB — nessun limite di spazio',
+      'gallery.deletePhoto': 'Elimina foto',
+      'export.title': 'Itinerario da Esportare', 'export.copied': '✅ Copiato!', 'export.copy': 'Copia',
+      'search.results': 'Risultati',
+      'itin.addStopTitle': 'Aggiungi tappa', 'itin.dayLabel': 'Giorno del viaggio (1, 2, 3...)', 'itin.timeLabel': 'Orario (es. 09:30)', 'itin.costLabel': 'Costo (es. 10€, opzionale)', 'itin.free': 'Gratis',
+      'groupPoi.title': 'Aggiungi a Itinerario di Gruppo', 'groupPoi.room': 'Stanza', 'groupPoi.addHint': 'Aggiungi <strong>{name}</strong> all\'itinerario di gruppo', 'groupPoi.windowTitle': 'Aggiungi al Gruppo'
     },
     en: {
       'gfc.lastVerified': 'Last verified', 'gfc.yes': 'Yes', 'gfc.no': 'No', 'gfc.unk': "Don't know",
@@ -287,7 +300,20 @@
       'gfp.geoFail': '❌ Location not found. Try a more specific address.',
       'gfp.deleted': '✅ Place deleted', 'gfp.editHint': '⚠️ Edit in progress — save as new and delete old',
       'gfp.saveErr': '❌ Save error', 'gfp.submitted': '🎉 Suggestion submitted! Thanks for contributing! 🙏',
-      'gfp.synced': '🔄 GF places synced from peer'
+      'gfp.synced': '🔄 GF places synced from peer',
+      'install.iosTitle': 'Install on iPhone', 'install.iosStep1': 'Tap <strong>Share</strong> (arrow icon at the bottom)', 'install.iosStep2': 'Scroll and tap <strong>"Add to Home Screen"</strong>', 'install.iosStep3': 'Tap <strong>Add</strong>',
+      'install.androidTitle': 'Install on Android', 'install.androidStep1': 'Tap the <strong>⋮</strong> menu (three dots, top right)', 'install.androidStep2': 'Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>', 'install.androidStep3': 'Confirm',
+      'install.desktopTitle': 'Install on Desktop', 'install.desktopStep': 'Look at the <strong>top right of the address bar</strong> — you should see the install icon ⊕',
+      'install.gotIt': 'Got it! Close',
+      'gallery.addPhoto': 'Add Photo', 'gallery.dropHint': 'Click or drag photos here',
+      'gallery.title': 'Gallery', 'gallery.photoCount': 'photos', 'gallery.empty': 'No photos yet',
+      'gallery.emptyHint': 'Capture your trip moments and save them here. Photos stay on this device.',
+      'gallery.addFirst': 'Add your first photo', 'gallery.storageInfo': 'Stored in IndexedDB — no space limit',
+      'gallery.deletePhoto': 'Delete photo',
+      'export.title': 'Itinerary to Export', 'export.copied': '✅ Copied!', 'export.copy': 'Copy',
+      'search.results': 'Results',
+      'itin.addStopTitle': 'Add stop', 'itin.dayLabel': 'Trip day (1, 2, 3...)', 'itin.timeLabel': 'Time (e.g. 09:30)', 'itin.costLabel': 'Cost (e.g. 10€, optional)', 'itin.free': 'Free',
+      'groupPoi.title': 'Add to Group Itinerary', 'groupPoi.room': 'Room', 'groupPoi.addHint': 'Add <strong>{name}</strong> to the group itinerary', 'groupPoi.windowTitle': 'Add to Group'
     },
     ja: {
       'gfc.lastVerified': '最終確認', 'gfc.yes': 'はい', 'gfc.no': 'いいえ', 'gfc.unk': '不明',
@@ -428,7 +454,20 @@
       'gfp.geoFail': '❌ 場所が見つかりません。より具体的な住所を試してください。',
       'gfp.deleted': '✅ 場所を削除しました', 'gfp.editHint': '⚠️ 編集中 — 新規で保存して古いものを削除してください',
       'gfp.saveErr': '❌ 保存エラー', 'gfp.submitted': '🎉 提案を送信しました！ご協力ありがとうございます！🙏',
-      'gfp.synced': '🔄 ピアからGFスポットを同期しました'
+      'gfp.synced': '🔄 ピアからGFスポットを同期しました',
+      'install.iosTitle': 'iPhoneにインストール', 'install.iosStep1': '<strong>共有</strong>をタップ（下部の矢印アイコン）', 'install.iosStep2': 'スクロールして<strong>「ホーム画面に追加」</strong>をタップ', 'install.iosStep3': '<strong>追加</strong>をタップ',
+      'install.androidTitle': 'Androidにインストール', 'install.androidStep1': '<strong>⋮</strong>メニューをタップ（右上の3点アイコン）', 'install.androidStep2': '<strong>「アプリをインストール」</strong>または<strong>「ホーム画面に追加」</strong>をタップ', 'install.androidStep3': '確認',
+      'install.desktopTitle': 'デスクトップにインストール', 'install.desktopStep': '<strong>アドレスバーの右上</strong>を見てください — インストールアイコン⊕が表示されるはずです',
+      'install.gotIt': '了解！閉じる',
+      'gallery.addPhoto': '写真を追加', 'gallery.dropHint': 'クリックまたは写真をここにドラッグ',
+      'gallery.title': 'ギャラリー', 'gallery.photoCount': '枚の写真', 'gallery.empty': 'まだ写真がありません',
+      'gallery.emptyHint': '旅の思い出をここに保存しましょう。写真はこの端末に保存されます。',
+      'gallery.addFirst': '最初の写真を追加', 'gallery.storageInfo': 'IndexedDBに保存 — 容量制限なし',
+      'gallery.deletePhoto': '写真を削除',
+      'export.title': 'エクスポートする旅程', 'export.copied': '✅ コピーしました！', 'export.copy': 'コピー',
+      'search.results': '結果',
+      'itin.addStopTitle': '立ち寄り先を追加', 'itin.dayLabel': '旅行日（1、2、3...）', 'itin.timeLabel': '時間（例：09:30）', 'itin.costLabel': '費用（例：10€、任意）', 'itin.free': '無料',
+      'groupPoi.title': 'グループ旅程に追加', 'groupPoi.room': 'ルーム', 'groupPoi.addHint': '<strong>{name}</strong>をグループ旅程に追加', 'groupPoi.windowTitle': 'グループに追加'
     }
   };
 
