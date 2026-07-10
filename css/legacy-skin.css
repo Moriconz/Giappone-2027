@@ -75,17 +75,6 @@ h1, h2, h3, h4, h5, h6, p, ul, ol, figure, blockquote {
   padding: 0;
 }
 
-/* EXCEPTION: Allow margin and padding on specific boxes */
-div[style*="margin-bottom:20px"] {
-  margin: 12px !important;
-  margin-bottom: 20px !important;
-}
-
-div[style*="margin-bottom:28px"] {
-  margin: 12px !important;
-  margin-bottom: 28px !important;
-}
-
 /* Allow padding on expense items */
 .expense-item {
   padding: 10px 12px !important;
@@ -3221,19 +3210,3 @@ div[style*="background:rgba(255,215,0,0.1)"] > div[style*="font-size:24px"] {
   gap: 12px !important;
 }
 
-/* ══ GROUP PANEL SPACING OVERRIDE ═════════════════════════════════════ */
-/* Override global margin reset for group panel boxes */
-#y2kwin-gruppo div[style*="margin-bottom:20px"],
-#y2kwin-gruppo div[style*="background:rgba(74,91,168,0.12)"] {
-  margin: 12px !important;
-  margin-bottom: 20px !important;
-  padding: 14px !important;
-}
-
-/* ══ SOS PANEL SPACING OVERRIDE ═════════════════════════════════════ */
-/* Override global margin reset for SOS boxes */
-.sheet-body div[style*="margin-bottom:48px"],
-.sheet-inner div[style*="margin-bottom:48px"] {
-  margin-bottom: 48px !important;
-  display: flex !important;
-}

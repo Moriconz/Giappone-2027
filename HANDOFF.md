@@ -1,4 +1,4 @@
-# HANDOFF — Tabi (Giappone 2027) · 2026-07-10
+# HANDOFF — Tabi (Giappone 2027) · 2026-07-10 (v2, dopo pulizia cerotti CSS)
 
 Prompt di ripartenza per nuova chat:
 > Continua il progetto Tabi. Leggi HANDOFF.md nella root del repo. Riparti dal primo punto di "Prossimi step".
@@ -28,7 +28,7 @@ Il CSS soffriva di "appiattitori": regole con `!important` e selettori larghissi
 - Nuovi bottoni-layout (dentro card con bordo proprio): classe `btn-plain` per evitare il riskin tema.
 
 ## Prossimi step (in ordine di valore)
-1. **Pulizia cerotti CSS** — le ~3000 righe `div[style*=...]` in legacy-skin.css sono quasi tutte ridondanti ora; task già preparato come chip (worktree isolato, verifica visiva per gruppo). Dimagrisce il file più grosso e fragile del progetto.
+1. ~~**Pulizia cerotti CSS**~~ — FATTO in questa sessione (v3.30). Correzione importante: la stima "~3000 righe quasi tutte ridondanti" era sbagliata. Il file ha solo 94 righe `[style*=...]`, e la maggioranza (blocco "INLINE STYLE OVERRIDES — Glassmorphism", righe ~2940-3220) è un layer di reskin **attivo**, non un cerotto morto — converte colori Y2K ancora hardcoded inline in budget-view.js/group-panel.js/group-poi-view.js/poi-detail-view.js nel tema glass arancione. Rimosse solo le 3 regole confermate ridondanti/morte via grep sul JS (righe 79-90, 3226-3231, 3235-3238, vedi CHANGELOG v3.30). **Se in futuro si vuole davvero dimagrire il blocco glassmorphism, la strada è rimuovere i colori Y2K hardcoded dal JS sorgente e sostituirli con classi CSS dirette — non cancellare le regole override, che smaschererebbe i colori Y2K.**
 2. **Selettore paese destinazione in UI** — `tripProfile.countryCode` è già usato da festività e (indirettamente) GF Guide: manca solo il campo nell'onboarding/menu. Chiude davvero il pivot "globale".
 3. **Refactor monoliti** — `poi-detail-view.js` (~1700 righe) e `gf-places-panel.js` (~970): task già preparato come chip con piano dettagliato. Farlo a mente fresca.
 4. **Audit UI schermate secondarie** — la sessione ha sistemato itinerario/POI/GF Guide; meteo, budget, gruppo, shopping vanno riguardate con gli stessi criteri (un accento solo, niente riskin doppi, spaziature del sorgente).

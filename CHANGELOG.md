@@ -1,5 +1,17 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.30 — Pulizia cerotti CSS: solo 3 erano davvero morti, il resto è tema attivo (2026-07-10, Attuale)
+
+La stima di v3.29 ("~3000 righe di regole-cerotto, quasi tutte ridondanti ora") era sbagliata. Verificato riga per riga contro il JS sorgente: il file ha solo 94 righe con selettori `[style*="..."]`, e la maggior parte (il blocco "INLINE STYLE OVERRIDES — Glassmorphism", righe ~2940-3220) non è un cerotto del bug margin/padding — è un layer di reskin attivo che converte i colori Y2K (rosa/oro) ancora hardcoded inline in `budget-view.js`, `group-panel.js`, `group-poi-view.js`, `poi-detail-view.js` nel tema glass arancione dell'app. Cancellarlo avrebbe fatto riapparire i colori Y2K — una regressione visiva, non una pulizia.
+
+### 🔧 Fix
+Rimosse solo le 3 regole confermate ridondanti o morte via grep sul JS:
+- `div[style*="margin-bottom:20px/28px"]` (righe 79-90): il primo selettore re-iniettava `margin:12px;margin-bottom:20px` che `group-panel.js` ha già identico inline; il secondo non matcha nessun elemento nel codebase.
+- `#y2kwin-gruppo div[style*="margin-bottom:20px"], ...[style*="background:rgba(74,91,168,0.12)"]` (righe 3226-3231): stesso doppione, più un secondo arm che non matcha nulla dentro la finestra Gruppo.
+- `.sheet-body/.sheet-inner div[style*="margin-bottom:48px"]` (righe 3235-3238): selettore SOS panel, nessun elemento nel codebase usa quel valore.
+
+Verificato: screenshot prima/dopo di Budget (incl. scroll sulle card categoria) e Gruppo identici; smoke test verde. Le restanti ~70 righe `[style*=...]` (weather-day, shop-card, y2k-win-body font-size:0 hack, il blocco glassmorphism) restano perché funzionali — non sono nel mirino di questo cleanup. HANDOFF.md corretto per non ripetere la stima errata.
+
 ## v3.29 — LA causa dei margini rotti in tutta l'app: `* { padding:0 !important }` (2026-07-04, Attuale)
 
 Trovata con una sonda Puppeteer (misure reali del box model, non a occhio): perfino un div sintetico con `padding:12px` inline appeso al body risultava con padding computato **0px**. In cima a `legacy-skin.css` c'era `html, body, * { margin:0 !important; padding:0 !important }` — l'asterisco con `!important` **azzerava padding e margin di ogni elemento della pagina, battendo qualunque style inline**. Ogni spaziatura visibile nell'app sopravviveva solo grazie alle ~3000 righe di regole-cerotto `div[style*="..."]` più sotto nello stesso file, che re-iniettano i valori uno per uno per substring dello style inline. Questa è la radice comune di tutta la saga spaziature (v3.24-v3.28): i componenti hanno sempre dichiarato padding/margin corretti nel sorgente, il reset li ha sempre mangiati.
