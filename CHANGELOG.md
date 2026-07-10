@@ -1,5 +1,19 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.42 — Refactor monolite itinerary-unified.js (2026-07-10, Attuale)
+
+Stesso trattamento di poi-detail-view.js/gf-places-panel.js in v3.34: 1363 righe (il file JS più grosso del progetto) diviso in 4 moduli satellite, nessun cambio di comportamento voluto.
+
+- `js/itinerary-accordion-template.js` (258 righe) — HTML della card di un giorno dell'accordion (lista POI, KPI visite/spostamenti, warning orari/densità/pasto).
+- `js/itinerary-export-share.js` (354 righe) — export HTML/WhatsApp, link condivisibile, condividi con gruppo, modale itinerario vuoto.
+- `js/itinerary-accordion-dnd.js` (91 righe) — toggle accordion + drag&drop POI tra giorni.
+- `js/itinerary-poi-actions.js` (368 righe) — menu modifica/sposta/cancella tappa, GF vicino al giorno, base/hotel del giorno.
+- `js/itinerary-unified.js`: 1363 → 372 righe. Resta il render principale (assembla budget/meteo/festività/accordion/sharing) + l'event delegation globale.
+
+**Bug reale trovato ed corretto durante l'estrazione** (non un cambio di comportamento voluto, ma lasciarlo nel nuovo file l'avrebbe perpetuato): `window.handleExportHTML` (bottone "📄 Esporta stampabile") referenziava `_tripStart`, una `const` locale di `renderItineraryUnified()` — due funzioni distinte allo stesso livello di scope in un file mai avvolto in un vero IIFE condiviso, quindi `_tripStart` era `undefined` per `handleExportHTML`. `ReferenceError` silenzioso ad ogni click, mai intercettato dallo smoke test perché non esercita quel bottone. Verificato via browser reale (non solo smoke test) prima/dopo il fix: prima l'errore era `_tripStart is not defined`, dopo il fix la funzione costruisce l'HTML correttamente (il residuo `Cannot read properties of null (reading 'document')` sul `window.open()` è solo popup-blocking del contesto di test senza gesture utente, non correlato).
+
+Verificato: `node --check` su tutti e 5 i file, lint-i18n verde, smoke test verde (comportamento identico al baseline pre-refactor), più verifica manuale nel browser reale — render accordion, apertura giorno, drag&drop wiring, menu modifica POI (Salva/Cancella/Sposta a).
+
 ## v3.41 — i18n: calendario giapponese + errori Groq (2026-07-10, Attuale)
 
 Continuazione backlog i18n (v3.37). Controllati i punti indicati in HANDOFF.md: form GF crowdsourcing (`gf-crowdsource.js`) e schermi v3.38-3.40 (foto-menu AI, riordino orari, offline) erano già completamente tradotti — solo due aree avevano stringhe hardcoded reali.

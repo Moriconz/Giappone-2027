@@ -223,6 +223,11 @@
 <script defer src="./js/routing.js"></script>
 <!-- itinerary-ui.js rimosso: renderItineraryViewNew chiamato solo da se stesso (verificato). Renderer canonical = itinerary-unified.js -->
 <!-- itinerary-ical.js rimosso: handleExportICal() mai chiamato da nessuno (verificato). Export .ics canonical = promptAddToCalendar() in itinerary-export.js -->
+<!-- Moduli satellite di itinerary-unified.js (v3.42, split ex 1363 righe): caricati prima perché il main file li chiama via window.* -->
+<script defer src="./js/itinerary-accordion-template.js"></script>
+<script defer src="./js/itinerary-export-share.js"></script>
+<script defer src="./js/itinerary-accordion-dnd.js"></script>
+<script defer src="./js/itinerary-poi-actions.js"></script>
 <script defer src="./js/itinerary-unified.js"></script>
 <script defer src="./js/itinerary-snapshots.js"></script>
 <script defer src="./js/itinerary-undo-redo.js"></script>
