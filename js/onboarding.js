@@ -9,6 +9,28 @@
 
 const _To = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
 
+// Codice ISO a due lettere → emoji bandiera (regional indicator symbols):
+// niente tabella paese→bandiera da mantenere, funziona per qualunque codice.
+function _flagEmoji(cc) {
+  if (!cc || cc.length !== 2) return '🌍';
+  return String.fromCodePoint(...[...cc.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+}
+
+// Riempie un <select> paese con l'elenco live da Nager.Date (via
+// JapanCalendarHints, che possiede già l'integrazione). Riusato da
+// onboarding e da menu-drawer per il campo "cambia destinazione".
+async function populateCountrySelect(selectEl, selected) {
+  if (!selectEl || typeof window.JapanCalendarHints?.getAvailableCountries !== 'function') return;
+  const countries = await window.JapanCalendarHints.getAvailableCountries();
+  const current = selected || selectEl.value || 'JP';
+  selectEl.innerHTML = countries
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(c => `<option value="${c.countryCode}">${_flagEmoji(c.countryCode)} ${c.name}</option>`)
+    .join('');
+  selectEl.value = current;
+}
+
 function initOnboarding() {
   const ONBOARDING_KEY = 'tripProfile';
 
@@ -289,6 +311,35 @@ function showOnboarding() {
                 onfocus="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,165,100,0.4)';"
                 onblur="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,165,100,0.2)';"
               >
+            </div>
+
+            <div style="margin-bottom: 28px;">
+              <label style="
+                display: block;
+                font-size:15px;
+                font-weight: 600;
+                color: rgba(255,255,255,0.7);
+                margin-bottom: 10px;
+                letter-spacing: 0.3px;
+              ">${_To('ob.countryLabel','Paese di destinazione')}</label>
+              <select
+                name="countryCode"
+                id="ob-country-select"
+                class="form-input"
+                style="
+                  width: 100%;
+                  padding: 14px 16px;
+                  background: rgba(255,255,255,0.06);
+                  border: 1px solid rgba(255,165,100,0.2);
+                  border-radius: 10px;
+                  color: rgba(255,255,255,0.95);
+                  font-size: 15px;
+                  font-family: inherit;
+                  box-sizing: border-box;
+                "
+              >
+                <option value="JP">🇯🇵 Japan</option>
+              </select>
             </div>
 
             <div>
@@ -755,6 +806,8 @@ function initOnboardingForm() {
   let currentStep = 1;
   const totalSteps = 5;
 
+  populateCountrySelect(document.getElementById('ob-country-select'), 'JP');
+
   function showStep(step) {
     document.querySelectorAll('.onboarding-step').forEach(el => {
       el.style.display = el.dataset.step == step ? 'block' : 'none';
@@ -816,6 +869,7 @@ function initOnboardingForm() {
 
     const tripProfile = {
       name: formData.get('tripName'),
+      countryCode: formData.get('countryCode') || 'JP',
       days: parseInt(formData.get('days')) || 8,
       startDate: formData.get('startDate') || '2027-04-10',
       groupSize: formData.get('groupSize'),

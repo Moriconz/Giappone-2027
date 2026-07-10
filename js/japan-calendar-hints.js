@@ -214,6 +214,34 @@
     }
   }
 
+  // Lista paesi per il selettore destinazione (onboarding + menu). Live da
+  // Nager.Date (stessa API delle festività, così i codici sono sempre quelli
+  // che _fetchHolidays sa effettivamente interrogare), cache 30gg. Fallback
+  // solo se offline al primo avvio — pochi paesi comuni, non l'elenco completo.
+  const FALLBACK_COUNTRIES = [
+    { countryCode: 'JP', name: 'Japan' }, { countryCode: 'IT', name: 'Italy' },
+    { countryCode: 'FR', name: 'France' }, { countryCode: 'ES', name: 'Spain' },
+    { countryCode: 'GB', name: 'United Kingdom' }, { countryCode: 'US', name: 'United States' },
+    { countryCode: 'DE', name: 'Germany' }, { countryCode: 'PT', name: 'Portugal' },
+    { countryCode: 'NL', name: 'Netherlands' }, { countryCode: 'CH', name: 'Switzerland' },
+  ];
+  let _countriesCache = null;
+  async function getAvailableCountries() {
+    if (_countriesCache) return _countriesCache;
+    const lsKey = 'nager_countries_v1';
+    try {
+      const cached = JSON.parse(localStorage.getItem(lsKey) || 'null');
+      if (cached && cached.expires > Date.now()) { _countriesCache = cached.data; return cached.data; }
+    } catch (_) {}
+    try {
+      const res = await fetch('https://date.nager.at/api/v3/AvailableCountries');
+      const data = res.ok ? await res.json() : FALLBACK_COUNTRIES;
+      _countriesCache = data;
+      try { localStorage.setItem(lsKey, JSON.stringify({ data, expires: Date.now() + 30 * 24 * 3600 * 1000 })); } catch (_) {}
+      return data;
+    } catch (_) { return FALLBACK_COUNTRIES; }
+  }
+
   function _liveHolidayHints(start, end) {
     const cc = window.state?.tripProfile?.countryCode || 'JP';
     const out = [];
@@ -413,6 +441,7 @@
     openDetailPanel,
     getTripDateRange,
     syncGlobalHolidays,
+    getAvailableCountries,
     RECURRING_PERIODS,
     SEASONAL_2027
   };

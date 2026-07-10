@@ -1,5 +1,16 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.33 — Selettore paese destinazione: chiude il pivot "planner globale" (2026-07-10, Attuale)
+
+`tripProfile.countryCode` era già letto da `japan-calendar-hints.js` (festività Nager.Date) e da `isJapanTrip()`, ma nessuna UI lo scriveva mai — restava sempre al default `'JP'` hardcoded. Mancava il campo per chiuderlo davvero.
+
+### 🔧 Fix
+- **Onboarding, Step 1**: nuovo `<select>` "Paese di destinazione" tra nome viaggio e giorni, popolato live dall'endpoint `AvailableCountries` di Nager.Date (stessa API già usata per le festività — stessi codici, garantiti validi), cache 30gg in localStorage, fallback a 10 paesi comuni solo se offline al primo avvio. Bandiere generate algoritmicamente dal codice ISO (regional indicator symbols), zero tabella paese→emoji da mantenere.
+- **Menu**, per chi ha già un `tripProfile` e non rivede più il wizard: stesso selettore accanto a quello della lingua, "📍 Destinazione". Cambiarlo aggiorna `state.tripProfile.countryCode` + localStorage e ri-sincronizza le festività (chiave cache = countryCode, nessun'altra migrazione dati serve).
+- `populateCountrySelect()` condivisa tra onboarding.js e menu-drawer.js (stessa funzione, non duplicata). Nuove chiavi i18n (`ob.countryLabel`, `menu.destination`) in tutte e 3 le lingue, lint i18n verde.
+
+Verificato: onboarding end-to-end con paese IT selezionato → salvato in tripProfile e localStorage; menu con tripProfile esistente mostra e permette di cambiare la destinazione salvata; smoke test verde.
+
 ## v3.32 — Audit padding su tutta l'app: l'ultimo offender era .category-row (2026-07-10, Attuale)
 
 Segnalato: "ci sono ancora gli stessi problemi di padding". Costruito un audit Puppeteer sistematico (`audit-padding.mjs`) che apre 14 pannelli in entrambi i temi e misura la distanza reale di **qualsiasi elemento visibile** (non solo testo — la prima versione per questo non trovava nulla) dal bordo di ogni card. Risultato: un solo offender vero in tutta l'app, `.category-row` del Budget con `padding: 12px 0` — zero orizzontale, così il pallino categoria toccava il bordo sinistro della card (i temi rendono le righe card con bordo proprio). Gli altri 2 hit erano falsi positivi verificati (wrapper sticky ricerca Shopping full-width per allineamento, `.gallery-upload-area` il cui figlio ha già padding 20px proprio).

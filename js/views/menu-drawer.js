@@ -56,6 +56,12 @@
             <option value="ja">🇯🇵 日本語</option>
           </select>
         </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;">
+          <span style="font-size:16px;">📍 ${T('menu.destination', 'Destinazione')}</span>
+          <select id="country-switcher-drawer" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:inherit;padding:4px 8px;font-size:15px;max-width:160px;">
+            <option value="${window.state?.tripProfile?.countryCode || 'JP'}">…</option>
+          </select>
+        </div>
         ${menuItems.map(item => `
           <button class="menu-drawer-item" data-view="${item.view}" style="
             display: flex;
@@ -93,6 +99,26 @@
       langDrawer.onchange = () => {
         langReal.value = langDrawer.value;
         langReal.dispatchEvent(new Event('change'));
+      };
+    }
+
+    // Destinazione: stesso <select> paese dell'onboarding (popolato da
+    // JapanCalendarHints.getAvailableCountries), qui per chi ha già un
+    // tripProfile e non rivede più il wizard. Cambiarla invalida solo la
+    // cache festività (chiave = countryCode), nessun'altra migrazione dati.
+    const countryDrawer = document.getElementById('country-switcher-drawer');
+    if (countryDrawer && typeof window.populateCountrySelect === 'function') {
+      window.populateCountrySelect(countryDrawer, window.state?.tripProfile?.countryCode || 'JP');
+      countryDrawer.onchange = () => {
+        if (!window.state.tripProfile) window.state.tripProfile = {};
+        window.state.tripProfile.countryCode = countryDrawer.value;
+        try {
+          const stored = JSON.parse(localStorage.getItem('tripProfile') || '{}');
+          stored.countryCode = countryDrawer.value;
+          localStorage.setItem('tripProfile', JSON.stringify(stored));
+        } catch (_) {}
+        window.saveState?.();
+        window.JapanCalendarHints?.syncGlobalHolidays?.();
       };
     }
 
