@@ -42,6 +42,7 @@
       { label: T('menu.suggest', 'Suggerisci Posti'), icon: '💡', view: 'gf-suggest' },
       { label: T('menu.createTrip', 'Voglio creare il mio viaggio'), icon: '✏️', view: 'create-trip', style: 'color: var(--m-accent); background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3);' },
       { label: T('menu.backup', 'Backup & Ripristino'), icon: '📦', view: 'backup' },
+      { label: T('offline.menuLabel', 'Scarica per offline'), icon: '📥', view: 'offline-region' },
       { label: T('menu.sos', 'SOS'), icon: '🆘', view: 'sos', style: 'color: #FF6B6B; background: rgba(255,107,107,0.1);' },
       ...(window.DEBUG ? [{ label: T('menu.errors', 'Errori (debug)'), icon: '🐞', view: 'errors', style: 'opacity:0.85;' }] : [])
     ];
@@ -179,6 +180,7 @@
             else if (view === 'gf-suggest') { window.openGFSuggestionPanel(); }
             else if (view === 'sos') { window.loadScript('./js/views/sos-view.js').then(() => window.renderSOSPanel?.()); }
             else if (view === 'backup') { window.openBackupPanel?.(); }
+            else if (view === 'offline-region') { window.loadScript('./js/offline-region.js').then(() => window.openOfflineRegionPanel?.()); }
             else if (view === 'errors') { window.ErrorCollector?.openPanel?.(); }
           }
         }, 200);

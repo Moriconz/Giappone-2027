@@ -100,8 +100,8 @@
     const zones = [];
     for (const s of stops) {
       const z = zones.find(z => window.haversineKm(z.lat, z.lng, s.lat, s.lng) < 25);
-      if (z) { z.count++; continue; }
-      zones.push({ label: (s.poi_name || 'Zona').slice(0, 18), lat: s.lat, lng: s.lng, count: 1 });
+      if (z) { z.count++; z.stops.push({ lat: s.lat, lng: s.lng }); continue; }
+      zones.push({ label: (s.poi_name || 'Zona').slice(0, 18), lat: s.lat, lng: s.lng, count: 1, stops: [{ lat: s.lat, lng: s.lng }] });
     }
     return zones;
   }
@@ -283,4 +283,5 @@
 
   window.renderGFView = renderGFView;
   window.loadGlutenFreeShopsForCity = loadGlutenFreeShopsForCity;
+  window.GFView = { zonesFromItinerary: _zonesFromItinerary };
 })();

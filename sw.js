@@ -9,6 +9,7 @@
 const CACHE_NAME = 'giappone-2027-v10';
 const CACHE_API = 'giappone-2027-api-v1';
 const CACHE_IMG = 'giappone-2027-img-v1';
+const CACHE_TILES = 'giappone-2027-tiles-v1';
 const OFFLINE_URL = './index.html';
 
 // Critical resources for install (path relativi alla root: sw.js è in root)
@@ -82,7 +83,7 @@ self.addEventListener('activate', (event) => {
       try {
         // Clean old caches
         const cacheNames = await caches.keys();
-        const validCaches = [CACHE_NAME, CACHE_API, CACHE_IMG];
+        const validCaches = [CACHE_NAME, CACHE_API, CACHE_IMG, CACHE_TILES];
 
         await Promise.all(
           cacheNames.map((cacheName) => {
@@ -120,6 +121,14 @@ self.addEventListener('fetch', (event) => {
   // Images — Cache-first strategy
   if (url.match(/\.(png|jpg|jpeg|gif|svg|webp)$/i)) {
     event.respondWith(cacheFirstStrategy(event.request, CACHE_IMG));
+    return;
+  }
+
+  // Map tiles (ArcGIS) — Cache-first: le tile non cambiano mai, e prima
+  // d'ora non avevano NESSUNA copertura offline (niente estensione file,
+  // cross-origin: non matchavano né la regola immagini né l'app-shell).
+  if (url.includes('server.arcgisonline.com')) {
+    event.respondWith(cacheFirstStrategy(event.request, CACHE_TILES));
     return;
   }
 

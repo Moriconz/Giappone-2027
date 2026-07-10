@@ -1,5 +1,19 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.40 — Scarica una zona per offline: mappa + posti GF + POI (2026-07-10, Attuale)
+
+Terza e ultima idea prodotto di HANDOFF.md §7. Le tile della mappa (ArcGIS) non avevano **nessuna** copertura offline — cross-origin, senza estensione file, non intercettate da nessuna regola esistente del service worker: ogni pan/zoom era rete viva. I posti GF e i POI generali avevano già cache proprie (7gg/30gg) ma si popolavano solo visitando le zone in-app. Nuova voce di menu "📥 Scarica per offline": scarica tutti e tre in un colpo per le zone del viaggio (stesso clustering automatico già usato dalla GF Guide).
+
+### 🔧 Novità
+- `sw.js`: nuova cache `giappone-2027-tiles-v1` + regola di routing cache-first per `server.arcgisonline.com` — le tile non cambiano mai, stessa strategia già scritta per le immagini, riusata as-is.
+- `js/offline-region.js` (nuovo file): calcola il bounding box reale delle tappe della zona (non il raggio di clustering di 25km — a zoom street-level sarebbero ~15.000 tile per zona, impraticabile), scarica le tile su un range ristretto (z13-z15, dettaglio "zona pedonale"), poi popola le due cache POI esistenti riusando le funzioni già scritte (`loadGlutenFreeShopsForCity`, `loadNearbyPOIs`) — zero fetch logic nuova per i dati, solo per le tile. Controllo `navigator.storage.estimate()` prima di partire (nuovo per il codebase — l'unico controllo quota esistente copriva solo il blob localStorage) e avviso se la quota API giornaliera è già esaurita.
+- `js/views/gf-view.js`: `_zonesFromItinerary()` estesa con le coordinate delle tappe membro (serviva per il bounding box), esportata su `window.GFView`.
+- Nuova voce menu "Scarica per offline", 9 nuove chiavi i18n.
+
+Verificato end-to-end **con richieste di rete reali** (le tile ArcGIS sono pubbliche, nessuna chiave richiesta): download di una zona di test (2 tappe, 86 tile, stima 1.7MB — combacia esatta col conteggio reale), tile confermate in Cache Storage, una richiesta ripetuta della stessa tile servita dalla cache in 4ms invece di un round-trip di rete. Confermato che il fallimento delle chiamate GF/POI (atteso in locale, niente chiavi API) non blocca il download delle tile — i tre passi sono indipendenti. Smoke test verde.
+
+**Limite noto, dichiarato non risolto in questa versione**: nessuna rimozione selettiva per zona (le tile di zone diverse condividono la stessa cache e possono sovrapporsi) — per liberare spazio serve la cancellazione cache del browser. Scope reale per una v2 se serve gestione spazio attiva.
+
 ## v3.39 — Riordina un giorno per orari di apertura (2026-07-10, Attuale)
 
 Seconda idea prodotto pianificata di HANDOFF.md §7. L'itinerario segnalava già passivamente i problemi (`getEntryClosingWarning` avvisa se una tappa cade a locale chiuso, badge "⛔ N sovrapposte"), ma non c'era modo di **agire**: il drag&drop sposta tappe tra giorni diversi, non le riordina dentro lo stesso giorno. Nuovo bottone "🕐 Riordina per orari" per giorno, stesso schema anteprima→conferma→snapshot già in produzione per "Ottimizza viaggio" (`TripOptimizer`, mirror quasi esatto, stesso file).

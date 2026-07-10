@@ -37,7 +37,9 @@ Il CSS soffriva di "appiattitori": regole con `!important` e selettori larghissi
 7. **Idee prodotto**:
    - ~~Foto-menu con analisi Groq nel flusso riscontri~~ — FATTO (v3.38). `GFMenuPhotos`+`GroqMenuAnalyzer`+`GFCrowd` collegati, l'AI suggerisce, non invia mai da sola. Sistemato anche un gap quota reale scoperto in fase di analisi (`api-quota.js`, chiave che non corrispondeva a nessun endpoint).
    - ~~Ordinamento automatico giorno per orari di apertura~~ — FATTO (v3.39). `DayHoursReorder` in `js/itinerary-features.js`, mirror di `TripOptimizer`. Bottone "🕐 Riordina per orari" nell'accordion di ogni giorno.
-   - **Pre-download offline per regione (mappa+GF)** — non pianificato, il più grande dei tre. Oggi zero cache tile mappa (SW non tocca le richieste ArcGIS) e zero concetto di "regione" nel codebase (solo 37 città piatte). Richiede decisioni di design prima di iniziare: granularità regione, quanti livelli di zoom cachare, gestione quota storage.
+   - ~~Pre-download offline per regione (mappa+GF)~~ — FATTO (v3.40). `js/offline-region.js` (nuovo), regioni = zone del viaggio (stesso clustering della GF Guide), tile su bounding box reale delle tappe (non il raggio di 25km del clustering — sarebbe stato impraticabile), z13-z15. Nota per dopo: nessuna rimozione selettiva per zona, solo cancellazione cache browser totale.
+
+**Tutte e 3 le idee prodotto di questa sezione sono ora implementate.** Prossimo giro: nuove idee da discutere, oppure audit/manutenzione generale.
 
 ## Problemi noti
 - GitHub Pages: run in coda da giorni, problema infrastruttura GitHub (ticket eventualmente); Vercel è il deploy che conta.
