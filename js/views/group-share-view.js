@@ -99,16 +99,16 @@ function showShareItineraryModal() {
       <div style="background:linear-gradient(135deg,rgba(74,124,89,.08),rgba(224,65,78,.06));border:1px solid rgba(20,30,60,.12);border-radius:10px;padding:14px;margin:12px;">
         <h3 style="margin:0 0 12px 0;color:var(--l-accent);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;font-weight:700">📤 Condividi Itinerario</h3>
 
-        <div style="background:#E8F4FF;border:2px solid #16a34a;border-radius:8px;padding:12px;margin-bottom:12px;">
-          <p style="margin:0 0 6px 0;color:#2D3B7D;font-weight:600;font-size:16px">Stanza: ${escapeHtml(roomId)}</p>
-          <p style="margin:0;color:#666;font-size:14px">Tappe: <strong>${_allPOIs.length}</strong></p>
+        <div style="background:rgba(20,30,60,0.05);border:1.5px solid rgba(22,163,74,0.4);border-radius:8px;padding:12px;margin-bottom:12px;">
+          <p style="margin:0 0 6px 0;color:var(--l-ink);font-weight:600;font-size:16px">Stanza: ${escapeHtml(roomId)}</p>
+          <p style="margin:0;color:var(--l-muted);font-size:14px">Tappe: <strong>${_allPOIs.length}</strong></p>
         </div>
 
         <div style="display:flex;gap:8px">
           <button id="confirm-share-itin" style="flex:1;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));border:2px solid var(--l-accent-600);color:white;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
             ✅ Condividi
           </button>
-          <button id="cancel-share-itin" style="flex:1;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;font-weight:600;cursor:pointer;">
+          <button id="cancel-share-itin" style="flex:1;background:rgba(20,30,60,0.06);border:1.5px solid rgba(20,30,60,0.18);color:var(--l-ink);border-radius:8px;font-weight:600;cursor:pointer;">
             ❌ Annulla
           </button>
         </div>
@@ -291,7 +291,7 @@ function showGroupItineraryEditor(itineraryId, itinerary) {
 
       <!-- Add POI Button -->
       <div style="padding:0 12px;margin:0">
-        <button id="add-poi-to-itin" style="width:100%;padding:10px;background:linear-gradient(180deg,#22c55e,#16a34a);border:2px solid #16a34a;color:#2D3B7D;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:8px">
+        <button id="add-poi-to-itin" style="width:100%;padding:10px;background:linear-gradient(180deg,#22c55e,#16a34a);border:2px solid #16a34a;color:white;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:8px">
           ➕ Aggiungi POI da Google Places
         </button>
       </div>
@@ -301,7 +301,7 @@ function showGroupItineraryEditor(itineraryId, itinerary) {
         <button id="save-itin-changes" style="flex:1;padding:10px;background:linear-gradient(180deg,var(--l-accent),var(--l-accent-600));border:2px solid var(--l-accent-600);color:white;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif">
           💾 Salva Modifiche
         </button>
-        <button id="cancel-itin-edit" style="flex:1;padding:10px;background:#FFE5B4;border:2px solid #FFD700;color:#2D3B7D;border-radius:8px;font-weight:600;cursor:pointer;">
+        <button id="cancel-itin-edit" style="flex:1;padding:10px;background:rgba(20,30,60,0.06);border:1.5px solid rgba(20,30,60,0.18);color:var(--l-ink);border-radius:8px;font-weight:600;cursor:pointer;">
           ❌ Annulla
         </button>
       </div>

@@ -3,7 +3,7 @@
 // Extracted from app-core.js. Deps (all window.*):
 //   openSheet, state, allPOIs, SHOPPING_DB, CITY_COORDS,
 //   fetchWeatherHourly, fetchWeatherData,
-//   getWeatherIcon, getWeatherConditionName, getWeatherColor
+//   getWeatherIcon, getWeatherConditionName
 // ============================================================================
 (function () {
   'use strict';
@@ -27,7 +27,7 @@
     window.openSheet('🌤️ Meteo', `
       <div class="weather-container" style="text-align:center;padding:40px 20px;">
         <div style="font-size:48px;margin-bottom:16px;">⏳</div>
-        <p style="color:var(--y2k-ink);font-size:16px;margin:0;">Caricamento previsioni meteo...</p>
+        <p style="color:var(--l-ink);font-size:16px;margin:0;">Caricamento previsioni meteo...</p>
       </div>
     `);
 
@@ -53,7 +53,7 @@
 
             let gpsHtml = `
               <div class="weather-section-divider">
-                <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
+                <h2 style="color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
               </div>
               <div class="weather-hourly-grid">
             `;
@@ -88,7 +88,7 @@
           } else {
             gpsSection = `
               <div class="weather-section-divider">
-                <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
+                <h2 style="color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
               </div>
               <div style="text-align:center;padding:20px;background:rgba(255,107,107,0.1);border-radius:10px;">
                 <div style="color:#FF6B6B;font-size:15px;">⚠️ Impossibile caricare meteo per la tua posizione</div>
@@ -99,7 +99,7 @@
           console.warn('[Weather] GPS error:', err);
           gpsSection = `
             <div class="weather-section-divider">
-              <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
+              <h2 style="color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">📍 La Tua Posizione</h2>
             </div>
             <div style="text-align:center;padding:20px;background:rgba(255,107,107,0.1);border-radius:10px;">
               <div style="color:#FF6B6B;font-size:15px;">📍 GPS non disponibile - consenti accesso alla posizione</div>
@@ -139,7 +139,7 @@
         if (Object.keys(cities).length > 0) {
           weatherHtml += `
             <div class="weather-section-divider">
-              <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">🗓️ Le Tue Tappe</h2>
+              <h2 style="color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:20px 0 16px 0;font-size:18px;">🗓️ Le Tue Tappe</h2>
             </div>
           `;
 
@@ -197,7 +197,7 @@
       if (itinerary.length === 0 && gpsSection) {
         weatherHtml += `
           <div style="text-align:center;padding:20px;margin-top:20px;">
-            <p style="color:var(--y2k-muted);font-size:15px;margin:0;line-height:1.5;">💡 Aggiungi tappe per vedere il meteo per le tue destinazioni!</p>
+            <p style="color:var(--l-muted);font-size:15px;margin:0;line-height:1.5;">💡 Aggiungi tappe per vedere il meteo per le tue destinazioni!</p>
           </div>
         `;
       }
@@ -240,16 +240,6 @@
     if (code >= 85 && code <= 86) return '❄️'; // Snow showers
     if (code >= 80 && code <= 99) return '⛈️'; // Thunderstorm
     return '🌡️'; // Default
-  }
-
-  function getWeatherColor(code) {
-    if (code === 0 || code === 1) return '#FFD700'; // Sole = Giallo
-    if (code === 2) return '#E0D5FF'; // Parzialmente nuvoloso = Lavanda
-    if (code === 3) return '#B8ACFF'; // Nuvoloso = Viola
-    if (code >= 45 && code <= 48) return '#8080C0'; // Nebbia = Blu scuro
-    if (code >= 51 && code <= 82) return '#87CEEB'; // Pioggia = Blu
-    if (code >= 85 && code <= 86) return '#E0F0FF'; // Neve = Bianco-blu
-    return '#C8BDFF'; // Default
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -592,10 +582,15 @@
     const wind = Math.round(hourlyData.windspeed_10m[currentHour]);
     const precip = hourlyData.precipitation[currentHour];
 
-    // Badge for GPS status
+    // Badge for GPS status. ponytail: il ramo FALLBACK era già invisibile
+    // prima di questo fix (le sue vecchie #FFD700/#1A2560 finivano dentro un
+    // override CSS "Hide FALLBACK badge (debug code)" — che pero' per
+    // color:#1A2560 condiviso nascondeva anche il badge GPS qui sotto, mai
+    // visto da nessun utente). Reso esplicito invece di lasciarlo a un
+    // effetto collaterale di selettore CSS.
     const badge = isGPS
-      ? '<span style="background:#00FF88;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:14px;font-weight:700;margin-left:8px;">📍 GPS</span>'
-      : '<span style="background:#FFD700;color:#1A2560;padding:2px 8px;border-radius:4px;font-size:14px;font-weight:700;margin-left:8px;">⚠️ FALLBACK</span>';
+      ? '<span style="background:rgba(22,163,74,0.18);color:#16a34a;padding:2px 8px;border-radius:4px;font-size:14px;font-weight:700;margin-left:8px;">📍 GPS</span>'
+      : '';
 
     // Build daily forecast cards
     let dailyHtml = '';
@@ -607,8 +602,6 @@
       const tempMax = Math.round(dailyData.temperature_2m_max[i]);
       const tempMin = Math.round(dailyData.temperature_2m_min[i]);
       const dayIcon = window.getWeatherIcon(code);
-      const bgColor = window.getWeatherColor(code);
-
       dailyHtml += `
         <div class="weather-day" data-weather="${code}" style="background:rgba(20,30,60,0.05);backdrop-filter:blur(20px) saturate(180%);border:1.5px solid var(--l-hair);">
           <div class="weather-date">${dayName}</div>
@@ -630,17 +623,17 @@
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div style="display:flex;align-items:center;">
-                <h2 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:0;font-size:18px;font-weight:700;">${locationName}</h2>
+                <h2 style="color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:0;font-size:18px;font-weight:700;">${locationName}</h2>
                 ${badge}
               </div>
-              <p style="color:var(--y2k-muted);margin:0;font-size:14px;font-family:'Courier New',monospace;">${dateStr}</p>
+              <p style="color:var(--l-muted);margin:0;font-size:14px;font-family:'Courier New',monospace;">${dateStr}</p>
             </div>
             <div style="text-align:right;">
               <div style="display:flex;align-items:center;gap:12px;">
                 <div style="font-size:48px;line-height:1;">${icon}</div>
                 <div>
-                  <div style="font-size:36px;font-weight:700;font-family:'Courier New',monospace;margin:0;line-height:1;color:var(--y2k-ink);">${currentTemp}°</div>
-                  <p style="color:var(--y2k-muted);margin:2px 0 0 0;font-size:13px;text-transform:capitalize;font-family:'Courier New';">${currentCondition}</p>
+                  <div style="font-size:36px;font-weight:700;font-family:'Courier New',monospace;margin:0;line-height:1;color:var(--l-ink);">${currentTemp}°</div>
+                  <p style="color:var(--l-muted);margin:2px 0 0 0;font-size:13px;text-transform:capitalize;font-family:'Courier New';">${currentCondition}</p>
                 </div>
               </div>
             </div>
@@ -668,15 +661,15 @@
 
         <!-- Daily Forecast -->
         <div style="padding:0 16px;">
-          <h3 style="color:var(--y2k-pink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:16px 0 12px 0;font-size:16px;font-weight:700;">🗓️ Prossimi 8 giorni</h3>
+          <h3 style="color:var(--l-ink);font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;margin:16px 0 12px 0;font-size:16px;font-weight:700;">🗓️ Prossimi 8 giorni</h3>
           <div class="weather-days" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;">
             ${dailyHtml}
           </div>
         </div>
 
         <!-- Footer -->
-        <div style="padding:16px;text-align:center;border-top:2px solid var(--y2k-pink);margin-top:20px;">
-          <p style="color:var(--y2k-muted);font-size:13px;margin:0;font-family:'Courier New',monospace;">📡 Dati da OpenMeteo | Aggiornamento ogni 10 min</p>
+        <div style="padding:16px;text-align:center;border-top:1.5px solid var(--l-hair);margin-top:20px;">
+          <p style="color:var(--l-muted);font-size:13px;margin:0;font-family:'Courier New',monospace;">📡 Dati da OpenMeteo | Aggiornamento ogni 10 min</p>
         </div>
       </div>
     `;
@@ -694,7 +687,7 @@
     window.openSheet('🌤️ Meteo', `
       <div style="padding:20px;text-align:center;">
         <div style="font-size:48px;margin-bottom:16px;">⏳</div>
-        <p style="color:var(--y2k-ink);font-size:16px;margin:0;">📍 Acquisendo posizione...</p>
+        <p style="color:var(--l-ink);font-size:16px;margin:0;">📍 Acquisendo posizione...</p>
       </div>
     `);
 
@@ -801,5 +794,4 @@
   window.fetchWeatherHourly = fetchWeatherHourly;
   window.getWeatherIcon = getWeatherIcon;
   window.getWeatherConditionName = getWeatherConditionName;
-  window.getWeatherColor = getWeatherColor;
 })();

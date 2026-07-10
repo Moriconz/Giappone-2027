@@ -1,5 +1,19 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.44 — Pulizia Y2K parte 2: gli ultimi file davvero intercettati (2026-07-10, Attuale)
+
+Continuazione v3.43. Prima di toccare altro codice, ricostruita la lista **precisa** dei colori che l'override in `legacy-skin.css` (righe ~2930-3186) caccia davvero via `[style*="..."]` — non tutto ciò che "sembra Y2K" lo è: `#FF69B4`/`#2D3B7D`/`#C85C3B`/`#4A5BA8` e altri comparivano nel file ma mai dentro un selettore attributo, quindi non c'entrano con l'override. Lista reale: `#00FF88`, `#1A2560`, `#6B5EA8`, `#C8BDFF`, `#E8E0FF`, `#FF1493`, `#FFD700`, `#FFF9E6`, `#FFFDF0`, `var(--y2k-ink/muted/pink)`.
+
+- `js/views/weather-view.js` — il file con più residui reali: tutto il modal meteo (`buildAndShowWeatherModal`, l'unica funzione che il blocco "WEATHER MODAL/DETAIL BOXES" da ~130 righe esiste per patchare) ancora su `var(--y2k-pink/ink/muted)` per header/testo/footer. Sistemato con `var(--l-ink)`/`var(--l-muted)`/`var(--l-hair)`. **Bonus**: `getWeatherColor()` era codice morto (calcolava `bgColor`, mai usato nell'HTML, nessun altro chiamante in tutto il repo) — rimossa la funzione intera invece di tradurne i colori, 3 righe Y2K sparite gratis. **Bug trovato e corretto**: il badge "📍 GPS" e quello "⚠️ FALLBACK" condividevano `color:#1A2560`, che l'override nasconde con `span[style*="color:#1A2560"]{display:none}` (pensato solo per nascondere il FALLBACK debug) — il badge GPS non è mai stato visibile a nessun utente per lo stesso motivo. Ora il badge GPS ha un verde adattivo proprio (visibile), il ramo FALLBACK resta vuoto (comportamento identico a prima, che era già invisibile).
+- `js/views/list-view.js` — dialog "Aggiungi tappa" (`showAddItineraryDialog`), l'unico uso reale rimasto: card crema/navy Y2K completa (sfondo, titolo, 3 label, 3 input, bottone Annulla) mai portata al tema glass, nonostante il bottone Conferma accanto usasse già `var(--l-accent)`. Sistemata mantenendo lo stesso layout/bordo-accento, solo colori → adattivi.
+- `js/views/group-share-view.js` — box "Stanza: X" e 3 bottoni "Annulla" con la stessa palette crema/oro/navy già vista in `group-panel.js` (v3.43); bottone "Aggiungi POI" con testo navy illeggibile su sfondo verde → bianco.
+
+**Deliberatamente non toccati** (verificato uno per uno che non siano intercettati da nessun selettore, quindi fuori dallo scope "shrink dell'override"): `app-core.js` (colore Canvas/OpenLayers, non è uno style DOM), `mqtt-transport.js` ×8 (colori di `console.log('%c...')` per DevTools, invisibili al CSS), `debug-panel.js`/`app-boot.js` (bottoni/testo non matchati — `div[style*="border:2px solid #00FF88"]` non cattura un `<button>`), `gf-places-panel.js` e `budget-view.js` (badge semaforo/categoria: stesso ragionamento di `EXPENSE_CATEGORIES` in v3.43, `color:#FFD700` non è mai stato un target dei selettori, solo `background:`/`border:`), `views/shopping-view.js` (bottone Apple Maps: nessun selettore `a[style*=...]` esiste nel CSS, badge auto-contenuto).
+
+**A questo punto l'override in `legacy-skin.css` non intercetta più nulla**: nessun file in `js/` emette ancora uno dei 9 colori/3 variabili della lista precisa sopra. Il blocco è quindi ora davvero morto — candidato per la rimozione in un prossimo giro (non fatto qui: verificarlo con un pass end-to-end su tutte le schermate prima di cancellare ~250 righe di CSS).
+
+Verificato: `node --check` su tutti i file, lint-i18n verde, smoke test verde, verifica visiva nel browser reale (modal meteo con badge GPS visibile, dialog "Aggiungi tappa" ora coerente col tema scuro).
+
 ## v3.43 — Colori Y2K hardcoded → variabili adattive (2026-07-10, Attuale)
 
 Continuazione HANDOFF punto 4. Dei 3 file indicati, `poi-detail-view.js` era già pulito (verificato via grep, nessun residuo — probabilmente sistemato in una sessione precedente non documentata). Sistemati gli altri 2:
