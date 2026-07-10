@@ -2159,7 +2159,9 @@ main {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  padding: 12px 0 !important;
+  /* Anche orizzontale: i temi rendono le righe card con bordo proprio,
+     con 12px 0 il pallino categoria toccava il bordo sinistro. */
+  padding: 12px !important;
   border-bottom: 1px solid rgba(200,190,240,0.2) !important;
 }
 

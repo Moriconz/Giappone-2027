@@ -1,5 +1,12 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.32 — Audit padding su tutta l'app: l'ultimo offender era .category-row (2026-07-10, Attuale)
+
+Segnalato: "ci sono ancora gli stessi problemi di padding". Costruito un audit Puppeteer sistematico (`audit-padding.mjs`) che apre 14 pannelli in entrambi i temi e misura la distanza reale di **qualsiasi elemento visibile** (non solo testo — la prima versione per questo non trovava nulla) dal bordo di ogni card. Risultato: un solo offender vero in tutta l'app, `.category-row` del Budget con `padding: 12px 0` — zero orizzontale, così il pallino categoria toccava il bordo sinistro della card (i temi rendono le righe card con bordo proprio). Gli altri 2 hit erano falsi positivi verificati (wrapper sticky ricerca Shopping full-width per allineamento, `.gallery-upload-area` il cui figlio ha già padding 20px proprio).
+
+### 🔧 Fix
+`.category-row` → `padding: 12px` su tutti i lati. Audit ri-eseguito dopo il fix in dark e light: zero offender reali residui. Smoke test verde. `audit-padding.mjs` committato accanto a `smoke-test.mjs` per riusarlo ai prossimi giri UI.
+
 ## v3.31 — `.section` senza padding sopra i 768px, indentato in più sotto i 480px (2026-07-10, Attuale)
 
 Segnalato dall'utente: header "🛍️ Negozi & Mercati" più rientrato della search bar nello stesso pannello Shopping. Causa: `.section` (usato da Shopping, Biglietti, GF Restaurants, Tips, Prenota, list-view) aveva il padding definito SOLO dentro due `@media` diverse in legacy-skin.css — `14px` sotto 768px, `12px` sotto 480px (quest'ultimo vince per ordine sorgente sotto i 480px, ma niente vince sopra i 768px: card senza padding). Trovato con CDP `CSS.getMatchedStylesForNode` dopo che la ricerca testuale nel CSSOM non trovava nulla (le regole erano annidate in `@media`, invisibili al mio primo giro di grep).
