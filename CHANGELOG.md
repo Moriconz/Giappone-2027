@@ -1,5 +1,22 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.38 — Foto-menu → riscontri: l'AI suggerisce, non invia mai da sola (2026-07-10, Attuale)
+
+Prima idea prodotto pianificata e implementata di HANDOFF.md §7. Collegati tre moduli GF che esistevano già ma erano isolati: `GFMenuPhotos` (foto menù condivisa col gruppo), `GroqMenuAnalyzer` (analisi AI, raggiungibile solo da un pannello standalone scollegato) e `GFCrowd` (riscontri manuali Safe/Problema/Nota). Ora dopo una foto si può chiedere all'AI di analizzarla, e il verdetto **pre-compila** un riscontro — l'utente deve sempre confermare/modificare prima dell'invio, mai automatico (stesso principio del detector review-scan: "likely", mai "confermato" da un automatismo).
+
+### 🔧 Novità
+- `js/gf-menu-photos.js`: nuovo bottone "🤖 Analizza con AI" sotto le foto già scattate. Chiama `VisionImageAnalyzer.classifyImage` (stesso classificatore già usato dal pannello standalone) → `GroqMenuAnalyzer.analyzeImage` → mostra piatti sicuri/a rischio inline. Se rischi trovati: bottone che apre `GFCrowd.promptNote` con una nota pre-compilata (l'utente conferma/modifica). Se tutto pulito: bottone che apre `GFCrowd.askSafe` direttamente (i due dettagli cucina/staff restano da compilare a mano, l'AI non può dedurli da una foto).
+- `js/gf-crowdsource.js`: `promptNote` esteso con due parametri opzionali (`defaultText`, `type`), retrocompatibile — il bottone "Nota" esistente non cambia comportamento.
+- `js/api-quota.js`: **gap di costo trovato in fase di analisi** — la entry quota `analyzeGlutenFree` non corrispondeva a nessun endpoint reale (i path veri sono `groqAnalyze`/`groqImageAnalyze`), quindi le chiamate Groq non erano mai state gate-ate lato client nonostante il commento del file le trattasse come costo a pagamento. Sostituita con le due chiavi corrette, 5/giorno ciascuna.
+- 5 nuove chiavi i18n (it/en/ja).
+
+### 🐛 Bug trovati e corretti durante la verifica manuale (non in fase di planning)
+- `analyzeImage` rifiuta la richiesta se non riceve `imageLabels` o `menuText` oltre alla foto — il piano iniziale assumeva bastasse la foto da sola. Aggiunta la classificazione via `VisionImageAnalyzer` prima della chiamata.
+- I `predictions` di `classifyImage` sono oggetti `{label, probability}`, non stringhe — serviva `.map(p => p.label)` prima di passarli, altrimenti Groq riceveva `[object Object]`.
+- Emoji 🤖 duplicata nel bottone (presente sia nel template che nella chiave i18n).
+
+Verificato end-to-end in console: percorso "rischio" (foto → analisi → nota pre-compilata → conferma → riscontro `warning` salvato), percorso "sicuro" (→ `askSafe` chiamato correttamente), non-regressione del bottone "Nota" esistente (chiamata a 2 argomenti, comportamento identico). Smoke test verde.
+
 ## v3.37 — i18n: 32 stringhe hardcoded tradotte in 5 file (2026-07-10, Attuale)
 
 Step 5 di HANDOFF.md: "molte stringhe nuove restano hardcoded in italiano nei template JS (EN/JA le mostrano in italiano)". Tradotte le stringhe più visibili trovate in questa sessione (non l'intero backlog — resta comunque ampio, vedi nota sotto).

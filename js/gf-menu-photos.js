@@ -126,14 +126,73 @@
         ${ph.by === me ? `<button onclick="window.GFMenuPhotos.remove('${_esc(poiId)}','${ph.id}')" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:13px;cursor:pointer;line-height:1;">×</button>` : ''}
       </div>`).join('');
 
+    const analyzeBtn = photos.length
+      ? `<button onclick="window.GFMenuPhotos.analyzePhotoForPoi('${_esc(poiId)}','${_esc(poiName)}')" style="width:100%;padding:10px;margin-top:8px;background:rgba(20,30,60,0.05);border:1.5px solid rgba(20,30,60,0.16);border-radius:8px;color:var(--l-ink);font-size:15px;font-weight:700;cursor:pointer;">🤖 ${T('gfm.analyze', 'Analizza con AI')}</button>`
+      : '';
+
     el.innerHTML = `
       <div style="margin-top:6px;padding:14px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.3);border-radius:12px;">
         <div style="font-size:15px;font-weight:700;color:#16a34a;margin-bottom:10px;">📷 ${T('gfm.title', 'Foto menù GF del gruppo')}</div>
         ${photos.length ? `<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;">${thumbs}</div>` : `<div style="font-size:14px;color:var(--l-muted);margin-bottom:10px;">${T('gfm.empty', 'Nessuna foto. Fotografa il menù gluten-free per il gruppo.')}</div>`}
         <button onclick="window.GFMenuPhotos.captureForPoi('${_esc(poiId)}','${_esc(poiName)}')" style="width:100%;padding:10px;background:rgba(74,222,128,0.18);border:1.5px solid rgba(74,222,128,0.45);border-radius:8px;color:#166534;font-size:15px;font-weight:700;cursor:pointer;">📷 ${T('gfm.add', 'Aggiungi foto menù')}</button>
+        ${analyzeBtn}
+        <div id="gfm-ai-${_esc(poiId)}"></div>
       </div>`;
   }
-  window.GFMenuPhotos = { captureForPoi, getForPoi, receive, renderInto, remove, count };
+
+  // ── Analisi AI della foto già scattata: suggerisce, non invia mai da sola ──
+  // Il verdetto Groq pre-compila un riscontro GFCrowd che l'utente deve
+  // comunque confermare (stesso principio del detector: "likely", mai
+  // "confermato" da un automatismo).
+  async function analyzePhotoForPoi(poiId, poiName) {
+    const photos = getForPoi(poiId);
+    const photo = photos[photos.length - 1];
+    if (!photo) return;
+    if (typeof window.GroqMenuAnalyzer?.analyzeImage !== 'function') return;
+
+    window.toast?.(T('groq.analyzingPhoto', '🔄 Analizzando foto con Groq...'));
+    // analyzeImage rifiuta la richiesta se non ha almeno imageLabels o
+    // menuText (oltre alla foto) — stesso classificatore già usato dal
+    // pannello "Analizza menu" per lo stesso identico scopo.
+    const predictions = await window.VisionImageAnalyzer?.classifyImage?.(photo.data) || [];
+    const labels = predictions.slice(0, 4).map(p => p.label);
+    const result = await window.GroqMenuAnalyzer.analyzeImage(photo.data, labels, '');
+    const box = document.getElementById(`gfm-ai-${poiId}`);
+    if (!result) {
+      window.toast?.(T('groq.imgError', '❌ Errore: risposta immagine non valida'));
+      return;
+    }
+
+    const safe = result.piatti_sicuri || [];
+    const risky = [...(result.rischi || []), ...(result.sconsigliato || [])];
+    const list = (items, color, label) => items.length ? `
+      <div style="margin-top:8px;">
+        <div style="font-size:13px;font-weight:700;color:${color};margin-bottom:4px;">${label}</div>
+        <ul style="margin:0;padding-left:18px;font-size:13px;color:var(--l-ink);">${items.map(i => `<li>${_esc(i)}</li>`).join('')}</ul>
+      </div>` : '';
+
+    if (!box) return;
+    if (!safe.length && !risky.length) {
+      box.innerHTML = `<div style="margin-top:10px;font-size:14px;color:var(--l-muted);">${T('gfm.aiNoData', "L'AI non ha trovato indicazioni utili in questa foto.")}</div>`;
+      return;
+    }
+
+    const aiSummary = (T('gfm.aiSummaryPrefix', '🤖 Analisi AI: rischi —') + ' ' + risky.join(', ')).slice(0, 200);
+    // data-summary invece di interpolare aiSummary dentro l'onclick: è testo
+    // generato dall'AI (nomi piatti), più a rischio di contenere apostrofi
+    // che romperebbero la stringa JS inline — l'attributo evita il problema.
+    const cta = risky.length
+      ? `<button data-summary="${_esc(aiSummary)}" onclick="window.GFCrowd.promptNote('${_esc(poiId)}','${_esc(poiName)}',this.dataset.summary,'warning')" style="width:100%;margin-top:10px;padding:9px;background:rgba(255,180,80,0.18);border:1.5px solid rgba(255,180,80,0.45);border-radius:8px;color:#92400e;font-size:14px;font-weight:700;cursor:pointer;">⚠️ ${T('gfm.aiWarn', 'Segnala il problema')}</button>`
+      : `<button onclick="window.GFCrowd.askSafe('${_esc(poiId)}','${_esc(poiName)}')" style="width:100%;margin-top:10px;padding:9px;background:rgba(76,175,80,0.22);border:1.5px solid rgba(76,175,80,0.5);border-radius:8px;color:#166534;font-size:14px;font-weight:700;cursor:pointer;">✅ ${T('gfm.aiSafe', 'Sembra sicuro — conferma dettagli')}</button>`;
+
+    box.innerHTML = `
+      <div style="margin-top:10px;padding:10px;background:rgba(20,30,60,0.04);border-radius:10px;">
+        ${list(safe, 'var(--m-success)', '🟢 ' + T('gfc.btnSafe', 'Safe'))}
+        ${list(risky, 'var(--m-danger)', '🔴 ' + T('gfc.btnWarn', 'Problema'))}
+        ${cta}
+      </div>`;
+  }
+  window.GFMenuPhotos = { captureForPoi, getForPoi, receive, renderInto, remove, count, analyzePhotoForPoi };
 
   // ── Auto-inject via MutationObserver (come GFCrowd) ──────────────────────────
   function _scan(root) {

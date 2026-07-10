@@ -28,7 +28,10 @@
     searchGlutenFreeShops: 2,    // 5× TextSearch per city call
     searchVintageShops:    2,    // Nearby Search batch per city
     placePhoto:            40,   // Places Photo ~$0.007/call
-    analyzeGlutenFree:     5,    // Groq (paid, not Google)
+    // "analyzeGlutenFree" non corrispondeva a nessun endpoint reale (i path
+    // veri sono questi due) — le chiamate Groq non erano mai state gate-ate.
+    groqAnalyze:            5,   // /api/groqAnalyze — Groq testo, paid
+    groqImageAnalyze:       5,   // /api/groqImageAnalyze — Groq immagine, paid
   };
 
   const STORAGE_KEY = 'apiQuota_v2';

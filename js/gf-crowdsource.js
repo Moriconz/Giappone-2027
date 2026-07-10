@@ -249,13 +249,15 @@
     document.querySelectorAll(`[data-gf-crowd="${CSS.escape ? CSS.escape(poiId) : poiId}"]`).forEach(renderInto);
   }
 
-  // Prompt per nota libera
-  async function promptNote(poiId, poiName) {
+  // Prompt per nota libera. defaultText/type opzionali: usati dal flusso
+  // "analizza foto menù con AI" per pre-compilare una nota di tipo 'warning'
+  // che l'utente deve comunque confermare — mai invio automatico.
+  async function promptNote(poiId, poiName, defaultText, type) {
     const txt = await (window.modalPrompt || ((msg, o) => Promise.resolve(prompt(msg, o?.defaultValue || ''))))(
       T('gfc.notePrompt', 'Aggiungi una nota GF:'),
-      { placeholder: 'Es: hanno menu senza glutine dedicato' }
+      { placeholder: 'Es: hanno menu senza glutine dedicato', defaultValue: defaultText || '' }
     );
-    if (txt && txt.trim()) addReport(poiId, poiName, 'note', txt.trim());
+    if (txt && txt.trim()) addReport(poiId, poiName, type || 'note', txt.trim());
   }
 
   // ─── Auto-inject via MutationObserver ────────────────────────────────
