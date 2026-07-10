@@ -1,5 +1,12 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.36 — GF Guide non riprova più le città dopo quota esaurita (2026-07-10, Attuale)
+
+Il loop che carica i negozi GF per ogni zona/città dell'itinerario (`renderGFView` in `gf-view.js`) non controllava mai la quota `searchGlutenFreeShops` (2/giorno): a quota esaurita continuava a chiamare `loadGlutenFreeShopsForCity` per OGNI città rimanente, ognuna delle quali veniva bloccata da `ApiQuota` (zero costo reale, il fetch non parte nemmeno) ma con un giro di log rumoroso ad ogni iterazione inutile.
+
+### 🔧 Fix
+Guard nel loop: se la quota è esaurita E la città non è già in cache (memoria o localStorage 7gg — quelle restano gratis e vanno servite comunque), interrompe il loop invece di proseguire su ogni città rimanente. Verificato con quota forzata esaurita: il loop si ferma alla prima iterazione senza tentativi sprecati; con quota disponibile, il caricamento procede normale città per città come prima. Smoke test verde.
+
 ## v3.35 — Audit accenti/riskin: Gruppo mai migrato al tema adattivo, Meteo a due colori (2026-07-10, Attuale)
 
 Step 4 di HANDOFF.md: stessi criteri usati su itinerario/POI/GF Guide (un accento solo, niente riskin doppi) applicati a meteo/budget/gruppo/shopping. Budget e Shopping già puliti. Due bug reali trovati e risolti in Gruppo e Meteo.

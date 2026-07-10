@@ -10,6 +10,16 @@
   // ---- GF Shops cache (in-memory + localStorage 7d TTL) ----
   const gfCache = { shops: {} };
 
+  // Serve solo al guard quota nel loop città sotto: true se la prossima
+  // chiamata per questa città è gratis (cache), senza consumare la entry.
+  function _isCityCached(city) {
+    if (gfCache.shops[city]) return true;
+    try {
+      const cached = JSON.parse(localStorage.getItem(`gfShops_v1_${city}`) || 'null');
+      return !!(cached && cached.expires > Date.now());
+    } catch { return false; }
+  }
+
   async function loadGlutenFreeShopsForCity(city, cityLat, cityLng) {
     if (gfCache.shops[city]) {
       console.log(`%c[GF] Cache HIT (memoria): ${city} = ${gfCache.shops[city].length} shops`, 'background: #4A7C59; color: white; padding: 4px 8px; border-radius: 3px');
@@ -201,6 +211,13 @@
 
         for (let i = 0; i < priorityCities.length; i++) {
           const city = priorityCities[i];
+          // Quota searchGlutenFreeShops esaurita e questa città non è in
+          // cache → tutte le città non-cache rimanenti falliranno uguale
+          // (rumore console via ApiQuota, zero costo reale, ma inutile).
+          if (window.ApiQuota && !window.ApiQuota.check('searchGlutenFreeShops') && !_isCityCached(city)) {
+            console.log(`[renderGFView] Quota searchGlutenFreeShops esaurita, stop su ${priorityCities.length - i} città rimanenti (non in cache)`);
+            break;
+          }
           try {
             const isCurrentCity = city === currentCity;
             console.log(`[renderGFView] ${i+1}/${priorityCities.length} Caricando${isCurrentCity ? ' (PRIORITÀ GPS)' : ''}: ${city}...`);
