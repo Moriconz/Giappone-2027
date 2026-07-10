@@ -368,4 +368,183 @@
 
   window.TripOptimizer = { computePlan, openPreview, apply };
   window.openTripOptimizer = openPreview;
+
+  /* ═════════════════════════════════════════════════════════════════
+     DAY HOURS REORDER — Riordina le tappe di UN giorno per rispettare
+     gli orari di apertura, minimizzando avvisi di chiusura e viaggio.
+     Euristica greedy (non un solver esatto): ad ogni passo sceglie tra
+     le tappe aperte all'orario di arrivo previsto quella più vicina;
+     se nessuna è aperta, la più vicina in assoluto (l'avviso risultante
+     resta solo indicativo — mai bloccante, stesso principio di
+     getEntryClosingWarning). Stesso schema anteprima→conferma→snapshot
+     di TripOptimizer sopra, riusa isPeriodsOpenAt da
+     itinerary-closing-warning.js.
+     ═════════════════════════════════════════════════════════════════ */
+
+  function _hToMin(timeStr) {
+    const [h, m] = (timeStr || '').split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  }
+  function _minToH(minutes) {
+    const h = Math.floor(minutes / 60) % 24, m = Math.round(minutes % 60);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+  function _travelMinBetween(a, b) {
+    if (!a || !b || !window.ROUTING?.estimateDistanceHaversine) return 0;
+    const dist = window.ROUTING.estimateDistanceHaversine(a[0], a[1], b[0], b[1]);
+    const mode = window.ROUTING.suggestMode(dist);
+    return window.ROUTING.estimateDuration(dist, mode);
+  }
+  function _dateAtMinutes(dayIndex, minutes, tripStartDate) {
+    const tripStart = tripStartDate ? new Date(tripStartDate) : new Date(2027, 3, 10);
+    const d = new Date(tripStart);
+    d.setDate(d.getDate() + dayIndex);
+    d.setHours(0, minutes, 0, 0);
+    return d;
+  }
+  function _countHourWarnings(dayIndex, entries, tripStartDate) {
+    return entries.reduce((n, e) => n + (window.getEntryClosingWarning?.(dayIndex, e, tripStartDate) ? 1 : 0), 0);
+  }
+  // Prima finestra utile OGGI (stesso giorno di viaggio, no giorni successivi)
+  // per iniziare la visita non prima di fromMinutes. null = nessuna apertura
+  // utile oggi (fallback: si accetta l'arrivo "a naso", stesso principio di
+  // getEntryClosingWarning — l'avviso resta solo indicativo).
+  function _nextOpenToday(periods, dayOfWeek, fromMinutes) {
+    if (!Array.isArray(periods) || !periods.length) return fromMinutes; // nessun dato -> permissivo
+    let best = null;
+    periods.forEach(p => {
+      if (!p.open || p.open.day !== dayOfWeek) return;
+      const openMin = p.open.hour * 60 + (p.open.minute || 0);
+      const closeMin = (p.close && p.close.day === p.open.day) ? (p.close.hour * 60 + (p.close.minute || 0)) : Infinity;
+      const candidateStart = Math.max(openMin, fromMinutes);
+      if (candidateStart <= closeMin && (best === null || candidateStart < best)) best = candidateStart;
+    });
+    return best;
+  }
+
+  function computeDayHoursPlan(dayIndex) {
+    const dayPOIs = window.state?.itineraryByDay?.[dayIndex] || [];
+    if (dayPOIs.length < 2) return { ok: false, reason: 'too-few' };
+
+    const pois = (typeof window.allPOIs === 'function') ? window.allPOIs() : [];
+    const tripStartDate = window.state?.tripProfile?.startDate;
+    const warningsBefore = _countHourWarnings(dayIndex, dayPOIs, tripStartDate);
+    const travelBeforeMin = dayPOIs.reduce((s, e) => s + (e.route_from_prev?.duration_min || 0), 0);
+
+    // Ancora: l'orario più presto tra le tappe attuali (non un'identità fissa)
+    const startMin = Math.min(...dayPOIs.map(e => _hToMin(e.time)));
+    const dayOfWeek = _dateAtMinutes(dayIndex, 0, tripStartDate).getDay();
+    const remaining = dayPOIs.map(e => ({ entry: e, coord: _coordOf(e, pois) }));
+    const ordered = [];
+    let cursor = startMin, pos = null;
+
+    while (remaining.length) {
+      // Per ogni candidata: se non è ancora aperta all'arrivo "a naso", si
+      // aspetta fino alla prossima finestra utile OGGI invece di segnarla
+      // comunque all'orario sbagliato — altrimenti il riordino sposta la
+      // tappa per ultima ma le lascia comunque l'orario originale scorretto.
+      const scored = remaining.map((cand, i) => {
+        const travelMin = pos && cand.coord ? _travelMinBetween(pos, cand.coord) : 0;
+        const naiveArrival = cursor + travelMin;
+        const nextOpen = _nextOpenToday(cand.entry.opening_periods, dayOfWeek, naiveArrival);
+        const arrival = nextOpen !== null ? Math.max(naiveArrival, nextOpen) : naiveArrival;
+        return { i, travelMin, arrival, wait: arrival - naiveArrival, available: nextOpen !== null };
+      });
+      const availableOnes = scored.filter(s => s.available);
+      const pool = (availableOnes.length ? availableOnes : scored).slice().sort((a, b) => (a.wait - b.wait) || (a.travelMin - b.travelMin));
+      const pick = pool[0];
+      const cand = remaining[pick.i];
+
+      cursor = pick.arrival;
+      ordered.push({ ...cand.entry, time: _minToH(cursor) });
+      cursor += (cand.entry.duration || 0);
+      pos = cand.coord || pos;
+      remaining.splice(pick.i, 1);
+    }
+
+    const travelAfterMin = ordered.reduce((s, e, i) => {
+      if (i === 0) return s;
+      const a = _coordOf(ordered[i - 1], pois), b = _coordOf(e, pois);
+      return s + (a && b ? _travelMinBetween(a, b) : 0);
+    }, 0);
+    const warningsAfter = _countHourWarnings(dayIndex, ordered, tripStartDate);
+
+    return {
+      ok: true, dayIndex, newOrder: ordered,
+      stats: {
+        warningsBefore, warningsAfter,
+        travelBeforeMin: Math.round(travelBeforeMin), travelAfterMin: Math.round(travelAfterMin)
+      }
+    };
+  }
+
+  function applyDayHours(dayIndex, result) {
+    if (!result?.ok || !result.newOrder) return false;
+    try { window.ItinerarySnapshots?.saveAuto?.('optimize-day'); } catch (_) {}
+
+    window.state.itineraryByDay[dayIndex] = result.newOrder;
+    try { window.ITINERARY?.computeDayRouting?.(dayIndex); } catch (_) {}
+    window.saveState?.();
+    window.GROUP_SYNC?.broadcastItinerary?.();
+    window.renderItineraryUnified?.();
+    return true;
+  }
+
+  function openDayHoursPreview(dayIndex) {
+    if (typeof window.openSheet !== 'function') return;
+    const result = computeDayHoursPlan(dayIndex);
+
+    if (!result.ok) {
+      window.openSheet(T('hreorder.title', '🕐 Riordina per orari'),
+        `<div style="padding:24px 14px;text-align:center;color:var(--l-muted);font-size:15px;line-height:1.6;">
+           <div style="font-size:34px;margin-bottom:8px;">🕐</div>
+           <p style="margin:0;">${T('hreorder.tooFew', 'Servono almeno 2 tappe in questo giorno per riordinare.')}</p>
+         </div>`);
+      return;
+    }
+
+    const { newOrder, stats } = result;
+    const warnDelta = stats.warningsBefore - stats.warningsAfter;
+    const warnColor = warnDelta > 0 ? '#15803d' : 'var(--l-muted)';
+    const stopsHTML = newOrder.map(e => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:9px;">
+        <span style="font-weight:800;color:var(--l-accent);font-size:14px;min-width:44px;">${e.time}</span>
+        <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--l-ink);font-size:14px;">${_esc(e.poi_name || e.poi_id)}</span>
+      </div>`).join('');
+
+    const html = `
+      <div style="display:flex;flex-direction:column;gap:12px;padding:4px 0;">
+        <p style="margin:0;color:var(--l-muted);font-size:14px;line-height:1.5;">
+          ${T('hreorder.intro', 'Anteprima: le tappe di questo giorno vengono riordinate per rispettare gli orari di apertura. Niente viene applicato finché non confermi.')}
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;background:rgba(20,30,60,0.03);border:1px solid var(--l-hair);border-radius:10px;text-align:center;">
+          <div><div style="font-size:18px;font-weight:800;color:${warnColor};">${stats.warningsBefore} → ${stats.warningsAfter}</div><div style="font-size:12px;color:var(--l-muted);">${T('hreorder.warnings', 'avvisi orari')}</div></div>
+          <div><div style="font-size:18px;font-weight:800;color:var(--l-ink);">${stats.travelBeforeMin} → ${stats.travelAfterMin}</div><div style="font-size:12px;color:var(--l-muted);">${T('hreorder.travel', 'min spostamento')}</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">${stopsHTML}</div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button id="hreorder-apply" style="flex:2;padding:12px;background:var(--l-accent);border:none;border-radius:9px;color:#fff;font-weight:700;font-size:16px;cursor:pointer;">✅ ${T('hreorder.apply', 'Applica')}</button>
+          <button id="hreorder-cancel" style="flex:1;padding:12px;background:rgba(20,30,60,0.04);border:1.5px solid var(--l-hair);border-radius:9px;color:var(--l-ink);font-weight:600;font-size:15px;cursor:pointer;">${T('common.cancel', 'Annulla')}</button>
+        </div>
+        <p style="font-size:12px;color:var(--l-faint);text-align:center;margin:2px 0 0;">${T('topt.undoHint', 'Puoi annullare con ⬅️ o ripristinare una versione salvata.')}</p>
+      </div>
+    `;
+
+    window.openSheet(T('hreorder.title', '🕐 Riordina per orari'), html);
+
+    setTimeout(() => {
+      const applyBtn = document.getElementById('hreorder-apply');
+      if (applyBtn) applyBtn.onclick = () => {
+        if (applyDayHours(dayIndex, result)) {
+          window.closeSheet?.();
+          window.toast?.('🕐 ' + T('hreorder.done', 'Giorno riordinato'));
+        }
+      };
+      const cancelBtn = document.getElementById('hreorder-cancel');
+      if (cancelBtn) cancelBtn.onclick = () => window.closeSheet?.();
+    }, 40);
+  }
+
+  window.DayHoursReorder = { computePlan: computeDayHoursPlan, openPreview: openDayHoursPreview, apply: applyDayHours };
+  window.openDayHoursReorder = openDayHoursPreview;
 })();

@@ -259,6 +259,7 @@ function renderItineraryUnified() {
                  </div>`
               : `<button class="itinerary-base-btn" data-day="${dayIndex}" style="width:100%;margin-bottom:8px;padding:8px 12px;background:transparent;border:1px dashed var(--l-hair);border-radius:8px;color:var(--l-muted);font-size:14px;cursor:pointer;">🏨 Imposta base/hotel del giorno</button>`;
           })()}
+          ${dayPOIs.length >= 2 ? `<button onclick="window.openDayHoursReorder?.(${dayIndex})" style="width:100%;margin-bottom:8px;padding:8px 12px;background:transparent;border:1px solid var(--l-hair);border-radius:8px;color:var(--l-muted);font-size:14px;cursor:pointer;">🕐 ${_T('hreorder.buttonLabel', 'Riordina per orari')}</button>` : ''}
           <button class="itinerary-add-btn" data-day="${dayIndex}" style="
             width:100%;
             padding:10px 14px;

@@ -36,7 +36,7 @@ Il CSS soffriva di "appiattitori": regole con `!important` e selettori larghissi
 6. ~~**Quota-stop GF Guide**~~ — FATTO (v3.36). Guard nel loop: quota esaurita + città non in cache → break invece di proseguire su ogni città rimanente.
 7. **Idee prodotto**:
    - ~~Foto-menu con analisi Groq nel flusso riscontri~~ — FATTO (v3.38). `GFMenuPhotos`+`GroqMenuAnalyzer`+`GFCrowd` collegati, l'AI suggerisce, non invia mai da sola. Sistemato anche un gap quota reale scoperto in fase di analisi (`api-quota.js`, chiave che non corrispondeva a nessun endpoint).
-   - **Ordinamento automatico giorno per orari di apertura** — non pianificato. Fondamenta forti già presenti: `opening_periods` per tappa (`js/poi-enrichment.js`), `getEntryClosingWarning()` (`js/itinerary-closing-warning.js`), badge conflitti sovrapposizione già calcolato (`js/itinerary-unified.js`). Manca solo l'algoritmo di sequenziamento — può riusare il pattern preview/applica/snapshot di "Ottimizza viaggio" (`js/itinerary-features.js`, oggi ottimizza solo per distanza).
+   - ~~Ordinamento automatico giorno per orari di apertura~~ — FATTO (v3.39). `DayHoursReorder` in `js/itinerary-features.js`, mirror di `TripOptimizer`. Bottone "🕐 Riordina per orari" nell'accordion di ogni giorno.
    - **Pre-download offline per regione (mappa+GF)** — non pianificato, il più grande dei tre. Oggi zero cache tile mappa (SW non tocca le richieste ArcGIS) e zero concetto di "regione" nel codebase (solo 37 città piatte). Richiede decisioni di design prima di iniziare: granularità regione, quanti livelli di zoom cachare, gestione quota storage.
 
 ## Problemi noti

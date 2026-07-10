@@ -1,5 +1,20 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.39 — Riordina un giorno per orari di apertura (2026-07-10, Attuale)
+
+Seconda idea prodotto pianificata di HANDOFF.md §7. L'itinerario segnalava già passivamente i problemi (`getEntryClosingWarning` avvisa se una tappa cade a locale chiuso, badge "⛔ N sovrapposte"), ma non c'era modo di **agire**: il drag&drop sposta tappe tra giorni diversi, non le riordina dentro lo stesso giorno. Nuovo bottone "🕐 Riordina per orari" per giorno, stesso schema anteprima→conferma→snapshot già in produzione per "Ottimizza viaggio" (`TripOptimizer`, mirror quasi esatto, stesso file).
+
+### 🔧 Novità
+- `js/itinerary-features.js`: nuova sezione `DayHoursReorder` — euristica greedy (non un solver esatto): ad ogni passo sceglie tra le tappe rimanenti quella raggiungibile prima, aspettando l'apertura se serve invece di segnare comunque un orario sbagliato. Anteprima con avvisi/minuti di spostamento prima→dopo, applica con snapshot automatico (**riuso** dell'hook `'optimize-day'` già presente ma orfano in `itinerary-snapshots.js` — mai collegato a nulla finora).
+- `js/itinerary-closing-warning.js`: estratta `isPeriodsOpenAt(periods, date)` dalla closure privata che c'era prima — comportamento di `getEntryClosingWarning` invariato, ma ora la logica "è aperto a quest'ora?" è richiamabile anche per orari ipotetici.
+- Bottone "🕐 Riordina per orari" nell'accordion di ogni giorno (≥2 tappe), accanto al bottone base/hotel — non nella toolbar in cima che agisce sull'intero viaggio.
+- 8 nuove chiavi i18n (it/en/ja).
+
+### 🐛 Trovato in verifica manuale, non previsto dal piano
+La prima versione riordinava correttamente le tappe (mattina→lungo-orario→sera) ma non "aspettava" l'apertura: la tappa serale finiva comunque schedulata alle 10:59 invece che alle 18:00, quindi l'avviso restava. Aggiunta `_nextOpenToday()`: se la prossima tappa non è ancora aperta all'arrivo previsto, il cursore avanza fino alla prima finestra utile invece di ignorarla. Verificato su un caso costruito (3 tappe, una aperta solo di sera): avvisi 1→0 dopo il riordino, non solo un ordine diverso con lo stesso problema.
+
+Verificato end-to-end: `computePlan` su un giorno con conflitto reale (screenshot anteprima, click Applica, snapshot "Prima di ottimizzazione" creato, `state.itineraryByDay` e `route_from_prev` aggiornati correttamente). Smoke test verde.
+
 ## v3.38 — Foto-menu → riscontri: l'AI suggerisce, non invia mai da sola (2026-07-10, Attuale)
 
 Prima idea prodotto pianificata e implementata di HANDOFF.md §7. Collegati tre moduli GF che esistevano già ma erano isolati: `GFMenuPhotos` (foto menù condivisa col gruppo), `GroqMenuAnalyzer` (analisi AI, raggiungibile solo da un pannello standalone scollegato) e `GFCrowd` (riscontri manuali Safe/Problema/Nota). Ora dopo una foto si può chiedere all'AI di analizzarla, e il verdetto **pre-compila** un riscontro — l'utente deve sempre confermare/modificare prima dell'invio, mai automatico (stesso principio del detector review-scan: "likely", mai "confermato" da un automatismo).
