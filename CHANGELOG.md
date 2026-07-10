@@ -1,5 +1,14 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.34 — Refactor monoliti: poi-detail-view.js 1768→441 righe (2026-07-10, Attuale)
+
+Lavoro preparato in una sessione precedente (worktree isolata, non ancora mergiata) e rimasto in coda come step 3 di HANDOFF.md. Nessun cambio di comportamento, solo split meccanico — verificato: i due commit erano già stati testati con smoke test al momento in cui furono scritti, e la worktree era ferma a 19 commit dietro main (nessuno dei quali toccava questi due file), quindi cherry-pick pulito senza conflitti.
+
+### 🔧 Refactor
+- `poi-detail-view.js` (1768 righe) → resta a 441, estratti: `js/views/poi-detail/poi-detail-helpers.js` (gfTag + helper puri), `poi-detail-template.js` (poiDetailHTML, sezioni 1-12), `poi-itinerary-wizard.js` (wizard 4 step). Tutti i `window.*` esistenti invariati.
+- `gf-places-panel.js` (972 righe) → 740, estratti: `js/gf-menu-analyzer.js` (GroqMenuAnalyzer), `js/gf-places-db.js` (GFSuggestionsDB + GFPlacesDB).
+- Verificato dopo il cherry-pick: tutti i nuovi globali presenti e tipizzati correttamente (`GroqMenuAnalyzer`, `GFPlacesDB`, `PoiDetailHelpers`, `openAddToItineraryWizard`, ecc.), smoke test verde con `openPoi.hasContent: true`, pannello Suggerisci Posti aperto e funzionante nel browser.
+
 ## v3.33 — Selettore paese destinazione: chiude il pivot "planner globale" (2026-07-10, Attuale)
 
 `tripProfile.countryCode` era già letto da `japan-calendar-hints.js` (festività Nager.Date) e da `isJapanTrip()`, ma nessuna UI lo scriveva mai — restava sempre al default `'JP'` hardcoded. Mancava il campo per chiuderlo davvero.
