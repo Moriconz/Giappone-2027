@@ -1,5 +1,15 @@
 # 📋 CHANGELOG — Giappone 2027
 
+## v3.41 — i18n: calendario giapponese + errori Groq (2026-07-10, Attuale)
+
+Continuazione backlog i18n (v3.37). Controllati i punti indicati in HANDOFF.md: form GF crowdsourcing (`gf-crowdsource.js`) e schermi v3.38-3.40 (foto-menu AI, riordino orari, offline) erano già completamente tradotti — solo due aree avevano stringhe hardcoded reali.
+
+- `js/japan-calendar-hints.js` (festività/stagionalità, mai tradotto da quando esiste): 17 chiavi nuove (`jpcal.*`) per titolo/sottotitolo, Golden Week, Obon, Shogatsu, sakura Tokyo/Kyoto, koyo Kyoto/Nikko + disclaimer stime — le chiavi erano referenziate nel codice (`T(h.labelKey, ...)`) ma assenti dal dizionario, quindi EN/JA vedevano comunque l'italiano via fallback.
+- `js/gf-menu-analyzer.js`: 5 messaggi di errore Groq interpolati con template string invece di `T()` (`❌ Errore: ${err.message}` ecc.) — 3 nuove chiavi con placeholder `{msg}` sostituito via `.replace()`, stesso pattern già in uso per `groupPoi.addHint`.
+- 51 nuove voci totali (17 chiavi × 3 lingue), lint-i18n verde (428 chiavi in parità it/en/ja), smoke test verde.
+
+Non toccato: `deletePersonalItinerary`/`requestUnshare` in `itinerary-features.js` hanno hardcoded residui ma sono codice pre-esistente non legato alle feature v3.38-3.40, fuori dallo scope dichiarato di questa sessione — restano nel backlog i18n generale.
+
 ## v3.40 — Scarica una zona per offline: mappa + posti GF + POI (2026-07-10, Attuale)
 
 Terza e ultima idea prodotto di HANDOFF.md §7. Le tile della mappa (ArcGIS) non avevano **nessuna** copertura offline — cross-origin, senza estensione file, non intercettate da nessuna regola esistente del service worker: ogni pan/zoom era rete viva. I posti GF e i POI generali avevano già cache proprie (7gg/30gg) ma si popolavano solo visitando le zone in-app. Nuova voce di menu "📥 Scarica per offline": scarica tutti e tre in un colpo per le zone del viaggio (stesso clustering automatico già usato dalla GF Guide).

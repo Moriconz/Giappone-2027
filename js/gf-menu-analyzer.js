@@ -37,7 +37,7 @@ const GroqMenuAnalyzer = {
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
-        window.toast(`❌ Groq error: ${err.error || 'server error'}`);
+        window.toast(T('groq.serverError', '❌ Errore Groq: {msg}').replace('{msg}', err.error || 'server error'));
         return null;
       }
 
@@ -53,7 +53,7 @@ const GroqMenuAnalyzer = {
       return result;
     } catch (err) {
       console.error('[Groq]', err);
-      window.toast(`❌ Errore: ${err.message}`);
+      window.toast(T('groq.error', '❌ Errore: {msg}').replace('{msg}', err.message));
       return null;
     }
   },
@@ -65,7 +65,7 @@ const GroqMenuAnalyzer = {
     }
 
     if (!imageLabels.length && !menuText.trim()) {
-      window.toast('⚠️ Carica una foto e/o inserisci un testo per l\'analisi');
+      window.toast(T('groq.noInput', '⚠️ Inserisci il menu o carica una foto da analizzare'));
       return null;
     }
 
@@ -86,7 +86,7 @@ const GroqMenuAnalyzer = {
           window.toast(T('groq.offline', '⚠️ Groq non disponibile, uso analisi locale'));
           return this.localAnalyzeFromLabels(imageLabels, menuText);
         }
-        window.toast(`❌ Errore immagine: ${errorMessage}`);
+        window.toast(T('groq.imgServerError', '❌ Errore immagine: {msg}').replace('{msg}', errorMessage));
         return null;
       }
 
@@ -109,7 +109,7 @@ const GroqMenuAnalyzer = {
         window.toast(T('groq.fallback', '⚠️ Errore Groq, uso analisi locale'));
         return this.localAnalyzeFromLabels(imageLabels, menuText);
       }
-      window.toast(`❌ Errore immagine: ${err.message}`);
+      window.toast(T('groq.imgServerError', '❌ Errore immagine: {msg}').replace('{msg}', err.message));
       return null;
     }
   },
