@@ -119,18 +119,6 @@ window.saveState = function () {
   }
 };
 
-// ── Utility: ensure nested sub-objects exist ─────────────────────────────────
-window.ensureStateObject = function (path) {
-  const parts = path.split('.');
-  let obj = window.state;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const p = parts[i];
-    if (!obj[p] || typeof obj[p] !== 'object') obj[p] = {};
-    obj = obj[p];
-  }
-  return obj;
-};
-
 // ── GF layer toggle: gluten-free is a kept-but-optional layer (global planner) ─
 // ponytail: default ON preserves current behavior; users who don't need GF can hide it
 window.isGFEnabled = function () {

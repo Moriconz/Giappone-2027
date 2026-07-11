@@ -140,6 +140,7 @@ console.log('[MQTT] Loading MQTT transport...');
           }
           // Emit event for UI update
           document.dispatchEvent(new CustomEvent('group_members_updated', {
+            bubbles: true,
             detail: { members: window.state.group.members }
           }));
         } else {
@@ -220,6 +221,7 @@ console.log('[MQTT] Loading MQTT transport...');
 
           // Emit event for UI update
           document.dispatchEvent(new CustomEvent('group_members_updated', {
+            bubbles: true,
             detail: { members: window.state.group.members }
           }));
         }

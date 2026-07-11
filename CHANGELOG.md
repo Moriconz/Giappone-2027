@@ -1,6 +1,22 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.50 — Test end-to-end esaustivo: ogni bottone, 2 utenti reali via MQTT (2026-07-11, Attuale)
+## v3.51 — Audit bloat: codice morto rimosso, SOS in primo piano (2026-07-12, Attuale)
+
+Su richiesta esplicita dell'utente: audit "cosa c'è di troppo" nell'intera app, sia lato codice (over-engineering/codice morto) che lato UI/UX (cosa è nascosto ma importante).
+
+### Codice morto rimosso
+- **`js/encryption.js` + `window.appConfig`** (`js/config.js`): intero sottosistema di cifratura AES-256-GCM per un vault di chiavi API con master password, ~190 righe, mai chiamato da nessun punto dell'app — le chiavi API reali passano dal proxy Vercel server-side, non da qui.
+- **`js/itinerary-add-wizard.js`** (719 righe): la sua unica funzione pubblica veniva sempre sovrascritta dall'implementazione realmente attiva in `js/views/poi-detail/poi-itinerary-wizard.js` (caricata dopo). Candidato già identificato in v3.50, rimosso ora su conferma esplicita.
+- **`escapeHtml` duplicata**: due implementazioni globali diverse (`js/ui-helpers.js` e `js/views/group-share-view.js`), stessa classe di bug della doppia `openAddToItineraryWizard` — l'ultima caricata sovrascrive silenziosamente l'altra. Consolidata in una sola versione (con escape dell'apice, la più completa delle due).
+- **`window.ensureStateObject`** (`js/state.js`): zero chiamanti in tutto il repo.
+
+### UI/UX — prominenza
+- **Fix pre-esistente trovato in v3.50**: `mqtt-transport.js` dispatchava `group_members_updated` su `document` senza `bubbles:true`, ascoltato su `window` in `group-panel.js` — l'evento non arrivava mai, il pannello Gruppo aperto non si aggiornava live all'ingresso di un membro. Aggiunto `bubbles:true` a entrambi i dispatch.
+- **Menu ☰**: 21 voci in lista piatta senza gerarchia. "SOS" (emergenza) era penultima voce, da scrollare; "Wishlist GF del gruppo" (feature di nicchia) occupava il primo slot. Spostato SOS in cima.
+
+Verificato: `node --check` su tutti i file toccati, smoke test verde (exit 0, nessun errore nuovo in console), fix `bubbles:true` verificato live in browser reale.
+
+## v3.50 — Test end-to-end esaustivo: ogni bottone, 2 utenti reali via MQTT (2026-07-11)
 
 Su richiesta esplicita dell'utente: verifica che ogni bottone dell'app faccia davvero quello che promette (non solo "non crasha"), con test reali a 2 browser sul broker MQTT pubblico per gruppo/GPS/chat. Metodo: script Puppeteer diretti (click esaustivo su ogni vista) + 2 agenti di verifica semantica (lettura codice + tracciamento end-to-end di ogni handler).
 

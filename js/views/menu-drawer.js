@@ -13,6 +13,7 @@
   function showMenuDrawer() {
     const T = window.t || ((k, f) => f || k);
     const menuItems = [
+      { label: T('menu.sos', 'SOS'), icon: '🆘', view: 'sos', style: 'color: #FF6B6B; background: rgba(255,107,107,0.1);' },
       { label: T('menu.wishlist', 'Wishlist GF del gruppo'), icon: '🗳️', view: 'gf-wishlist', style: 'color: #4ade80; background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.3);' },
       { label: T('menu.tickets', 'Biglietti'), icon: '🎫', view: 'tickets' },
       { label: T('menu.bookings', 'Prenota'), icon: '📅', view: 'bookings' },
@@ -43,7 +44,6 @@
       { label: T('menu.createTrip', 'Voglio creare il mio viaggio'), icon: '✏️', view: 'create-trip', style: 'color: var(--m-accent); background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3);' },
       { label: T('menu.backup', 'Backup & Ripristino'), icon: '📦', view: 'backup' },
       { label: T('offline.menuLabel', 'Scarica per offline'), icon: '📥', view: 'offline-region' },
-      { label: T('menu.sos', 'SOS'), icon: '🆘', view: 'sos', style: 'color: #FF6B6B; background: rgba(255,107,107,0.1);' },
       ...(window.DEBUG ? [{ label: T('menu.errors', 'Errori (debug)'), icon: '🐞', view: 'errors', style: 'opacity:0.85;' }] : [])
     ];
 

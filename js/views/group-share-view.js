@@ -208,19 +208,6 @@ function sharePersonalItineraryToGroup(roomId) {
 }
 
 /**
- * Escape HTML for XSS protection
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-/**
  * Edit group itinerary - open editor for modifying POIs
  */
 function editGroupItinerary(itineraryId) {

@@ -70,9 +70,8 @@
 <!-- TensorFlow.js + MobileNet (~1.5MB) are lazy-loaded on first use in js/features-ai.js -->
 
 <!-- ============================================================================ -->
-<!-- APP MODULES — Phase 1: load order: encryption → config → state → features    -->
+<!-- APP MODULES — Phase 1: load order: config → state → features    -->
 <!-- ============================================================================ -->
-<script defer src="js/encryption.js"></script>
 <script defer src="js/config.js"></script>
 <!-- REMOVED: poi-loader.js, pois_dataset.js (using Google Places instead) -->
 <script defer src="js/state.js"></script>
@@ -238,9 +237,7 @@
      Golden Week/Obon/Shogatsu/festività live non è mai apparso a nessuno.
      Serve ad ogni render dell'itinerario (renderItineraryUnified lo chiama
      incondizionatamente), quindi va caricato come i suoi moduli fratelli. -->
-<script defer src="./js/japan-calendar-hints.js"></script>
-<script defer src="./js/itinerary-add-wizard.js"></script>
-<script defer src="./js/test-helpers.js"></script>
+<script defer src="./js/japan-calendar-hints.js"></script><script defer src="./js/test-helpers.js"></script>
 <script defer src="./js/onboarding.js"></script>
 <!-- filter-system.js (seconda barra filtri viaggio) rimossa: ridondante con la barra categorie. Riattivabile riaggiungendo lo <script>. -->
 <!-- Panel manager (modern): provides window.y2kWindows API + patches openSheet -->
