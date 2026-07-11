@@ -38,7 +38,7 @@
         { label: T('menu.jrpass', 'Conviene il JR Pass?'), icon: '🚄', view: 'jr-pass' },
         { label: T('menu.japanCal', 'Calendario Giappone'), icon: '📅', view: 'japan-cal' },
       ] : []),
-      { label: T('menu.groqai', 'Groq AI'), icon: '🤖', view: 'groq-menu' },
+      { label: T('menu.groqai', 'Assistente AI'), icon: '🤖', view: 'groq-menu' },
       { label: T('menu.suggest', 'Suggerisci Posti'), icon: '💡', view: 'gf-suggest' },
       { label: T('menu.createTrip', 'Voglio creare il mio viaggio'), icon: '✏️', view: 'create-trip', style: 'color: var(--m-accent); background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3);' },
       { label: T('menu.backup', 'Backup & Ripristino'), icon: '📦', view: 'backup' },

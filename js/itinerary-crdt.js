@@ -157,10 +157,19 @@
       });
 
       // 4. Handle soft deletes
+      // ponytail: clamp anti-forgia — un timestamp remoto oltre la tolleranza di
+      // skew orologio viene ignorato (trattato come nessuna cancellazione),
+      // altrimenti un peer potrebbe forgiare un deletionTimestamp a decenni nel
+      // futuro e cancellare la tappa per sempre per tutti (vince ogni merge
+      // successivo). Tolleranza larga per non rompere client con orologio
+      // leggermente sfasato.
+      const CLOCK_SKEW_MS = 5 * 60 * 1000;
+      const now = Date.now();
       const localDeleted = local.deleted || false;
       const remoteDeleted = remote.deleted || false;
       const localDeleteTime = local.deletionTimestamp || 0;
-      const remoteDeleteTime = remote.deletionTimestamp || 0;
+      const remoteDeleteTimeRaw = remote.deletionTimestamp || 0;
+      const remoteDeleteTime = remoteDeleteTimeRaw > now + CLOCK_SKEW_MS ? 0 : remoteDeleteTimeRaw;
 
       if (remoteDeleteTime > localDeleteTime) {
         mergedPoi.deleted = remoteDeleted;

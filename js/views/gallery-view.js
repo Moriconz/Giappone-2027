@@ -154,7 +154,7 @@
 
         <div class="gallery-stats">
           <div style="color:var(--m-text-3);font-size:14px">
-            ${T('gallery.storageInfo','Archiviato in IndexedDB — nessun limite di spazio')}
+            ${T('gallery.storageInfo','Salvato sul telefono, nessun limite di spazio')}
           </div>
         </div>
       </div>`;

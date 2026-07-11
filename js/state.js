@@ -10,8 +10,13 @@ window.STATE_KEY = 'giappone2027_state_v1';
   let raw = {};
   try {
     raw = JSON.parse(localStorage.getItem(window.STATE_KEY) || '{}');
+    // JSON valido ma non un oggetto piatto (es. la stringa letterale "null",
+    // o un array/primitivo) non lancia in JSON.parse ma rompe ogni raw[k] sotto
+    // — fuori dal try/catch, quindi window.state non verrebbe mai assegnato.
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) raw = {};
   } catch (e) {
     console.warn('[State] Parse error — starting fresh:', e.message);
+    raw = {};
   }
 
   // Reset any field whose type is wrong (corrupted by old code / crash)
@@ -25,6 +30,20 @@ window.STATE_KEY = 'giappone2027_state_v1';
   });
   if (raw.group !== undefined && (typeof raw.group !== 'object' || Array.isArray(raw.group) || raw.group === null)) {
     console.warn('[State] Corrupt group reset'); delete raw.group;
+  }
+  // itineraryByDay è un oggetto piatto ma i SUOI valori (un array per giorno)
+  // non erano validati singolarmente: un giorno con null/non-array (scrittura
+  // parziale, tampering, bug futuro) mandava in eccezione non gestita quasi
+  // ogni mutazione dell'itinerario (removePOI, updateTime/Notes/Duration/Cost,
+  // normalizeAllEntries — tutte fanno .forEach/.find/.map diretto sul giorno).
+  // Fix una volta qui invece che in ogni call site sparso in itinerary.js.
+  if (raw.itineraryByDay && typeof raw.itineraryByDay === 'object') {
+    Object.keys(raw.itineraryByDay).forEach(day => {
+      if (!Array.isArray(raw.itineraryByDay[day])) {
+        console.warn('[State] Corrupt itineraryByDay day reset:', day);
+        raw.itineraryByDay[day] = [];
+      }
+    });
   }
 
   window.state = Object.assign({

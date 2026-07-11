@@ -26,7 +26,7 @@ const GroqMenuAnalyzer = {
     }
 
     try {
-      window.toast(T('groq.analyzing', '🔄 Analizzando menu con Groq...'));
+      window.toast(T('groq.analyzing', '🔄 Analizzando il menu con l\'assistente AI...'));
       const resp = await fetch('/api/groqAnalyze', {
         method: 'POST',
         headers: {
@@ -37,14 +37,14 @@ const GroqMenuAnalyzer = {
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
-        window.toast(T('groq.serverError', '❌ Errore Groq: {msg}').replace('{msg}', err.error || 'server error'));
+        window.toast(T('groq.serverError', '❌ Errore AI: {msg}').replace('{msg}', err.error || 'server error'));
         return null;
       }
 
       const data = await resp.json();
       const result = data.result;
       if (!result) {
-        window.toast(T('groq.badResponse', '❌ Groq error: risposta non valida'));
+        window.toast(T('groq.badResponse', '❌ Errore: risposta non valida'));
         return null;
       }
 
@@ -69,7 +69,7 @@ const GroqMenuAnalyzer = {
       return null;
     }
 
-    window.toast(T('groq.analyzingPhoto', '🔄 Analizzando foto con Groq...'));
+    window.toast(T('groq.analyzingPhoto', '🔄 Analizzando la foto con l\'assistente AI...'));
     try {
       const resp = await fetch('/api/groqImageAnalyze', {
         method: 'POST',
@@ -83,7 +83,7 @@ const GroqMenuAnalyzer = {
         const err = await resp.json().catch(() => ({}));
         const errorMessage = err.error || 'server error';
         if (imageLabels.length) {
-          window.toast(T('groq.offline', '⚠️ Groq non disponibile, uso analisi locale'));
+          window.toast(T('groq.offline', '⚠️ Assistente AI non disponibile, uso analisi locale'));
           return this.localAnalyzeFromLabels(imageLabels, menuText);
         }
         window.toast(T('groq.imgServerError', '❌ Errore immagine: {msg}').replace('{msg}', errorMessage));
@@ -94,7 +94,7 @@ const GroqMenuAnalyzer = {
       const result = data.result;
       if (!result) {
         if (imageLabels.length) {
-          window.toast(T('groq.invalid', '⚠️ Risposta Groq invalida, uso analisi locale'));
+          window.toast(T('groq.invalid', '⚠️ Risposta AI non valida, uso analisi locale'));
           return this.localAnalyzeFromLabels(imageLabels, menuText);
         }
         window.toast(T('groq.imgError', '❌ Errore: risposta immagine non valida'));
@@ -106,7 +106,7 @@ const GroqMenuAnalyzer = {
     } catch (err) {
       console.error('[GroqImage]', err);
       if (imageLabels.length) {
-        window.toast(T('groq.fallback', '⚠️ Errore Groq, uso analisi locale'));
+        window.toast(T('groq.fallback', '⚠️ Errore assistente AI, uso analisi locale'));
         return this.localAnalyzeFromLabels(imageLabels, menuText);
       }
       window.toast(T('groq.imgServerError', '❌ Errore immagine: {msg}').replace('{msg}', err.message));

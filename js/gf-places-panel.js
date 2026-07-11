@@ -18,6 +18,12 @@
   const GFSuggestionsDB = window.GFSuggestionsDB;
   const GFPlacesDB = window.GFPlacesDB;
 
+  // Campi (name/city/area/tags/note) arrivano da altri peer via MQTT
+  // (GFPlacesDB.add → broadcastToPeers, zero validazione lato server) e
+  // finiscono in innerHTML: vanno HTML-escapati. Riusa window.escapeHtml
+  // (js/ui-helpers.js), stesso pattern di poi-detail-template.js/live-presence.js.
+  const _esc = window.escapeHtml || (s => String(s ?? ''));
+
 /* ================= UI HANDLERS ================= */
 
 window.openGroqPanel = async function() {
@@ -32,7 +38,7 @@ window.openGroqPanel = async function() {
         <div class="photo-upload-zone" id="groq-photo-zone">📷 Tocca per aggiungere una foto</div>
         <input type="file" id="groq-photo-input" accept="image/*" style="display:none" />
         <img id="groq-photo-preview" class="photo-preview" />
-        <p style="font-size:14px;color:var(--muted);margin-top:6px">Se carichi una foto, l'app cercherà di riconoscere il piatto tramite etichette visive e determinerà il rischio gluten-free. Se il server Groq non è disponibile, userà l'analisi locale.</p>
+        <p style="font-size:14px;color:var(--muted);margin-top:6px">Se carichi una foto, l'app cercherà di riconoscere il piatto tramite etichette visive e determinerà il rischio gluten-free. Se l'assistente AI non è disponibile, userà l'analisi locale.</p>
       </div>
 
       <button class="groq-analyze-btn" onclick="window.analyzeMenuGroq()">🤖 Analizza</button>
@@ -162,16 +168,16 @@ window.openGFPlacesPanel = function(prefillData = null, editId = null) {
       <div class="gf-place-card" style="background:rgba(74,91,168,0.08);border:1px solid rgba(74,91,168,0.2);border-radius:12px;padding:12px;">
         <div class="gpc-header" style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
           <div>
-            <div class="gpc-name" style="font-weight:700;color:var(--text);margin-bottom:4px;">${p.name}</div>
-            <div class="gpc-city" style="font-size:14px;color:var(--muted);">${p.city}${p.area ? ' · ' + p.area : ''}</div>
+            <div class="gpc-name" style="font-weight:700;color:var(--text);margin-bottom:4px;">${_esc(p.name)}</div>
+            <div class="gpc-city" style="font-size:14px;color:var(--muted);">${_esc(p.city)}${p.area ? ' · ' + _esc(p.area) : ''}</div>
           </div>
           <div class="gpc-rating" style="font-size:16px;">${'⭐'.repeat(p.rating || 0)}</div>
         </div>
         ${p.safety_level ? `<div style="display:inline-block;padding:4px 8px;border-radius:4px;font-size:13px;font-weight:700;margin-bottom:8px;${p.safety_level === 'GREEN' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F' : p.safety_level === 'YELLOW' ? 'background:rgba(255,215,0,0.2);color:#FFD700' : 'background:rgba(255,107,107,0.2);color:#FF6B6B'};">${p.safety_level === 'GREEN' ? '🟢 SAFE' : p.safety_level === 'YELLOW' ? '🟡 CAUTION' : '🔴 DANGER'}</div>` : ''}
         <div class="gpc-meta" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-          ${(p.tags || []).map(t => `<span class="gpc-tag" style="background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.12);border-radius:4px;padding:3px 8px;font-size:13px;color:var(--l-ink);">${t}</span>`).join('')}
+          ${(p.tags || []).map(t => `<span class="gpc-tag" style="background:rgba(20,30,60,0.05);border:1px solid rgba(20,30,60,0.12);border-radius:4px;padding:3px 8px;font-size:13px;color:var(--l-ink);">${_esc(t)}</span>`).join('')}
         </div>
-        ${p.note ? `<div style="margin:8px 0;font-size:14px;color:var(--muted);line-height:1.4;">${p.note}</div>` : ''}
+        ${p.note ? `<div style="margin:8px 0;font-size:14px;color:var(--muted);line-height:1.4;">${_esc(p.note)}</div>` : ''}
         <div class="gpc-actions" style="display:flex;gap:6px;margin-top:10px;">
           <button onclick="window.startEditGFPlace('${p.id}')" style="flex:1;padding:6px;background:rgba(100,149,237,0.2);border:1px solid rgba(100,149,237,0.4);color:var(--text);border-radius:4px;font-size:13px;cursor:pointer;">✏️ Modifica</button>
           <button onclick="(window.modalConfirm||((m)=>Promise.resolve(confirm(m))))('Eliminare questo posto?',{danger:true,confirmText:'Elimina'}).then(ok=>{ if(ok){ window.deleteGFPlace('${p.id}'); window.openGFPlacesPanel(); } })" style="flex:1;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:13px;cursor:pointer;">🗑️ Elimina</button>
@@ -632,8 +638,8 @@ window.openGFSuggestionPanel = function() {
       <div style="background:rgba(74,91,168,0.08);border:1px solid rgba(74,91,168,0.2);border-radius:12px;padding:12px;margin-bottom:8px;">
         <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
           <div>
-            <div style="font-weight:700;color:var(--text);">${s.name}</div>
-            <div style="font-size:14px;color:var(--muted);">${s.city}${s.area ? ' · ' + s.area : ''}</div>
+            <div style="font-weight:700;color:var(--text);">${_esc(s.name)}</div>
+            <div style="font-size:14px;color:var(--muted);">${_esc(s.city)}${s.area ? ' · ' + _esc(s.area) : ''}</div>
           </div>
           <div style="padding:3px 8px;border-radius:4px;font-size:14px;font-weight:700;${
             s.status === 'approved' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F' :

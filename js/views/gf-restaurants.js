@@ -14,6 +14,24 @@
 (function () {
   'use strict';
 
+  // r.name (window.allGlutenFreeShops, Google Places textSearch) finisce in
+  // innerHTML: va HTML-escapato. Riusa window.escapeHtml (js/ui-helpers.js),
+  // pattern già in poi-detail-template.js.
+  const _esc = window.escapeHtml || (s => String(s ?? ''));
+
+  // Badge sicurezza GF — stesso pattern/dicitura di gf-places-panel.js (safety_level
+  // GREEN/YELLOW/RED). Se il dato manca (es. locali da Google Places, che non hanno
+  // safety_level), mostra un badge esplicito "non verificato" invece di ometterlo:
+  // un celiaco non deve pensare che l'assenza di badge significhi "sicuro".
+  function _safetyBadge(level) {
+    const style = level === 'GREEN' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F'
+      : level === 'YELLOW' ? 'background:rgba(255,215,0,0.2);color:#FFD700'
+      : level === 'RED' ? 'background:rgba(255,107,107,0.2);color:#FF6B6B'
+      : 'background:rgba(148,163,184,0.2);color:#94a3b8';
+    const label = level === 'GREEN' ? '🟢 SAFE' : level === 'YELLOW' ? '🟡 CAUTION' : level === 'RED' ? '🔴 DANGER' : '⚪ Sicurezza non verificata';
+    return `<div style="display:inline-block;padding:4px 8px;border-radius:4px;font-size:13px;font-weight:700;${style};">${label}</div>`;
+  }
+
   function _liveItems() {
     const google = (window.allGlutenFreeShops || []).map(r => ({ ...r, id: r.place_id || r.id, source: 'google' }));
     const detected = (typeof window.GFPlaces?.getAll === 'function') ? window.GFPlaces.getAll() : [];
@@ -77,11 +95,12 @@
           border-radius:14px;display:flex;flex-direction:column;gap:8px;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
             <div style="min-width:0;">
-              <div style="font-size:16px;font-weight:700;color:var(--l-ink);">${r.name}</div>
+              <div style="font-size:16px;font-weight:700;color:var(--l-ink);">${_esc(r.name)}</div>
               ${metaParts.length ? `<div style="font-size:14px;color:var(--l-muted);margin-top:2px;">${metaParts.join(' · ')}</div>` : ''}
             </div>
             ${distChip}
           </div>
+          ${_safetyBadge(r.safety_level)}
           ${address ? `<div style="font-size:13px;color:var(--l-faint);">${address}</div>` : ''}
           <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" style="
             display:block;text-align:center;padding:9px 12px;background:rgba(74,222,128,0.12);
@@ -112,8 +131,9 @@
       : 'Rilevato da uno scan live delle recensioni — verifica sempre sul posto, non è una conferma certificata.';
     const html = `
       <div class="section">
-        <h2 style="margin:0 0 6px;font-size:18px;">${r.name}</h2>
+        <h2 style="margin:0 0 6px;font-size:18px;">${_esc(r.name)}</h2>
         <div style="font-size:15px;color:var(--muted);">${meta}</div>
+        <div style="margin-top:8px;">${_safetyBadge(r.safety_level)}</div>
       </div>
       <div class="section">
         ${address ? `<p style="margin:0 0 8px;font-size:15px;color:var(--muted);">${address}</p>` : ''}

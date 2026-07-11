@@ -16,7 +16,7 @@
 (function () {
   'use strict';
 
-  const T = (k, f) => window.t?.(k) ?? (f ?? k);
+  const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
 
   const ACTION_ICONS = {
     add_poi:              '➕',
@@ -97,7 +97,7 @@
 
   /** Apre il pannello della timeline versioni. */
   function openPanel() {
-    const T = (k, f) => window.t?.(k) ?? (f ?? k);
+    const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
     const entries    = collect();
     const currentIdx = window.state?.undoRedo?.currentIndex ?? -1;
 

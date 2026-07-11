@@ -148,7 +148,9 @@
     const inGroup = !!window.state?.group?.roomId;
     const items = getAll().sort((a, b) => _score(b) - _score(a) || b.proposedAt - a.proposedAt);
 
-    const gfBadge = (lvl) => lvl === 'full' || lvl === 'GREEN' ? '🟢' : lvl === 'partial' || lvl === 'YELLOW' ? '🟡' : lvl === 'RED' ? '🔴' : '';
+    // Testo esplicito accanto al pallino: il colore da solo non basta a comunicare
+    // il rischio (coerente con la dicitura di gf-places-panel.js).
+    const gfBadge = (lvl) => lvl === 'full' || lvl === 'GREEN' ? '🟢 Sicuro' : lvl === 'partial' || lvl === 'YELLOW' ? '🟡 Attenzione' : lvl === 'RED' ? '🔴 Rischio contaminazione' : '';
 
     const rows = items.map(it => {
       const t = _tally(it);

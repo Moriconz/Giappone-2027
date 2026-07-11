@@ -75,6 +75,13 @@ console.log('[MQTT] Loading MQTT transport...');
 
   // ── Gestisce messaggi in arrivo ───────────────────────────────────────────────
   async function handleIncoming(raw) {
+    // ponytail: cap grezzo anti-flood prima del parse — non un limite fine-
+    // tuned, solo per evitare che un payload abnorme (bug o flood volontario)
+    // faccia un JSON.parse sincrono enorme su ogni client del gruppo.
+    if (typeof raw === 'string' && raw.length > 50000) {
+      console.warn('[MQTT] messaggio scartato: payload troppo grande', raw.length);
+      return;
+    }
     let data;
     try { data = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch(e) {
       console.warn('[MQTT] handleIncoming parse fail:', e.message);
@@ -83,7 +90,17 @@ console.log('[MQTT] Loading MQTT transport...');
     if (!data) return;
     // E2EE: se il messaggio è cifrato ({ e: <base64> }), decifralo con la chiave
     // stanza. Se non riusciamo (chiave diversa/assente) lo scartiamo. I messaggi
-    // in chiaro (senza `.e`) passano invariati → retrocompatibile.
+    // in chiaro (senza `.e`) passano invariati → retrocompatibile SOLO se la
+    // chiave stanza non è (ancora) pronta per NOI: una volta pronta, un
+    // messaggio in chiaro viene scartato. Senza questo gate chiunque ascolti il
+    // topic pubblico SENZA conoscere il codice stanza potrebbe iniettare
+    // messaggi validi (impersonare membri, forzare cancellazioni, dirottare il
+    // roster) — il codice stanza è l'unica barriera del modello di minaccia di
+    // questa app, va fatto rispettare anche in ricezione, non solo in invio.
+    if (window.RoomCrypto?.ready?.() && typeof data.e !== 'string') {
+      console.warn('[MQTT] messaggio in chiaro scartato: chiave stanza pronta, richiesta cifratura');
+      return;
+    }
     if (typeof data.e === 'string') {
       const opened = window.RoomCrypto ? await window.RoomCrypto.open(data.e) : null;
       if (!opened) return; // non decifrabile → non per noi
@@ -136,6 +153,11 @@ console.log('[MQTT] Loading MQTT transport...');
 
       case 'gps':
         if (!window.state) return;
+        // ponytail: guard tipo minimo — un peer con lat/lng non numerici
+        // scriveva comunque il marker corrotto in stato prima che .toFixed(4)
+        // lanciasse (intercettata dal catch esterno, ma il marker restava lì
+        // fino al prossimo update valido).
+        if (typeof data.lat !== 'number' || typeof data.lng !== 'number' || !isFinite(data.lat) || !isFinite(data.lng)) return;
         window.state.gpsRemoteMarkers = window.state.gpsRemoteMarkers || {};
         window.state.gpsRemoteMarkers[data.from] = {
           lat: data.lat, lng: data.lng,

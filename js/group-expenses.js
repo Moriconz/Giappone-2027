@@ -134,14 +134,14 @@
     const balRows = Object.entries(bal).sort((a, b) => b[1] - a[1]).map(([m, v]) => `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(20,30,60,0.08);">
         <span style="color:var(--l-ink);font-size:16px;font-weight:600;">${_esc(m)}${m === me ? ' <span style="font-size:12px;color:var(--l-muted)">(tu)</span>' : ''}</span>
-        <span style="font-weight:700;color:${v > 1 ? '#16a34a' : v < -1 ? '#dc2626' : 'var(--l-muted)'};">${v > 1 ? '+' : ''}${_yen(v)}</span>
+        <span class="gx-amount" style="font-weight:700;color:${v > 1 ? '#16a34a' : v < -1 ? '#dc2626' : 'var(--l-muted)'};">${v > 1 ? '+' : ''}${_yen(v)}</span>
       </div>`).join('');
 
     const settRows = setts.length ? setts.map(s => `
       <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.25);border-radius:8px;margin-bottom:6px;">
-        <span style="color:#dc2626;font-weight:700;">${_esc(s.from)}</span>
+        <span class="gx-amount" style="color:#dc2626;font-weight:700;">${_esc(s.from)}</span>
         <span style="color:var(--l-muted);">→</span>
-        <span style="color:#16a34a;font-weight:700;">${_esc(s.to)}</span>
+        <span class="gx-amount" style="color:#16a34a;font-weight:700;">${_esc(s.to)}</span>
         <span style="margin-left:auto;color:var(--l-ink);font-weight:800;">${_yen(s.amount)}</span>
       </div>`).join('') : `<p style="color:var(--l-muted);font-size:15px;text-align:center;padding:10px;">${T('exp.allSettled', '✅ Tutti pari, nessun rimborso')}</p>`;
 

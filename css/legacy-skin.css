@@ -598,7 +598,7 @@ nav.bottom button.active {
 }
 
 /* tutti i testi dentro la finestra ereditano colore chiaro */
-.sheet-inner *:not(button):not(.tag.cat):not(.tag.gf-full):not(.tag.gf-partial):not(.chip.active):not(.btn.primary):not(.btn.success):not(.ai-msg.user):not(.gpc-tag) {
+.sheet-inner *:not(button):not(.tag.cat):not(.tag.gf-full):not(.tag.gf-partial):not(.chip.active):not(.btn.primary):not(.btn.success):not(.ai-msg.user):not(.gpc-tag):not(.gx-amount) {
   color: #fff !important;
 }
 
@@ -1933,7 +1933,7 @@ main {
   justify-content: center !important;
   gap: 4px !important;
   padding: 6px 12px !important;
-  min-height: 40px !important;
+  min-height: 44px !important;
   min-width: auto !important;
   height: auto !important;
 
@@ -2463,7 +2463,7 @@ main {
   .chip {
     padding: 10px 16px !important;
     font-size:15px !important;
-    min-height: 40px !important;
+    min-height: 44px !important;
     display: flex !important;
     align-items: center !important;
   }
@@ -2473,7 +2473,7 @@ main {
   #filters button.chip {
     padding: 6px 12px !important;
     font-size:14px !important;
-    min-height: 40px !important;
+    min-height: 44px !important;
     border-radius: 6px !important;
     background: rgba(255, 255, 255, 0.15) !important;
     border: none !important;
@@ -2618,12 +2618,14 @@ main {
     pointer-events: none !important;
   }
 
-  /* ── EXPLICIT OVERRIDE FOR FILTER CHIPS – do NOT apply thumb-friendly sizing ─ */
+  /* ── FILTER CHIPS – niente padding/dimensioni gonfie da tap-target, ma
+     comunque min-height 44px (standard, era 36px: sotto la soglia di
+     accessibilità per chip toccate spesso). ─ */
   #filters .chip,
   #filters button.chip,
   .gf-city-chip {
     min-width: auto !important;
-    min-height: 36px !important;
+    min-height: 44px !important;
     padding: 6px 12px !important;
     font-size:14px !important;
     position: static !important;
@@ -2692,7 +2694,7 @@ main {
   #filters .chip {
     padding: 8px 14px !important;
     font-size:15px !important;
-    min-height: 40px !important;
+    min-height: 44px !important;
   }
 
   #map {
@@ -2813,7 +2815,7 @@ main {
   .chip {
     padding: 10px 14px !important;
     font-size:15px !important;
-    min-height: 42px !important;
+    min-height: 44px !important;
   }
 
   /* ── FILTER CHIPS FINAL OVERRIDE ────────────────────────────────── */
@@ -2821,7 +2823,7 @@ main {
   #filters button.chip {
     padding: 6px 12px !important;
     font-size:14px !important;
-    min-height: 40px !important;
+    min-height: 44px !important;
     border-radius: 6px !important;
     background: rgba(255, 255, 255, 0.15) !important;
     border: none !important;

@@ -13,6 +13,11 @@
 (function () {
   'use strict';
 
+  // exp.description (input utente locale, BudgetDB non sincronizzato) finisce
+  // in innerHTML: va HTML-escapato per coerenza/difesa in profondità. Riusa
+  // window.escapeHtml (js/ui-helpers.js), pattern già in poi-detail-template.js.
+  const _esc = window.escapeHtml || (s => String(s ?? ''));
+
   /* ═══════════════════════════════════════════════════════════════
      COSTANTI
   ═══════════════════════════════════════════════════════════════ */
@@ -277,7 +282,7 @@
                 return `
                   <div class="expense-item">
                     <div style="flex:1;min-width:0">
-                      <div style="font-weight:700;color:var(--l-ink);font-size:13px;margin-bottom:1px">${exp.description || catInfo.name}</div>
+                      <div style="font-weight:700;color:var(--l-ink);font-size:13px;margin-bottom:1px">${_esc(exp.description || catInfo.name)}</div>
                       <div style="font-size:14px;color:var(--l-muted)">${date}${originalHint}</div>
                     </div>
                     <div style="text-align:right;flex-shrink:0">

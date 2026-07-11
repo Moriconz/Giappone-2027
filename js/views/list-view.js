@@ -12,6 +12,14 @@
   'use strict';
 
   const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+  // place.name/city/address (Google Places textSearch) finiscono sia in innerHTML
+  // che dentro onclick="...('${...}')": per innerHTML basta l'escape HTML
+  // (_esc, riusa window.escapeHtml); per l'onclick serve ANCHE l'escape da
+  // stringa-JS prima, perché il browser decodifica le entity HTML
+  // dell'attributo PRIMA che il JS esegua (stesso pattern di _escJs in
+  // gf-crowdsource.js/group-checklist.js).
+  const _esc = window.escapeHtml || (s => String(s ?? ''));
+  const _escJs = (s) => _esc(String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
 
   // ── Google Places helpers ─────────────────────────────────────────────────
 
@@ -75,10 +83,10 @@
   function showGooglePlacesResults(results) {
     const modal = document.createElement('div');
     const resultsList = results.map((place) => `
-      <div style="padding:10px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:6px" onclick="window.addGooglePlaceToItinerary({id:'${place.id}',name:'${place.name.replace(/'/g, "\\'")}',city:'${place.city.replace(/'/g, "\\'")}',lat:${place.lat},lng:${place.lng},address:'${place.address.replace(/'/g, "\\'")}'})">
-        <div style="font-weight:600;color:var(--accent)">${place.name}</div>
-        <div style="font-size:14px;color:var(--muted)">${place.city}</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:4px">${place.address}</div>
+      <div style="padding:10px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:6px" onclick="window.addGooglePlaceToItinerary({id:'${_escJs(place.id)}',name:'${_escJs(place.name)}',city:'${_escJs(place.city)}',lat:${place.lat},lng:${place.lng},address:'${_escJs(place.address)}'})">
+        <div style="font-weight:600;color:var(--accent)">${_esc(place.name)}</div>
+        <div style="font-size:14px;color:var(--muted)">${_esc(place.city)}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">${_esc(place.address)}</div>
       </div>
     `).join('');
 
@@ -185,8 +193,8 @@
         <div style="position:absolute;top:8px;right:8px;font-size:13px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:4px">${idx+1}</div>
         <div class="icon">${poi ? (CATS[poi.cat]?.icon || '📍') : '📌'}</div>
         <div class="body">
-          <div class="name">${entry.name || (poi ? getPoiDisplayName(poi) : '?')}</div>
-          <div class="sub">${entry.city || (poi ? poi.city : '?')}${distStr}${dayStr}${timeStr}${costStr}</div>
+          <div class="name">${_esc(entry.name || (poi ? getPoiDisplayName(poi) : '?'))}</div>
+          <div class="sub">${_esc(entry.city || (poi ? poi.city : '?'))}${distStr}${dayStr}${timeStr}${costStr}</div>
         </div>
         <button class="btn" aria-label="Rimuovi tappa" style="flex-shrink:0;padding:4px 8px;font-size:13px;background:var(--danger);border-color:var(--danger);color:#fff" data-remove-itinerary="${entry.id}">✕</button>
       </div>`;

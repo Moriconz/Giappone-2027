@@ -248,7 +248,7 @@
           ${rows}
         </div>
         <p style="text-align:center;font-size:12px;color:rgba(255,255,255,0.50);margin-top:6px;">
-          ${T('audit.footer', 'Cronologia salvata solo localmente. Si propaga via MQTT quando i membri sono online.')}
+          ${T('audit.footer', 'Cronologia salvata solo localmente. Si sincronizza con il gruppo quando i membri sono online.')}
         </p>
       </div>
     `;

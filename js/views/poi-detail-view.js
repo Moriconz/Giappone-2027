@@ -11,6 +11,10 @@
 (function () {
   'use strict';
   const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+  // photo.author/link/url (Google Places/Custom Search/Wikipedia) finiscono in
+  // attributi HTML (title/href/src): vanno HTML-escapati. Riusa
+  // window.escapeHtml (js/ui-helpers.js), pattern già in poi-detail-template.js.
+  const _esc = window.escapeHtml || (s => String(s ?? ''));
 
 function loadPOIPhotos(p){
   const container = document.getElementById('poi-photos-container');
@@ -59,8 +63,8 @@ function loadPOIPhotos(p){
       if (photos && photos.length > 0) {
         const slides = photos.slice(0, 5).map((photo, idx) => `
           <div class="photo-slide" style="flex-shrink:0;width:100%;height:280px;overflow:hidden;border-radius:8px;flex:none">
-            <a href="${photo.link || googleImagesUrl(window.getPoiDisplayName(p), p.city)}" target="_blank" rel="noopener" title="${photo.author || ''}" style="display:block;width:100%;height:100%;text-decoration:none">
-              <img src="${photo.url}" alt="${window.getPoiDisplayName(p)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;transition:transform .2s">
+            <a href="${_esc(photo.link || googleImagesUrl(window.getPoiDisplayName(p), p.city))}" target="_blank" rel="noopener" title="${_esc(photo.author || '')}" style="display:block;width:100%;height:100%;text-decoration:none">
+              <img src="${_esc(photo.url)}" alt="${window.getPoiDisplayName(p)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;transition:transform .2s">
             </a>
           </div>
         `).join('');

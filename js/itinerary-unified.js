@@ -14,6 +14,10 @@
  */
 
 const _T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+// entry.name/entry.city (itinerario condiviso di gruppo, itinerary-crdt.js
+// mergeGroupItinerary via MQTT) finiscono in innerHTML: vanno HTML-escapati.
+// Riusa window.escapeHtml (js/ui-helpers.js), pattern già in poi-detail-template.js.
+const _escItinUnified = window.escapeHtml || (s => String(s ?? ''));
 
 function renderItineraryUnified() {
   console.log('═══════════════════════════════════════════════════');
@@ -88,8 +92,8 @@ function renderItineraryUnified() {
         align-items: center;
       ">
         <div>
-          <div style="font-size:15px; font-weight: 600; color: var(--l-ink);">${entry.name || (poi ? poi.name : '?')}</div>
-          <div style="font-size:13px; color: var(--l-muted);">${entry.city || (poi ? poi.city : '?')}${dayStr}${timeStr}</div>
+          <div style="font-size:15px; font-weight: 600; color: var(--l-ink);">${_escItinUnified(entry.name || (poi ? poi.name : '?'))}</div>
+          <div style="font-size:13px; color: var(--l-muted);">${_escItinUnified(entry.city || (poi ? poi.city : '?'))}${dayStr}${timeStr}</div>
         </div>
         <button data-remove-itinerary="${entry.id}" style="
           padding: 6px 10px;

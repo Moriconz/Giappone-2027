@@ -17,6 +17,11 @@
 (function () {
   'use strict';
 
+  // Nome/città/descrizione POI possono arrivare da GFPlacesDB/peer via MQTT e
+  // finiscono in innerHTML: vanno HTML-escapati. Riusa window.escapeHtml
+  // (js/ui-helpers.js), pattern già in poi-detail-template.js.
+  const _esc = window.escapeHtml || (s => String(s ?? ''));
+
   function renderBookingsView() {
     if (typeof window.allPOIs !== 'function' || typeof window.openSheet !== 'function') {
       console.warn('[bookings-view] dipendenze mancanti');
@@ -37,8 +42,8 @@
         <div class="poi-row" data-id="${p.id}">
           <div class="icon">${icon}</div>
           <div class="body">
-            <div class="name">${name}</div>
-            <div class="sub">${p.city || ''} · ${p.desc?.slice(0, 70) || ''}</div>
+            <div class="name">${_esc(name)}</div>
+            <div class="sub">${_esc(p.city || '')} · ${_esc(p.desc?.slice(0, 70) || '')}</div>
           </div>
         </div>
         <div class="section">${bookingBtns.join(' ')}</div>

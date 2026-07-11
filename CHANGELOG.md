@@ -1,6 +1,34 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.46 — Follow-up audit v3.45: sicurezza, integrità dati, bug minori, rimozione CSS morto (2026-07-11, Attuale)
+## v3.47 — Audit completo sicurezza + UI/UX mobile end-to-end (2026-07-11, Attuale)
+
+Audit esaustivo su richiesta esplicita ("controlla ogni singolo contenitore, bottone, tutto — sicurezza e UI/UX perfetta, mobile-only, utenti non tech-savvy"). Metodo: 7 agenti paralleli in background (3 sicurezza: injection completo, trust boundary MQTT, storage/CORS/secrets; 4 UI/UX per area, viewport 375×812 con Puppeteer, dati seedati, screenshot + controlli automatici) + verifica manuale mirata sui findings più critici + wave di fix (2 agenti + fix diretti sui punti a più alto rischio) + verifica finale nel browser reale.
+
+### 🔒 Sicurezza — 2 XSS critiche zero-click aggiuntive + fix strutturale trust MQTT
+- **2 vettori XSS zero-click via MQTT non coperti da v3.45**: `gf-places-panel.js` (nome/città/tag/note di un posto GF condiviso da un peer) e `itinerary-accordion-template.js`/`itinerary-unified.js`/`list-view.js` (nome/città di una tappa nell'itinerario di gruppo — la schermata più usata dell'app). Sistemati con lo stesso pattern `_esc()`/`_escJs()` di v3.45. Più 1 alta (Google Places search in `list-view.js`, incluso un `onclick` che faceva l'escape solo dell'apice) e alcune medie/basse (`bookings-view.js`, `gf-restaurants.js`, `poi-detail-view.js` foto, `budget-view.js` self-XSS) — 8 file in totale.
+- **Fix strutturale al trust boundary MQTT** (root cause, non sintomo): il broker pubblico accettava messaggi in chiaro alla pari di quelli cifrati — chiunque ascoltasse il topic `giap2027v2/#` **senza conoscere il codice stanza** poteva iniettare messaggi validi (impersonare membri, dirottare il roster di gruppo, forzare cancellazioni, rimuovere/cancellare/scondividere l'itinerario). `mqtt-transport.js`: una volta che `RoomCrypto.ready()` è vero, i messaggi in chiaro vengono ora scartati — il codice stanza torna a essere l'unica vera barriera d'accesso, coerente col modello di minaccia del progetto ("tra amici", non una PKI). Chiude o riduce drasticamente 5 vettori ad alta gravità trovati dall'audit. **Residuo accettato**: un membro che HA il codice stanza può ancora impersonare un altro membro per nome (non risolvibile senza identità per-membro/PKI — fuori scope, vedi Prossimi step).
+- `itinerary-crdt.js`: clamp anti-forgia sul `deletionTimestamp` — un peer non può più forzare la cancellazione permanente di una tappa spedendo un timestamp a decenni nel futuro.
+- `mqtt-transport.js`: cap dimensione payload prima del parse (anti-flood grezzo) + guard di tipo su lat/lng GPS (scartava marker non numerici solo dopo averli già scritti in stato).
+
+### 🐛 Crash-safety
+- `state.js`: un JSON valido ma non-oggetto in `localStorage` (es. la stringa letterale `"null"`) mandava in crash l'inizializzazione PRIMA del try/catch che la doveva proteggere → `window.state` mai assegnato → schermata bianca a cascata. Guardia aggiunta. Esteso anche il controllo di corruzione a ogni singolo giorno di `itineraryByDay` (un giorno con `null` invece di `[]` rompeva quasi ogni mutazione dell'itinerario) — fix una volta nel punto di caricamento condiviso invece che in 8 punti sparsi in `itinerary.js`.
+- `itinerary-version-history.js`: la funzione locale `T()` non passava il fallback a `window.t()`, mostrando le chiavi i18n grezze ("vh.desc", "vh.pois", "audit.minsAgo") invece del testo tradotto quando la chiave non esiste nel dizionario — bug presente ad ogni apertura del pannello "Cronologia modifiche". Corretto al pattern standard usato in tutti gli altri file.
+- `weather-view.js`: il widget meteo flottante mostrava la data in **inglese** ("Sat, 11 Jul") in un'app italiana — array di giorni/mesi hardcoded invece di `toLocaleDateString('it-IT', ...)` (3 occorrenze). Trovato anche, nello stesso file, un orario finto hardcoded `"13:25" // Fixed time for now` e un bottone "more" senza alcun handler nel modal previsioni 4 giorni — entrambi rimossi/corretti (lo slot mostra ora la condizione meteo reale, coerente con l'etichetta CSS `.weather-card-condition`).
+
+### 🎨 UI/UX mobile (utenti non tech-savvy) — 2 problemi critici salute + jargon + touch target
+- **Critico (salute)**: nel flusso principale "GF Guide" (quello che un utente apre dal menu) il livello di sicurezza glutine (🟢/🟡/🔴) non veniva mai mostrato — solo nel pannello secondario "I Miei Posti GF", che un utente comune probabilmente non trova. Aggiunto badge con testo esplicito (non solo colore) in lista e dettaglio di `gf-restaurants.js`, con stato "Sicurezza non verificata" per i posti senza dato. Stesso fix per il pallino nella Wishlist GF (`gf-wishlist.js`), ora con testo esplicito accanto al colore.
+- Jargon tecnico sostituito in tutta l'app (it/en/ja): "Groq"/"Groq AI" → "assistente AI"; "Archiviato in IndexedDB" → "Salvato sul telefono"; "E2EE" → "Cifrato" (icona 🔒 mantenuta); footer cronologia modifiche: "MQTT" → "si sincronizza quando i membri sono online".
+- Touch target sotto 44px portati a 44px: chip filtro mappa/itinerario, chip città GF Guide (stesso selettore CSS, un fix per entrambi).
+- Widget meteo flottante: font 11px → 13px (data/condizione/bottone "altro").
+- `group-expenses.js`: i colori verde/rosso dei saldi erano appiattiti da un selettore CSS `!important` troppo largo (`'.sheet-inner *:not(...)' { color:#fff !important }`) — risolto con una classe dedicata esclusa dal flattener, invece di aggiungere altro inline style in competizione.
+- Bug audit-log di gruppo trovato durante l'audit UX (agente separato): mostrava `[object Object]` al posto del nome del luogo (POI di gruppo salva il nome come `{value, timestamp, peerId}`, il viewer leggeva `p.name` grezzo) — **non fixato in questa sessione**, vedi Prossimi step.
+
+### Non fixato in questa sessione (vedi HANDOFF per dettagli e priorità)
+Audit log di gruppo che mostra `[object Object]`; rate-limiting lato applicazione su chat/presence MQTT (nessun cap su frequenza messaggi — un peer scriptato può degradare l'UX di tutti); alcuni cosmetici minori (bleed-through bottom-nav sotto i pannelli semi-trasparenti, stile chat bubble incoerente col tema scuro, "Mappe Apple" mostrato anche su Android, select "Sicurezza GF" in inglese nel form manuale, moderazione suggerimenti GF che implica uno stato che non arriverà mai).
+
+Verificato: `node --check` su 21 file toccati, smoke test verde 3/3 (1 check soft pre-esistente `wizardRender:false`, confermato non regressione), lint-i18n verde, verifica manuale nel browser reale a 375×812 (widget meteo in italiano, touch target 44px, badge sicurezza GF confermati visivamente/via DOM).
+
+## v3.46 — Follow-up audit v3.45: sicurezza, integrità dati, bug minori, rimozione CSS morto (2026-07-11)
 
 Completati tutti i "Prossimi step" lasciati aperti da v3.45, con 4 agenti paralleli su file non sovrapposti (nessun conflitto di merge).
 

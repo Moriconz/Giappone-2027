@@ -12,6 +12,10 @@
   'use strict';
 
   const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+  // poiNameDisplay arriva da entry.poi_name (itinerary-crdt.js mergeGroupItinerary
+  // via MQTT, editabile da altri peer) e finisce in innerHTML: va HTML-escapato.
+  // Riusa window.escapeHtml (js/ui-helpers.js), pattern già in poi-detail-template.js.
+  const _esc = window.escapeHtml || (s => String(s ?? ''));
 
   // Card HTML per un singolo giorno dell'accordion itinerario.
   function buildDayAccordionHTML(dayIndex, tripStart, tripProfile, costByDay, distanceByDay, transferMinByDay) {
@@ -68,7 +72,7 @@
           <div style="display:flex;align-items:center;gap:8px;width:100%;overflow:hidden;opacity:${entry.status === 'visited' ? '0.7' : '1'}" class="itinerary-poi-header">
             <span style="flex-shrink:0;width:24px;height:24px;background:linear-gradient(135deg, var(--m-accent), var(--m-accent));color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">${idx + 1}</span>
             <div style="flex:1;min-width:0;overflow:hidden">
-              <div style="font-size:16px;color:var(--l-ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:${entry.status === 'visited' ? 'line-through' : 'none'}">${poiNameDisplay}</div>
+              <div style="font-size:16px;color:var(--l-ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:${entry.status === 'visited' ? 'line-through' : 'none'}">${_esc(poiNameDisplay)}</div>
               ${entry.addedBy ? `<div style="font-size:12px;color:var(--l-muted);white-space:nowrap">da ${entry.addedBy}</div>` : ''}
             </div>
             ${entry.status === 'visited'

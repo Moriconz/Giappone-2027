@@ -302,13 +302,8 @@
     const currentCondition = getWeatherConditionName(currentCode);
     const icon = getWeatherIcon(currentCode);
 
-    // Format date and time
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const dayName = days[now.getDay()];
-    const date = now.getDate();
-    const monthName = months[now.getMonth()];
-    const dateStr = `${dayName}, ${date} ${monthName}`;
+    // Format date and time (locale italiano — l'app è in it-IT di default)
+    const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
     // Update card fields
@@ -368,13 +363,8 @@
         const currentCondition = getWeatherConditionName(currentCode);
         const icon = getWeatherIcon(currentCode);
 
-        // Format date (e.g., "Sun, 15 Apr") and time (e.g., "13:25")
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const dayName = days[now.getDay()];
-        const date = now.getDate();
-        const monthName = months[now.getMonth()];
-        const dateStr = `${dayName}, ${date} ${monthName}`;
+        // Format date (es. "sab, 15 lug") e ora (es. "13:25") — locale italiano
+        const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
         const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
         // Update card fields
@@ -484,8 +474,6 @@
     if (!container || !weatherData.daily) return;
 
     const dailyData = weatherData.daily;
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     container.innerHTML = '';
 
@@ -493,10 +481,10 @@
     for (let i = 0; i < Math.min(4, dailyData.time.length); i++) {
       const dateStr = dailyData.time[i];
       const date = new Date(dateStr);
-      const dayName = days[date.getDay()];
+      // locale italiano — l'app è in it-IT di default
+      const dayName = date.toLocaleDateString('it-IT', { weekday: 'short' });
       const day = date.getDate();
-      const month = months[date.getMonth()];
-      const time = '13:25'; // Fixed time for now
+      const month = date.toLocaleDateString('it-IT', { month: 'short' });
 
       const tempMax = Math.round(dailyData.temperature_2m_max[i]);
       const code = dailyData.weather_code[i];
@@ -508,15 +496,13 @@
       card.innerHTML = `
         <div>
           <div class="weather-card-date">${dayName}, ${day} ${month}</div>
-          <div class="weather-card-condition">${time}</div>
+          <div class="weather-card-condition">${condition}</div>
         </div>
         <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
           <div class="weather-card-icon">${icon}</div>
-          <div style="font-size:16px; color: var(--l-muted); text-align: center;">${condition}</div>
         </div>
         <div>
           <div class="weather-card-temp">${tempMax}<span class="weather-card-temp-unit">°C</span></div>
-          <button class="weather-card-more">more</button>
           <div class="weather-card-footer">
             <div class="weather-card-dot ${i === 0 ? 'active' : ''}"></div>
             <div class="weather-card-dot ${i === 1 ? 'active' : ''}"></div>
