@@ -140,7 +140,7 @@
   // Pensato per essere chiamato prima di operazioni distruttive
   // (restore, importSharedItinerary, optimizeDay).
   // Store separato + max 5 FIFO (gli auto si rinnovano da soli).
-  function saveAuto(reason) {
+  function saveAuto(reason, extraFields) {
     const ibd = window.state?.itineraryByDay || {};
     if (_countPOIs(ibd) === 0) return null; // nulla da salvare
 
@@ -150,6 +150,7 @@
         case 'restore-snapshot': return 'Prima di ripristino';
         case 'import-share-link': return 'Prima di import link';
         case 'optimize-day': return 'Prima di ottimizzazione';
+        case 'pre-backup-restore': return 'Prima di ripristino backup';
         default: return reason ? `Auto: ${reason}` : 'Auto';
       }
     })();
@@ -163,7 +164,10 @@
       dayCount: _countDays(ibd),
       data: {
         itineraryByDay: JSON.parse(JSON.stringify(ibd)),
-        tripProfile: window.state?.tripProfile ? JSON.parse(JSON.stringify(window.state.tripProfile)) : null
+        tripProfile: window.state?.tripProfile ? JSON.parse(JSON.stringify(window.state.tripProfile)) : null,
+        // Campi extra opzionali (es. notes/customEvents/groupItineraries prima di
+        // un restore backup distruttivo): stesso pattern di itineraryByDay/tripProfile.
+        ...(extraFields ? JSON.parse(JSON.stringify(extraFields)) : {})
       }
     };
 
@@ -202,6 +206,11 @@
       if (snap.data.tripProfile) {
         window.state.tripProfile = JSON.parse(JSON.stringify(snap.data.tripProfile));
       }
+      // Campi extra opzionali salvati da saveAuto (vedi pre-backup-restore): li
+      // ripristina solo se presenti, backward-compatible con snapshot vecchi.
+      ['notes', 'customEvents', 'groupItineraries'].forEach(k => {
+        if (snap.data[k] !== undefined) window.state[k] = JSON.parse(JSON.stringify(snap.data[k]));
+      });
       window.saveState?.();
       window.renderItineraryUnified?.();
       if (typeof window.toast === 'function') window.toast(`✅ Ripristinato: ${snap.name}`);

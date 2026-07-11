@@ -124,6 +124,12 @@ const ITINERARY_SYSTEM = {
     });
 
     if (removed) {
+      // Tombstone: evita che un sync da un altro tab (GROUP_SYNC, last-write-wins
+      // su lastModified) faccia resuscitare questa tappa da uno stato più vecchio.
+      // ponytail: mappa non pota mai (nessun TTL/cap) — ok per un itinerario
+      // personale (decine di tappe), da limitare se un giorno diventa enorme.
+      if (!window.state.itineraryTombstones) window.state.itineraryTombstones = {};
+      window.state.itineraryTombstones[poiId] = Date.now();
       console.log('[Itinerary] Removed POI:', poiId);
       window.PERF_UTILS?.batchedSaveState ? window.PERF_UTILS.batchedSaveState() : window.saveState?.();
       window.GROUP_SYNC?.broadcastItinerary?.();

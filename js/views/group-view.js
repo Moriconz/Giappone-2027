@@ -61,7 +61,7 @@
         <div id="create-mode" style="display:block">
           <label style="display:block;margin-bottom:8px;font-size:15px;font-weight:600;color:var(--l-accent)">Il codice della tua stanza</label>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap;">
-            <div id="room-code-display" style="padding:16px 12px;background:var(--l-accent-soft);border:2px solid var(--l-accent);border-radius:8px;font-size:24px;font-weight:700;letter-spacing:6px;color:var(--l-accent);text-align:center;font-family:monospace;cursor:default;user-select:all;min-width:160px;flex-shrink:0;">------</div>
+            <div id="room-code-display" style="padding:16px 12px;background:var(--l-accent-soft);border:2px solid var(--l-accent);border-radius:8px;font-size:24px;font-weight:700;letter-spacing:4px;color:var(--l-accent);text-align:center;font-family:monospace;cursor:default;user-select:all;min-width:160px;flex-shrink:0;">--------</div>
             <button id="copy-code-btn" class="btn-plain" aria-label="Copia codice stanza" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Copia codice">📋</button>
             <button id="regen-code-btn" class="btn-plain" aria-label="Genera nuovo codice stanza" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;margin:0;line-height:1;flex-shrink:0;width:auto;" title="Genera nuovo codice">🔄</button>
           </div>
@@ -71,8 +71,8 @@
         <!-- JOIN MODE -->
         <div id="join-mode" style="display:none">
           <label style="display:block;margin-bottom:4px;font-size:15px;font-weight:600;color:var(--l-ink)">Codice stanza</label>
-          <input id="group-room-join" placeholder="Es. ABC123" maxlength="6" style="width:100%;padding:12px;border:2px solid var(--l-hair);background:var(--l-input-bg);color:var(--l-ink);border-radius:8px;box-sizing:border-box;font-size:22px;font-weight:700;letter-spacing:6px;text-transform:uppercase;font-family:monospace;text-align:center;">
-          <div style="font-size:13px;color:var(--l-muted);margin-top:4px;">Inserisci il codice a 6 lettere ricevuto dal creatore della stanza.</div>
+          <input id="group-room-join" placeholder="Es. ABC12345" maxlength="8" style="width:100%;padding:12px;border:2px solid var(--l-hair);background:var(--l-input-bg);color:var(--l-ink);border-radius:8px;box-sizing:border-box;font-size:22px;font-weight:700;letter-spacing:4px;text-transform:uppercase;font-family:monospace;text-align:center;">
+          <div style="font-size:13px;color:var(--l-muted);margin-top:4px;">Inserisci il codice a 8 lettere ricevuto dal creatore della stanza.</div>
         </div>
 
         <!-- COMMON FIELDS -->

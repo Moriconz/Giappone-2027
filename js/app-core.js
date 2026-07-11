@@ -36,9 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Room code generator ────────────────────────────────────────────────────
   function generateRoomCode() {
+    // 8 char da alfabeto a 32 simboli (no I/O/0/1 ambigui) = ~40 bit di entropia
+    // (era 6 char / ~30 bit). group-invite.js e group-view.js già gestiscono
+    // codici fino a 8 char, quindi nessun'altra modifica necessaria.
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let code = '';
-    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
     return code;
   }
 

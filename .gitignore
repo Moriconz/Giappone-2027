@@ -21,6 +21,7 @@ build/
 index.html.SPRINT*
 backup/
 graphify-out/
+.graphify/
 graph.html
 graph.json
 viz.html

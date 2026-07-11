@@ -15,8 +15,8 @@ window.STATE_KEY = 'giappone2027_state_v1';
   }
 
   // Reset any field whose type is wrong (corrupted by old code / crash)
-  const arrays  = ['savedPOIs', 'itinerary', 'customEvents', 'customPOIs', 'gpsTraces'];
-  const objects = ['notes', 'gfReports', 'userCategoryOverrides', 'itinerarySharing', 'groupItineraries', 'itineraryByDay'];
+  const arrays  = ['savedPOIs', 'itinerary', 'customEvents', 'customPOIs', 'gpsTraces', 'knownMembers'];
+  const objects = ['notes', 'gfReports', 'userCategoryOverrides', 'itinerarySharing', 'groupItineraries', 'itineraryByDay', 'bookings', 'tripProfile', 'ai', 'gpsRemoteMarkers', 'itineraryTombstones'];
   arrays.forEach(k => {
     if (raw[k] !== undefined && !Array.isArray(raw[k])) { console.warn('[State] Corrupt array reset:', k); delete raw[k]; }
   });
@@ -40,7 +40,8 @@ window.STATE_KEY = 'giappone2027_state_v1';
     ai: {}, aiQuotaDate: null, aiCallsToday: 0,
     gpsEnabled: false, gpsCurrentLat: 35.6762, gpsCurrentLng: 139.6503,
     gpsRemoteMarkers: {}, wakeLockEnabled: false,
-    knownMembers: []
+    knownMembers: [],
+    bookings: {}, tripProfile: {}, itineraryTombstones: {}
   }, raw);
 })();
 

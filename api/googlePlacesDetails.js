@@ -12,6 +12,7 @@
  */
 
 import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+import { setAllowedOrigin } from './lib/cors.js';
 
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
@@ -20,7 +21,7 @@ console.log('[googlePlacesDetails] API Key:', GOOGLE_PLACES_API_KEY ? 'âœ…' : 'â
 export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  setAllowedOrigin(req, res);
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',

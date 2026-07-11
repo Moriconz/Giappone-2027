@@ -64,6 +64,10 @@ console.log('[MQTT] Loading MQTT transport...');
       const sealed = await window.RoomCrypto.seal(msg);
       if (sealed) { pub(roomTopic(myRoomId), { e: sealed }); return; }
     }
+    // ponytail: niente coda di retry, solo warning esplicito — la finestra è
+    // di pochi istanti all'avvio (RoomCrypto.init è async) e il fallback in
+    // chiaro è già il comportamento documentato per non rompere il sync.
+    console.warn('[MQTT] ⚠️ chiave E2EE non pronta — messaggio inviato IN CHIARO sul broker pubblico');
     pub(roomTopic(myRoomId), msg); // fallback: in chiaro
   }
   window.peerBroadcast = peerBroadcast;

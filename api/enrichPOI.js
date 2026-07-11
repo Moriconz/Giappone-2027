@@ -5,10 +5,11 @@
  */
 
 import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+import { setAllowedOrigin } from './lib/cors.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  setAllowedOrigin(req, res);
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 

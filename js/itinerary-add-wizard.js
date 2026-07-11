@@ -18,6 +18,8 @@ function openAddToItineraryWizard(poiData) {
     return;
   }
 
+  const suggested = getSuggestedTime(getSuggestedDay());
+
   // Initialize wizard state
   const wizardState = {
     poiId: poiData.googlePlaceId,
@@ -29,8 +31,8 @@ function openAddToItineraryWizard(poiData) {
     poiLng: poiData.lng ?? null,
     // Opening hours for closed-day warnings in step 2
     poiWeekdayHours: poiData.currentOpeningHours?.weekdayDescriptions || null,
-    selectedDay: getSuggestedDay(),
-    selectedTime: getSuggestedTime(getSuggestedDay()),
+    selectedDay: suggested.day,
+    selectedTime: suggested.time,
     notes: '',
     currentStep: 1
   };
@@ -63,13 +65,16 @@ function getSuggestedDay() {
 }
 
 /**
- * Get suggested time based on last POI in the day
+ * Get suggested time based on last POI in the day.
+ * Returns { day, time }: if adding the buffer wraps past midnight, day is
+ * bumped forward (clamped to the last day of the trip) instead of silently
+ * suggesting an early-morning time on the same day.
  */
 function getSuggestedTime(dayIndex) {
   const dayPOIs = window.state?.itineraryByDay?.[dayIndex] || [];
 
   if (dayPOIs.length === 0) {
-    return '10:00'; // Default morning time
+    return { day: dayIndex, time: '10:00' }; // Default morning time
   }
 
   // Get last POI time
@@ -79,11 +84,17 @@ function getSuggestedTime(dayIndex) {
 
   // Calculate suggested time (add 1.5 hours for travel + buffer)
   const [hours, minutes] = lastTime.split(':').map(Number);
-  const nextMinutes = (hours * 60 + minutes + lastDuration + 90) % 1440;
+  const totalMinutes = hours * 60 + minutes + lastDuration + 90;
+  const dayOverflow = Math.floor(totalMinutes / 1440);
+  const nextMinutes = totalMinutes % 1440;
   const nextHours = Math.floor(nextMinutes / 60);
   const nextMins = nextMinutes % 60;
 
-  return `${String(nextHours).padStart(2, '0')}:${String(nextMins).padStart(2, '0')}`;
+  const totalDays = window.state?.tripProfile?.days || 8;
+  return {
+    day: Math.min(dayIndex + dayOverflow, totalDays - 1),
+    time: `${String(nextHours).padStart(2, '0')}:${String(nextMins).padStart(2, '0')}`
+  };
 }
 
 /**
@@ -583,8 +594,9 @@ function setupWizardHandlers(step, state) {
 
     if (daySelect) {
       daySelect.addEventListener('change', (e) => {
-        state.selectedDay = parseInt(e.target.value);
-        state.selectedTime = getSuggestedTime(state.selectedDay);
+        const suggested = getSuggestedTime(parseInt(e.target.value));
+        state.selectedDay = suggested.day;
+        state.selectedTime = suggested.time;
         console.log('[AddWizard] Updated day to', state.selectedDay);
         renderWizardStep(2, state); // Refresh to update time suggestion
       });

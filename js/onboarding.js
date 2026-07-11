@@ -877,6 +877,8 @@ function initOnboardingForm() {
 
     if (interests.length === 0) {
       (window.toast || function(m) { window.modalConfirm(m, { confirmText: 'OK', cancelText: '' }); })(_To('ob.selectInterest', '⚠️ Seleziona almeno un interesse'));
+      currentStep = 3; // step Interests
+      showStep(currentStep);
       return;
     }
 

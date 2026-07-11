@@ -111,8 +111,14 @@ function importBackup() {
     );
     if (!ok) return;
 
-    // Auto-snapshot current state before overwriting
-    window.ItinerarySnapshots?.saveAuto?.('pre-backup-restore');
+    // Auto-snapshot current state before overwriting (itineraryByDay+tripProfile
+    // di default, + notes/customEvents/groupItineraries perché un restore può
+    // rovinare anche quelli e altrimenti non sarebbero recuperabili)
+    window.ItinerarySnapshots?.saveAuto?.('pre-backup-restore', {
+      notes: window.state?.notes,
+      customEvents: window.state?.customEvents,
+      groupItineraries: window.state?.groupItineraries
+    });
 
     // Apply backup
     BACKUP_FIELDS.forEach(k => {

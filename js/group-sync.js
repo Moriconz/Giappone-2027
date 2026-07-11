@@ -78,11 +78,18 @@ const GROUP_SYNC = {
   mergeItinerary(remoteItinerary) {
     if (!window.state?.itineraryByDay) return;
 
+    const tombstones = window.state.itineraryTombstones || {};
     let changed = false;
     Object.entries(remoteItinerary).forEach(([dayIdx, remotePOIs]) => {
       const localDay = window.state.itineraryByDay[dayIdx] || [];
 
       remotePOIs.forEach(remotePOI => {
+        // Rimossa localmente dopo (o alla pari del)l'ultima modifica remota nota:
+        // non resuscitarla (nessuna cancellazione esplicita viaggia sul canale,
+        // solo stato pieno last-write-wins, quindi il tombstone è l'unico segnale).
+        const tombstoneAt = tombstones[remotePOI.poi_id];
+        if (tombstoneAt && tombstoneAt >= (remotePOI.lastModified || 0)) return;
+
         const localIdx = localDay.findIndex(p => p.poi_id === remotePOI.poi_id);
 
         if (localIdx === -1) {

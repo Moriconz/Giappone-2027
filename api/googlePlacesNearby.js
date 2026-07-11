@@ -7,6 +7,7 @@
  */
 
 import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
+import { setAllowedOrigin } from './lib/cors.js';
 
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 const RATE_LIMIT_DELAY_MS = 200; // 5 requests/sec max
@@ -18,7 +19,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  setAllowedOrigin(req, res);
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',

@@ -1,6 +1,31 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.45 — Audit completo: XSS critiche, bug logici, UI mobile (2026-07-11, Attuale)
+## v3.46 — Follow-up audit v3.45: sicurezza, integrità dati, bug minori, rimozione CSS morto (2026-07-11, Attuale)
+
+Completati tutti i "Prossimi step" lasciati aperti da v3.45, con 4 agenti paralleli su file non sovrapposti (nessun conflitto di merge).
+
+### 🔒 Sicurezza (follow-up non critici)
+- `mqtt-transport.js` — `peerBroadcast()` ora logga un `console.warn` esplicito quando invia in chiaro perché la chiave E2EE non è ancora derivata all'avvio (prima: solo assenza del badge 🔒, nessun avviso).
+- `app-core.js` — codice stanza allungato da 6 a 8 caratteri (~30→~40 bit di entropia), stesso alfabeto senza caratteri ambigui. `group-invite.js`/`group-view.js` già anticipavano 8 caratteri (troncamento e validazione), solo la UI (`group-view.js`: maxlength, placeholder, spaziatura) andava allineata.
+- `api/*.js` — sostituito `Access-Control-Allow-Origin: '*'` con un helper condiviso `api/lib/cors.js` (allowlist per pattern: `*.vercel.app`, `*.github.io`, `localhost`) su tutti gli 11 endpoint serverless, per evitare che siti terzi consumino la quota Google Places/Groq a pagamento. Le chiamate del frontend sono tutte same-origin relative, quindi nessun impatto per l'app stessa.
+
+### 🔄 Integrità dati (follow-up non critici)
+- `itinerary.js`/`group-sync.js` — tombstone per le cancellazioni: `removePOI` marca `state.itineraryTombstones[poiId]` con timestamp; `mergeItinerary` non fa più resuscitare una tappa rimossa da un altro tab se il tombstone è più recente della modifica remota.
+- `state.js` — `_initState` (il guard che gira a ogni boot, non solo al migration one-shot) ora copre anche `bookings`/`tripProfile`/`ai`/`gpsRemoteMarkers`/`itineraryTombstones`/`knownMembers`: dati vecchi o malformati in questi campi non crashano più al primo uso.
+- `QuotaExceededError` su `saveState`/snapshot: verificato che il fix era già presente nel codice attuale (try/catch + toast) — nessuna modifica necessaria, solo confermato.
+- `itinerary-snapshots.js`/`backup-restore.js` — il backup pre-restore ora include anche `notes`/`customEvents`/`groupItineraries` (prima solo `itineraryByDay`+`tripProfile`), quindi un restore che li rovina è ora recuperabile dallo snapshot automatico.
+
+### 🐛 Bug minori UX
+- `onboarding.js` — se manca la selezione "interesse" al submit, il wizard ora riporta l'utente allo step Interessi invece di lasciarlo bloccato sull'ultimo step con solo un toast.
+- `itinerary-add-wizard.js` — `getSuggestedTime` ora incrementa il giorno (clampato all'ultimo giorno del viaggio) quando il wraparound orario supera la mezzanotte, invece di suggerire un orario mattutino sullo stesso giorno.
+
+### 🧹 Pulizia
+- `css/legacy-skin.css` — rimosso il blocco "INLINE STYLE OVERRIDES" (256 righe, righe ~2930-3186), morto da v3.44. Verifica pre-rimozione: il grep letterale sui 9 colori Y2K ha trovato 8 file con match, ma verificando i selettori esatti `[style*="..."]` uno per uno nessuno combacia davvero (tag diverso, `rgba` vs hex, spazi, o non è DOM — `console.log` styling/canvas OpenLayers) — stesso identico esito già documentato in v3.44 per questi stessi file, ora confermato definitivo.
+- `sw.js` — cache bump `giappone-2027-v10` → `v11` (JS/CSS toccati in questa sessione).
+
+Verificato: `node --check` su tutti i 22 file toccati, smoke test verde (3/3 run — 1 check pre-esistente `wizardRender` risultato `false` anche su baseline pulita pre-sessione, non una regressione), `lint-i18n.mjs` verde (0 errori).
+
+## v3.45 — Audit completo: XSS critiche, bug logici, UI mobile (2026-07-11)
 
 Sessione di audit sistematico su richiesta esplicita ("sistema ogni bug, analizza l'app da ogni punto di vista, controlla ogni vista su mobile"). Bug hunt statico (script di cross-reference proprietario, 0 falsi negativi confermati a mano) + 3 agenti paralleli in background su prospettive diverse (sicurezza/privacy, integrità dati/sync, bug logici itinerary/onboarding) + verifica manuale nel browser reale a viewport 375×812 su Mappa, Itinerario, Gruppo, Chat, GF Guide, Budget, Meteo, Shopping.
 
