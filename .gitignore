@@ -25,6 +25,7 @@ graphify-out/
 graph.html
 graph.json
 viz.html
+*-tmp.mjs
 
 # Local env / secrets
 .env
