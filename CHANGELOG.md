@@ -1,6 +1,16 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.48 — Rifinitura UX residua post-audit (2026-07-11, Attuale)
+## v3.49 — Fix regressione critica: presence/heartbeat MQTT scartati dopo v3.47 (2026-07-11, Attuale)
+
+Trovata durante un test end-to-end reale a 2 utenti (2 browser Puppeteer separati, broker MQTT pubblico vero, non mockato — su richiesta esplicita dell'utente di verificare gruppo/GPS/chat tra utenti simulati).
+
+- **Regressione**: il fix v3.47 ("scarta messaggi in chiaro quando la chiave stanza è pronta") ha rotto la presence — `mqtt-transport.js` annunciava/heartbeat-ava la presenza con `pub()` grezzo (3 punti: annuncio iniziale, heartbeat ogni 20s, riconnessione), bypassando `peerBroadcast()` (l'unico percorso che cifra). Il design originale li lasciava volutamente in chiaro ("la presenza non è segreta"), ma dopo v3.47 qualunque client con chiave pronta li scartava **sempre** — non un raro edge case, la normalità per qualunque gruppo di amici reale dopo i primi istanti. Contatore membri online e stato "connesso" rotti silenziosamente.
+- **Fix**: i 3 punti ora passano da `peerBroadcast()` invece di `pub()` diretto — la presence viene cifrata come ogni altro messaggio quando la chiave è pronta. Scartare la exemption "presence sempre in chiaro" invece di riaprirla era la scelta corretta: un'eccezione al gate per `type:'presence'` avrebbe permesso a un estraneo senza codice stanza di forgiare falsi membri (esattamente il vettore che v3.47 chiudeva).
+- **Verificato end-to-end con broker reale** (non solo `node --check`): 2 istanze Puppeteer separate, gruppo creato su una, join sull'altra con lo stesso codice stanza → membership reciproca ✅, GPS broadcastato da una e visto sull'altra alle coordinate esatte ✅, messaggio chat inviato e ricevuto ✅.
+
+Verificato: `node --check`, smoke test verde 2/2, lint-i18n verde, test 2-utenti reale su broker MQTT pubblico (non mockato).
+
+## v3.48 — Rifinitura UX residua post-audit (2026-07-11)
 
 Direzione confermata dall'utente dopo v3.47: modello di fiducia MQTT attuale va bene (niente PKI per-membro), prossimo filone = rifinitura UX residua.
 

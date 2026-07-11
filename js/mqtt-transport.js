@@ -627,8 +627,13 @@ console.log('[MQTT] Loading MQTT transport...');
           mqttClient.subscribe(roomTopic(room), { qos: 0 }, (err) => {
             if (err) { console.error('[MQTT] subscribe error:', err.message); return; }
             console.log('[MQTT] ✅ Iscritto a topic:', roomTopic(room));
-            // Annuncia subito la presenza
-            pub(roomTopic(room), { type: 'presence', from: name, ts: Date.now() });
+            // Annuncia subito la presenza — via peerBroadcast (non pub diretto):
+            // dal fix v3.47 handleIncoming scarta i messaggi in chiaro una volta
+            // che la chiave stanza è pronta, quindi la presence deve passare dallo
+            // stesso percorso cifrato di ogni altro messaggio, altrimenti ogni
+            // client con chiave pronta la scarterebbe sempre (bug reale trovato
+            // durante il test 2-utenti di questa sessione).
+            peerBroadcast({ type: 'presence' });
           });
         });
 
@@ -656,7 +661,7 @@ console.log('[MQTT] Loading MQTT transport...');
       // ── Heartbeat presenza ogni 20s ──────────────────────────────────────────
       hbTimer = setInterval(() => {
         if (mqttClient?.connected) {
-          pub(roomTopic(room), { type: 'presence', from: name, ts: Date.now() });
+          peerBroadcast({ type: 'presence' });
         }
       }, HB_INTERVAL);
 
@@ -789,7 +794,7 @@ console.log('[MQTT] Loading MQTT transport...');
       if (!isStarted) {
         this.start(room, name, onStatus, []);
       } else if (mqttClient?.connected) {
-        pub(roomTopic(myRoomId), { type: 'presence', from: myName, ts: Date.now() });
+        peerBroadcast({ type: 'presence' });
         onStatus?.('connected', onlineCount);
       }
     },
