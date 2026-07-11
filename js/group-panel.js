@@ -9,7 +9,8 @@
 
 window.groupPanel = (() => {
   const FORCE_FAKE_GPS = false; // Phase 6: rimosso debug flag
-  
+  const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : (f || k);
+
   /**
    * Renderizza pannello gruppo
    */
@@ -28,7 +29,6 @@ window.groupPanel = (() => {
     }
     
     const now = Date.now();
-    const T = window.t || ((k, f) => f || k);
     // Stato connessione realtime (MQTT) — mostrato nel box stanza, aggiornato dal refresh live
     const connStatus = (() => {
       const st = window.peerGPS?.getStatus?.() || 'disconnected';

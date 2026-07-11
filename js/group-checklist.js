@@ -56,6 +56,14 @@
     _list().push(item);
     window.saveState?.();
     _broadcast('add', { item });
+    // Il pannello si chiama "Checklist del gruppo" ma senza un gruppo attivo
+    // il broadcast è un no-op silenzioso (peerBroadcast ritorna subito se
+    // non c'è una stanza) — nessun avviso prima lasciava intendere che
+    // l'item non arriva a nessuno, stesso pattern già corretto in
+    // gf-wishlist.js.
+    if (!window.state?.group) {
+      window.toast?.(T('checklist.savedLocal', '📝 Salvato solo su questo dispositivo — unisciti a un gruppo per condividerlo'));
+    }
     _rerender();
     return true;
   }

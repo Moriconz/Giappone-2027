@@ -33,6 +33,12 @@
   const AUTO_STORAGE_KEY = 'giappone2027_auto_snapshots_v1';
   const MAX_SNAPSHOTS = 10;
   const MAX_AUTO_SNAPSHOTS = 5;
+  // Campi oltre a itineraryByDay/tripProfile che uno snapshot può portarsi
+  // dietro (opzionali, backward-compatible) — stessa lista usata sia quando
+  // si salva lo snapshot pre-restore sia quando lo si ripristina, altrimenti
+  // salvare campi che poi non vengono ripristinati (o viceversa) è la stessa
+  // classe di bug del backup incompleto in backup-restore.js.
+  const EXTRA_FIELDS = ['notes', 'customEvents', 'groupItineraries', 'tickets', 'groupChecklist', 'groupExpenses', 'itinerarySharing', 'userCategoryOverrides'];
 
   function _read(key) {
     try {
@@ -197,8 +203,17 @@
     }
     if (!window.state) return false;
 
-    // Auto-save dello stato corrente PRIMA di sovrascrivere (meta-snapshot)
-    try { saveAuto('restore-snapshot'); } catch (_) {}
+    // Auto-save dello stato corrente PRIMA di sovrascrivere (meta-snapshot).
+    // Prima non passava extraFields: se lo snapshot da ripristinare conteneva
+    // notes/customEvents/groupItineraries/ecc. (es. proprio quello creato da
+    // pre-backup-restore), ripristinarlo li sovrascriveva, ma QUESTA rete di
+    // sicurezza non li aveva salvati — persi in modo permanente. Stessi campi
+    // che restore() applica sotto (EXTRA_FIELDS), simmetria salva/ripristina.
+    try {
+      const currentExtra = {};
+      EXTRA_FIELDS.forEach(k => { if (window.state?.[k] !== undefined) currentExtra[k] = window.state[k]; });
+      saveAuto('restore-snapshot', currentExtra);
+    } catch (_) {}
 
     const snap = found.snap;
     try {
@@ -208,7 +223,7 @@
       }
       // Campi extra opzionali salvati da saveAuto (vedi pre-backup-restore): li
       // ripristina solo se presenti, backward-compatible con snapshot vecchi.
-      ['notes', 'customEvents', 'groupItineraries'].forEach(k => {
+      EXTRA_FIELDS.forEach(k => {
         if (snap.data[k] !== undefined) window.state[k] = JSON.parse(JSON.stringify(snap.data[k]));
       });
       window.saveState?.();

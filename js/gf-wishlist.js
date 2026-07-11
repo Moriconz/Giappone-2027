@@ -74,8 +74,16 @@
     if (_me()) item.votes[_me()] = 'yes'; // chi propone vota sì
     db[id] = item;
     window.saveState?.();
-    _broadcast('propose', { item });
-    window.toast?.(T('wish.proposed', '⭐ Proposto al gruppo!'));
+    // "Proposto al gruppo!" era mostrato anche senza un gruppo attivo: il
+    // broadcast fa no-op silenzioso (peerBroadcast ritorna subito se non c'è
+    // una stanza), quindi l'utente vedeva un falso successo — nessuno riceveva
+    // nulla, il posto finiva solo nella wishlist locale.
+    if (_me()) {
+      _broadcast('propose', { item });
+      window.toast?.(T('wish.proposed', '⭐ Proposto al gruppo!'));
+    } else {
+      window.toast?.(T('wish.savedLocal', '⭐ Salvato nella tua lista — unisciti a un gruppo per condividerlo'));
+    }
     _rerender();
     return true;
   }

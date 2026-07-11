@@ -107,21 +107,32 @@ window.exitGroup = async function() {
   renderGroupView();
 };
 
-// Delete group (creator only)
+// Delete group (creator only). La conferma è già mostrata dall'unico
+// chiamante (group-panel.js) — niente doppio dialogo qui.
 window.deleteGroup = async function() {
-  const ok = await (window.modalConfirm || confirm)('Sei sicuro di voler eliminare la stanza? Tutti i membri verranno disconnessi.', { danger: true, confirmText: 'Elimina stanza' });
-  if (!ok) {
-    return;
-  }
   const room = state.group?.roomId;
   console.log('[deleteGroup] Deleting room:', room);
+  // Il dialog di conferma promette "tutti i membri verranno disconnessi":
+  // prima serviva solo a pulire lo stato locale, gli altri membri restavano
+  // collegati alla stessa stanza MQTT senza saperlo. Ora si avvisa davvero
+  // il gruppo prima di sparire in locale (fire-and-forget, stesso pattern
+  // di ogni altro broadcast: se il messaggio non arriva a qualcuno, quel
+  // client resterà con lo stato vecchio finché non prova a interagire e
+  // scopre la stanza vuota — nessun modo di garantire la consegna su MQTT).
+  await window.peerBroadcast?.({ type: 'group_deleted', roomId: room });
   window.state.group = null;
   window.saveState?.();
   if (window.groupChat) {
     window.groupChat.getHistory().messages = [];
   }
   if (peerGPS) {
-    window.peerGPS?.stop();
+    // ponytail: piccolo margine prima di chiudere — peerGPS.stop() forza la
+    // chiusura del socket MQTT (mqttClient.end(true)) subito dopo il publish
+    // sopra; il publish è QoS 0 fire-and-forget, senza questo margine il
+    // messaggio group_deleted rischiava di non uscire mai sulla rete
+    // (verificato: senza il delay il messaggio non arrivava agli altri
+    // membri in un test reale a 2 browser).
+    setTimeout(() => window.peerGPS?.stop(), 500);
   }
   window.toast('🗑️ Stanza eliminata: ' + room);
   // renderGroupView() chiuderà gli sheet aperti e aprirà il form di setup

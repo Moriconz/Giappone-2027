@@ -1,6 +1,34 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.49 — Fix regressione critica: presence/heartbeat MQTT scartati dopo v3.47 (2026-07-11, Attuale)
+## v3.50 — Test end-to-end esaustivo: ogni bottone, 2 utenti reali via MQTT (2026-07-11, Attuale)
+
+Su richiesta esplicita dell'utente: verifica che ogni bottone dell'app faccia davvero quello che promette (non solo "non crasha"), con test reali a 2 browser sul broker MQTT pubblico per gruppo/GPS/chat. Metodo: script Puppeteer diretti (click esaustivo su ogni vista) + 2 agenti di verifica semantica (lettura codice + tracciamento end-to-end di ogni handler).
+
+### 🔴 Critico — corruzione dati silenziosa
+- **`js/custom-poi.js`**: il bottone "Aggiungi a itinerario" su un POI personalizzato passava `{googlePlaceId: poi.id, ...}` al wizard, ma l'UNICA implementazione realmente attiva di `openAddToItineraryWizard` (`js/views/poi-detail/poi-itinerary-wizard.js` — c'è una seconda implementazione a 3 step in `js/itinerary-add-wizard.js`, mai raggiungibile perché sovrascritta, vedi "Da decidere insieme" sotto) legge `p.id`, non `p.googlePlaceId`. La tappa veniva salvata con `poi_id: undefined` — aggiungendo più POI personalizzati, tutti condividevano la stessa "identità" `undefined`, e modificare/eliminare una tappa poteva silenziosamente colpirne un'altra. Fix: passa `id: poi.id`.
+
+### 🔴 Critico — dialog con dichiarazione falsa
+- **`js/group-panel.js` + `js/gf-analysis.js`**: il bottone "🗑️ Elimina stanza" mostrava un dialog che dichiara letteralmente *"tutti i membri verranno disconnessi"*, ma `deleteGroup()` faceva solo pulizia locale — nessun messaggio agli altri membri, che restavano collegati alla stessa stanza MQTT indefinitamente. Aggiunto broadcast `group_deleted` + gestore lato ricezione che disconnette davvero gli altri membri. **Bug secondario trovato durante il fix e corretto**: il dialog di conferma appariva due volte (uno in `group-panel.js`, poi di nuovo dentro `deleteGroup()` stesso) — rimossa la duplicazione. **Bug terziario trovato durante la verifica**: `peerGPS.stop()` chiudeva la connessione MQTT (`force:true`) troppo presto, prima che il messaggio broadcast (QoS 0, fire-and-forget) uscisse davvero sulla rete — verificato con un test reale a 2 browser che il messaggio non arrivava; aggiunto un margine di 500ms prima della disconnessione. Verificato end-to-end su broker MQTT reale: ora funziona.
+
+### 🟠 Grave — perdita dati
+- **`js/backup-restore.js`**: il backup "completo" non includeva `tripProfile` (date/durata viaggio) né `tickets` (vault biglietti) — proprio i dati che un cambio telefono (il caso d'uso dichiarato dal modulo) avrebbe perso senza alcun avviso. Rimossa anche `'bookings'`, chiave morta mai esistita in `state`. Aggiunti anche `groupChecklist`/`groupExpenses`/`itinerarySharing`/`userCategoryOverrides`.
+- **`js/itinerary-snapshots.js`**: `restore()` creava una rete di sicurezza pre-ripristino senza passare i campi extra (notes/customEvents/groupItineraries/ecc.) — se lo snapshot da ripristinare li conteneva (es. uno snapshot pre-backup), ripristinarlo li sovrascriveva permanentemente senza modo di tornare indietro. Ora salva e ripristina la stessa lista di campi extra in modo simmetrico (`EXTRA_FIELDS`, condivisa tra le due funzioni).
+
+### 🟡 Falso successo (stesso pattern di "Proponi al gruppo" già corretto in v3.47)
+`js/group-checklist.js`, `js/group-expenses.js`, `js/gf-menu-photos.js`, `js/gf-places-panel.js` (invio suggerimento GF): tutte queste azioni mostravano un messaggio di successo "condiviso col gruppo" anche senza un gruppo attivo (broadcast no-op silenzioso). Aggiunto un messaggio onesto alternativo ("Salvato solo su questo dispositivo — unisciti a un gruppo per condividerlo") quando non si è in un gruppo, stesso pattern già usato in `gf-wishlist.js`/`gf-crowdsource.js`.
+
+### Verificato end-to-end su broker MQTT reale (2 istanze browser separate, non mockato)
+Creazione gruppo, join con codice stanza, membership reciproca, visibilità GPS tra utenti, chat di gruppo, eliminazione stanza con disconnessione reale di tutti i membri — tutti confermati funzionanti.
+
+### Da decidere insieme (non agito unilateralmente — l'utente ha chiesto di decidere insieme cosa eliminare/riordinare)
+- **`js/itinerary-add-wizard.js` (719 righe) è codice morto al 100%**: `window.openAddToItineraryWizard` viene sempre sovrascritto dall'implementazione successiva in `poi-detail/poi-itinerary-wizard.js` (caricata dopo in index.html), verificato che nessun altro file referenzia le sue funzioni interne. Candidato per la rimozione, non rimosso in questa sessione.
+- **Bug pre-esistente trovato per caso**: `mqtt-transport.js` dispatcha `group_members_updated` su `document` senza `bubbles:true`, ma `group-panel.js` ascolta su `window` — l'evento non arriva mai, quindi il pannello Gruppo aperto non si aggiorna automaticamente quando un membro entra (si aggiorna solo alla riapertura). Non fixato in questa sessione (fuori scope rispetto ai bug trovati, cosmetico).
+- **`js/itinerary-features.js` `applyDayHours`**: scrive `itineraryByDay` direttamente bypassando i metodi `window.ITINERARY`, quindi l'azione "Applica" in "Riordina per orari" non è coperta da Annulla/Ctrl+Z (solo dallo snapshot automatico persistente). Non fixato.
+- Cosmetici minori: etichetta "Giorni Rimanenti" nel budget mostra in realtà giorni pianificati; badge countdown biglietti resta stantio dopo cambio stato finché il pannello non si riapre; suggerimento itinerario duplicato non dà feedback se il POI è già in quel giorno; permesso notifiche negato durante il click non mostra toast (solo se già negato in precedenza).
+
+Verificato: `node --check` su 12 file, smoke test verde 3/3, lint-i18n verde, 2 fix (group_deleted, custom-poi) verificati end-to-end con test reali (browser multipli / broker MQTT vero).
+
+## v3.49 — Fix regressione critica: presence/heartbeat MQTT scartati dopo v3.47 (2026-07-11)
 
 Trovata durante un test end-to-end reale a 2 utenti (2 browser Puppeteer separati, broker MQTT pubblico vero, non mockato — su richiesta esplicita dell'utente di verificare gruppo/GPS/chat tra utenti simulati).
 

@@ -456,6 +456,21 @@ console.log('[MQTT] Loading MQTT transport...');
         window.onPeerMessage?.(data);
         break;
 
+      // Il creatore ha eliminato la stanza — il dialog di conferma promette
+      // "tutti i membri verranno disconnessi", quindi chiudiamo davvero il
+      // gruppo anche sui client degli altri membri (prima non arrivava
+      // alcun messaggio, gli altri restavano collegati alla stessa stanza
+      // MQTT senza saperlo).
+      case 'group_deleted':
+        if (window.state?.group && window.state.group.roomId === data.roomId) {
+          window.peerGPS?.stop?.();
+          window.state.group = null;
+          window.saveState?.();
+          window.toast?.(`🗑️ ${data.from} ` + T('group.toastRoomDeleted', 'ha eliminato la stanza — sei stato disconnesso'));
+          document.dispatchEvent(new CustomEvent('group_deleted', { detail: { roomId: data.roomId, by: data.from } }));
+        }
+        break;
+
       // GF group wishlist (propose/vote/remove) sync
       case 'gf_wishlist':
         if (data.payload) window.GFWishlist?.receive?.(data.payload);

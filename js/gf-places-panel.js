@@ -703,7 +703,14 @@ window.submitGFSuggestion = function() {
   const saved = GFSuggestionsDB.add(suggestion);
 
   if (saved) {
-    window.toast(T('gfp.submitted', '🎉 Suggerimento inviato! Grazie per aver contribuito! 🙏'));
+    // GFSuggestionsDB.add() trasmette solo al gruppo (broadcastToPeers, no-op
+    // silenzioso senza stanza attiva) — "Suggerimento inviato" era mostrato
+    // comunque, stesso pattern di falso successo già corretto altrove.
+    if (window.state?.group) {
+      window.toast(T('gfp.submitted', '🎉 Suggerimento inviato! Grazie per aver contribuito! 🙏'));
+    } else {
+      window.toast(T('gfp.submittedLocal', '📝 Salvato solo su questo dispositivo — unisciti a un gruppo per condividerlo'));
+    }
 
     // Pulisci il form
     document.getElementById('gf-suggest-name').value = '';

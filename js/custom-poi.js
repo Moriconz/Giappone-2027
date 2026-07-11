@@ -285,10 +285,16 @@
     setTimeout(() => {
       const addBtn = document.getElementById('cpoi-add-itin');
       if (addBtn) addBtn.onclick = () => {
-        // Riusa il wizard standard passando un poiData compatibile
+        // Riusa il wizard standard passando un poiData compatibile.
+        // Il wizard attivo (poi-detail/poi-itinerary-wizard.js, l'unico
+        // caricato — vedi index.html) legge `p.id`, non `p.googlePlaceId`:
+        // passare il campo sbagliato lasciava poiId undefined, salvando la
+        // tappa con poi_id assente (bug reale: più POI personalizzati
+        // aggiunti così finivano con la stessa "identità" undefined, e
+        // modificarne uno poteva silenziosamente colpirne un altro).
         if (typeof window.openAddToItineraryWizard === 'function') {
           window.openAddToItineraryWizard({
-            googlePlaceId: poi.id, name: poi.name,
+            id: poi.id, name: poi.name,
             city: T('cpoi.custom', 'posto personalizzato'),
             type: poi.cat, lat: poi.lat, lng: poi.lng
           });

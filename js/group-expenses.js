@@ -57,7 +57,14 @@
     _list().push(exp);
     window.saveState?.();
     _broadcast('add', { expense: exp });
-    window.toast?.(T('exp.added', '💴 Spesa registrata'));
+    // Senza gruppo attivo il broadcast è un no-op silenzioso e lo split tra
+    // membri non ha senso (splitAmong resta [] o solo te stesso) — stesso
+    // pattern di falso successo già corretto in gf-wishlist.js.
+    if (_me()) {
+      window.toast?.(T('exp.added', '💴 Spesa registrata'));
+    } else {
+      window.toast?.(T('exp.savedLocal', '💴 Salvata solo su questo dispositivo — unisciti a un gruppo per dividerla'));
+    }
     _rerender();
     return true;
   }

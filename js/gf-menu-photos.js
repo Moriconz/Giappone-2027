@@ -72,7 +72,14 @@
         db[poiId].push(photo);
         window.saveState?.();
         _broadcast('add', { poiId, poiName, photo });
-        window.toast?.(T('gfm.added', '📷 Menù GF condiviso col gruppo'));
+        // Senza gruppo attivo il broadcast è un no-op silenzioso — stesso
+        // pattern di falso successo già corretto in gf-wishlist.js/
+        // gf-crowdsource.js (quest'ultimo già gestiva bene questo caso).
+        if (window.state?.group) {
+          window.toast?.(T('gfm.added', '📷 Menù GF condiviso col gruppo'));
+        } else {
+          window.toast?.(T('gfm.savedLocal', '📷 Salvata solo su questo dispositivo — unisciti a un gruppo per condividerla'));
+        }
         _refresh(poiId);
       };
       reader.readAsDataURL(file);

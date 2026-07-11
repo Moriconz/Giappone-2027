@@ -9,6 +9,12 @@
 const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
 
 const BACKUP_VERSION = 1;
+// ponytail: 'bookings' rimosso — chiave morta, non esiste mai in state (i
+// dati di prenotazione vivono per-POI, non in state.bookings, verificato).
+// tripProfile/tickets aggiunti — mancavano nel backup "completo" dichiarato
+// dal modulo: un cambio telefono (il caso d'uso esplicito qui sotto) perdeva
+// silenziosamente date/durata viaggio e tutti i biglietti salvati, senza
+// alcun avviso nel riepilogo pre-esportazione.
 const BACKUP_FIELDS = [
   'itinerary',
   'itineraryByDay',
@@ -16,7 +22,12 @@ const BACKUP_FIELDS = [
   'savedPOIs',
   'notes',
   'customEvents',
-  'bookings',
+  'tripProfile',
+  'tickets',
+  'groupChecklist',
+  'groupExpenses',
+  'itinerarySharing',
+  'userCategoryOverrides',
   'group',
   '_schemaVersion',
 ];
@@ -112,12 +123,19 @@ function importBackup() {
     if (!ok) return;
 
     // Auto-snapshot current state before overwriting (itineraryByDay+tripProfile
-    // di default, + notes/customEvents/groupItineraries perché un restore può
-    // rovinare anche quelli e altrimenti non sarebbero recuperabili)
+    // di default, + tutti gli altri campi che un restore può sovrascrivere:
+    // se BACKUP_FIELDS cambia, questo elenco va tenuto allineato, altrimenti
+    // il nuovo campo si perde senza rete di sicurezza — esattamente il bug
+    // che questo commento doveva prevenire).
     window.ItinerarySnapshots?.saveAuto?.('pre-backup-restore', {
       notes: window.state?.notes,
       customEvents: window.state?.customEvents,
-      groupItineraries: window.state?.groupItineraries
+      groupItineraries: window.state?.groupItineraries,
+      tickets: window.state?.tickets,
+      groupChecklist: window.state?.groupChecklist,
+      groupExpenses: window.state?.groupExpenses,
+      itinerarySharing: window.state?.itinerarySharing,
+      userCategoryOverrides: window.state?.userCategoryOverrides
     });
 
     // Apply backup

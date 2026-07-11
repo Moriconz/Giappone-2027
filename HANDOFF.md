@@ -1,4 +1,4 @@
-# HANDOFF — Tabi (Giappone 2027) · 2026-07-11 (fine sessione, v3.46→v3.48)
+# HANDOFF — Tabi (Giappone 2027) · 2026-07-11 (fine sessione, v3.46→v3.50)
 
 Prompt di ripartenza per nuova chat:
 > Continua il progetto Tabi. Leggi HANDOFF.md nella root del repo. Riparti dal primo punto di "Prossimi step". Attiva /fable-5.
@@ -7,80 +7,85 @@ Prompt di ripartenza per nuova chat:
 **Tabi** — travel planner PWA (vanilla JS, no framework, no bundler) con layer gluten-free opzionale. Planner **globale**, non solo Giappone; il trip Giappone 2027 è il caso d'uso di partenza. Collaborativa tra amici via MQTT (broker pubblico, zero backend); serverless Vercel solo come proxy API (Google Places/Groq, quota-gated in `js/api-quota.js`). **Regola utente ferrea: nessun dato hardcoded** — tutto da fonti live o da input umano (crowdsourcing di gruppo). Uso esclusivamente mobile, utenti non tech-savvy (amici in viaggio, non sviluppatori).
 
 ## Stato attuale
-- Tutto committato, pushato su `main` e sincronizzato in `/Users/riccardomoricone/Documents/GitHub/Giappone-2027` (v3.48, questa sessione).
+- Tutto committato, pushato su `main` e sincronizzato in `/Users/riccardomoricone/Documents/GitHub/Giappone-2027` (v3.50, questa sessione).
 - Test: `smoke-test.mjs` verde più volte consecutive + `lint-i18n.mjs` verde.
-- Audit più esteso mai fatto su questo repo: 7 agenti paralleli (3 sicurezza + 4 UI/UX, ciascuno con Puppeteer proprio, viewport 375×812) + verifica manuale mirata + 3 wave di fix (2 agenti + fix diretti su MQTT/crash-safety/i18n + rifinitura UX residua).
+- Sessione con la copertura di test più estesa mai fatta su questo repo: 7 agenti paralleli (audit sicurezza+UX) + 2 agenti di verifica semantica (ogni bottone fa davvero quello che promette) + test end-to-end reali con 2 browser separati sul broker MQTT pubblico (non mockato) per gruppo/GPS/chat/eliminazione stanza.
 
 ## Richiesta della sessione
-L'utente ha chiesto un audit esaustivo e autonomo ("non chiedermi nulla, vai avanti da solo... controlla ogni singolo contenitore, bottone, tutto") su due assi: **sicurezza** end-to-end e **UI/UX** mobile per utenti non tecnici, fino a poter dare un verdetto con sicurezza. Poi, in base al verdetto, ha scelto la direzione: **niente PKI per-membro** (il modello di fiducia attuale va bene) e **rifinitura UX residua** come prossimo filone di lavoro (già in parte eseguito in questa stessa sessione, v3.48).
+Due round: (1) audit esaustivo sicurezza+UX mobile ("controlla ogni singolo contenitore, bottone"), poi (2) su richiesta esplicita di continuare, verifica che **ogni bottone faccia davvero quello che promette** ("nessun errore, nessuna mezza funzione"), con test reali a 2 utenti simulati (gruppo, GPS, chat) via MQTT vero, non mockato.
 
-## Verdetto sicurezza — onesto, non "zero bug" ma "nessun bug noto non gestito"
-**Cosa è stato fixato (v3.47, vedi CHANGELOG per dettagli):**
-- 2 XSS critiche zero-click via MQTT non coperte da v3.45 (gf-places-panel.js, itinerario di gruppo) + 1 alta + alcune medie/basse — 8 file in totale, stesso pattern `_esc()`/`_escJs()` di v3.45.
-- **Fix strutturale, non sintomatico**, al trust boundary MQTT: prima chiunque ascoltasse il broker pubblico **senza conoscere il codice stanza** poteva iniettare messaggi validi (impersonare membri, dirottare il roster, forzare cancellazioni). Ora `mqtt-transport.js` scarta i messaggi in chiaro una volta che la chiave stanza è pronta — il codice stanza torna a essere l'unica vera barriera, come da modello di minaccia del progetto.
-- Clamp anti-forgia timestamp cancellazione CRDT, cap payload, guard tipo GPS, crash-safety `state.js`/`itinerary.js`.
+## Verdetto sicurezza — nessun bug noto non gestito
+**Fixato (v3.47, v3.49):**
+- 2 XSS critiche zero-click via MQTT + altre 6 minori (8 file, pattern `_esc()`/`_escJs()`).
+- **Fix strutturale trust boundary MQTT**: `handleIncoming()` scarta messaggi in chiaro una volta che la chiave stanza è pronta — chiude impersonazione/roster-hijack/cancellazioni forzate da chi non conosce il codice stanza.
+- **Regressione trovata e fixata nello stesso giro (v3.49)**: il fix sopra scartava anche la presence/heartbeat (inviata volutamente in chiaro per design originale) — rotto il conteggio membri online per QUALUNQUE gruppo reale. Corretto instradando la presence nel percorso cifrato (`peerBroadcast`), verificato con un test reale a 2 browser sul broker pubblico.
+- Clamp anti-forgia timestamp CRDT, cap payload, guard tipo GPS, crash-safety `state.js`/`itinerary.js`.
 
-**Cosa resta, deliberatamente non fixato (limitazione architetturale, non bug dimenticato) — CONFERMATO ACCETTABILE DALL'UTENTE, non riproporre la domanda:**
-- Un membro del gruppo che **ha già il codice stanza** può ancora impersonare un altro membro per nome, o (con più sforzo) forzare rimozioni/cancellazioni dell'itinerario condiviso. Risolvibile solo con un sistema di identità per-membro (PKI leggera, trust-on-first-use) — l'utente ha confermato esplicitamente che **non vale la pena** per un gruppo di amici in viaggio. Vedi memoria `mqtt-trust-model-decision`.
-- Nessun rate-limiting applicativo su chat/presence MQTT — un peer scriptato può degradare l'UX di tutti (non un data breach, solo fastidio). Accettato per ora dato il contesto "tra amici".
-- Quota-gating client-side aggirabile con devtools (già noto/accettato, le chiavi API restano server-side — è abuso di quota, non fuga di dati).
-- CORS (`api/lib/cors.js`) e secrets lato client: **verificati sicuri**, nessun problema trovato.
+**Deliberatamente non fixato, CONFERMATO ACCETTABILE DALL'UTENTE — non riproporre la domanda:**
+- Impersonazione tra membri che condividono già il codice stanza — richiederebbe una PKI per-membro, l'utente ha confermato che non vale la pena per un gruppo di amici in viaggio. Vedi memoria `mqtt-trust-model-decision`.
+- Nessun rate-limiting su chat/presence MQTT (fastidio, non data breach — accettato).
+- Quota-gating client-side aggirabile con devtools (chiavi restano server-side, è abuso di quota non fuga dati — noto/accettato).
+- CORS e secrets lato client: verificati sicuri.
 
-**In una frase**: nessuna vulnerabilità nota rimane senza mitigazione proporzionata al modello di minaccia dichiarato ("gruppo di amici fidati, protezione da estranei su un broker pubblico"); il gap residuo (fiducia *tra* membri) è una scelta di scope confermata dall'utente, non un TODO.
+## Verdetto UI/UX — solido, 2 critici salute + 1 corruzione dati + 1 dialog falso fixati
+**Fixato in questa sessione (v3.47→v3.50), evidenza raccolta tramite test reali dove possibile:**
+- Badge sicurezza glutine assente nel flusso GF principale + wishlist solo-colore (critico salute).
+- Jargon tecnico rimosso (Groq/IndexedDB/E2EE/MQTT), touch target 44px, widget meteo data inglese→italiano + orario finto + bottone morto rimossi, colori spese appiattiti da CSS, audit-log `[object Object]`, "Azione sconosciuta" (mappe azione↔label disallineate), select GF in inglese, moderazione GF fittizia, Mappe Apple su Android.
+- **(v3.50) Corruzione dati silenziosa**: `custom-poi.js` passava il campo sbagliato (`googlePlaceId` invece di `id`) al wizard aggiungi-itinerario — POI personalizzati salvati con `poi_id: undefined`, rischio di modifiche incrociate tra tappe diverse. Causa radice: **due implementazioni concorrenti** di `openAddToItineraryWizard` (una morta, mai raggiungibile — vedi "Da decidere insieme"). Fixato il chiamante.
+- **(v3.50) Dialog con dichiarazione falsa**: "Elimina stanza" prometteva "tutti i membri verranno disconnessi" ma faceva solo pulizia locale. Ora c'è un broadcast reale + gestore lato ricezione, verificato con 2 browser separati sul broker MQTT vero. Trovati e fixati nello stesso giro: doppia conferma (dialog mostrato 2 volte) e una race condition (il socket si chiudeva prima che il messaggio uscisse davvero sulla rete).
+- **(v3.50) Falso successo, 4 istanze dello stesso pattern**: checklist di gruppo, spese di gruppo, foto menù GF, invio suggerimento GF mostravano "condiviso col gruppo" anche senza un gruppo attivo. Aggiunto messaggio onesto alternativo.
+- **(v3.50) Perdita dati silenziosa**: il backup "completo" non includeva `tripProfile`/`tickets` (persi in un cambio telefono, il caso d'uso dichiarato del modulo); il ripristino di uno snapshot non salvava la propria rete di sicurezza in modo simmetrico (rischio di perdita permanente in un caso limite ma riproducibile). Entrambi fixati.
 
-## Verdetto UI/UX — buono, 2 critici salute fixati, backlog cosmetico ridotto
-**Cosa è stato fixato (v3.47 + v3.48):**
-- **Critico per la salute**: il livello di sicurezza glutine (🟢/🟡/🔴) non compariva MAI nel flusso principale "GF Guide" (solo in un pannello secondario che un utente comune non trova) — un celiaco poteva sedersi in un posto a rischio pensando che l'app l'avrebbe segnalato. Fixato in lista e dettaglio, più la Wishlist GF (che aveva solo un pallino colorato senza testo).
-- Jargon tecnico eliminato dai punti visibili: "Groq" → "assistente AI", "IndexedDB" → "sul telefono", "E2EE" → "Cifrato" (icona mantenuta), "MQTT" tolto dal footer cronologia modifiche.
-- Touch target sotto 44px portati a soglia: chip filtro mappa/itinerario, chip città GF Guide.
-- Widget meteo: font 11px→13px, data in inglese→italiano, orario finto hardcoded e bottone morto rimossi nel modal previsioni 4 giorni.
-- Colori saldi spese di gruppo (verde/rosso) che un CSS `!important` troppo largo appiattiva a grigio — risolto.
-- **(v3.48)** Audit log gruppo mostrava `[object Object]` — root cause: campi POI di gruppo possono essere valore diretto o metadato CRDT `{value,...}`, il viewer non faceva l'unwrap. Fixato.
-- **(v3.48)** "❓ Azione sconosciuta" per la modifica orari — due mappe azione↔label disallineate (`describeAction()` in `itinerary-phase4.js` non copriva `modify_opening_hours`, presente invece in `ACTION_ICONS`). Allineate; corretta anche una grammatica errata ("Merge risolvere" → "Conflitto risolto").
-- **(v3.48)** Select "Sicurezza GF" in inglese nel form manuale → tradotto in italiano.
-- **(v3.48)** Badge suggerimenti GF prometteva "Approvato"/"Rifiutato" ma nessun codice imposta mai quello stato (nessuna moderazione reale in un'app P2P) → sostituito con "💬 Suggerito", non promette più una revisione che non arriverà.
-- **(v3.48)** Bottone "Mappe Apple" mostrato anche su Android (dove non fa nulla) → condizionato a iOS.
-
-**Cosa resta aperto (nessuno critico, cosmetico puro):**
-- Bleed-through bottom-nav sotto pannelli semi-trasparenti (~86% opacità) — rumore visivo minore, richiede iterazione visiva in browser (non un one-liner sicuro da fare alla cieca).
-- Chat di gruppo: bubble in stile chiaro (WhatsApp-like) su tema scuro dell'app — stona ma non confonde; stessa nota, richiede iterazione visiva.
-- Bottone informazioni "i" 33×44px segnalato dall'audit-core ma non identificato con certezza nel codice da un secondo agente dopo due ricerche approfondite — verificare a mano se riappare (potrebbe essere un falso positivo/il bottone chiudi-pannello "✕").
+**Cosa resta aperto (nessuno critico):**
+- Bleed-through bottom-nav sotto pannelli semi-trasparenti; chat bubble stile chiaro su tema scuro — richiedono iterazione visiva in browser, non fix alla cieca.
+- Bottone informazioni "i" 33×44px segnalato ma non identificato con certezza nel codice (2 ricerche approfondite, nessun match) — verificare a mano se riappare.
+- `js/itinerary-features.js` `applyDayHours` bypassa i metodi `window.ITINERARY`, quindi "Applica" in "Riordina per orari" non è coperto da Annulla/Ctrl+Z (solo dallo snapshot automatico).
+- Cosmetici minori: etichetta "Giorni Rimanenti" nel budget mostra in realtà giorni pianificati; badge countdown biglietti stantio dopo cambio stato; suggerimento itinerario duplicato senza feedback; permesso notifiche negato durante il click senza toast.
 
 ## File prodotti/toccati in questa sessione
-25 file JS/CSS/HTML modificati totali tra v3.47 e v3.48 (vedi `git show --stat` sui due commit). Nessun file nuovo di rilievo oltre a `.graphify/codebase-map.json` (mappa leggera, gitignored).
+37 file JS/CSS/HTML modificati totali tra v3.47 e v3.50 (vedi `git log --stat` sui 4 commit). Nessun file nuovo di rilievo oltre a `.graphify/codebase-map.json` (gitignored).
 
 ## Decisioni chiave
-- **Graphify esterno bloccato dal classificatore di sicurezza** (pacchetto pip `graphifyy`, mismatch nome — pattern typosquat): non aggirato, sostituito con una mappa leggera built-in (`.graphify/codebase-map.json`, grep/node one-off). Vedi memoria `graphify-typosquat-caution`.
-- **2 agenti UX sono falliti per limite di sessione API** (reset schedulato, non un bug del progetto) — completati io stesso in foreground riutilizzando gli script Puppeteer che avevano già scritto (trovati come file temporanei nella root, non ripartiti da zero).
-- **Fix MQTT scelto: gate "richiedi cifratura" invece di firma per-membro**: chiude la maggioranza dei vettori (chiunque non abbia il codice stanza) con un diff minimo in un solo punto (`handleIncoming`). L'utente ha confermato che questo basta, niente PKI. Vedi memoria `mqtt-trust-model-decision`.
-- **Suggerimenti GF: rimossa la finzione di moderazione** invece di costruire un sistema di approvazione reale (fuori scope, l'app non ha un ruolo "moderatore" nell'architettura P2P) — scelta di onestà UI minima invece di una feature nuova.
+- **Graphify esterno bloccato dal classificatore** (pip `graphifyy`, mismatch nome — typosquat): non aggirato, sostituito con mappa leggera built-in. Vedi memoria `graphify-typosquat-caution`.
+- **Diversi agenti falliti per limite di sessione API** durante la sessione (reset schedulato, non un bug del progetto): completati io stesso in foreground con script Puppeteer diretti, incluso il test reale a 2 browser sul broker MQTT pubblico (funziona: la rete non è ristretta per il processo browser lanciato da Puppeteer, a differenza del tool Bash).
+- **Debug via console.log inaffidabile in Puppeteer per eventi asincroni tardivi** in questa sessione — verificare sempre lo STATO risultante (`window.state.X`), non i log di console, quando un test "non mostra nulla".
+- **`Elimina stanza`: scelto un broadcast best-effort** (`peerBroadcast`, fire-and-forget) invece di un protocollo con conferma di consegna — coerente con come funziona già ogni altro messaggio MQTT dell'app; un peer offline al momento dell'eliminazione scoprirà la stanza vuota solo alla prossima interazione, accettato.
+- **File morto trovato ma NON rimosso** (`js/itinerary-add-wizard.js`, 719 righe): l'utente ha chiesto esplicitamente di decidere insieme su "eliminare/riordinare" — presentato come raccomandazione, non eseguito unilateralmente. Un tentativo di rimozione diretta durante la sessione è stato bloccato dal classificatore di sicurezza per questo stesso motivo, correttamente.
 
 ## Prossimi step (in ordine di valore)
-1. **Cosmetici UI residui che richiedono iterazione visiva** — bleed-through bottom-nav, chat bubble tema chiaro/scuro. Da fare con verifica screenshot-by-screenshot in browser, non alla cieca.
-2. **i18n completo** — backlog ampio, nessun modo rapido di trovarlo via grep (serve navigare l'app in EN/JA schermata per schermata).
-3. **Refactor monoliti** — candidati per dimensione (`.graphify/codebase-map.json`): `js/onboarding.js` (927 righe), `js/views/poi-detail/poi-itinerary-wizard.js` (812), `js/views/weather-view.js` (798), `js/mqtt-transport.js` (~800, cresciuto in questa sessione), `js/gf-places-panel.js` (~750), `js/itinerary-add-wizard.js` (719). Verificare prima se la dimensione riflette sezioni indipendenti estraibili o solo UI coesa.
-4. **`wizardRender: false` nello smoke test** — check soft, riproducibile anche su baseline pre-sessione, non una regressione, priorità bassa.
-5. **Idee prodotto** — discutere nuove direzioni con l'utente, dato che l'app è ora in uno stato solido (sicurezza + UX auditate a fondo, due round di fix completati).
+1. **Decisione utente: rimuovere `js/itinerary-add-wizard.js`?** 719 righe di codice morto al 100% (verificato: la sua funzione pubblica viene sempre sovrascritta da `poi-detail/poi-itinerary-wizard.js`, caricato dopo; nessun altro file referenzia le sue funzioni interne). Se sì, è una rimozione a rischio zero (rimuovere il file + lo `<script>` in index.html).
+2. **Fix pre-esistente trovato per caso**: `group_members_updated` dispatchato su `document` senza `bubbles:true` ma ascoltato su `window` in `group-panel.js` — l'evento non arriva mai, il pannello Gruppo aperto non si aggiorna live quando un membro entra (si aggiorna solo alla riapertura). Fix minimo: `bubbles:true` o dispatch su `window`.
+3. **Cosmetici UI residui che richiedono iterazione visiva** — bleed-through bottom-nav, chat bubble tema chiaro/scuro.
+4. **`applyDayHours` fuori dal sistema undo/redo** — valutare se vale la pena instradarlo tramite `window.ITINERARY` o accettare (solo snapshot automatico come rete di sicurezza).
+5. **i18n completo** — backlog ampio, serve navigare l'app in EN/JA schermata per schermata.
+6. **Refactor monoliti** — vedi `.graphify/codebase-map.json`: `js/onboarding.js` (927 righe), `js/views/poi-detail/poi-itinerary-wizard.js` (812), `js/views/weather-view.js` (798), `js/mqtt-transport.js` (~830, cresciuto questa sessione), `js/gf-places-panel.js` (~750).
+7. **`wizardRender: false` nello smoke test** — check soft, pre-esistente, priorità bassa.
+8. **Idee prodotto** — l'app è ora in stato solido (sicurezza + UX + funzionalità reale auditate a fondo su 3 round).
 
 ## Vincoli e convenzioni
 - Script IIFE browser, `<script defer>` in index.html; niente ES modules/bundler.
 - MAI sed/perl multi-riga greedy: Edit manuale + `node --check` + smoke test dopo ogni modifica.
-- Verifica sempre: `python3 -m http.server PORT` + `node smoke-test.mjs http://localhost:PORT` (exit 0, ripetere 2-3 volte per distinguere flaky da regressione reale) + `node scripts/lint-i18n.mjs` se si toccano stringhe. Per bug UI, verifica nel browser reale a viewport mobile (375×812), non solo lo smoke test.
+- Verifica sempre: `python3 -m http.server PORT` + `node smoke-test.mjs http://localhost:PORT` (exit 0, ripetere 2-3 volte) + `node scripts/lint-i18n.mjs` se si toccano stringhe. Per bug UI, verifica nel browser reale a viewport mobile (375×812).
+- **Per bug MQTT/multi-utente**: il broker pubblico (`broker.emqx.io` ecc.) è raggiungibile da un browser lanciato da Puppeteer (verificato) — usa 2 istanze `puppeteer.launch()` separate (non 2 tab, per isolare `localStorage`) per un test reale a 2 utenti, invece di mockare MQTT. Non fidarti di `console.log` per eventi asincroni tardivi in questi test: verifica lo stato (`window.state.X`) direttamente.
 - Lo stato app vive TUTTO in un unico blob `localStorage['giappone2027_state_v1']` (`js/state.js`) — per seedare dati di test, mutare `window.state.X` + `window.saveState()`, non `localStorage.setItem` diretto.
 - Commit in italiano, CHANGELOG.md aggiornato ad ogni versione, push su `main` + sync cartella deploy sempre.
-- Nuove stringhe UI: sempre `T('namespace.chiave', 'fallback italiano')` + chiavi in `js/i18n.js` per it/en/ja. **Attenzione al pattern del `T()` locale**: la versione corretta è `const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;` — passare SEMPRE il fallback a `window.t(k, f)`, mai `window.t?.(k)` da solo (altrimenti la chiave grezza appare quando la traduzione manca — bug trovato e fixato in `itinerary-version-history.js` questa sessione).
-- **Mappe azione↔label/icona per audit trail**: esistono in due punti diversi (`ACTION_ICONS` in `itinerary-version-history.js`, `descriptions` in `itinerary-phase4.js`'s `describeAction()`) — se si aggiunge un nuovo tipo di azione, aggiornarle ENTRAMBE (disallineate hanno causato "❓ Azione sconosciuta" per un'azione reale, fixato in v3.48).
-- HTML generato via template string con `onclick="..."` inline: qualunque valore interpolato che può contenere un apice va passato attraverso `_escJs()` (JS-string-escape poi HTML), non il normale `_esc()`.
-- **Trust boundary MQTT**: dopo il fix v3.47, `handleIncoming()` in `mqtt-transport.js` scarta messaggi in chiaro quando `RoomCrypto.ready()` è vero — qualunque nuovo tipo di messaggio MQTT deve passare da questo stesso gate, non aggirarlo. Niente PKI per-membro (deciso, vedi memoria `mqtt-trust-model-decision`).
-- **Campi POI di gruppo**: possono essere il valore diretto o un metadato CRDT `{value, timestamp, peerId}` — qualunque nuovo codice che legge `poi.nomecamp` da un itinerario di gruppo deve gestire entrambe le forme (vedi l'unwrap in `audit-log-viewer.js`, v3.48).
+- Nuove stringhe UI: sempre `T('namespace.chiave', 'fallback italiano')` + chiavi in `js/i18n.js` per it/en/ja. Pattern corretto del `T()` locale: `const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;` — passare SEMPRE il fallback a `window.t(k, f)`.
+- **Qualunque azione che promette di "condividere/inviare/proporre al gruppo"** deve controllare `window.state?.group` prima di procedere e mostrare un messaggio onesto alternativo se non c'è un gruppo attivo (il broadcast è sempre un no-op silenzioso senza stanza) — pattern ormai consistente in `gf-wishlist.js`, `gf-crowdsource.js`, `group-checklist.js`, `group-expenses.js`, `gf-menu-photos.js`, `gf-places-panel.js`.
+- **Chiudere una connessione MQTT subito dopo un broadcast è rischioso**: `pub()` è fire-and-forget (QoS 0), `mqttClient.end(true)` è un force-close — se serve che un ultimo messaggio esca davvero prima di disconnettersi, aggiungere un margine (vedi `deleteGroup()` in `gf-analysis.js`, 500ms).
+- **Snapshot/backup con campi extra**: se si aggiunge un nuovo campo persistente a `window.state`, verificare se va incluso in `BACKUP_FIELDS` (`backup-restore.js`) e/o `EXTRA_FIELDS` (`itinerary-snapshots.js`) — altrimenti si perde silenziosamente in un backup/ripristino.
+- **Campi POI di gruppo**: possono essere il valore diretto o un metadato CRDT `{value, timestamp, peerId}` — gestire entrambe le forme (vedi unwrap in `audit-log-viewer.js`).
+- **Mappe azione↔label/icona** esistono in due punti (`ACTION_ICONS` in `itinerary-version-history.js`, `descriptions` in `itinerary-phase4.js`) — aggiornare entrambe se si aggiunge un tipo di azione.
+- **`window.openAddToItineraryWizard` ha 2 implementazioni**: quella reale è `js/views/poi-detail/poi-itinerary-wizard.js` (legge `p.id`), quella in `js/itinerary-add-wizard.js` è morta — non aggiungere chiamate assumendo la seconda esista ancora.
 - Prima di un refactor/feature grossa: cercare worktree isolate in `.claude/worktrees/` o branch `claude/*`, verificando quanto sono indietro rispetto a `main`.
-- **Verifica selettore-per-selettore prima di "correggere" un bug UI su appiattitori CSS**: non tutto ciò che "sembra" un colore Y2K/hardcoded è davvero intercettato da un override — verificare sempre i selettori `[style*="..."]` esatti.
-- **Grep di verifica "deve dare 0" che non dà 0**: non è una licenza a procedere sulla propria interpretazione né un blocco definitivo — richiede verifica manuale + conferma esplicita dell'utente (vedi memoria `verification-gate-discipline`).
-- **Tool esterni da skill non fidate**: pacchetto pip/npm con nome diverso dal tool dichiarato = pattern typosquat, non aggirare il blocco del classificatore (vedi memoria `graphify-typosquat-caution`).
-- `.graphify/codebase-map.json` — mappa leggera (file, righe, `window.X=` esportati), utile per identificare i monoliti da refactorare senza rileggere tutto il codebase.
+- **Verifica selettore-per-selettore prima di "correggere" un bug UI su appiattitori CSS**.
+- **Grep di verifica "deve dare 0" che non dà 0**: richiede conferma esplicita dell'utente (vedi memoria `verification-gate-discipline`).
+- **Tool esterni da skill non fidate con pacchetto di nome diverso** = typosquat, non aggirare il blocco (vedi memoria `graphify-typosquat-caution`).
+- **Decisioni di "eliminare/riordinare" codice**: presentarle come raccomandazione, non eseguirle unilateralmente — l'utente vuole deciderle insieme (vedi Prossimi step #1).
 
 ## Problemi noti
 - GitHub Pages: run in coda da giorni, problema infrastruttura GitHub; Vercel è il deploy che conta.
-- `fmgf_url`/link Find Me Gluten Free sono link manuali di verifica (nessuna API: CORS) — scelta deliberata, non un TODO.
+- `fmgf_url`/link Find Me Gluten Free sono link manuali di verifica (nessuna API: CORS) — scelta deliberata.
 - Nessuna chiave API reale in locale (Google Places, Groq): le feature che le usano falliscono con 404/501/503 in dev — atteso.
 - `wizardRender: false` nello smoke test — soft check, pre-esistente, priorità bassa.
+- `js/itinerary-add-wizard.js` è codice morto — vedi Prossimi step #1.
+- `group_members_updated` non aggiorna live il pannello Gruppo aperto — vedi Prossimi step #2.
