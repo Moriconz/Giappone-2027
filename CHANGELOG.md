@@ -1,6 +1,17 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.47 — Audit completo sicurezza + UI/UX mobile end-to-end (2026-07-11, Attuale)
+## v3.48 — Rifinitura UX residua post-audit (2026-07-11, Attuale)
+
+Direzione confermata dall'utente dopo v3.47: modello di fiducia MQTT attuale va bene (niente PKI per-membro), prossimo filone = rifinitura UX residua.
+
+- `js/audit-log-viewer.js` — la cronologia modifiche mostrava `[object Object]` invece del nome del luogo: i campi di un POI di gruppo possono essere il valore diretto o un metadato CRDT `{value, timestamp, peerId}` (vedi `mergePOIFields` in `itinerary-crdt.js`), il viewer leggeva `p.name` grezzo. Aggiunto un unwrap che gestisce entrambe le forme.
+- `js/itinerary-phase4.js` — `describeAction()` non copriva `modify_opening_hours` (presente invece in `ACTION_ICONS` di `itinerary-version-history.js`, le due mappe erano disallineate) → mostrava "❓ Azione sconosciuta" per un'azione reale e comune (modifica orari). Aggiunta la voce mancante; corretta anche "🔄 Merge risolvere" (grammatica errata) → "🔄 Conflitto risolto".
+- `js/gf-places-panel.js` — select "Sicurezza GF" nel form manuale era in inglese ("GREEN - 100% Safe" ecc.) nonostante il resto dell'app sia in italiano → tradotto. Badge suggerimenti GF mostrava "✅ Approvato"/"❌ Rifiutato"/"⏳ In attesa" ma nessun codice scrive mai quello stato (verificato: `approved`/`rejected` non impostati da nessuna parte, l'app è P2P tra amici senza moderazione reale) → sostituito con "💬 Suggerito", non promette più una revisione che non arriverà.
+- `js/views/shopping-view.js` — bottone "🍎 Mappe Apple" mostrato anche su Android (dove non fa nulla di utile, resta solo "Google Maps") → condizionato a `isIOS` (stesso pattern di rilevamento già in `app-boot.js`).
+
+Verificato: `node --check` su 4 file, smoke test verde 2/2, lint-i18n verde.
+
+## v3.47 — Audit completo sicurezza + UI/UX mobile end-to-end (2026-07-11)
 
 Audit esaustivo su richiesta esplicita ("controlla ogni singolo contenitore, bottone, tutto — sicurezza e UI/UX perfetta, mobile-only, utenti non tech-savvy"). Metodo: 7 agenti paralleli in background (3 sicurezza: injection completo, trust boundary MQTT, storage/CORS/secrets; 4 UI/UX per area, viewport 375×812 con Puppeteer, dati seedati, screenshot + controlli automatici) + verifica manuale mirata sui findings più critici + wave di fix (2 agenti + fix diretti sui punti a più alto rischio) + verifica finale nel browser reale.
 

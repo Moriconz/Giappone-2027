@@ -104,6 +104,9 @@
 
     const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${poi.lat},${poi.lng}`;
     const appleMapsUrl = `maps://maps.apple.com/?q=${encodeURIComponent(poi.name)}&ll=${poi.lat},${poi.lng}`;
+    // ponytail: bottone Apple Maps solo su iOS — su Android non fa nulla di
+    // utile e confonde un utente non tecnico (pattern isIOS già in app-boot.js)
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
     return `<div class="shop-card" style="border:none;padding:0">
       <div class="sc-header">
@@ -120,7 +123,7 @@
       </div>
       <div style="display:flex;gap:8px;margin-top:12px">
         <a href="${googleMapsUrl}" target="_blank" style="flex:1;padding:10px;background:linear-gradient(135deg, var(--l-accent), var(--l-accent-600));color:white;border:none;border-radius:6px;text-align:center;text-decoration:none;font-weight:600;font-size:14px">🗺️ Google Maps</a>
-        <a href="${appleMapsUrl}" target="_blank" style="flex:1;padding:10px;background:linear-gradient(135deg, #00FF88, #C0FF9F);color:#2D3B7D;border:none;border-radius:6px;text-align:center;text-decoration:none;font-weight:600;font-size:14px">🍎 Mappe Apple</a>
+        ${isIOS ? `<a href="${appleMapsUrl}" target="_blank" style="flex:1;padding:10px;background:linear-gradient(135deg, #00FF88, #C0FF9F);color:#2D3B7D;border:none;border-radius:6px;text-align:center;text-decoration:none;font-weight:600;font-size:14px">🍎 Mappe Apple</a>` : ''}
       </div>
     </div>`;
   }

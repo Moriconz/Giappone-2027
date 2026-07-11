@@ -211,9 +211,9 @@ window.openGFPlacesPanel = function(prefillData = null, editId = null) {
       </div>
 
       <select id="gf-place-safety" style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;">
-        <option value="GREEN">🟢 GREEN - 100% Safe</option>
-        <option value="YELLOW" selected>🟡 YELLOW - Caution</option>
-        <option value="RED">🔴 RED - Danger</option>
+        <option value="GREEN">🟢 Sicuro</option>
+        <option value="YELLOW" selected>🟡 Attenzione</option>
+        <option value="RED">🔴 Rischio contaminazione</option>
       </select>
 
       <textarea id="gf-place-note" placeholder="Note personali..." style="width:100%;padding:10px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:14px;min-height:70px;"></textarea>
@@ -641,11 +641,10 @@ window.openGFSuggestionPanel = function() {
             <div style="font-weight:700;color:var(--text);">${_esc(s.name)}</div>
             <div style="font-size:14px;color:var(--muted);">${_esc(s.city)}${s.area ? ' · ' + _esc(s.area) : ''}</div>
           </div>
-          <div style="padding:3px 8px;border-radius:4px;font-size:14px;font-weight:700;${
-            s.status === 'approved' ? 'background:rgba(127,255,127,0.2);color:#7FFF7F' :
-            s.status === 'rejected' ? 'background:rgba(255,107,107,0.2);color:#FF6B6B' :
-            'background:rgba(255,215,0,0.2);color:#FFD700'
-          };">${s.status === 'approved' ? '✅ Approvato' : s.status === 'rejected' ? '❌ Rifiutato' : '⏳ In attesa'}</div>
+          <!-- ponytail: niente moderazione reale in un'app P2P tra amici — nessun
+               codice scrive mai 'approved'/'rejected' (verificato), quindi il
+               badge non promette più una revisione che non arriverà mai -->
+          <div style="padding:3px 8px;border-radius:4px;font-size:14px;font-weight:700;background:rgba(255,215,0,0.2);color:#FFD700;">💬 Suggerito</div>
         </div>
         <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">Inviato: ${new Date(s.submittedAt).toLocaleDateString('it-IT')}</div>
         <button onclick="(window.modalConfirm||((m)=>Promise.resolve(confirm(m))))('Eliminare questo suggerimento?',{danger:true,confirmText:'Elimina'}).then(ok=>{ if(ok){ GFSuggestionsDB.delete('${s.id}'); window.openGFSuggestionPanel(); } })" style="width:100%;padding:6px;background:rgba(255,107,107,0.2);border:1px solid rgba(255,107,107,0.4);color:var(--text);border-radius:4px;font-size:13px;cursor:pointer;">🗑️ Elimina</button>

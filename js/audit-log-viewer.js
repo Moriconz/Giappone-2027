@@ -100,6 +100,11 @@
       if (myRoom && itin.groupId && itin.groupId !== myRoom) return;
 
       const pois = Array.isArray(itin.pois) ? itin.pois : [];
+      // I campi di un POI di gruppo possono essere il valore diretto o un
+      // metadato CRDT { value, timestamp, peerId } (vedi mergePOIFields in
+      // itinerary-crdt.js) — senza questo unwrap il nome appariva come
+      // "[object Object]" nel log.
+      const fieldVal = v => (v && typeof v === 'object' && 'value' in v) ? v.value : v;
       pois.forEach(p => {
         const history = p?.audit?.modificationHistory;
         if (!Array.isArray(history)) return;
@@ -109,7 +114,7 @@
             at: entry.at,
             by: entry.by,
             action: entry.action,
-            poiName: p.name || p.poi_name || p.bestname || p.googlePlaceId || '(POI senza nome)',
+            poiName: fieldVal(p.name) || fieldVal(p.poi_name) || fieldVal(p.bestname) || p.googlePlaceId || '(POI senza nome)',
             poiId: p.id || p.googlePlaceId,
             itineraryId: itin.id,
             groupId: itin.groupId,

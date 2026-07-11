@@ -45,7 +45,8 @@
       'delete_poi': '🗑️ Tappa rimossa',
       'soft_delete_poi': '⬜ Tappa cancellata (morbida)',
       'modify_field': '✏️ Campo modificato',
-      'merge': '🔄 Merge risolvere'
+      'modify_opening_hours': '🕐 Orari aggiornati',
+      'merge': '🔄 Conflitto risolto'
     };
     return descriptions[action] || '❓ Azione sconosciuta';
   }
