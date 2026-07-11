@@ -9,6 +9,7 @@
 
   // ---- GF Shops cache (in-memory + localStorage 7d TTL) ----
   const gfCache = { shops: {} };
+  let gfQuotaExhausted = false; // ponytail: flag di sessione, si resetta al reload (la quota è giornaliera lato api-quota)
 
   // Serve solo al guard quota nel loop città sotto: true se la prossima
   // chiamata per questa città è gratis (cache), senza consumare la entry.
@@ -41,6 +42,8 @@
       }
     } catch { /* localStorage non disponibile */ }
 
+    if (gfQuotaExhausted) return [];
+
     // Coordinate: esplicite (zone derivate dall'itinerario) o da CITY_COORDS
     // (fallback per il viaggio Giappone di default).
     let lat = cityLat, lng = cityLng;
@@ -62,6 +65,14 @@
       const fetchTime = Date.now() - fetchStart;
 
       if (!response.ok) {
+        if (response.status === 429) {
+          const body = await response.json().catch(() => ({}));
+          if (body.quota_exceeded) {
+            gfQuotaExhausted = true;
+            console.warn(`%c[GF] ⛔ Quota API esaurita — stop fetch per le città restanti`, 'background: #D9534F; color: white; padding: 4px 8px; border-radius: 3px');
+            return [];
+          }
+        }
         console.error(`%c[GF] ❌ HTTP ${response.status} per ${city} (${fetchTime}ms)`, 'background: #D9534F; color: white; padding: 4px 8px; border-radius: 3px');
         return [];
       }

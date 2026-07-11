@@ -302,21 +302,6 @@ function renderRestaurantAttributes(poi, details) {
 
   if (!details) return '';
 
-  // Check GF status (from poi._gfStatus if enriched)
-  const gfStatus = poi._gfStatus || 'unknown'; // confirmed, likely, unknown
-  const gfChip = gfStatus !== 'unknown' ? `
-    <span style="
-      display: inline-block;
-      background: ${gfStatus === 'confirmed' ? 'rgba(22,163,74,0.12)' : 'rgba(101,163,13,0.12)'};
-      border: 1px solid ${gfStatus === 'confirmed' ? 'rgba(22,163,74,0.4)' : 'rgba(101,163,13,0.35)'};
-      color: ${gfStatus === 'confirmed' ? '#16a34a' : '#65a30d'};
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size:13px;
-      font-weight: 700;
-    ">🌾 ${gfStatus === 'confirmed' ? PSB_T('poi.gfConfirmed') : PSB_T('poi.gfLikely')}</span>
-  ` : '';
-
   const attributes = [
     { flag: details.servesVegetarianFood, label: PSB_T('poi.veg') },
     { flag: details.servesDinner, label: PSB_T('poi.dinner') },
@@ -342,7 +327,7 @@ function renderRestaurantAttributes(poi, details) {
     `)
     .join('');
 
-  if (!activeAttrs && !gfChip) return '';
+  if (!activeAttrs) return '';
 
   return `
     <div style="
@@ -364,7 +349,6 @@ function renderRestaurantAttributes(poi, details) {
         flex-wrap: wrap;
         gap: 8px;
       ">
-        ${gfChip}
         ${activeAttrs}
       </div>
     </div>
