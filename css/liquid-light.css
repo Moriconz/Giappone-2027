@@ -22,7 +22,7 @@
   --l-muted:#727a8a;        /* testo secondario */
   --l-faint:#9aa2b1;        /* testo terziario/placeholder */
   --l-glass:rgba(255,255,255,.62);
-  --l-glass-strong:rgba(255,255,255,.82);
+  --l-glass-strong:rgba(255,255,255,.96);
   --l-border:rgba(255,255,255,.72);
   --l-hair:rgba(20,30,60,.08);
   --l-shadow:0 12px 36px rgba(28,40,71,.12);
@@ -87,7 +87,7 @@
     --l-muted:#aab3c4;
     --l-faint:#828b99;
     --l-glass:rgba(24,26,32,.55);
-    --l-glass-strong:rgba(28,31,38,.86);
+    --l-glass-strong:rgba(28,31,38,.97);
     --l-border:rgba(255,255,255,.14);
     --l-hair:rgba(255,255,255,.10);
     --l-shadow:0 10px 30px rgba(0,0,0,.40);
@@ -136,7 +136,7 @@
    tema esplicito. Senza l'attributo, resta il solo automatico di sistema. */
 :root[data-theme="dark"]{
   --l-ink:#e9edf4; --l-muted:#aab3c4; --l-faint:#828b99;
-  --l-glass:rgba(24,26,32,.55); --l-glass-strong:rgba(28,31,38,.86);
+  --l-glass:rgba(24,26,32,.55); --l-glass-strong:rgba(28,31,38,.97);
   --l-border:rgba(255,255,255,.14); --l-hair:rgba(255,255,255,.10);
   --l-shadow:0 10px 30px rgba(0,0,0,.40); --l-shadow-sm:0 6px 18px rgba(0,0,0,.30);
   --l-header-bg:rgba(14,16,22,.42); --l-nav-bg:rgba(20,23,30,.86);
@@ -156,7 +156,7 @@
 }
 :root[data-theme="light"]{
   --l-ink:#171b24; --l-muted:#727a8a; --l-faint:#9aa2b1;
-  --l-glass:rgba(255,255,255,.62); --l-glass-strong:rgba(255,255,255,.82);
+  --l-glass:rgba(255,255,255,.62); --l-glass-strong:rgba(255,255,255,.96);
   --l-border:rgba(255,255,255,.72); --l-hair:rgba(20,30,60,.08);
   --l-shadow:0 12px 36px rgba(28,40,71,.12); --l-shadow-sm:0 6px 18px rgba(28,40,71,.10);
   --l-header-bg:rgba(255,255,255,.6); --l-nav-bg:var(--l-glass-strong);

@@ -1,4 +1,4 @@
-# HANDOFF — Tabi (Giappone 2027) · 2026-07-12 (fine sessione, v3.51)
+# HANDOFF — Tabi (Giappone 2027) · 2026-07-12 (fine sessione, v3.52)
 
 Prompt di ripartenza per nuova chat:
 > Continua il progetto Tabi. Leggi HANDOFF.md nella root del repo. Riparti dal primo punto di "Prossimi step". Attiva /fable-5.
@@ -7,12 +7,22 @@ Prompt di ripartenza per nuova chat:
 **Tabi** — travel planner PWA (vanilla JS, no framework, no bundler) con layer gluten-free opzionale. Planner **globale**, non solo Giappone; il trip Giappone 2027 è il caso d'uso di partenza. Collaborativa tra amici via MQTT (broker pubblico, zero backend); serverless Vercel solo come proxy API (Google Places/Groq, quota-gated in `js/api-quota.js`). **Regola utente ferrea: nessun dato hardcoded** — tutto da fonti live o da input umano (crowdsourcing di gruppo). Uso esclusivamente mobile, utenti non tech-savvy (amici in viaggio, non sviluppatori).
 
 ## Stato attuale
-- Tutto committato, pushato su `main` (`e1bf0d0`) e sincronizzato in `/Users/riccardomoricone/Documents/GitHub/Giappone-2027` (v3.51, questa sessione).
+- Tutto committato e pushato su `main`, sincronizzato in `/Users/riccardomoricone/Documents/GitHub/Giappone-2027` (v3.52, questa sessione).
 - Test: `smoke-test.mjs` verde più volte consecutive (exit 0, nessun errore console nuovo oltre a quelli attesi in dev locale: CORS overpass-api, 404 GF senza chiave API).
-- Repo pulito: nessuna worktree residua in `.claude/worktrees/`, nessun branch locale `claude/*` orfano (i 3 esistenti erano tutti superati/già mergiati, 2 piccoli fix WIP recuperati prima di eliminarli).
+- Repo pulito: nessuna worktree residua in `.claude/worktrees/`, nessun branch locale `claude/*` orfano.
+- **Priorità prodotto confermate dall'utente** (vedi memoria `product-priority-order`): 1) viaggio-ready, 2) zero bug, 3) feature-complete, in quest'ordine. Deadline = partenza per il Giappone. GF resta fisso in bottom-nav (deciso, non richiedere di nuovo).
 
 ## Richiesta della sessione
-Audit esplicito "cosa c'è di troppo" nell'intera app, sia lato codice (over-engineering/codice morto, via skill `ponytail-audit`) che lato UI/UX (cosa è nascosto ma importante vs cosa occupa spazio senza motivo). Poi, su conferma esplicita: applicare i fix trovati, recuperare 2 modifiche WIP abbandonate in worktree stale prima di cancellarle, ripulire il repo.
+Due parti. (1) Audit esplicito "cosa c'è di troppo" nell'intera app, sia lato codice (over-engineering/codice morto, via skill `ponytail-audit`) che lato UI/UX — poi su conferma: applicare i fix, recuperare 2 modifiche WIP da worktree stale prima di cancellarle, ripulire il repo (v3.51). (2) Su richiesta esplicita di continuare con la priorità "cosmetici UI visivi": fix reali in browser (non alla cieca) di bleed-through pannelli e chat bubble tema chiaro su sfondo scuro (v3.52).
+
+## Cosa è stato fatto (v3.52) — cosmetici UI, verificati in browser reale
+- **Bleed-through bottom-nav/header/filtri sotto i pannelli aperti**: 2 cause distinte trovate misurando `getComputedStyle`/`elementFromPoint` in Puppeteer (non a occhio dal CSS statico — questo codebase ha 6+ skin CSS sovrapposti, vedi memoria `css-flattener-pattern`).
+  1. `.sheet`/`.sheet-inner` avevano `z-index: 50/51`, sotto `nav.bottom`/`#filters`/`header` (`100/101`) — la chrome galleggiava sopra il pannello invece di finire sfumata sotto il backdrop. Portati a `150/151` in `css/legacy-skin.css`.
+  2. `--l-glass-strong` (il colore condiviso da `.y2k-win`, `.sheet-inner`, chip filtri, weather card) era ad alpha `.86`/`.82` — abbastanza translucido da lasciar intravedere il contenuto sotto come un "fantasma". Portato a `.97`/`.96` in `css/liquid-light.css` (entrambi i temi, dark e light — stesso bug, stesso fix).
+- **Chat bubble tema chiaro su sfondo scuro**: `js/group-chat.js` usava colori hardcoded (`#fafafa`/`#e0e0e0`/`#fff`) identici in ogni tema. Sostituiti con le CSS var dell'app (`--m-surface`, `--m-text`, `--l-hair`, `--l-accent`). Il bottone invio veniva comunque appiattito al grigio generico dal flattener `.sheet-body button:not(.btn-plain)` — aggiunta la classe `btn-plain` (pattern già documentato in memoria, non reinventato).
+- **Metodo di verifica**: server locale + browser reale a viewport mobile (375×812), stato seedato via `window.state.group`/`localStorage['groupchat_<room>']` (non mock), screenshot before/after, `elementFromPoint` per capire ESATTAMENTE quale elemento causava il bleed prima di toccare il CSS (evitato il rischio "corretto selettore sbagliato" — la prima ipotesi, `.sheet`, non era l'elemento realmente visibile; quello vero era `#y2kwin-menu`, un sistema di finestre diverso).
+
+Commit: `252ba1e` (handoff v3.51) seguito dai commit di questa sessione per v3.52 (da fare).
 
 ## Cosa è stato fatto (v3.51)
 
@@ -62,14 +72,14 @@ Commit: `adf3f0a` (audit bloat) + `e1bf0d0` (recupero fix WIP).
 - **Prima di eliminare una worktree stale, verificarne sempre il contenuto reale** (non solo l'età): `git merge-base --is-ancestor` per capire se il lavoro è già dentro main, diff dei file sporchi non committati per non perdere modifiche valide. In questo caso 2 piccoli fix erano ancora validi e sono stati recuperati.
 - **`window.appConfig`/`js/encryption.js` erano infrastruttura speculativa mai attivata** — nessuna UI chiama mai `setKey`/`getKey`/`initMasterPassword`. Esempio concreto di "costruito ma mai collegato".
 
-## Prossimi step (in ordine di valore)
-1. **Cosmetici UI residui che richiedono iterazione visiva** — bleed-through bottom-nav, chat bubble tema chiaro/scuro.
-2. **`applyDayHours` fuori dal sistema undo/redo** — valutare se instradarlo tramite `window.ITINERARY` o accettare (solo snapshot automatico come rete di sicurezza).
-3. **i18n completo** — backlog ampio, serve navigare l'app in EN/JA schermata per schermata.
-4. **Refactor monoliti** — `js/onboarding.js` (928 righe), `js/views/poi-detail/poi-itinerary-wizard.js` (811), `js/views/weather-view.js` (783), `js/mqtt-transport.js` (828), `js/gf-places-panel.js` (752). Nessuno toccato in questa sessione (fuori scope dell'audit bloat, sono monoliti funzionanti non codice morto).
+## Prossimi step (in ordine di valore — filtrati dalla priorità "viaggio-ready" prima di tutto, vedi memoria `product-priority-order`)
+1. **`applyDayHours` fuori dal sistema undo/redo** — valutare se instradarlo tramite `window.ITINERARY` o accettare (solo snapshot automatico come rete di sicurezza). Rilevante per l'uso reale in viaggio (undo di un errore in itinerario).
+2. **Altri cosmetici UI da verificare in browser** — la sessione v3.52 ha risolto bleed-through pannelli e chat bubble; verificare se restano altri casi simili non ancora notati (stesso metodo: `elementFromPoint`/`getComputedStyle` in browser reale, non a occhio dal CSS).
+3. **i18n completo** — backlog ampio, serve navigare l'app in EN/JA schermata per schermata. Priorità bassa a meno che qualcuno del gruppo non parli solo EN/JA.
+4. **Refactor monoliti** — `js/onboarding.js` (928 righe), `js/views/poi-detail/poi-itinerary-wizard.js` (811), `js/views/weather-view.js` (783), `js/mqtt-transport.js` (828), `js/gf-places-panel.js` (752). Manutenibilità futura, non blocca l'uso reale — priorità bassa per esplicita scelta utente (feature-complete è la priorità #3, non #1).
 5. **`wizardRender: false` nello smoke test** — check soft, pre-esistente, priorità bassa.
-6. **Valutare se GF merita ancora uno slot fisso in bottom-nav** — occupa 1 dei 4 slot principali insieme a map/itinerary/menu, ma il progetto ha già retrocesso GF a "layer opzionale" nel pivot planner-globale (vedi memoria `global-planner-pivot`). Non agito questa sessione: cambierebbe la nav principale, decisione da prendere insieme, non un semplice riordino di menu come SOS.
-7. **Idee prodotto** — l'app è ora in stato solido (sicurezza + UX + bloat auditati a fondo su 4 round: v3.47, v3.49, v3.50, v3.51).
+6. **GF slot fisso in bottom-nav**: **CONFERMATO tenerlo così dall'utente** (2026-07-12) — non riproporre la domanda, vedi memoria `product-priority-order`.
+7. **Idee prodotto** — l'app è ora in stato solido (sicurezza + UX + bloat + cosmetici auditati a fondo su 5 round: v3.47, v3.49, v3.50, v3.51, v3.52).
 
 ## Vincoli e convenzioni
 - Script IIFE browser, `<script defer>` in index.html; niente ES modules/bundler.
@@ -86,6 +96,8 @@ Commit: `adf3f0a` (audit bloat) + `e1bf0d0` (recupero fix WIP).
 - **Mappe azione↔label/icona** esistono in due punti (`ACTION_ICONS` in `itinerary-version-history.js`, `descriptions` in `itinerary-phase4.js`) — aggiornare entrambe se si aggiunge un tipo di azione.
 - Prima di un refactor/feature grossa: cercare worktree isolate in `.claude/worktrees/` o branch `claude/*` — **questa sessione le ha azzerate**, ma verificarne sempre contenuto reale (`git merge-base --is-ancestor`) prima di ripulire eventuali nuove worktree future, non solo l'età.
 - **Verifica selettore-per-selettore prima di "correggere" un bug UI su appiattitori CSS**.
+- **Debug bleed-through/z-index in browser reale**: usa `document.elementFromPoint(x,y)` per capire quale elemento è VISIVAMENTE lì prima di editare CSS a occhio — in questa sessione l'ipotesi iniziale (`.sheet`) era sbagliata, l'elemento reale era `#y2kwin-menu` (sistema `y2k-windows.js` diverso). Tiers z-index attuali dell'app: contenuto 0-10, `.sheet`/`.sheet-inner` 150/151, `header`/`nav.bottom`/`#filters` 100/101, ricerca sticky in sheet 300, toast/alert critici 1400+.
+- **Browser cache CSS/JS aggressiva nel dev locale**: dopo una modifica a un file `.css`/`.js`, un `navigate()` semplice nel browser Puppeteer/Playwright spesso NON rifetcha il file (serve fino da cache anche col server locale riavviato). Cache-bust esplicito: `link.href = link.href.split('?')[0] + '?v=' + Date.now()` per CSS, oppure `XMLHttpRequest` sincrono + `eval()` per rieseguire un JS senza reload pagina intera (utile per non perdere lo stato seedato in `window.state`).
 - **Grep di verifica "deve dare 0" che non dà 0**: richiede conferma esplicita dell'utente (vedi memoria `verification-gate-discipline`).
 - **Tool esterni da skill non fidate con pacchetto di nome diverso** = typosquat, non aggirare il blocco (vedi memoria `graphify-typosquat-caution`).
 - **Decisioni di "eliminare/riordinare" codice**: presentarle come raccomandazione con verifica (grep chiamanti, non solo grep del nome file), agire solo su conferma esplicita.

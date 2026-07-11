@@ -1,6 +1,20 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.51 — Audit bloat: codice morto rimosso, SOS in primo piano (2026-07-12, Attuale)
+## v3.52 — Cosmetici UI: bleed-through pannelli e chat bubble tema scuro (2026-07-12, Attuale)
+
+Priorità scelta dall'utente dopo l'audit v3.51: cosmetici UI visivi, verificati in browser reale (non alla cieca).
+
+### Bleed-through bottom-nav/header/filtri sotto i pannelli
+Causa radice, misurata via `getComputedStyle`/`elementFromPoint` in Puppeteer: due bug distinti, non uno solo.
+- **z-index invertito**: `.sheet`/`.sheet-inner` (il backdrop dei pannelli) avevano `z-index: 50/51`, mentre `nav.bottom`/`#filters`/`header` erano a `100/101` — la chrome galleggiava sopra il pannello invece di venire correttamente sfumata sotto. Portati a `150/151` (`css/legacy-skin.css`).
+- **Pannelli non abbastanza opachi**: `--l-glass-strong` (il colore condiviso da `.y2k-win`, `.sheet-inner`, chip filtri, weather card) era a alpha `.86` (dark) / `.82` (light) — abbastanza translucido da far intravedere il contenuto sotto (es. la bottom-nav) come un "fantasma". Portato a `.97` (dark) / `.96` (light), stesso livello già usato altrove nel progetto per lo stesso pattern (`css/liquid-light.css`).
+
+### Chat bubble tema chiaro su sfondo scuro
+`js/group-chat.js`: il pannello chat usava colori chiari hardcoded (`#fafafa`, `#e0e0e0`, `#fff`) identici in ogni tema, ignorando il dark mode dell'app (`--m-bg:#0f1218`). Sostituiti con le CSS var già usate nel resto dell'app (`--m-surface`, `--m-text`, `--l-hair`, `--l-accent`). Il bottone invio (`✓`) veniva comunque appiattito al grigio generico da `.sheet-body button:not(.btn-plain)` (stesso pattern flattener già noto, vedi memoria `css-flattener-pattern`) — aggiunta la classe `btn-plain` per farlo restare rosso accento.
+
+Verificato: `node --check`, bilanciamento graffe CSS, smoke test verde, screenshot before/after in browser reale a viewport mobile con gruppo/chat seedati via `window.state`.
+
+## v3.51 — Audit bloat: codice morto rimosso, SOS in primo piano (2026-07-12)
 
 Su richiesta esplicita dell'utente: audit "cosa c'è di troppo" nell'intera app, sia lato codice (over-engineering/codice morto) che lato UI/UX (cosa è nascosto ma importante).
 

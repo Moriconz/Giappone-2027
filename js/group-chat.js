@@ -306,8 +306,9 @@ window.groupChat = (() => {
           <div style="max-width: 70%;">
             ${!isOwn ? `<div style="font-size:14px; font-weight: 600; margin-bottom: 3px; padding: 0 8px; color: ${senderColor};">${escapeHtml(messageFrom)}</div>` : ''}
             <div style="
-              background: ${isOwn ? 'var(--l-accent)' : '#e0e0e0'};
-              color: ${isOwn ? '#fff' : '#333'};
+              background: ${isOwn ? 'var(--l-accent)' : 'rgba(255,255,255,0.08)'};
+              color: ${isOwn ? '#fff' : 'var(--m-text, #e9edf4)'};
+              border: ${isOwn ? 'none' : '1px solid var(--l-hair, rgba(255,255,255,.10))'};
               padding: 8px 12px;
               border-radius: 8px;
               word-wrap: break-word;
@@ -322,7 +323,7 @@ window.groupChat = (() => {
               margin-top: 3px;
               padding: 0 8px;
               text-align: ${isOwn ? 'right' : 'left'};
-              color: #999;
+              color: var(--m-text-2, #aab3c4);
             ">${time}</div>
           </div>
         </div>
@@ -336,13 +337,13 @@ window.groupChat = (() => {
         <div style="
           flex: 1;
           overflow-y: auto;
-          background: #fafafa;
+          background: var(--m-surface, #1a1f2b);
           border-radius: 8px;
           padding: 12px;
           -webkit-overflow-scrolling: touch;
           min-height: 0;
         ">
-          ${messagesHtml || '<p style="color: #999; text-align: center; margin-top: 20px;">Nessun messaggio ancora.</p>'}
+          ${messagesHtml || '<p style="color: var(--m-text-2, #aab3c4); text-align: center; margin-top: 20px;">Nessun messaggio ancora.</p>'}
         </div>
 
         <div style="display: flex; gap: 8px; align-items: flex-end;">
@@ -353,9 +354,9 @@ window.groupChat = (() => {
             style="
               flex: 1;
               padding: 10px;
-              background: #fff;
-              color: #333;
-              border: 1px solid #ddd;
+              background: var(--m-bg, #0f1218);
+              color: var(--m-text, #e9edf4);
+              border: 1px solid var(--l-hair, rgba(255,255,255,.10));
               border-radius: 8px;
               font: inherit;
               resize: none;
@@ -363,9 +364,10 @@ window.groupChat = (() => {
           />
           <button
             id="group-chat-send"
+            class="btn-plain"
             style="
               padding: 10px 16px;
-              background: #00bcd4;
+              background: var(--l-accent);
               color: white;
               border: none;
               border-radius: 8px;
