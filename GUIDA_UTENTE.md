@@ -270,8 +270,14 @@ itinerario e propone POI vicini per riempirli.
 
 ### Cerca ovunque
 
-Da **Menu → 🔍 Cerca ovunque**: un unico campo di ricerca su tutti i luoghi
-disponibili, per saltare direttamente al dettaglio senza scorrere la mappa.
+**Il modo per aggiungere un luogo di cui conosci il nome ma non sai dove si trovi
+geograficamente.** Da **Menu → 🔍 Cerca ovunque**: un unico campo di ricerca su tutti
+i luoghi disponibili (per nome, categoria, città), per saltare direttamente al
+dettaglio senza dover scorrere/zoomare la mappa per trovarlo. Da lì il flusso è lo
+stesso di [§4](#4-dettaglio-di-un-luogo)/[§5](#5-creare-un-itinerario): la scheda si
+apre con le foto disponibili, e **➕ Aggiungi all'itinerario** lo mette nel tuo
+itinerario personale — per farlo comparire anche in quello di gruppo, condividilo
+poi da lì ([§8](#8-gruppo-e-collaborazione)).
 
 <img src="docs/guide-images/22-global-search.png" width="360" alt="Ricerca globale">
 

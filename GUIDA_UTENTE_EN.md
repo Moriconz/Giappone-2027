@@ -260,8 +260,14 @@ proposes nearby POIs to fill them.
 
 ### Search anywhere
 
-From **Menu → 🔍 Search anywhere**: a single search field across every available
-place, to jump straight to its detail without scrolling the map.
+**The way to add a place whose name you know but you don't know where it is
+geographically.** From **Menu → 🔍 Search anywhere**: a single search field across
+every available place (by name, category, city), to jump straight to its detail
+without having to scroll/zoom the map to find it. From there the flow is the same as
+[§4](#4-place-detail)/[§5](#5-building-an-itinerary): the card opens with any
+available photos, and **➕ Add to itinerary** puts it in your personal itinerary — to
+have it show up in the group one too, share it from there
+([§8](#8-group-and-collaboration)).
 
 <img src="docs/guide-images/22-global-search.png" width="360" alt="Global search">
 
