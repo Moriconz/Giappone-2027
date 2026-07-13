@@ -1,4 +1,4 @@
-# HANDOFF — Tabi (Giappone 2027) · 2026-07-12 (fine sessione, v3.53)
+# HANDOFF — Tabi (Giappone 2027) · 2026-07-13 (fine sessione, v3.54)
 
 Prompt di ripartenza per nuova chat:
 > Continua il progetto Tabi. Leggi HANDOFF.md nella root del repo. Riparti dal primo punto di "Prossimi step". Attiva /fable-5.
@@ -7,14 +7,26 @@ Prompt di ripartenza per nuova chat:
 **Tabi** — travel planner PWA (vanilla JS, no framework, no bundler) con layer gluten-free opzionale. Planner **globale**, non solo Giappone; il trip Giappone 2027 è il caso d'uso di partenza. Collaborativa tra amici via MQTT (broker pubblico, zero backend); serverless Vercel solo come proxy API (Google Places/Groq, quota-gated in `js/api-quota.js`). **Regola utente ferrea: nessun dato hardcoded** — tutto da fonti live o da input umano (crowdsourcing di gruppo). Uso esclusivamente mobile, utenti non tech-savvy (amici in viaggio, non sviluppatori).
 
 ## Stato attuale
-- Tutto committato e pushato su `main`, sincronizzato in `/Users/riccardomoricone/Documents/GitHub/Giappone-2027` (v3.53, questa sessione).
-- Test: `smoke-test.mjs` verde più volte consecutive (exit 0, nessun errore console nuovo oltre a quelli attesi in dev locale: CORS overpass-api, 404 GF senza chiave API).
+- **NON ancora committato/pushato** (v3.54, questa sessione) — modifiche presenti solo nel working tree, in attesa di conferma esplicita dell'utente prima di `git commit`/`push` (regola di sicurezza dell'assistente: mai committare senza richiesta esplicita, anche se le sessioni precedenti lo facevano di default). 10 file JS/MD modificati, nessun file nuovo/eliminato.
+- Test: `smoke-test.mjs` verde (exit 0, nessun errore console nuovo oltre a quelli attesi in dev locale: CORS overpass-api, 404 GF senza chiave API). `lint-i18n.mjs` verde (0 errori, 435 chiavi it/en/ja).
 - Repo pulito: nessuna worktree residua in `.claude/worktrees/`, nessun branch locale `claude/*` orfano.
 - **Priorità prodotto confermate dall'utente** (vedi memoria `product-priority-order`): 1) viaggio-ready, 2) zero bug, 3) feature-complete, in quest'ordine. Deadline = partenza per il Giappone. GF resta fisso in bottom-nav (deciso, non richiedere di nuovo).
-- **Autonomia concessa per questa sessione**: l'utente ha detto esplicitamente "procedi con tutti i cambi senza chiedermi nulla" — applicato ai fix concreti e scoped della lista "Prossimi step" (v3.53). Per i 2 item grandi/open-ended (i18n completo, refactor monoliti) ho scelto di NON lanciarmi a scrivere ore di lavoro speculativo senza uno scope chiaro — sono deprioritizzati anche dall'ordine di priorità che l'utente stesso ha confermato (feature-complete = priorità #3, la più bassa). Se la prossima sessione riparte da qui e l'utente vuole procedere anche su quelli, chiarire prima lo scope (quali lingue/schermate per i18n, quale file per il refactor) invece di partire alla cieca.
 
 ## Richiesta della sessione
-Tre parti, stessa giornata. (1) Audit "cosa c'è di troppo" — codice morto + UI/UX — poi fix su conferma, recupero 2 WIP da worktree stale, cleanup repo (v3.51). (2) Priorità scelta dall'utente tra le opzioni proposte: cosmetici UI visivi, fix reali in browser di bleed-through pannelli e chat bubble tema chiaro su sfondo scuro (v3.52). (3) Su "procedi con tutti i cambi senza chiedermi nulla": chiuso l'item #1 rimasto in coda (`applyDayHours` fuori da undo/redo) e investigato il soft-check `wizardRender` (v3.53).
+"Testa l'intera app, bottone su bottone, tasto su tasto, testo su testo, ui e ux su ui e ux — nulla dev'essere lasciato al caso", con 4 agenti in parallelo. Metodo: 4 agenti paralleli in background (uno per area: nav/mappa/itinerario/GF Guide; gruppo/social/SOS/biglietti; soldi/shopping/media; utility/info), ognuno con Puppeteer su server locale reale (non solo lettura codice) — poi fix diretto dei bug confermati, verificati end-to-end uno per uno prima di passare al successivo. Vedi CHANGELOG v3.54 per il dettaglio dei 9 bug trovati/sistemati.
+
+## Cosa è stato fatto (v3.54) — audit esaustivo 4 agenti + 9 fix verificati end-to-end
+Dettaglio completo nel CHANGELOG.md (v3.54). Riepilogo: 4 agenti paralleli hanno testato 86 elementi UI (bottoni/menu/sottomenù) con Puppeteer reale, trovando 7 bug; durante il fix ne sono emersi altri 2 collegati (stesso bug in un secondo file, un fallback UI mai raggiungibile scoperto indagando il primo). Tutti e 9 fixati e verificati singolarmente in browser reale (non solo `node --check`):
+1. **Critico**: pannello Biglietti completamente non funzionante (bottoni collegati a un div DOM stantio, mai quello visibile) — stesso bug anche in Prenota.
+2. Bottoni Annulla/Rifai mai renderizzati nell'itinerario (solo Ctrl+Z funzionava).
+3. Filtro città GF Guide sempre vuoto con un itinerario attivo (match stringa invece di prossimità geo).
+4. Onboarding duplicato (due overlay/wizard sovrapposti in certi flussi).
+5. Etichetta Budget "Giorni Rimanenti" fuorviante (mostrava giorni pianificati).
+6. Nessun toast se le notifiche vengono negate al momento (solo se già negate prima).
+7. Fallback analisi Gluten-Free mai visibile nel pannello reale del POI.
+8. Foto Galleria non ingrandibili (nessuna interazione oltre modifica/elimina) — aggiunto lightbox minimo.
+
+Nessun bug bloccante rimasto aperto dall'audit. **Non committato** — vedi "Stato attuale".
 
 ## Cosa è stato fatto (v3.53) — `applyDayHours` ora coperto da Annulla/Ctrl+Z
 - **Causa**: `applyDayHours` (`js/itinerary-features.js`, azione "Applica" in "🕐 Riordina per orari") scriveva direttamente su `window.state.itineraryByDay[dayIndex]`, bypassando il wrapper undo/redo che intercetta solo metodi *nominati* di `window.ITINERARY` (vedi `js/itinerary-undo-redo.js`).

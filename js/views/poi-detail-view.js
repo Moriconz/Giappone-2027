@@ -318,6 +318,20 @@ function openPOI(id){
       }
     }
 
+    // ponytail: helper unico per scrivere la sezione GF nel sheet legacy
+    // (inerte, ma innocuo se assente) + in TUTTI i pannelli .y2k-win-body
+    // aperti — prima i 2 rami di fallback aggiornavano solo il sheet legacy
+    // (mai visibile) e il messaggio non compariva mai nel pannello reale.
+    const _updateGFSection = (html) => {
+      const sheetBody = document.getElementById('sheet-body');
+      const gfSection = sheetBody?.querySelector('[data-gf-section]');
+      if (gfSection) gfSection.innerHTML = html;
+      document.querySelectorAll('.y2k-win-body').forEach(win => {
+        const s = win.querySelector('[data-gf-section]');
+        if (s) s.innerHTML = html;
+      });
+    };
+
     if (['food', 'drink', 'restaurant', 'cafe', 'bar'].includes(p.cat)) {
       console.log(`%c[openPOI] GF Check START for: ${p.name} (cat=${p.cat})`, 'background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 3px');
       if (placeIdForGF) {
@@ -345,24 +359,8 @@ function openPOI(id){
             </div>
           `;
 
-          // Update sheet and Y2K windows
-          const sheetBody = document.getElementById('sheet-body');
-          if (sheetBody) {
-            const gfSection = sheetBody.querySelector('[data-gf-section]');
-            if (gfSection) {
-              gfSection.innerHTML = gfHtml;
-              console.log('[openPOI] ✅ GF section updated in sheet');
-            }
-          }
-
-          const y2kWindows = document.querySelectorAll('.y2k-win-body');
-          y2kWindows.forEach(win => {
-            const gfSection = win.querySelector('[data-gf-section]');
-            if (gfSection) {
-              gfSection.innerHTML = gfHtml;
-              console.log('[openPOI] ✅ GF section updated in Y2K window');
-            }
-          });
+          _updateGFSection(gfHtml);
+          console.log('[openPOI] ✅ GF section updated');
         } else {
           // Analysis failed or unknown - show fallback
           console.log('%c[openPOI] ⚠️ GF analysis failed or unknown', 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px');
@@ -375,14 +373,8 @@ function openPOI(id){
             </div>
           `;
 
-          const sheetBody = document.getElementById('sheet-body');
-          if (sheetBody) {
-            const gfSection = sheetBody.querySelector('[data-gf-section]');
-            if (gfSection) {
-              gfSection.innerHTML = gfHtml;
-              console.log('[openPOI] ⚠️ GF fallback shown in sheet');
-            }
-          }
+          _updateGFSection(gfHtml);
+          console.log('[openPOI] ⚠️ GF fallback shown');
         }
       } else {
         console.log('%c[openPOI] ⏭️ GF analysis skipped (no place_id found)', 'background: #E8A838; color: white; padding: 4px 8px; border-radius: 3px');
@@ -396,14 +388,8 @@ function openPOI(id){
           </div>
         `;
 
-        const sheetBody = document.getElementById('sheet-body');
-        if (sheetBody) {
-          const gfSection = sheetBody.querySelector('[data-gf-section]');
-          if (gfSection) {
-            gfSection.innerHTML = gfHtml;
-            console.log('[openPOI] ❓ GF no-data fallback shown');
-          }
-        }
+        _updateGFSection(gfHtml);
+        console.log('[openPOI] ❓ GF no-data fallback shown');
       }
     }
   })();

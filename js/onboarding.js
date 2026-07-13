@@ -160,6 +160,11 @@ function showOnboardingChoiceModal() {
     </div>
   `;
 
+  // ponytail bugfix: initOnboarding() la mostra già da sola al boot per un
+  // utente senza tripProfile — se poi si clicca anche "Voglio creare il mio
+  // viaggio" dal menu, senza questa guardia finivano due overlay identici
+  // sovrapposti (quella di boot mai rimossa + quella nuova).
+  document.getElementById('onboarding-choice-overlay')?.remove();
   document.body.insertAdjacentHTML('beforeend', html);
 
   // Attach event listeners
@@ -805,7 +810,8 @@ function showOnboarding() {
     </div>
   `;
 
-  // Inject into DOM
+  // Inject into DOM (stessa guardia anti-doppione di showOnboardingChoiceModal)
+  document.getElementById('onboarding-overlay')?.remove();
   const overlay = document.createElement('div');
   overlay.innerHTML = html;
   document.body.appendChild(overlay.firstElementChild);

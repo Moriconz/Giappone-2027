@@ -1,6 +1,26 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.53 — `applyDayHours` ora coperto da Annulla/Ctrl+Z (2026-07-12, Attuale)
+## v3.54 — Audit esaustivo a 4 agenti: bottone su bottone, menu su menu (2026-07-13, Attuale)
+
+Su richiesta esplicita ("bottone su bottone, tasto su tasto... nulla dev'essere lasciato al caso"): 4 agenti paralleli, ognuno un'area dell'app (nav/mappa/itinerario/GF Guide; gruppo/social/SOS/biglietti; soldi/shopping/media; utility/info), click esaustivo di ogni bottone/menu/sottomenù con Puppeteer su server locale reale, non solo lettura codice. 86 elementi PASS, 9 bug trovati e sistemati (7 dai 4 agenti + 2 trovati durante il fix stesso).
+
+### 🔴 Critico
+- **Pannello Biglietti completamente non funzionante**: `js/views/tickets-view.js` (e lo stesso bug in `js/views/bookings-view.js`) cercavano l'elemento panel via `window.sheetBody`/`#sheet-body`, un div legacy reso inerte da `js/y2k-windows.js` (che patcha `openSheet` per renderizzare in `.y2k-win-body`, un elemento diverso). Risultato: cambio stato ticket, cancellazione e riga prenotazione-POI non facevano nulla; il form "+ Nuovo biglietto" non aveva `preventDefault` funzionante e causava un **reload di pagina** che perdeva stato non salvato e collideva con il parser share-target di `gf-places-panel.js` (il campo `title` nell'URL veniva scambiato per un locale condiviso). Fix: entrambi i file ora leggono `document.querySelector('.y2k-win-body')`, pattern già in uso e funzionante in `itinerary-poi-actions.js`. Verificato end-to-end in browser reale (aggiungi/cambia stato/elimina biglietto senza reload; click riga prenotazione apre il POI corretto).
+
+### 🟠 Bug reali
+- **Bottoni Annulla/Rifai mai renderizzati nell'itinerario**: `js/itinerary-undo-redo.js` esponeva `renderButtonsHTML()` con un commento "chiamato da itinerary-unified.js" — ma nessuno lo chiamava mai. Solo la scorciatoia Ctrl+Z funzionava; chi non la conosce non aveva modo di annullare dall'interfaccia. Aggiunta la riga mancante in `js/itinerary-unified.js` (sotto "📅 Il Tuo Itinerario") + risincronizzazione stato disabled/title ad ogni render.
+- **Filtro città GF Guide sempre vuoto con un itinerario attivo**: le chip città sono zone geo-derivate dalle tappe (label = nome di una tappa entro 25km, non un nome di città reale — architettura "planner globale", vedi HANDOFF), ma `js/views/gf-restaurants.js` filtrava i locali con `r.city === city` (uguaglianza stringa esatta) — non poteva mai combaciare con un locale reale taggato `city:"Tokyo"`. Fix: filtro per prossimità (haversine, 25km — stesso raggio già usato come location bias server-side in `api/searchGlutenFreeShops.js`) invece di match stringa, con le coordinate della chip passate da `js/views/gf-view.js`. Verificato end-to-end: chip zona → locale entro 25km ora trovato.
+- **Onboarding duplicato**: `initOnboarding()` mostra il modale di scelta automaticamente al boot (utente senza `tripProfile`), ma il modale non si rimuoveva mai se non scelto — cliccando poi "Voglio creare il mio viaggio" dal menu si sovrapponevano due overlay identici (e poi due wizard interi, 10 step invece di 5, con l'utente a rischio di scrivere nella copia non collegata al submit). Fix: `showOnboardingChoiceModal()` e `showOnboarding()` ora rimuovono un overlay pre-esistente prima di crearne uno nuovo (stesso pattern idempotente già usato da `y2k-windows.js` per i pannelli). Verificato: un solo overlay in ogni scenario.
+- **Etichetta Budget "Giorni Rimanenti" fuorviante**: mostrava in realtà il conteggio dei giorni *pianificati* (con tappe in itinerario), non i giorni restanti del viaggio. Rilabelata onestamente "Giorni Pianificati" (it/en/ja, `js/i18n.js`) invece di inventare un calcolo di "giorni rimanenti" con semantica ambigua (rimanenti a cosa?).
+- **Promemoria Tappe: nessun toast se le notifiche vengono negate al momento**: il ramo "permesso appena negato" di `js/itinerary-reminders.js` `requestPerm()` non mostrava nulla (solo il ramo "già negato in precedenza" lo faceva). Aggiunto lo stesso toast anche qui.
+- **Fallback analisi Gluten-Free mai visibile nel pannello reale**: in `js/views/poi-detail-view.js`, quando l'analisi GF falliva o mancava il `place_id`, il messaggio di fallback veniva scritto solo nel div `#sheet-body` legacy (mai visibile), a differenza del ramo di successo che aggiornava correttamente anche `.y2k-win-body`. Trovato mentre si indagava il bug dei Biglietti (stesso pattern). Consolidato in un unico helper `_updateGFSection()` che aggiorna sempre il pannello reale.
+
+### 🟡 Minore
+- **Foto della Galleria non ingrandibili**: le miniature non avevano alcuna interazione oltre modifica/elimina. Aggiunto un lightbox minimo (overlay fullscreen, chiudi con tap/Escape, nessuna libreria) in `js/views/gallery-view.js`.
+
+Verificato: `node --check` su tutti i 10 file toccati, smoke test verde (exit 0, stessi non-bug pre-esistenti attesi), `lint-i18n.mjs` verde (0 errori), ogni fix riprodotto e verificato end-to-end in browser reale (Puppeteer, viewport 375×812) — non solo lettura di codice.
+
+## v3.53 — `applyDayHours` ora coperto da Annulla/Ctrl+Z (2026-07-12)
 
 Priorità #1 rimasta dall'audit v3.51 (viaggio-ready: poter annullare un errore in itinerario durante il viaggio).
 

@@ -157,7 +157,11 @@
 
     window.openSheet(T('tickets.panelTitle', '🎫 Biglietti'), html);
 
-    const body = window.sheetBody || document.getElementById('sheet-body');
+    // ponytail: window.sheetBody punta al vecchio div #sheet-body, ormai inerte
+    // — il contenuto vero vive in .y2k-win-body (js/y2k-windows.js patcha
+    // openSheet). Pattern già in uso in itinerary-poi-actions.js:315; sicuro
+    // perché l'app impone un solo pannello aperto alla volta (single-panel invariant).
+    const body = document.querySelector('.y2k-win-body');
     if (!body) return;
 
     body.querySelectorAll('.ticket-status-select').forEach(sel => {

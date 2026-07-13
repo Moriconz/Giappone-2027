@@ -190,6 +190,26 @@
       dropZone.ondrop = (e) => { e.preventDefault(); dropZone.style.background = ''; handleFiles(e.dataTransfer.files); };
       fileInput.onchange = (e) => handleFiles(e.target.files);
 
+      // ponytail: lightbox minimo — overlay fullscreen con l'img, nessuna
+      // libreria, chiudi tap-anywhere/Escape (stesso pattern fixed-overlay
+      // già usato in onboarding.js). Un solo overlay condiviso, riusato.
+      document.querySelectorAll('.gallery-photo-img').forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.onclick = () => {
+          let overlay = document.getElementById('gallery-lightbox');
+          if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'gallery-lightbox';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;';
+            overlay.innerHTML = '<img style="max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;" />';
+            overlay.onclick = () => overlay.remove();
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') overlay.remove(); }, { once: true });
+            document.body.appendChild(overlay);
+          }
+          overlay.querySelector('img').src = img.src;
+        };
+      });
+
       document.querySelectorAll('.gallery-btn-edit').forEach(btn => {
         btn.onclick = async () => {
           const id   = Number(btn.dataset.id);

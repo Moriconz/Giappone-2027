@@ -40,7 +40,7 @@
     return [...google, ...detected.filter(d => !seen.has(d.id))];
   }
 
-  function renderGFList(city, searchText) {
+  function renderGFList(city, searchText, chipLat, chipLng) {
     const container = document.getElementById("gf-list-sheet") || document.getElementById("gf-list");
     if (!container) return;
 
@@ -53,9 +53,19 @@
         ? window.haversineKm(gps.lat, gps.lng, r.lat, r.lng) : null
     }));
 
-    let filtered = (city && city !== "all")
-      ? items.filter(r => r.city === city)
-      : items;
+    // Le chip sono zone geo-derivate dall'itinerario (label = nome di una
+    // tappa qualsiasi entro 25km, non un nome di città reale) — filtra per
+    // prossimità (stesso raggio 25km del location bias server-side in
+    // api/searchGlutenFreeShops.js), non per uguaglianza stringa su r.city,
+    // altrimenti i locali trovati (r.city reale, es. "Tokyo") non
+    // corrisponderebbero mai alla label della zona.
+    let filtered = items;
+    if (city && city !== "all") {
+      const hasCoords = typeof chipLat === 'number' && typeof chipLng === 'number' && !Number.isNaN(chipLat) && !Number.isNaN(chipLng);
+      filtered = hasCoords
+        ? items.filter(r => typeof r.lat === 'number' && typeof r.lng === 'number' && window.haversineKm(chipLat, chipLng, r.lat, r.lng) <= 25)
+        : items.filter(r => r.city === city); // fallback: nessuna coordinata nota per la chip
+    }
     if (searchText) {
       const q = searchText.toLowerCase();
       filtered = filtered.filter(r => (r.name || '').toLowerCase().includes(q));

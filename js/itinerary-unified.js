@@ -164,6 +164,7 @@ function renderItineraryUnified() {
            bottoni per lo spazio). -->
       <div>
         <h3 style="font-size:16px;font-weight:700;color:var(--l-ink);margin:0 0 8px 0;line-height:1.5;">📅 Il Tuo Itinerario</h3>
+        ${window.ItineraryUndoRedo ? `<div style="margin:0 0 10px 0;">${window.ItineraryUndoRedo.renderButtonsHTML()}</div>` : ''}
         <div style="display:flex;gap:6px;margin:0 0 12px 0;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;">
             ${totalPOIs >= 2 ? `<button onclick="window.openTripOptimizer?.()" style="flex-shrink:0;padding:6px 12px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:20px;color:var(--l-muted);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;" title="Riorganizza per zone geografiche">🧭 Ottimizza</button>` : ''}
             <button onclick="window.loadScript('./js/itinerary-suggest.js').then(()=>window.openItinerarySuggest?.())" style="flex-shrink:0;padding:6px 12px;background:var(--l-glass);border:1px solid var(--l-border);border-radius:20px;color:var(--l-muted);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;" title="Suggerimenti POI da aggiungere">✨ Suggerimenti</button>
@@ -237,6 +238,9 @@ function renderItineraryUnified() {
     html: document.getElementById('sheet-body')?.innerHTML?.substring(0, 100)
   });
   window.openSheet('📅 Itinerario', html);
+  // I bottoni Annulla/Rifai sono ricreati ad ogni render: risincronizza
+  // subito lo stato disabled/title in base allo stack undo/redo attuale.
+  window.ItineraryUndoRedo?.refreshButtons?.();
   // Segnala la mia presenza sull'itinerario (chi sta guardando ora)
   try { window.LivePresence?.enter?.('itinerary'); } catch (_) {}
   setTimeout(() => {

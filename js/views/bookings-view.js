@@ -53,7 +53,9 @@
 
     window.openSheet('🍽️ Prenota', html);
 
-    const body = window.sheetBody || document.getElementById('sheet-body');
+    // ponytail: stesso bug/fix di tickets-view.js — window.sheetBody è il
+    // vecchio div #sheet-body inerte, il contenuto vero è in .y2k-win-body.
+    const body = document.querySelector('.y2k-win-body');
     if (body) {
       body.querySelectorAll('.poi-row').forEach(r => {
         r.onclick = () => window.openPOI?.(r.dataset.id);

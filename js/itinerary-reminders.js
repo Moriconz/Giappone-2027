@@ -139,6 +139,8 @@
       const perm = await Notification.requestPermission();
       if (perm === 'granted') {
         window.toast?.(T('reminder.enabled', '🔔 Notifiche tappe attivate'));
+      } else if (perm === 'denied') {
+        window.toast?.(T('reminder.denied', '⚠️ Notifiche bloccate — abilita nelle impostazioni browser'));
       }
     } catch (_) {}
     schedule();

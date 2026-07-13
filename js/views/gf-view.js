@@ -125,6 +125,14 @@
       ? zones.map(z => z.label)
       : Object.keys(window.CITY_COORDS).sort();
     const zoneByLabel = Object.fromEntries(zones.map(z => [z.label, z]));
+    // Coordinate per ogni chip (zona derivata dall'itinerario o città fallback
+    // da CITY_COORDS) — servono a gf-restaurants.js per filtrare per
+    // prossimità invece che per uguaglianza stringa su r.city: la label di
+    // una zona è un nome di tappa arbitrario (es. "Tsukiji Outer Market"),
+    // non necessariamente uguale al campo `city` reale dei locali GF trovati.
+    const coordsByLabel = Object.fromEntries(allCities.map(c =>
+      [c, zoneByLabel[c] ? [zoneByLabel[c].lat, zoneByLabel[c].lng] : (window.CITY_COORDS[c] || [])]
+    ));
 
     // Determina la città attuale da GPS (se disponibile)
     let currentCity = null;
@@ -162,7 +170,7 @@
           white-space: nowrap;
         " onmouseover="this.style.background='rgba(255,165,100,0.3)'" onmouseout="this.style.background='rgba(255,165,100,0.2)'">Tutte</button>
         ${allCities.map(city => `
-          <button class="gf-city-chip" data-city="${city}" style="
+          <button class="gf-city-chip" data-city="${city}" data-lat="${coordsByLabel[city][0] ?? ''}" data-lng="${coordsByLabel[city][1] ?? ''}" style="
             padding: 8px 14px;
             background: rgba(20,30,60,0.04);
             border: 1px solid rgba(20,30,60,0.08);
@@ -264,11 +272,11 @@
     const searchInput = document.getElementById("gf-search");
     const cityChips = document.querySelectorAll(".gf-city-chip");
 
-    let selectedCity = "all";
+    let selectedCity = "all", selectedLat, selectedLng;
 
     if (searchInput) {
       searchInput.oninput = window.debounce(() => {
-        window.renderGFList(selectedCity, searchInput.value);
+        window.renderGFList(selectedCity, searchInput.value, selectedLat, selectedLng);
       }, 300);
     }
 
@@ -286,7 +294,9 @@
           chip.style.borderColor = "rgba(255,165,100,0.4)";
           chip.style.color = "var(--l-ink)";
           selectedCity = chip.dataset.city;
-          window.renderGFList(selectedCity, searchInput?.value || "");
+          selectedLat = parseFloat(chip.dataset.lat);
+          selectedLng = parseFloat(chip.dataset.lng);
+          window.renderGFList(selectedCity, searchInput?.value || "", selectedLat, selectedLng);
         });
       });
     }
