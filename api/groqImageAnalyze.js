@@ -3,8 +3,8 @@
  * Uses Groq chat completions to classify a dish from image labels or menu text.
  */
 
-import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
-import { setAllowedOrigin } from './lib/cors.js';
+import { cacheGet, cacheSet, TTL } from './_lib/kv-cache.js';
+import { setAllowedOrigin } from './_lib/cors.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');

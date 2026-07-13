@@ -4,7 +4,7 @@
  * Usage: /api/placePhoto?reference=PHOTO_REFERENCE&maxwidth=400
  */
 
-import { setAllowedOrigin } from './lib/cors.js';
+import { setAllowedOrigin } from './_lib/cors.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');

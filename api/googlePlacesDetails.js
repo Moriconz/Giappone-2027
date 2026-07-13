@@ -11,8 +11,8 @@
  * }
  */
 
-import { cacheGet, cacheSet, TTL } from './lib/kv-cache.js';
-import { setAllowedOrigin } from './lib/cors.js';
+import { cacheGet, cacheSet, TTL } from './_lib/kv-cache.js';
+import { setAllowedOrigin } from './_lib/cors.js';
 
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 

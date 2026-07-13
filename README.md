@@ -4,13 +4,13 @@
 
 **PWA di pianificazione viaggi — itinerari globali con tempi/costi calcolati, collaborazione P2P in tempo reale, tema automatico da sistema.**
 
-[![PWA](https://img.shields.io/badge/PWA-installabile-5A0FC8)](#installazione--installation)
-[![Offline](https://img.shields.io/badge/funziona-offline-critical)](#architettura--architecture)
-[![Vanilla JS](https://img.shields.io/badge/JavaScript-vanilla%2C%20no%20build-F7DF1E)](#stack-tecnico--tech-stack)
+[![PWA](https://img.shields.io/badge/PWA-installabile-5A0FC8)](#installazione--installazione-locale)
+[![Offline](https://img.shields.io/badge/funziona-offline-critical)](#architettura)
+[![Vanilla JS](https://img.shields.io/badge/JavaScript-vanilla%2C%20no%20build-F7DF1E)](#stack-tecnico)
 [![P2P](https://img.shields.io/badge/collab-P2P%20MQTT-blue)](#collaborazione-p2p--come-funziona-davvero)
 [![Deploy](https://img.shields.io/badge/deploy-Vercel-black)](https://vercel.com)
 
-[Italiano](#italiano) · [English](#english) · [📖 Guida all'uso](GUIDA_UTENTE.md)
+[Italiano](#italiano) · [English](#english) · [📖 Guida all'uso](GUIDA_UTENTE.md) · [📖 User guide](GUIDA_UTENTE_EN.md) · [🔑 Setup API keys](SETUP_API_KEYS.md)
 
 </div>
 
@@ -243,7 +243,9 @@ python3 -m http.server 8080
 
 > Le funzioni `api/` (Google Places, Groq) sono serverless Vercel: con un server
 > statico locale non girano, quindi ricerca POI e analisi GF degradano. Itinerario,
-> budget, mappa, collaborazione e offline funzionano comunque.
+> budget, mappa, collaborazione e offline funzionano comunque. Per un deploy Vercel
+> con tutte le funzioni attive serve configurare le chiavi API — vedi
+> [SETUP_API_KEYS.md](SETUP_API_KEYS.md).
 
 Per installarla come PWA: apri l'URL da Chrome (Android) o Safari (iOS) e usa
 "Aggiungi alla schermata Home" — funziona offline dal primo avvio.
@@ -475,7 +477,9 @@ python3 -m http.server 8080
 
 > The `api/` functions (Google Places, Groq) are Vercel serverless: they don't run
 > behind a local static server, so POI search and GF analysis degrade. Itinerary,
-> budget, map, collaboration, and offline all work regardless.
+> budget, map, collaboration, and offline all work regardless. For a Vercel deploy
+> with every function active you need to configure the API keys — see
+> [SETUP_API_KEYS.md](SETUP_API_KEYS.md).
 
 To install it as a PWA: open the URL in Chrome (Android) or Safari (iOS) and use "Add
 to Home Screen" — it works offline from the very first launch.

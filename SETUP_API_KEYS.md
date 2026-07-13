@@ -1,103 +1,99 @@
 # 🔑 Setup API Keys — Vercel Environment Variables
 
-## Cosa è stato fixato
+Tabi è statica lato frontend, ma le funzioni in `api/` (ricerca luoghi, foto,
+geocoding, analisi gluten-free AI) girano come funzioni serverless Vercel e hanno
+bisogno di 4 chiavi, configurate **solo lato server** (mai esposte al client).
 
-✅ **Reverse Geocoding**: Converte coordinate GPS → nome reale del luogo  
-✅ **Unsplash Photos**: Mostra foto reali per ogni POI  
-✅ **NIENTE prompt nel codice**: Le chiavi rimangono SOLO sul server Vercel
+## Le 4 variabili
 
----
+| Variabile | Serve per | Dove usata |
+|---|---|---|
+| `GOOGLE_MAPS_API_KEY` | Places (ricerca/dettagli/foto), Geocoding, Static Map, Street View | 9 dei 11 endpoint in `api/` |
+| `GRO_API_KEY` | Groq AI — analisi gluten-free di menu/foto | `api/groqAnalyze.js`, `api/groqImageAnalyze.js` |
+| `GOOGLE_CUSTOM_SEARCH_API_KEY` | Fallback ricerca immagini quando Places Photo non basta | `api/searchGooglePlacesPhotos.js` |
+| `GOOGLE_CUSTOM_SEARCH_CX` | ID del motore di ricerca personalizzato (va con la chiave sopra) | `api/searchGooglePlacesPhotos.js` |
 
-## Come configurare su Vercel
+Una quinta coppia (`KV_REST_API_URL` / `KV_REST_API_TOKEN`) abilita la cache
+server-side (Vercel KV / Upstash Redis) ma è **opzionale**: se assente, le funzioni
+funzionano comunque, solo senza cache (più chiamate alle API a pagamento). Vercel la
+imposta da sola se colleghi un'integrazione KV al progetto — non va configurata a mano.
 
-### 1. **Google Maps API Key** (per reverse geocoding)
+## Come procurarsi le chiavi
 
-1. Vai su [Google Cloud Console](https://console.cloud.google.com)
-2. Crea un nuovo progetto (es. "Giappone-2027")
-3. Abilita **Geocoding API** (va su API e servizi → Libreria → cerca "Geocoding")
-4. Vai su **Credenziali** → **Crea credenziali** → **Chiave API**
-5. Copia la chiave
+### 1. Google Maps API Key
 
-### 2. **Unsplash API Key** (per le foto)
+1. [Google Cloud Console](https://console.cloud.google.com) → crea/scegli un progetto.
+2. **API e servizi → Libreria**, abilita: **Places API**, **Geocoding API**,
+   **Maps Static API**, **Street View Static API**.
+3. **Credenziali → Crea credenziali → Chiave API** → copia il valore.
+4. Consigliato: restrizioni della chiave per referrer/IP e per le sole API sopra,
+   per limitare l'abuso se la chiave dovesse trapelare.
 
-1. Vai su [Unsplash Developers](https://unsplash.com/developers)
-2. Clicca "Create an application"
-3. Accetta i termini e continua
-4. Completa il form (Nome app, descrizione)
-5. Copia l'**Access Key**
+### 2. Groq API Key
 
-### 3. **Aggiungi su Vercel**
+1. [console.groq.com](https://console.groq.com) → crea un account/progetto.
+2. **API Keys → Create API Key** → copia il valore.
 
-1. Apri il tuo progetto su [Vercel Dashboard](https://vercel.com/dashboard)
-2. Vai su **Settings** → **Environment Variables**
-3. Aggiungi due variabili:
+### 3. Google Custom Search (fallback foto)
+
+1. [Programmable Search Engine](https://programmablesearchengine.google.com/) →
+   crea un motore, attiva "Cerca immagini" e "Cerca l'intero web".
+2. Copia l'**ID motore di ricerca** (è il valore di `GOOGLE_CUSTOM_SEARCH_CX`).
+3. In [Google Cloud Console](https://console.cloud.google.com), abilita la
+   **Custom Search API** e genera una chiave API dedicata (può essere la stessa
+   di Google Maps se non hai restrizioni per-API, ma è più pulito separarle).
+
+## Configurazione su Vercel
+
+1. Apri il progetto su [Vercel Dashboard](https://vercel.com/dashboard).
+2. **Settings → Environment Variables**, aggiungi le 4 variabili:
 
 ```
-GOOGLE_MAPS_API_KEY = [chiave Google Maps]
-UNSPLASH_API_KEY = [chiave Unsplash]
+GOOGLE_MAPS_API_KEY = ...
+GRO_API_KEY = ...
+GOOGLE_CUSTOM_SEARCH_API_KEY = ...
+GOOGLE_CUSTOM_SEARCH_CX = ...
 ```
 
-4. **Salva** e **Redeploy** il progetto (o rideploya da GitHub)
+3. **Salva** e rideploya (push su `main` o "Redeploy" dalla dashboard).
 
----
-
-## Come funziona adesso
-
-```
-Utente clicca su marker
-    ↓
-index.html carica POI detail
-    ↓
-Chiama /api/reverseGeocode (lat, lng)
-    ↓
-Vercel Function usa GOOGLE_MAPS_API_KEY dal backend
-    ↓
-Ottieni nome reale del luogo (es. "Senso-ji Temple")
-    ↓
-Chiama /api/searchUnsplash (nome)
-    ↓
-Vercel Function usa UNSPLASH_API_KEY dal backend
-    ↓
-Mostra 3-5 foto reali del luogo
-```
-
-**NESSUNA chiave esposta al client!** ✅
-
----
-
-## Test locale (dev)
-
-Se vuoi testare in locale:
+## Test locale
 
 ```bash
-# 1. Crea file .env.local nella root
-echo "GOOGLE_MAPS_API_KEY=your-key-here" > .env.local
-echo "UNSPLASH_API_KEY=your-key-here" >> .env.local
+# 1. Crea .env.local nella root con le 4 variabili
+cat > .env.local <<'EOF'
+GOOGLE_MAPS_API_KEY=your-key-here
+GRO_API_KEY=your-key-here
+GOOGLE_CUSTOM_SEARCH_API_KEY=your-key-here
+GOOGLE_CUSTOM_SEARCH_CX=your-cx-here
+EOF
 
-# 2. Installa Vercel CLI
+# 2. Vercel CLI (se non già installata)
 npm i -g vercel
 
-# 3. Esegui localmente
+# 3. Esegui con le funzioni serverless attive
 vercel dev
 ```
 
----
+> Un semplice `python3 -m http.server` (vedi [README](README.md)) **non** esegue le
+> funzioni in `api/` — va bene per sviluppare itinerario/budget/mappa/collaborazione,
+> ma ricerca luoghi/foto/analisi AI restano non disponibili finché non usi `vercel dev`
+> o non deployi su Vercel con le chiavi configurate.
 
 ## Troubleshooting
 
-| Errore | Soluzione |
-|--------|-----------|
-| "API key not configured" | Assicurati di aver aggiunto le env vars su Vercel e fatto redeploy |
-| "Nessuna foto disponibile" | Unsplash non ha foto per quel nome. Prova reverse geocoding |
-| "Rate limit exceeded" | Unsplash e Google Maps hanno limiti. Upgrade piano se necessario |
+| Errore | Causa probabile |
+|---|---|
+| "API key not configured" nei toast dell'app | Variabile mancante su Vercel — controlla nome esatto e fai un redeploy dopo averla aggiunta |
+| Ricerca luoghi vuota ma nessun errore | Quota Google Places esaurita (vedi `js/api-quota.js`) — l'app degrada a stime locali, non è un bug |
+| "No more than 12 Serverless Functions" al deploy | Limite del piano Hobby Vercel — vedi `api/_lib/` nel codice: i file condivisi con prefisso `_` non contano come funzioni, non aggiungere nuovi endpoint `api/*.js` senza controllare il totale |
 
----
+## Costi indicativi
 
-## Costi approssimi (April 2026)
-
-- **Google Maps Geocoding**: €0.005 per request (primo mese gratis)
-- **Unsplash**: Gratuito fino a 50 request/ora (Plus = €10/mese)
-
----
-
-**Fatto? Contatta Moriconz se serve help!** 🚀
+Prezzi soggetti a cambiare — controlla sempre i listini ufficiali prima di stimare un budget:
+- **Google Maps Platform**: pay-as-you-go con credito gratuito mensile, vedi
+  [pricing ufficiale](https://mapsplatform.google.com/pricing/).
+- **Groq**: vedi [pricing ufficiale](https://groq.com/pricing/) — quota giornaliera
+  gestita lato app in `js/api-quota.js` per restare dentro i limiti gratuiti.
+- **Google Custom Search**: 100 query/giorno gratuite, poi a pagamento — vedi
+  [documentazione ufficiale](https://developers.google.com/custom-search/v1/overview).

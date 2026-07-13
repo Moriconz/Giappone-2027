@@ -1,4 +1,4 @@
-# HANDOFF — Tabi (Giappone 2027) · 2026-07-13 (fine sessione, v3.54)
+# HANDOFF — Tabi (Giappone 2027) · 2026-07-13 (fine sessione, v3.56)
 
 Prompt di ripartenza per nuova chat:
 > Continua il progetto Tabi. Leggi HANDOFF.md nella root del repo. Riparti dal primo punto di "Prossimi step". Attiva /fable-5.
@@ -7,13 +7,21 @@ Prompt di ripartenza per nuova chat:
 **Tabi** — travel planner PWA (vanilla JS, no framework, no bundler) con layer gluten-free opzionale. Planner **globale**, non solo Giappone; il trip Giappone 2027 è il caso d'uso di partenza. Collaborativa tra amici via MQTT (broker pubblico, zero backend); serverless Vercel solo come proxy API (Google Places/Groq, quota-gated in `js/api-quota.js`). **Regola utente ferrea: nessun dato hardcoded** — tutto da fonti live o da input umano (crowdsourcing di gruppo). Uso esclusivamente mobile, utenti non tech-savvy (amici in viaggio, non sviluppatori).
 
 ## Stato attuale
-- **NON ancora committato/pushato** (v3.54, questa sessione) — modifiche presenti solo nel working tree, in attesa di conferma esplicita dell'utente prima di `git commit`/`push` (regola di sicurezza dell'assistente: mai committare senza richiesta esplicita, anche se le sessioni precedenti lo facevano di default). 10 file JS/MD modificati, nessun file nuovo/eliminato.
+- v3.54 e v3.55 committati e pushati su `main` durante questa sessione (v3.54: `1db2f53`; v3.55: fix deploy Vercel). **v3.56 (pulizia repo + docs + guida utente) in attesa di commit/push** — vedi "Prossimi step".
+- Deploy Vercel: il primo push di v3.54 aveva fallito ("No more than 12 Serverless Functions", piano Hobby) — causa: `api/lib/cors.js` e `api/lib/kv-cache.js` (helper condivisi, mai stati endpoint) contati come funzioni assieme agli 11 endpoint reali. Fix v3.55: rinominati in `api/_lib/` (convenzione Vercel, prefisso `_` escluso dal conteggio funzioni). Non riproporre la stessa struttura se si aggiungono nuovi file condivisi sotto `api/`.
 - Test: `smoke-test.mjs` verde (exit 0, nessun errore console nuovo oltre a quelli attesi in dev locale: CORS overpass-api, 404 GF senza chiave API). `lint-i18n.mjs` verde (0 errori, 435 chiavi it/en/ja).
-- Repo pulito: nessuna worktree residua in `.claude/worktrees/`, nessun branch locale `claude/*` orfano.
+- Repo pulito: nessuna worktree residua in `.claude/worktrees/`, nessun branch locale `claude/*` orfano. Rimossi ~78 file superseduti/orfani dalla root e da `docs/archive/` (v3.56, vedi CHANGELOG per l'elenco).
 - **Priorità prodotto confermate dall'utente** (vedi memoria `product-priority-order`): 1) viaggio-ready, 2) zero bug, 3) feature-complete, in quest'ordine. Deadline = partenza per il Giappone. GF resta fisso in bottom-nav (deciso, non richiedere di nuovo).
 
 ## Richiesta della sessione
-"Testa l'intera app, bottone su bottone, tasto su tasto, testo su testo, ui e ux su ui e ux — nulla dev'essere lasciato al caso", con 4 agenti in parallelo. Metodo: 4 agenti paralleli in background (uno per area: nav/mappa/itinerario/GF Guide; gruppo/social/SOS/biglietti; soldi/shopping/media; utility/info), ognuno con Puppeteer su server locale reale (non solo lettura codice) — poi fix diretto dei bug confermati, verificati end-to-end uno per uno prima di passare al successivo. Vedi CHANGELOG v3.54 per il dettaglio dei 9 bug trovati/sistemati.
+Due parti. (1) "Testa l'intera app, bottone su bottone... nulla dev'essere lasciato al caso", con 4 agenti in parallelo — vedi CHANGELOG v3.54 per il dettaglio dei 9 bug trovati/sistemati. (2) "Sistema tutti i file nella cartella... metti solo la roba essenziale, sistema il readme" + "crea un file How To... per filo e per segno, in italiano e inglese, con screenshot" — vedi CHANGELOG v3.56.
+
+## Cosa è stato fatto (v3.56) — pulizia repo, README/setup fixati, guida utente illustrata IT+EN
+Dettaglio completo nel CHANGELOG.md (v3.56). Riepilogo:
+- **Pulizia**: rimossi `docs/archive/` (~70 doc storici), 3 pagine HTML orfane (debug-list/install-diagnostic/redesign-mockup), `y2k-override.css` (duplicato morto), `audit-padding.mjs`, 3 script Python che generavano dati hardcoded ormai rimossi per policy, `QUICKSTART.md` (riferiva file spostati, guida attivamente fuorviante). Ogni rimozione verificata con grep dei referenziatori prima di agire.
+- **README.md**: 3 badge in cima linkavano ad anchor mai esistiti (assumevano header combinati IT/EN che non esistono) — corretti. Aggiunto link a `SETUP_API_KEYS.md` (prima orfano) e alla nuova guida EN.
+- **SETUP_API_KEYS.md riscritto**: era completamente disallineato (parlava di `UNSPLASH_API_KEY`/`/api/searchUnsplash`, mai esistiti nel codice attuale). Ora riflette le 4 variabili realmente usate (verificate via grep `process.env.*` sui file `api/`).
+- **`GUIDA_UTENTE.md` espansa + `GUIDA_UTENTE_EN.md` nuova**: 14 sezioni ciascuna, 31 screenshot mobile reali in `docs/guide-images/` (Puppeteer, dati seedati realistici) che coprono ogni area/menu dell'app. Due footgun di seeding scoperti e documentati nel CHANGELOG (chiave onboarding separata dallo state blob; centro mappa di default lontano dalle POI di test).
 
 ## Cosa è stato fatto (v3.54) — audit esaustivo 4 agenti + 9 fix verificati end-to-end
 Dettaglio completo nel CHANGELOG.md (v3.54). Riepilogo: 4 agenti paralleli hanno testato 86 elementi UI (bottoni/menu/sottomenù) con Puppeteer reale, trovando 7 bug; durante il fix ne sono emersi altri 2 collegati (stesso bug in un secondo file, un fallback UI mai raggiungibile scoperto indagando il primo). Tutti e 9 fixati e verificati singolarmente in browser reale (non solo `node --check`):
@@ -92,12 +100,13 @@ Commit: `adf3f0a` (audit bloat) + `e1bf0d0` (recupero fix WIP).
 - **`window.appConfig`/`js/encryption.js` erano infrastruttura speculativa mai attivata** — nessuna UI chiama mai `setKey`/`getKey`/`initMasterPassword`. Esempio concreto di "costruito ma mai collegato".
 
 ## Prossimi step (in ordine di valore — filtrati dalla priorità "viaggio-ready" prima di tutto, vedi memoria `product-priority-order`)
-1. **i18n completo** — backlog ampio, serve navigare l'app in EN/JA schermata per schermata. Priorità bassa a meno che qualcuno del gruppo non parli solo EN/JA. **Prima di partire**: chiarire con l'utente lo scope (tutte le schermate o solo quelle usate in viaggio? EN e JA insieme o una alla volta?) — non è un fix puntuale, è un progetto a sé.
-2. **Refactor monoliti** — `js/onboarding.js` (928 righe), `js/views/poi-detail/poi-itinerary-wizard.js` (811), `js/views/weather-view.js` (783), `js/mqtt-transport.js` (828+), `js/gf-places-panel.js` (752). Manutenibilità futura, non blocca l'uso reale — priorità bassa per esplicita scelta utente (feature-complete è la priorità #3, non #1). **Prima di partire**: chiarire quale file per primo e se l'utente vuole un refactor comportamentalmente identico (rischio basso, split di file) o anche una revisione della logica (rischio più alto).
-3. **Altri cosmetici UI da verificare in browser** — v3.52/v3.53 hanno risolto bleed-through pannelli, chat bubble, undo del riordino orari; continuare a cercare con lo stesso metodo (`elementFromPoint`/`getComputedStyle` in browser reale, non a occhio dal CSS) se emergono altri casi durante l'uso normale.
-4. **`wizardRender: false` nello smoke test**: **investigato in v3.53, non è un bug dell'app** — riprodotto a mano lo stesso identico flusso e il wizard funziona. Resta un soft-check flaky nell'ambiente Puppeteer, non riaprire la caccia senza una nuova prova concreta che sia un problema reale.
-5. **GF slot fisso in bottom-nav**: **CONFERMATO tenerlo così dall'utente** (2026-07-12) — non riproporre la domanda, vedi memoria `product-priority-order`.
-6. **Idee prodotto** — l'app è ora in stato solido (sicurezza + UX + bloat + cosmetici + undo auditati a fondo su 6 round: v3.47, v3.49, v3.50, v3.51, v3.52, v3.53).
+1. **Commit + push v3.56** — pulizia repo/README/setup + guida utente IT/EN (questa sessione). Eseguibile subito, nessuna decisione aperta.
+2. **i18n completo** — backlog ampio, serve navigare l'app in EN/JA schermata per schermata. Priorità bassa a meno che qualcuno del gruppo non parli solo EN/JA. **Prima di partire**: chiarire con l'utente lo scope (tutte le schermate o solo quelle usate in viaggio? EN e JA insieme o una alla volta?) — non è un fix puntuale, è un progetto a sé.
+3. **Refactor monoliti** — `js/onboarding.js` (928 righe), `js/views/poi-detail/poi-itinerary-wizard.js` (811), `js/views/weather-view.js` (783), `js/mqtt-transport.js` (828+), `js/gf-places-panel.js` (752). Manutenibilità futura, non blocca l'uso reale — priorità bassa per esplicita scelta utente (feature-complete è la priorità #3, non #1). **Prima di partire**: chiarire quale file per primo e se l'utente vuole un refactor comportamentalmente identico (rischio basso, split di file) o anche una revisione della logica (rischio più alto).
+4. **Altri cosmetici UI da verificare in browser** — v3.52/v3.53 hanno risolto bleed-through pannelli, chat bubble, undo del riordino orari; continuare a cercare con lo stesso metodo (`elementFromPoint`/`getComputedStyle` in browser reale, non a occhio dal CSS) se emergono altri casi durante l'uso normale.
+5. **`wizardRender: false` nello smoke test**: **investigato in v3.53, non è un bug dell'app** — riprodotto a mano lo stesso identico flusso e il wizard funziona. Resta un soft-check flaky nell'ambiente Puppeteer, non riaprire la caccia senza una nuova prova concreta che sia un problema reale.
+6. **GF slot fisso in bottom-nav**: **CONFERMATO tenerlo così dall'utente** (2026-07-12) — non riproporre la domanda, vedi memoria `product-priority-order`.
+7. **Idee prodotto** — l'app è ora in stato solido (sicurezza + UX + bloat + cosmetici + undo auditati a fondo su 6 round: v3.47, v3.49, v3.50, v3.51, v3.52, v3.53; repo/docs puliti in v3.56).
 
 ## Vincoli e convenzioni
 - Script IIFE browser, `<script defer>` in index.html; niente ES modules/bundler.

@@ -1,6 +1,38 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.54 — Audit esaustivo a 4 agenti: bottone su bottone, menu su menu (2026-07-13, Attuale)
+## v3.56 — Pulizia repo, README/setup fixati, guida utente illustrata IT+EN (2026-07-13, Attuale)
+
+Su richiesta esplicita: "sistema tutti i file... metti solo la roba essenziale, sistema il readme" + guida "How to" completa con screenshot mobile in italiano e inglese.
+
+### Pulizia repo (solo file tracciati in git, nulla di locale toccato senza nome esplicito)
+Rimossi perché superseduti/orfani/mai referenziati da nessun file reale:
+- `docs/archive/` (~70 documenti storici di pianificazione/implementazione, da sessioni pre-refactor — restano comunque recuperabili dalla cronologia git).
+- `debug-list.html`, `install-diagnostic.html`, `redesign-mockup.html` — pagine di debug/mockup, verificato con grep che nessun file le referenzia.
+- `y2k-override.css` (114KB in root, fuori da `css/`) — duplicato orfano, il contenuto reale vive già in `css/legacy-skin.css` (index.html lo conferma: commento "Legacy component layer (ex y2k-override.css)").
+- `audit-padding.mjs` — script di debug one-off, non referenziato da `package.json` né da CI.
+- `generate_restaurants_db.py`, `scrape_fmgf.py`, `scrape_fmgf_advanced.py` — generavano `fmgf_japan_restaurants.json`, dato hardcoded rimosso da tempo per policy "niente dati editoriali statici" (vedi commento in `js/gf-places-loader.js`).
+- `QUICKSTART.md` — riferiva file (`STATUS.md`, `ARCHITECTURE.md`) che non esistono più a quel path (spostati in `docs/archive/`), guida attivamente fuorviante.
+
+### README.md
+- **3 badge in cima erano link ancorati rotti**: puntavano ad anchor tipo `#installazione--installation` mai esistiti (il documento ha sezioni IT/EN separate con header propri, non un header combinato). Corretti ai veri anchor (`#installazione--installazione-locale`, `#architettura`, `#stack-tecnico`).
+- Aggiunto link a `SETUP_API_KEYS.md` (prima non linkato da nessuna parte) e menzione nella sezione Installazione che un deploy Vercel completo richiede le chiavi API.
+- Aggiunto link alla nuova guida utente inglese.
+
+### SETUP_API_KEYS.md — riscritto, era completamente disallineato dal codice
+Il documento descriveva `UNSPLASH_API_KEY` e un endpoint `/api/searchUnsplash` che non esistono nel codebase attuale (grep su `process.env.*` negli 11 endpoint conferma le 4 variabili realmente usate oggi: `GOOGLE_MAPS_API_KEY`, `GRO_API_KEY`, `GOOGLE_CUSTOM_SEARCH_API_KEY`, `GOOGLE_CUSTOM_SEARCH_CX`). Riscritto da zero con le variabili reali, quali API Google Cloud abilitare per ciascuna (Places, Geocoding, Static Map, Street View — verificato dagli URL effettivamente chiamati), e una nota sul limite 12-funzioni Vercel (vedi v3.55).
+
+### Guida utente illustrata, italiano + inglese (nuova)
+- **`GUIDA_UTENTE.md`** espansa da 11 a 14 sezioni con screenshot mobile reali per ogni area dell'app: onboarding, mappa, dettaglio POI, wizard aggiungi-a-itinerario, itinerario (bottoni Annulla/Rifai visibili — fix di v3.54 in azione), GF Guide, menu, gruppo (+ chat/spese/checklist/wishlist), budget/biglietti/prenotazioni/shopping, timeline/suggerimenti/ricerca/heatmap/galleria/tips, JR Pass/calendario/AI/promemoria/backup/offline/SOS.
+- **`GUIDA_UTENTE_EN.md`** (nuova) — mirror in inglese, stessi screenshot.
+- 31 screenshot in `docs/guide-images/` catturati con Puppeteer (viewport mobile 390×844, tema chiaro) su dati seedati realistici (itinerario multi-giorno, budget, biglietto, gruppo da 3 membri). Due bug di seeding scoperti e corretti durante la cattura, non del codice app: (1) `initOnboarding()` legge la chiave `localStorage['tripProfile']` diretta, non lo state blob — un seed che scrive solo `window.state.tripProfile` lascia l'overlay onboarding bloccato sopra tutto; (2) il centro mappa di default (Giappone centrale, zoom 10) non mostra le POI di test (tutte a Tokyo) nel viewport — serve ricentrare esplicitamente prima dello screenshot.
+
+Verificato: `node --check` su tutti i file JS toccati, smoke test verde dopo la rimozione dei file (nessun riferimento rotto), tutti i 31 screenshot referenziati verificati esistenti su disco in entrambe le guide.
+
+## v3.55 — Fix deploy Vercel: 13 funzioni superavano il limite 12 del piano Hobby (2026-07-13)
+
+Il deploy di v3.54 falliva su Vercel: `"No more than 12 Serverless Functions can be added to a Deployment on the Hobby plan"`. Causa: ogni file `.js` sotto `api/` (ricorsivamente) diventa una funzione serverless — gli 11 endpoint reali + i 2 helper condivisi `api/lib/cors.js`/`api/lib/kv-cache.js` (mai stati endpoint, solo codice importato dagli altri) davano 13. Fix: rinominata `api/lib/` → `api/_lib/` — convenzione standard Vercel, i file/cartelle con prefisso `_` dentro `api/` sono esclusi dal conteggio funzioni ma restano importabili normalmente. Aggiornati i 20 import (`./lib/...` → `./_lib/...`) nei file che li usano. Nessun cambio di comportamento, solo la struttura file. 11 funzioni reali ora sotto il limite di 12.
+
+## v3.54 — Audit esaustivo a 4 agenti: bottone su bottone, menu su menu (2026-07-13)
 
 Su richiesta esplicita ("bottone su bottone, tasto su tasto... nulla dev'essere lasciato al caso"): 4 agenti paralleli, ognuno un'area dell'app (nav/mappa/itinerario/GF Guide; gruppo/social/SOS/biglietti; soldi/shopping/media; utility/info), click esaustivo di ogni bottone/menu/sottomenù con Puppeteer su server locale reale, non solo lettura codice. 86 elementi PASS, 9 bug trovati e sistemati (7 dai 4 agenti + 2 trovati durante il fix stesso).
 
