@@ -1,6 +1,20 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.52 — Cosmetici UI: bleed-through pannelli e chat bubble tema scuro (2026-07-12, Attuale)
+## v3.53 — `applyDayHours` ora coperto da Annulla/Ctrl+Z (2026-07-12, Attuale)
+
+Priorità #1 rimasta dall'audit v3.51 (viaggio-ready: poter annullare un errore in itinerario durante il viaggio).
+
+### Fix
+- **`js/itinerary-features.js` `applyDayHours`** (azione "Applica" in "🕐 Riordina per orari"): scriveva direttamente su `window.state.itineraryByDay[dayIndex]`, bypassando il wrapper undo/redo di `itinerary-undo-redo.js` (che intercetta solo metodi *nominati* di `window.ITINERARY`). L'unica rete di sicurezza era lo snapshot automatico persistente, non il vero Annulla/Ctrl+Z di sessione.
+- **Aggiunto `window.ITINERARY.reorderDay(dayIdx, newOrder)`** in `js/itinerary.js` — sostituisce l'ordine di un giorno già calcolato altrove (accanto a `optimizeDay`, che invece calcola un ordine proprio per distanza). `applyDayHours` ora passa da qui invece di scrivere lo state direttamente.
+- **Registrato in `MUTATOR_LABELS`** (`js/itinerary-undo-redo.js`): il wrapper generico intercetta `reorderDay` per nome, come già fa per `addPOIToDay`/`moveToDay`/ecc. — zero codice nuovo nel motore di undo, solo un metodo in più da wrappare.
+
+Verificato end-to-end in browser (non solo lettura codice): seed di un giorno con 3 tappe fuori sequenza oraria, applicato il riordino, confermato `canUndo()===true` con label "Riordino per orari", eseguito `undo()` e verificato che l'ordine/orari tornano esattamente quelli di partenza.
+
+### Investigato, non un bug reale
+- **`wizardRender: false` nello smoke test**: riprodotta a mano la sequenza esatta del check (apri POI → click "Aggiungi all'itinerario" → scansiona pannelli) — il wizard renderizza correttamente ("STEP 1/4 — Scegli il giorno" con Day 1-21). È una flakiness di timing specifica dell'ambiente Puppeteer dello smoke test, non un bug dell'app. Lasciato come soft-check pre-esistente, come già classificato.
+
+## v3.52 — Cosmetici UI: bleed-through pannelli e chat bubble tema scuro (2026-07-12)
 
 Priorità scelta dall'utente dopo l'audit v3.51: cosmetici UI visivi, verificati in browser reale (non alla cieca).
 

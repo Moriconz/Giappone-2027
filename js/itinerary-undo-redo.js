@@ -115,6 +115,7 @@
     updateCost:     () => T('undo.updateCost', 'Modifica costo'),
     moveToDay:      () => T('undo.moveToDay', 'Spostamento giorno'),
     optimizeDay:    () => T('undo.optimizeDay', 'Ottimizzazione giorno'),
+    reorderDay:     () => T('undo.reorderDay', 'Riordino per orari'),
     markVisited:    () => T('undo.markVisited', 'Segna visitato')
   };
 

@@ -390,6 +390,22 @@ const ITINERARY_SYSTEM = {
   },
 
   /**
+   * Sostituisce l'ordine delle tappe di un giorno con un ordine già calcolato
+   * altrove (es. il riordino per orari di apertura in itinerary-features.js).
+   * Passa da qui invece di scrivere direttamente su state.itineraryByDay così
+   * il wrapper undo/redo (itinerary-undo-redo.js, che wrappa i metodi per
+   * nome) copre anche questa azione con Annulla/Ctrl+Z.
+   */
+  reorderDay(dayIdx, newOrder) {
+    if (!window.state?.itineraryByDay || !Array.isArray(newOrder)) return false;
+    window.state.itineraryByDay[dayIdx] = newOrder;
+    this.computeDayRouting(dayIdx);
+    window.saveState?.();
+    window.GROUP_SYNC?.broadcastItinerary?.();
+    return true;
+  },
+
+  /**
    * Mark POI as visited
    */
   markVisited(poiId) {

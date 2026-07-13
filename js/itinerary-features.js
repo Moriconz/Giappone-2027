@@ -482,10 +482,10 @@
     if (!result?.ok || !result.newOrder) return false;
     try { window.ItinerarySnapshots?.saveAuto?.('optimize-day'); } catch (_) {}
 
-    window.state.itineraryByDay[dayIndex] = result.newOrder;
-    try { window.ITINERARY?.computeDayRouting?.(dayIndex); } catch (_) {}
-    window.saveState?.();
-    window.GROUP_SYNC?.broadcastItinerary?.();
+    // Passa da window.ITINERARY.reorderDay (non da state diretto) così il
+    // wrapper undo/redo copre anche questa azione con Annulla/Ctrl+Z.
+    const applied = window.ITINERARY?.reorderDay?.(dayIndex, result.newOrder);
+    if (!applied) return false;
     window.renderItineraryUnified?.();
     return true;
   }
