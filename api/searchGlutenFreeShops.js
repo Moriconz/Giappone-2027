@@ -5,6 +5,7 @@
  */
 
 import { cacheGet, cacheSet, TTL } from './_lib/kv-cache.js';
+import { checkAndConsumeQuota, quotaExceededBody } from './_lib/quota.js';
 import { setAllowedOrigin } from './_lib/cors.js';
 
 export default async function handler(req, res) {
@@ -31,6 +32,9 @@ export default async function handler(req, res) {
   const cacheParams = { city: city.toLowerCase(), ll: (lat && lng) ? `${Number(lat).toFixed(1)},${Number(lng).toFixed(1)}` : '' };
   const cached = await cacheGet('gfShops', cacheParams);
   if (cached) return res.status(200).json(cached);
+
+  const quota = await checkAndConsumeQuota('searchGlutenFreeShops');
+  if (quota.limited) return res.status(429).json(quotaExceededBody('searchGlutenFreeShops', quota.limit));
 
   async function fetchJson(url) {
     const resp = await fetch(url);
@@ -106,7 +110,7 @@ export default async function handler(req, res) {
   try {
     const shops = await searchGlutenFreeShops();
     const responseBody = { city, count: shops.length, shops };
-    await cacheSet('gfShops', cacheParams, responseBody, TTL.SEVEN_DAYS);
+    await cacheSet('gfShops', cacheParams, responseBody, TTL.TWO_YEARS);
     return res.status(200).json(responseBody);
   } catch (error) {
     console.error('[searchGlutenFreeShops] Error:', error);

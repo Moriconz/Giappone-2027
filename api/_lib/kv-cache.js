@@ -66,7 +66,7 @@ export async function cacheGet(endpoint, params) {
 /**
  * Salva un valore con TTL in secondi. No-op su errore.
  */
-export async function cacheSet(endpoint, params, value, ttlSec = TTL.THIRTY_DAYS) {
+export async function cacheSet(endpoint, params, value, ttlSec = TTL.TWO_YEARS) {
   if (!redis) return;
   try {
     const key = makeKey(endpoint, params);
@@ -78,7 +78,12 @@ export async function cacheSet(endpoint, params, value, ttlSec = TTL.THIRTY_DAYS
 }
 
 export const TTL = {
-  THIRTY_DAYS: 2_592_000,   // 30 giorni — dati geografici stabili
-  SEVEN_DAYS:    604_800,   //  7 giorni — orari/rating possono cambiare
-  ONE_DAY:        86_400,   //  1 giorno — dati molto volatili
+  // Allungato da 30gg/7gg a 2 anni su richiesta esplicita (priorità: minimizzare
+  // le chiamate a pagamento condivise, anche a costo di dati meno freschi —
+  // stessa scelta già fatta per la cache IndexedDB lato client, vedi
+  // js/google-places-cache.js). ponytail: TTL_LONG unico invece di due valori
+  // ormai identici — orari/rating restano comunque a rischio "stale fino a 2
+  // anni" con questa scelta, è il tradeoff esplicitamente richiesto.
+  TWO_YEARS:  63_072_000,   // 2 anni — cache condivisa "di norma"
+  ONE_DAY:        86_400,   //  1 giorno — riservato a dati esplicitamente volatili (non ancora usato)
 };

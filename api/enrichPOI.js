@@ -5,6 +5,7 @@
  */
 
 import { cacheGet, cacheSet, TTL } from './_lib/kv-cache.js';
+import { checkAndConsumeQuota, quotaExceededBody } from './_lib/quota.js';
 import { setAllowedOrigin } from './_lib/cors.js';
 
 export default async function handler(req, res) {
@@ -33,6 +34,9 @@ export default async function handler(req, res) {
   };
   const cached = await cacheGet('enrichPOI', cacheParams);
   if (cached) return res.status(200).json(cached);
+
+  const quota = await checkAndConsumeQuota('enrichPOI');
+  if (quota.limited) return res.status(429).json(quotaExceededBody('enrichPOI', quota.limit));
 
   async function fetchJson(url) {
     const resp = await fetch(url);
@@ -156,7 +160,7 @@ export default async function handler(req, res) {
     };
 
     const responseBody = { poi: enrichedPOI };
-    await cacheSet('enrichPOI', cacheParams, responseBody, TTL.THIRTY_DAYS);
+    await cacheSet('enrichPOI', cacheParams, responseBody, TTL.TWO_YEARS);
     return res.status(200).json(responseBody);
 
   } catch (error) {

@@ -7,6 +7,7 @@
  */
 
 import { cacheGet, cacheSet, TTL } from './_lib/kv-cache.js';
+import { checkAndConsumeQuota, quotaExceededBody } from './_lib/quota.js';
 import { setAllowedOrigin } from './_lib/cors.js';
 
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
@@ -59,6 +60,9 @@ export default async function handler(req, res) {
     };
     const cached = await cacheGet('nearby', cacheParams);
     if (cached) return res.status(200).json(cached);
+
+    const quota = await checkAndConsumeQuota('googlePlacesNearby');
+    if (quota.limited) return res.status(429).json(quotaExceededBody('googlePlacesNearby', quota.limit));
 
     console.log(`[googlePlacesNearby] Search: ${lat}, ${lng}, radius ${radiusM}m${type ? `, type: ${type}` : ''}`);
 
@@ -113,7 +117,7 @@ export default async function handler(req, res) {
     console.log(`[googlePlacesNearby] Returning ${results.length} results`);
 
     const responseBody = { results, status: 'OK', count: results.length, lat, lng, radiusM };
-    await cacheSet('nearby', cacheParams, responseBody, TTL.THIRTY_DAYS);
+    await cacheSet('nearby', cacheParams, responseBody, TTL.TWO_YEARS);
     return res.status(200).json(responseBody);
   } catch (err) {
     console.error('[googlePlacesNearby] Fatal error:', err);

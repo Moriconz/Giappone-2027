@@ -4,6 +4,7 @@
  * Usage: /api/placePhoto?reference=PHOTO_REFERENCE&maxwidth=400
  */
 
+import { checkAndConsumeQuota, quotaExceededBody } from './_lib/quota.js';
 import { setAllowedOrigin } from './_lib/cors.js';
 
 export default async function handler(req, res) {
@@ -27,6 +28,12 @@ export default async function handler(req, res) {
   if (!reference && !photoName) {
     return res.status(400).json({ error: 'Missing photo reference or photoName' });
   }
+
+  // Nessuna cache qui (l'immagine passa direttamente, Cache-Control sotto è
+  // per il browser del singolo utente) — la quota va quindi controllata
+  // sempre, non solo sui cache-miss come negli altri endpoint.
+  const quota = await checkAndConsumeQuota('placePhoto');
+  if (quota.limited) return res.status(429).json(quotaExceededBody('placePhoto', quota.limit));
 
   // Support both old API (reference) and new API (photoName)
   let photoUrl;

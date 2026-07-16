@@ -684,12 +684,21 @@ header h1 { color: var(--m-text) !important; }
   transform: translateX(-50%) translateY(8px) !important;
   max-width: 88vw !important;
   padding: 11px 20px !important;
-  border-radius: 999px !important;
+  border-radius: 20px !important;
   font-size:16px !important;
   font-weight: 600 !important;
   text-align: center !important;
-  white-space: nowrap !important;
-  z-index: 9990 !important;
+  /* prima: white-space:nowrap forzava ogni messaggio su una riga sola — un
+     toast lungo (es. avviso quota API) sforava oltre i bordi dello schermo
+     su mobile invece di andare a capo, sembrando "troncato". I toast brevi
+     restano comunque su una riga da soli, non serve altro per quelli. */
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.4 !important;
+  /* prima 9990, sotto il widget meteo (#weather-floating, 9999): con
+     white-space:nowrap non si notava quasi mai, ma ora che i toast lunghi
+     vanno su più righe la card meteo finiva sopra e ne copriva un pezzo. */
+  z-index: 10000 !important;
   opacity: 0 !important;
   pointer-events: none !important;
   transition: opacity 0.18s ease, transform 0.18s ease !important;

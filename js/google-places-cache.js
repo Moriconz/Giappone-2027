@@ -1,8 +1,10 @@
 /**
  * GOOGLE PLACES CACHE — IndexedDB storage for Google Places POI data
  *
- * Stores all Google Places POI results with 1-month TTL
- * Cache key: viewport area + radius to avoid duplicate queries
+ * Stores all Google Places POI results with 2-year TTL (era 1 mese — allungato
+ * per minimizzare le chiamate a pagamento riutilizzando i dati sul device il
+ * più a lungo possibile). Cache key: viewport area + radius, per evitare
+ * query duplicate.
  */
 
 class GooglePlacesCache {
@@ -42,13 +44,13 @@ class GooglePlacesCache {
     return `${latRounded}_${lngRounded}_${radiusM}`;
   }
 
-  // Save POIs with 1-month TTL
+  // Save POIs with 2-year TTL
   async savePOIs(lat, lng, radiusM, pois) {
     if (!this.db) await this.initDB();
 
     const cacheKey = this.getCacheKey(lat, lng, radiusM);
-    const oneMonthMs = 30 * 24 * 60 * 60 * 1000;
-    const expiresAt = Date.now() + oneMonthMs;
+    const twoYearsMs = 2 * 365 * 24 * 60 * 60 * 1000;
+    const expiresAt = Date.now() + twoYearsMs;
 
     const record = {
       cacheKey,

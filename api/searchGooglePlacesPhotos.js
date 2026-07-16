@@ -211,21 +211,21 @@ export default async function handler(req, res) {
     const placeResult = await searchGooglePlacesPhotos();
     if (placeResult.photos.length) {
       const rb = { place: placeResult.place, photos: placeResult.photos };
-      await cacheSet('placesPhotos', cacheParams, rb, TTL.SEVEN_DAYS);
+      await cacheSet('placesPhotos', cacheParams, rb, TTL.TWO_YEARS);
       return res.status(200).json(rb);
     }
 
     const customPhotos = await searchGoogleCustomSearchImages();
     if (customPhotos.length) {
       const rb = { place: null, photos: customPhotos };
-      await cacheSet('placesPhotos', cacheParams, rb, TTL.SEVEN_DAYS);
+      await cacheSet('placesPhotos', cacheParams, rb, TTL.TWO_YEARS);
       return res.status(200).json(rb);
     }
 
     const wikiPhotos = await searchWikimediaImages();
     if (wikiPhotos.length) {
       const rb = { place: null, photos: wikiPhotos };
-      await cacheSet('placesPhotos', cacheParams, rb, TTL.SEVEN_DAYS);
+      await cacheSet('placesPhotos', cacheParams, rb, TTL.TWO_YEARS);
       return res.status(200).json(rb);
     }
 

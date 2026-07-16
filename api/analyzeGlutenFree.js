@@ -163,7 +163,7 @@ export default async function handler(req, res) {
         source: 'google_places_reviews'
       }
     };
-    await cacheSet('analyzeGF', cacheParams, responseBody, TTL.SEVEN_DAYS);
+    await cacheSet('analyzeGF', cacheParams, responseBody, TTL.TWO_YEARS);
     return res.status(200).json(responseBody);
 
   } catch (error) {

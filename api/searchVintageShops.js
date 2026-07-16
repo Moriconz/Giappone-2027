@@ -5,6 +5,7 @@
  */
 
 import { cacheGet, cacheSet, TTL } from './_lib/kv-cache.js';
+import { checkAndConsumeQuota, quotaExceededBody } from './_lib/quota.js';
 import { setAllowedOrigin } from './_lib/cors.js';
 
 export default async function handler(req, res) {
@@ -28,6 +29,9 @@ export default async function handler(req, res) {
   const cacheParams = { city: city.toLowerCase() };
   const cached = await cacheGet('vintageShops', cacheParams);
   if (cached) return res.status(200).json(cached);
+
+  const quota = await checkAndConsumeQuota('searchVintageShops');
+  if (quota.limited) return res.status(429).json(quotaExceededBody('searchVintageShops', quota.limit));
 
   async function fetchJson(url) {
     const resp = await fetch(url);
@@ -101,7 +105,7 @@ export default async function handler(req, res) {
   try {
     const shops = await searchVintageShops();
     const responseBody = { city, count: shops.length, shops };
-    await cacheSet('vintageShops', cacheParams, responseBody, TTL.SEVEN_DAYS);
+    await cacheSet('vintageShops', cacheParams, responseBody, TTL.TWO_YEARS);
     return res.status(200).json(responseBody);
   } catch (error) {
     console.error('[searchVintageShops] Error:', error);

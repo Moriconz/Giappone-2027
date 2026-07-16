@@ -172,7 +172,14 @@
       'export.title': 'Itinerario da Esportare', 'export.copied': '✅ Copiato!', 'export.copy': 'Copia',
       'search.results': 'Risultati',
       'itin.addStopTitle': 'Aggiungi tappa', 'itin.dayLabel': 'Giorno del viaggio (1, 2, 3...)', 'itin.timeLabel': 'Orario (es. 09:30)', 'itin.costLabel': 'Costo (es. 10€, opzionale)', 'itin.free': 'Gratis',
-      'groupPoi.title': 'Aggiungi a Itinerario di Gruppo', 'groupPoi.room': 'Stanza', 'groupPoi.addHint': 'Aggiungi <strong>{name}</strong> all\'itinerario di gruppo', 'groupPoi.windowTitle': 'Aggiungi al Gruppo'
+      'groupPoi.title': 'Aggiungi a Itinerario di Gruppo', 'groupPoi.room': 'Stanza', 'groupPoi.addHint': 'Aggiungi <strong>{name}</strong> all\'itinerario di gruppo', 'groupPoi.windowTitle': 'Aggiungi al Gruppo',
+      'quota.endpoint.googlePlacesNearby': 'Ricerca luoghi vicini', 'quota.endpoint.googlePlacesDetails': 'Dettagli di un luogo',
+      'quota.endpoint.enrichPOI': 'Arricchimento dati luogo', 'quota.endpoint.searchGlutenFreeShops': 'Ricerca locali gluten-free',
+      'quota.endpoint.searchVintageShops': 'Ricerca negozi vintage', 'quota.endpoint.placePhoto': 'Foto dei luoghi',
+      'quota.endpoint.groqAnalyze': 'Analisi AI gluten-free', 'quota.endpoint.groqImageAnalyze': 'Analisi AI foto menu',
+      'quota.warning': '⚠️ {label}: hai usato {used} chiamate su {limit} disponibili oggi ({remaining} rimaste). Il limite serve a tenere gratuita questa funzione.',
+      'quota.exceeded': '🚫 Limite giornaliero raggiunto per "{label}" ({limit} chiamate/giorno). Si sblocca automaticamente domani — nel frattempo l\'app userà stime locali dove possibile.',
+      'quota.exceededShared': '🚫 Limite condiviso raggiunto per "{label}" — il gruppo ha già usato tutte le {limit} chiamate di oggi. Si sblocca automaticamente domani.'
     },
     en: {
       'gfc.lastVerified': 'Last verified', 'gfc.yes': 'Yes', 'gfc.no': 'No', 'gfc.unk': "Don't know",
@@ -339,7 +346,14 @@
       'export.title': 'Itinerary to Export', 'export.copied': '✅ Copied!', 'export.copy': 'Copy',
       'search.results': 'Results',
       'itin.addStopTitle': 'Add stop', 'itin.dayLabel': 'Trip day (1, 2, 3...)', 'itin.timeLabel': 'Time (e.g. 09:30)', 'itin.costLabel': 'Cost (e.g. 10€, optional)', 'itin.free': 'Free',
-      'groupPoi.title': 'Add to Group Itinerary', 'groupPoi.room': 'Room', 'groupPoi.addHint': 'Add <strong>{name}</strong> to the group itinerary', 'groupPoi.windowTitle': 'Add to Group'
+      'groupPoi.title': 'Add to Group Itinerary', 'groupPoi.room': 'Room', 'groupPoi.addHint': 'Add <strong>{name}</strong> to the group itinerary', 'groupPoi.windowTitle': 'Add to Group',
+      'quota.endpoint.googlePlacesNearby': 'Nearby places search', 'quota.endpoint.googlePlacesDetails': 'Place details',
+      'quota.endpoint.enrichPOI': 'Place data enrichment', 'quota.endpoint.searchGlutenFreeShops': 'Gluten-free places search',
+      'quota.endpoint.searchVintageShops': 'Vintage shops search', 'quota.endpoint.placePhoto': 'Place photos',
+      'quota.endpoint.groqAnalyze': 'Gluten-free AI analysis', 'quota.endpoint.groqImageAnalyze': 'Menu photo AI analysis',
+      'quota.warning': '⚠️ {label}: you\'ve used {used} of {limit} calls available today ({remaining} left). The limit keeps this feature free.',
+      'quota.exceeded': '🚫 Daily limit reached for "{label}" ({limit} calls/day). It unlocks automatically tomorrow — meanwhile the app will use local estimates where possible.',
+      'quota.exceededShared': '🚫 Shared limit reached for "{label}" — the group has already used all {limit} calls for today. It unlocks automatically tomorrow.'
     },
     ja: {
       'gfc.lastVerified': '最終確認', 'gfc.yes': 'はい', 'gfc.no': 'いいえ', 'gfc.unk': '不明',
@@ -506,7 +520,14 @@
       'export.title': 'エクスポートする旅程', 'export.copied': '✅ コピーしました！', 'export.copy': 'コピー',
       'search.results': '結果',
       'itin.addStopTitle': '立ち寄り先を追加', 'itin.dayLabel': '旅行日（1、2、3...）', 'itin.timeLabel': '時間（例：09:30）', 'itin.costLabel': '費用（例：10€、任意）', 'itin.free': '無料',
-      'groupPoi.title': 'グループ旅程に追加', 'groupPoi.room': 'ルーム', 'groupPoi.addHint': '<strong>{name}</strong>をグループ旅程に追加', 'groupPoi.windowTitle': 'グループに追加'
+      'groupPoi.title': 'グループ旅程に追加', 'groupPoi.room': 'ルーム', 'groupPoi.addHint': '<strong>{name}</strong>をグループ旅程に追加', 'groupPoi.windowTitle': 'グループに追加',
+      'quota.endpoint.googlePlacesNearby': '近くの場所を検索', 'quota.endpoint.googlePlacesDetails': '場所の詳細',
+      'quota.endpoint.enrichPOI': '場所データの拡充', 'quota.endpoint.searchGlutenFreeShops': 'グルテンフリー店検索',
+      'quota.endpoint.searchVintageShops': 'ヴィンテージショップ検索', 'quota.endpoint.placePhoto': '場所の写真',
+      'quota.endpoint.groqAnalyze': 'グルテンフリーAI分析', 'quota.endpoint.groqImageAnalyze': 'メニュー写真AI分析',
+      'quota.warning': '⚠️ {label}: 本日は{limit}回中{used}回使用しました（残り{remaining}回）。この制限は機能を無料に保つためのものです。',
+      'quota.exceeded': '🚫 「{label}」の1日の上限（{limit}回/日）に達しました。明日自動的に解除されます — それまでアプリは可能な場合ローカル推定値を使用します。',
+      'quota.exceededShared': '🚫 「{label}」の共有上限に達しました — グループが本日の{limit}回をすべて使用済みです。明日自動的に解除されます。'
     }
   };
 

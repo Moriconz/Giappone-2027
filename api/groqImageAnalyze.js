@@ -4,6 +4,7 @@
  */
 
 import { cacheGet, cacheSet, TTL } from './_lib/kv-cache.js';
+import { checkAndConsumeQuota, quotaExceededBody } from './_lib/quota.js';
 import { setAllowedOrigin } from './_lib/cors.js';
 
 export default async function handler(req, res) {
@@ -22,7 +23,7 @@ export default async function handler(req, res) {
   }
 
   const { imageLabels, menuText } = req.body || {};
-  const GRO_API_KEY = process.env.GRO_API_KEY;
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
   if ((!Array.isArray(imageLabels) || imageLabels.length === 0) && (!menuText || !menuText.trim())) {
     return res.status(400).json({ error: 'Missing image labels or menu text for analysis' });
@@ -36,8 +37,11 @@ export default async function handler(req, res) {
   const cached = await cacheGet('groqImageAnalyze', cacheParams);
   if (cached) return res.status(200).json(cached);
 
-  if (!GRO_API_KEY) {
-    console.error('[groqImageAnalyze] GRO_API_KEY not set in environment');
+  const quota = await checkAndConsumeQuota('groqImageAnalyze');
+  if (quota.limited) return res.status(429).json(quotaExceededBody('groqImageAnalyze', quota.limit));
+
+  if (!GROQ_API_KEY) {
+    console.error('[groqImageAnalyze] GROQ_API_KEY not set in environment');
     return res.status(501).json({ error: 'Image recognition not configured on server' });
   }
 
@@ -66,7 +70,7 @@ ${menuText ? `Testo menu aggiuntivo: ${menuText}` : ''}`;
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GRO_API_KEY}`
+        'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
@@ -96,7 +100,7 @@ ${menuText ? `Testo menu aggiuntivo: ${menuText}` : ''}`;
     try {
       const result = JSON.parse(jsonText);
       const responseBody = { result };
-      await cacheSet('groqImageAnalyze', cacheParams, responseBody, TTL.THIRTY_DAYS);
+      await cacheSet('groqImageAnalyze', cacheParams, responseBody, TTL.TWO_YEARS);
       return res.status(200).json(responseBody);
     } catch (parseErr) {
       console.error('[groqImageAnalyze] JSON parse error:', parseErr, 'content:', content);

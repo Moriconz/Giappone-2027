@@ -52,7 +52,7 @@ export default async function handler(req, res) {
       const fullAddress = data.results[0].formatted_address;
       const placeName = fullAddress.split(',')[0].trim();
       const responseBody = { name: placeName };
-      await cacheSet('reverseGeocode', cacheParams, responseBody, TTL.THIRTY_DAYS);
+      await cacheSet('reverseGeocode', cacheParams, responseBody, TTL.TWO_YEARS);
       return res.status(200).json(responseBody);
     }
 

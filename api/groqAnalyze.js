@@ -1,10 +1,11 @@
 /**
  * Vercel Function: groqAnalyze
- * Uses GRO_API_KEY stored securely on server
+ * Uses GROQ_API_KEY stored securely on server
  * URL: /api/groqAnalyze
  */
 
 import { cacheGet, cacheSet, TTL } from './_lib/kv-cache.js';
+import { checkAndConsumeQuota, quotaExceededBody } from './_lib/quota.js';
 import { setAllowedOrigin } from './_lib/cors.js';
 
 export default async function handler(req, res) {
@@ -23,7 +24,7 @@ export default async function handler(req, res) {
   }
 
   const { menuText } = req.body || {};
-  const GRO_API_KEY = process.env.GRO_API_KEY;
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
   if (!menuText || !menuText.trim()) {
     return res.status(400).json({ error: 'Missing menuText' });
@@ -34,8 +35,11 @@ export default async function handler(req, res) {
   const cached = await cacheGet('groqAnalyze', cacheParams);
   if (cached) return res.status(200).json(cached);
 
-  if (!GRO_API_KEY) {
-    console.error('[groqAnalyze] GRO_API_KEY not set in environment');
+  const quota = await checkAndConsumeQuota('groqAnalyze');
+  if (quota.limited) return res.status(429).json(quotaExceededBody('groqAnalyze', quota.limit));
+
+  if (!GROQ_API_KEY) {
+    console.error('[groqAnalyze] GROQ_API_KEY not set in environment');
     return res.status(500).json({ error: 'Groq API key not configured on server' });
   }
 
@@ -44,7 +48,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GRO_API_KEY}`
+        'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
@@ -88,7 +92,7 @@ Se dubbia, metti in RISCHIO (conservativo).`
     try {
       const result = JSON.parse(content);
       const responseBody = { result };
-      await cacheSet('groqAnalyze', cacheParams, responseBody, TTL.THIRTY_DAYS);
+      await cacheSet('groqAnalyze', cacheParams, responseBody, TTL.TWO_YEARS);
       return res.status(200).json(responseBody);
     } catch (parseErr) {
       console.error('[groqAnalyze] JSON parse error:', parseErr, 'content:', content);

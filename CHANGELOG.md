@@ -1,6 +1,32 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.56 — Pulizia repo, README/setup fixati, guida utente illustrata IT+EN (2026-07-13, Attuale)
+## v3.57 — Quota API condivisa lato server + toast più chiari + cache 2 anni + fix Groq (2026-07-16, Attuale)
+
+### 🔴 Bug reale trovato controllando le env var su Vercel: Groq AI mai raggiungibile in produzione
+Mentre l'utente verificava di persona su Vercel → Settings → Environments se il database KV fosse collegato, è emerso che la variabile configurata si chiama `GROQ_API_KEY`, ma `api/groqAnalyze.js`/`api/groqImageAnalyze.js` leggevano `process.env.GRO_API_KEY` (manca la Q) — nome diverso, quindi sempre `undefined` in produzione. Le due funzioni AI (analisi gluten-free di menu/foto, menu "🤖 Assistente AI") fallivano quindi sempre con "Groq API key not configured on server", indipendentemente da quota o cache — bug pre-esistente, non introdotto in questa sessione, semplicemente mai emerso prima perché nessuno aveva controllato le env var reali fianco a fianco col codice. Rinominato `GRO_API_KEY` → `GROQ_API_KEY` in entrambi i file + `SETUP_API_KEYS.md`, per allinearsi al nome già configurato su Vercel (più semplice che rinominare la variabile lato dashboard).
+
+Su domanda esplicita dell'utente: con più persone che usano l'app insieme, il limite giornaliero di chiamate Google/Groq (`js/api-quota.js`) era applicato **per dispositivo** via localStorage — con N utenti simultanei la spesa reale contro Google poteva arrivare a N× il limite pensato per una persona sola, vanificando l'obiettivo di restare nel piano gratuito.
+
+### Nuovo: quota condivisa lato server
+- **`api/_lib/quota.js`** (nuovo) — contatore giornaliero UNICO per endpoint, condiviso tra tutti gli utenti, sullo stesso Redis (Upstash) già usato da `api/_lib/kv-cache.js`. Incremento atomico (`redis.incr`) per evitare race condition tra richieste concorrenti di utenti diversi. Stessi 8 endpoint/limiti già presenti in `js/api-quota.js` (`googlePlacesNearby`, `googlePlacesDetails`, `enrichPOI`, `searchGlutenFreeShops`, `searchVintageShops`, `placePhoto`, `groqAnalyze`, `groqImageAnalyze`). **Fail-open** se Vercel KV non è collegato (sviluppo locale, o progetto senza KV): nessun blocco lato server, resta solo il guard per-dispositivo esistente — nessuna regressione per chi non configura KV.
+- Verificato con un test dedicato (Redis simulato in memoria): 5 "utenti" diversi che condividono il contatore si fermano correttamente a 15 chiamate **totali**, non 15 a testa; endpoint non tracciati sempre liberi; fail-open confermato senza Redis.
+- Wired in tutti gli 8 endpoint tracciati, subito dopo il cache-miss (una risposta dalla cache condivisa non consuma quota) e prima della chiamata a pagamento.
+- `js/api-quota.js`: il fetch interceptor ora riconosce anche un blocco 429 arrivato dal **server** (non solo dal proprio contatore locale) e mostra un toast dedicato ("limite condiviso" invece di "limite tuo") — così l'utente capisce che è il gruppo ad aver esaurito la quota, non lui.
+- `SETUP_API_KEYS.md` aggiornato: il database Vercel KV, prima presentato come opzionale solo per la cache, ora è esplicitamente consigliato per chi userà l'app in gruppo, spiegando perché.
+
+### Toast di quota più chiari (fix separato, stesso filone)
+- **Bug CSS**: `white-space: nowrap` sul toast forzava messaggi lunghi (es. avviso quota) su una riga sola che usciva fuori schermo su mobile invece di andare a capo — sembrava "troncato". Rimosso, ora va a capo su più righe (`css/modern-2026.css`).
+- **Bug z-index**: una volta corretto il wrap, il widget meteo (`z-index: 9999`) copriva il toast (`9990`) quando diventava alto per il testo multi-riga — portato il toast a `10000`.
+- Messaggi riscritti con nomi leggibili (es. "Ricerca luoghi vicini" invece di `googlePlacesNearby`) invece delle chiavi tecniche interne, tradotti in it/en/ja (`js/i18n.js`, namespace `quota.*`), durata aumentata (6-7s invece dei 3.2s standard).
+- Entrambi i bug verificati dal vivo in browser (screenshot before/after), non solo letti nel codice.
+
+### Cache POI più lunga (client + server)
+- `js/google-places-cache.js`: TTL della cache IndexedDB lato client allungata da 1 mese a **2 anni**, su richiesta esplicita — riusa i dati sul device il più a lungo possibile invece di richiamare Google. Verificato dal vivo (scrittura/lettura cache, scadenza esatta a 730 giorni).
+- **`api/_lib/kv-cache.js`**: la cache condivisa lato server (quella che conta davvero per un gruppo — vedi sopra) aveva TTL molto più corti (30 giorni per nearby/enrichPOI/Groq, 7 giorni per details/GF-shops/vintage-shops/foto), scoperto chiedendo esplicitamente all'utente conferma su cosa fosse "condiviso" prima di lasciarlo pensare che i 2 anni valessero anche lì. Allungati anch'essi a **2 anni**, stesso valore della cache client, su richiesta esplicita — costanti `TTL.THIRTY_DAYS`/`TTL.SEVEN_DAYS` consolidate in un unico `TTL.TWO_YEARS` (erano diventate lo stesso valore, tenerle separate sarebbe stato fuorviante) in tutti gli 11 endpoint che usano la cache. **Tradeoff esplicito**: orari/rating (in precedenza a 7 giorni proprio perché più volatili) ora possono restare non aggiornati fino a 2 anni — scelta consapevole dell'utente, priorità costo zero su freschezza dati.
+
+Verificato: `node --check` su tutti i file toccati (11 file `api/`, 3 file `js/`, 1 CSS), smoke test verde, lint-i18n verde (446 chiavi it/en/ja), test dedicato della logica quota condivisa con Redis simulato.
+
+## v3.56 — Pulizia repo, README/setup fixati, guida utente illustrata IT+EN (2026-07-13)
 
 Su richiesta esplicita: "sistema tutti i file... metti solo la roba essenziale, sistema il readme" + guida "How to" completa con screenshot mobile in italiano e inglese.
 

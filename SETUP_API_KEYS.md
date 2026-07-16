@@ -2,21 +2,47 @@
 
 Tabi è statica lato frontend, ma le funzioni in `api/` (ricerca luoghi, foto,
 geocoding, analisi gluten-free AI) girano come funzioni serverless Vercel e hanno
-bisogno di 4 chiavi, configurate **solo lato server** (mai esposte al client).
+bisogno di alcune chiavi, configurate **solo lato server** (mai esposte al client).
 
-## Le 4 variabili
+## Le 2 variabili essenziali
 
 | Variabile | Serve per | Dove usata |
 |---|---|---|
 | `GOOGLE_MAPS_API_KEY` | Places (ricerca/dettagli/foto), Geocoding, Static Map, Street View | 9 dei 11 endpoint in `api/` |
-| `GRO_API_KEY` | Groq AI — analisi gluten-free di menu/foto | `api/groqAnalyze.js`, `api/groqImageAnalyze.js` |
-| `GOOGLE_CUSTOM_SEARCH_API_KEY` | Fallback ricerca immagini quando Places Photo non basta | `api/searchGooglePlacesPhotos.js` |
+| `GROQ_API_KEY` | Groq AI — analisi gluten-free di menu/foto | `api/groqAnalyze.js`, `api/groqImageAnalyze.js` |
+
+Senza queste due, le funzioni corrispondenti falliscono (niente ricerca luoghi/foto/geocoding senza la prima, niente Assistente AI/analisi menu senza la seconda).
+
+## 2 variabili opzionali (miglioramento, non requisito)
+
+| Variabile | Serve per | Dove usata |
+|---|---|---|
+| `GOOGLE_CUSTOM_SEARCH_API_KEY` | Foto aggiuntive quando Google Places non ne ha nessuna | `api/searchGooglePlacesPhotos.js` |
 | `GOOGLE_CUSTOM_SEARCH_CX` | ID del motore di ricerca personalizzato (va con la chiave sopra) | `api/searchGooglePlacesPhotos.js` |
 
-Una quinta coppia (`KV_REST_API_URL` / `KV_REST_API_TOKEN`) abilita la cache
-server-side (Vercel KV / Upstash Redis) ma è **opzionale**: se assente, le funzioni
-funzionano comunque, solo senza cache (più chiamate alle API a pagamento). Vercel la
-imposta da sola se colleghi un'integrazione KV al progetto — non va configurata a mano.
+**Se assenti, nessun errore**: `api/searchGooglePlacesPhotos.js` prova prima Google Places
+(quasi sempre trova qualcosa con la sola `GOOGLE_MAPS_API_KEY`), poi in cascata
+Wikipedia, Street View e Static Map — tutti senza bisogno di queste due variabili.
+Configurale solo se noti luoghi frequentemente senza nessuna foto.
+
+Una quinta coppia (`KV_REST_API_URL` / `KV_REST_API_TOKEN`) abilita Vercel KV /
+Upstash Redis, usato per due cose — tecnicamente opzionale (l'app funziona anche
+senza), ma **fortemente consigliato se più persone useranno l'app insieme**:
+
+1. **Cache condivisa** (`api/_lib/kv-cache.js`) — il primo utente che carica
+   un'area/luogo "paga" la chiamata a Google/Groq, tutti gli altri (inclusi i
+   membri del gruppo) ottengono la risposta cached a costo zero.
+2. **Limite giornaliero condiviso** (`api/_lib/quota.js`) — senza questo, il
+   limite di chiamate/giorno per endpoint (vedi tabella sopra, stessi numeri
+   duplicati in `js/api-quota.js`) è applicato **per dispositivo** via
+   localStorage: con N persone che usano l'app insieme, la spesa reale verso
+   Google/Groq può arrivare a N× il limite pensato per una persona sola. Con
+   KV configurato, il contatore è invece **unico e condiviso** tra tutti.
+
+Se assente, le funzioni funzionano comunque — solo senza cache condivisa e con
+il limite solo per-dispositivo, non un tetto di gruppo reale. Vercel imposta le
+env vars da sola se colleghi un'integrazione KV al progetto — non vanno
+configurate a mano.
 
 ## Come procurarsi le chiavi
 
@@ -46,13 +72,15 @@ imposta da sola se colleghi un'integrazione KV al progetto — non va configurat
 ## Configurazione su Vercel
 
 1. Apri il progetto su [Vercel Dashboard](https://vercel.com/dashboard).
-2. **Settings → Environment Variables**, aggiungi le 4 variabili:
+2. **Settings → Environments → Production** (la UI Vercel ha spostato qui le
+   env var, non più in una tab "Environment Variables" a sé), aggiungi almeno
+   le 2 essenziali (le 2 opzionali solo se vuoi le foto di riserva):
 
 ```
 GOOGLE_MAPS_API_KEY = ...
-GRO_API_KEY = ...
-GOOGLE_CUSTOM_SEARCH_API_KEY = ...
-GOOGLE_CUSTOM_SEARCH_CX = ...
+GROQ_API_KEY = ...
+GOOGLE_CUSTOM_SEARCH_API_KEY = ...   # opzionale
+GOOGLE_CUSTOM_SEARCH_CX = ...        # opzionale
 ```
 
 3. **Salva** e rideploya (push su `main` o "Redeploy" dalla dashboard).
@@ -60,10 +88,10 @@ GOOGLE_CUSTOM_SEARCH_CX = ...
 ## Test locale
 
 ```bash
-# 1. Crea .env.local nella root con le 4 variabili
+# 1. Crea .env.local nella root con le variabili che ti servono
 cat > .env.local <<'EOF'
 GOOGLE_MAPS_API_KEY=your-key-here
-GRO_API_KEY=your-key-here
+GROQ_API_KEY=your-key-here
 GOOGLE_CUSTOM_SEARCH_API_KEY=your-key-here
 GOOGLE_CUSTOM_SEARCH_CX=your-cx-here
 EOF

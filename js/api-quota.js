@@ -20,6 +20,9 @@
 (function () {
   'use strict';
 
+  const T = (k, f) => (typeof window.t === 'function') ? window.t(k, f) : f;
+  const _label = (endpoint) => T('quota.endpoint.' + endpoint, endpoint);
+
   // Keys must match the path segment after /api/ in the fetch URL
   const DAILY_LIMITS = {
     googlePlacesNearby:    15,   // Nearby Search ~$0.032/call
@@ -74,7 +77,12 @@
     const pct = Math.round((used / limit) * 100);
     console.log(`[ApiQuota] ${endpoint}: ${used}/${limit} oggi (${pct}%)`);
     if (pct >= 80 && pct < 100) {
-      window.toast?.(`⚠️ ${endpoint}: ${used}/${limit} chiamate API oggi`);
+      // ponytail: durata più lunga del toast default (3.2s) — un avviso di
+      // quota è più lungo e più importante di un "✅ Salvato", merita più
+      // tempo per essere letto prima di sparire.
+      const msg = T('quota.warning', '⚠️ {label}: hai usato {used} chiamate su {limit} disponibili oggi ({remaining} rimaste). Il limite serve a tenere gratuita questa funzione.')
+        .replace('{label}', _label(endpoint)).replace('{used}', used).replace('{limit}', limit).replace('{remaining}', limit - used);
+      window.toast?.(msg, 6000);
     }
   }
 
@@ -106,9 +114,11 @@
       if (DAILY_LIMITS[endpoint] !== undefined) {
         if (!check(endpoint)) {
           const limit = DAILY_LIMITS[endpoint];
-          const msg = `Quota giornaliera esaurita: ${endpoint} (${limit}/${limit} chiamate). Riprova domani.`;
-          console.warn(`[ApiQuota] 🚫 BLOCKED: ${msg}`);
-          window.toast?.(`🚫 ${msg}`);
+          const label = _label(endpoint);
+          const msg = T('quota.exceeded', '🚫 Limite giornaliero raggiunto per "{label}" ({limit} chiamate/giorno). Si sblocca automaticamente domani — nel frattempo l\'app userà stime locali dove possibile.')
+            .replace('{label}', label).replace('{limit}', limit);
+          console.warn(`[ApiQuota] 🚫 BLOCKED: ${endpoint} (${limit}/${limit})`);
+          window.toast?.(msg, 7000);
           return Promise.resolve(
             new Response(
               JSON.stringify({ error: msg, quota_exceeded: true }),
@@ -117,6 +127,27 @@
           );
         }
         consume(endpoint);
+        // Il contatore per-dispositivo qui sopra ha dato via libera, ma il
+        // limite VERO ora è quello condiviso lato server (vedi
+        // api/_lib/quota.js) — con più utenti insieme può essere già
+        // esaurito anche se il tuo device personale ha ancora margine.
+        // response.clone() per sbirciare il corpo senza consumarlo: il
+        // chiamante originale deve poter leggere la risposta normalmente.
+        return _origFetch(input, init).then((response) => {
+          if (response.status === 429) {
+            response.clone().json().then((body) => {
+              if (body?.quota_exceeded) {
+                const limit = DAILY_LIMITS[endpoint];
+                const label = _label(endpoint);
+                const msg = T('quota.exceededShared', '🚫 Limite condiviso raggiunto per "{label}" — il gruppo ha già usato tutte le {limit} chiamate di oggi. Si sblocca automaticamente domani.')
+                  .replace('{label}', label).replace('{limit}', limit);
+                console.warn(`[ApiQuota] 🚫 BLOCKED server-side (shared quota): ${endpoint}`);
+                window.toast?.(msg, 7000);
+              }
+            }).catch(() => {});
+          }
+          return response;
+        });
       }
     }
     return _origFetch(input, init);

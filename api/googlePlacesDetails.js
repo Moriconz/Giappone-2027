@@ -12,6 +12,7 @@
  */
 
 import { cacheGet, cacheSet, TTL } from './_lib/kv-cache.js';
+import { checkAndConsumeQuota, quotaExceededBody } from './_lib/quota.js';
 import { setAllowedOrigin } from './_lib/cors.js';
 
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
@@ -51,6 +52,9 @@ export default async function handler(req, res) {
     const cacheParams = { placeId };
     const cached = await cacheGet('details', cacheParams);
     if (cached) return res.status(200).json(cached);
+
+    const quota = await checkAndConsumeQuota('googlePlacesDetails');
+    if (quota.limited) return res.status(429).json(quotaExceededBody('googlePlacesDetails', quota.limit));
 
     console.log(`[googlePlacesDetails] Fetching details for place_id: ${placeId}`);
 
@@ -140,7 +144,7 @@ export default async function handler(req, res) {
       reviews: result.reviews.length
     });
 
-    await cacheSet('details', cacheParams, result, TTL.SEVEN_DAYS);
+    await cacheSet('details', cacheParams, result, TTL.TWO_YEARS);
     return res.status(200).json(result);
 
   } catch (err) {
