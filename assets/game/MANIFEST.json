@@ -1,0 +1,14 @@
+{
+  "_readme": "Registro asset Higgsfield (V2_PLAN.md §8 / prompt V2 §ASSET). Ogni voce: id, file, prompt sintetico, job_id, modello. STYLE_BIBLE.md riusata testualmente in ogni prompt. Reference Element mascotte: f31f3a5d-80a9-40f2-83f2-c13a8774210e (tabi-shiba-mascotte). File @t = sfondo trasparente (remove_background). Crediti spesi finora: 18.5 (3 proposte ×2 + 5 stati ×1.5 + 5 bg-removal ×1); saldo dopo questa sessione: 53.5.",
+  "license": "Generati via Higgsfield (account utente, piano Plus) — uso in-app Tabi.",
+  "assets": [
+    { "id": "mascot-shiba-proposta-A", "file": "mascot/shiba-proposta-A.png", "prompt": "shiba voxel crema, sciarpa rossa, zainetto matcha (style-bible)", "job_id": "4f3e144f-979b-4f07-814c-d61daf1a1710", "model": "nano_banana_2", "note": "SCELTA UTENTE → Reference Element tabi-shiba-mascotte" },
+    { "id": "mascot-shiba-proposta-B", "file": "mascot/shiba-proposta-B.png", "prompt": "variante griglia voxel marcata", "job_id": "c9d57f99-884f-4975-bd65-9e2f88ec36aa", "model": "nano_banana_2", "note": "scartata" },
+    { "id": "mascot-shiba-proposta-C", "file": "mascot/shiba-proposta-C.png", "prompt": "variante rossa bipede con grembiule", "job_id": "41c68ef6-d172-4cb8-8383-b7c33c93234c", "model": "nano_banana_2", "note": "scartata" },
+    { "id": "mascot-state-idle", "file": "mascot/shiba-idle.png", "transparent": "mascot/shiba-idle@t.png", "prompt": "stato idle (element ref)", "job_id": "46c7eda1-e289-4e85-94d6-d5614df09d8e", "bg_job_id": "0d165d03-a414-4398-b42e-fdff6137940a", "model": "nano_banana_flash" },
+    { "id": "mascot-state-happy", "file": "mascot/shiba-happy.png", "transparent": "mascot/shiba-happy@t.png", "prompt": "stato felice (element ref)", "job_id": "23077220-01ed-4131-878d-ee6bae4b0ab3", "bg_job_id": "5a19a495-18ec-4ed9-904c-cdf729dc9625", "model": "nano_banana_flash" },
+    { "id": "mascot-state-celebrate", "file": "mascot/shiba-celebrate.png", "transparent": "mascot/shiba-celebrate@t.png", "prompt": "stato festeggia (element ref)", "job_id": "66b4cf31-1197-45a0-86d6-9620991fec9f", "bg_job_id": "690a5c8f-ac05-4130-b024-2f3db29663ad", "model": "nano_banana_flash" },
+    { "id": "mascot-state-sleep", "file": "mascot/shiba-sleep.png", "transparent": "mascot/shiba-sleep@t.png", "prompt": "stato dorme (element ref)", "job_id": "6198dd38-506d-4831-bf57-90b9a77abaae", "bg_job_id": "9ece17b4-3116-4818-8408-d8ea82c52abf", "model": "nano_banana_flash" },
+    { "id": "mascot-state-tired", "file": "mascot/shiba-tired.png", "transparent": "mascot/shiba-tired@t.png", "prompt": "stato stanca (element ref)", "job_id": "95fe8941-e554-4dac-98b2-7b791586c9be", "bg_job_id": "77cd350c-aaaa-4e27-bebe-52f5437133db", "model": "nano_banana_flash" }
+  ]
+}

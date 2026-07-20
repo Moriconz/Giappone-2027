@@ -1,7 +1,14 @@
-# HANDOFF — Tabi (Giappone 2027) · 2026-07-16 (fine sessione, v3.58)
+# HANDOFF — Tabi (Giappone 2027) · 2026-07-20 (fine sessione, v3.59 — V2 «Voxel Quest» F1)
 
 Prompt di ripartenza per nuova chat:
-> Continua il progetto Tabi. Leggi HANDOFF.md nella root del repo. Riparti dal primo punto di "Prossimi step". Attiva /fable-5.
+> Continua la V2 «Voxel Quest» di Tabi. Leggi V2_PLAN.md e HANDOFF.md nella root del repo. F1 è completata (v3.59): riparti da F2 (avatar voxel — Three.js vendored, formato parti, creator UI). Attiva /fable-5.
+
+## ⚡ Sessione 2026-07-20 — V2 F1 completata (leggere prima del resto)
+- **Fase 0 + F1 della V2 gamificata fatte e pushate** (`1d1abe1` v3.58 pendente della sessione precedente committata separatamente, `01d27fe` v3.59 F1). Piano completo approvato dall'utente in `V2_PLAN.md` (architettura, hook map con file:riga, plugin Capacitor verificati 2026, rischi, preventivo Higgsfield misurato con get_cost).
+- **Decisioni utente di questa sessione**: piano approvato; crediti Higgsfield strategia «priorità-1» (46 cr su 72 disponibili: Shiba+PG+icona ora, badge/souvenir/timbri dopo top-up; Shiba 3D rimandata — 38 cr).
+- **v3.59 in breve**: `js/game/game-events.js` (bus eventi + ledger event-sourced in `state.game`), toggle «🎮 Modalità gioco» nel menu, `game` in BACKUP_FIELDS (NON in EXTRA_FIELDS snapshot, deliberato — vedi commento in backup-restore.js), 1 riga in gallery-view (`photo_added`). Gate verificati: 10 tipi evento in browser reale (`verify-game-f1-tmp.mjs`, gitignored ma in locale), smoke exit 0, lint:i18n 0 errori.
+- **Asset**: `assets/game/STYLE_BIBLE.md` creata (riusare testualmente in ogni prompt Higgsfield). 3 proposte Shiba generate con nano_banana_pro (6 cr) — scelta utente e salvataggio come Reference Element da completare se non già fatto.
+- **Prossimo step V2**: F2 — Three.js vendored (UMD, offline), formato parti voxel JSON, creator UI, ≥6 item/slot, serializzazione avatar + MQTT. Gate: 60fps device medio, avatar visibile a secondo client. Poi F3-F8 come da V2_PLAN.md §7.
 
 ## Cos'è l'app
 **Tabi** — travel planner PWA (vanilla JS, no framework, no bundler) con layer gluten-free opzionale. Planner **globale**, non solo Giappone; il trip Giappone 2027 è il caso d'uso di partenza. Collaborativa tra amici via MQTT (broker pubblico, zero backend); serverless Vercel solo come proxy API (Google Places/Groq, quota-gated **sia** client-side in `js/api-quota.js` **che** server-side condiviso in `api/_lib/quota.js` da v3.57). **Regola utente ferrea: nessun dato hardcoded** — tutto da fonti live o da input umano (crowdsourcing di gruppo). Uso esclusivamente mobile, utenti non tech-savvy (amici in viaggio, non sviluppatori).
