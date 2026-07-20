@@ -1,6 +1,12 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.57 — Quota API condivisa lato server + toast più chiari + cache 2 anni + fix Groq (2026-07-16, Attuale)
+## v3.58 — Fix Vercel Analytics/Speed Insights mai collegati (2026-07-16, Attuale)
+
+`index.html` aveva già un tentativo di collegare Vercel Analytics, ma con l'URL legacy cross-origin `https://vercel-analytics.com/script.js` (dominio deprecato) — probabilmente per questo la dashboard Analytics dell'utente risultava ancora sulla schermata "Get Started" senza dati. Il progetto è statico senza bundler, quindi niente pacchetto npm + `import` (l'opzione "Other" del pannello Vercel, l'unica disponibile per questo progetto — "HTML" non è nel suo selettore framework): sostituito con il metodo ufficiale "HTML" documentato su vercel.com/docs (verificato via web, non assunto — Vercel ha spostato più volte questa UI) — 2 script tag same-origin (`/_vercel/insights/script.js`, `/_vercel/speed-insights/script.js`) con il pattern queue standard (`window.va`/`window.si`), stesso stile `<script defer>` già usato in tutto il progetto. Rimossi anche i 2 domini esterni ormai inutili dalla Content-Security-Policy (`vercel-analytics.com`, `va.vercel-scripts.com`, in `index.html` e `vercel.json`) — same-origin è già coperto da `'self'`, allowlist più stretta.
+
+Non testabile in locale (le route `/_vercel/*` esistono solo su un deploy Vercel reale) — verificato solo che degradano senza errori bloccanti (404 attesi, `pageErrors: []`, smoke test verde).
+
+## v3.57 — Quota API condivisa lato server + toast più chiari + cache 2 anni + fix Groq (2026-07-16)
 
 ### 🔴 Bug reale trovato controllando le env var su Vercel: Groq AI mai raggiungibile in produzione
 Mentre l'utente verificava di persona su Vercel → Settings → Environments se il database KV fosse collegato, è emerso che la variabile configurata si chiama `GROQ_API_KEY`, ma `api/groqAnalyze.js`/`api/groqImageAnalyze.js` leggevano `process.env.GRO_API_KEY` (manca la Q) — nome diverso, quindi sempre `undefined` in produzione. Le due funzioni AI (analisi gluten-free di menu/foto, menu "🤖 Assistente AI") fallivano quindi sempre con "Groq API key not configured on server", indipendentemente da quota o cache — bug pre-esistente, non introdotto in questa sessione, semplicemente mai emerso prima perché nessuno aveva controllato le env var reali fianco a fianco col codice. Rinominato `GRO_API_KEY` → `GROQ_API_KEY` in entrambi i file + `SETUP_API_KEYS.md`, per allinearsi al nome già configurato su Vercel (più semplice che rinominare la variabile lato dashboard).

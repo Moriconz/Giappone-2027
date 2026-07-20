@@ -5,7 +5,7 @@
 <!-- Content Security Policy: 'unsafe-inline' necessario per gli onclick/style inline diffusi.
      connect/img permissivi (https:/wss:) per Google Places, open-meteo, Nominatim, broker MQTT, foto. -->
 <!-- NB: tenere ALLINEATA alla CSP in vercel.json (questa serve per hosting statici senza header) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://vercel-analytics.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'; base-uri 'self'; form-action 'self'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'; base-uri 'self'; form-action 'self'" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5, user-scalable=yes" />
 <!-- Debug log gating: silence console.log/debug/info unless localStorage.DEBUG='1' or ?debug -->
 <script>
@@ -296,7 +296,18 @@
 <script defer src="./js/app-startup.js"></script>
 <!-- Lazy-loaded on demand: itinerary-version-history.js (via ⏮ Storico button) -->
 
-<!-- Vercel Analytics - Performance Monitoring -->
-<script defer src="https://vercel-analytics.com/script.js"></script>
+<!-- Vercel Web Analytics + Speed Insights — sito statico senza bundler, quindi
+     script tag diretti (metodo "HTML" ufficiale) invece del pacchetto npm +
+     import: percorsi same-origin serviti da Vercel stesso, nessuna chiave da
+     configurare. Non produce dati su `python3 -m http.server` locale (le
+     route /_vercel/* esistono solo su un deploy Vercel reale), atteso. -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script>
+  window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
 
 </body>
