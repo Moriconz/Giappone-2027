@@ -1,6 +1,18 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.59 — V2 «Voxel Quest» F1: bus eventi gioco + ledger + toggle (2026-07-20, Attuale)
+## v3.60 — V2 «Voxel Quest» F2: avatar voxel + character creator + condivisione MQTT (2026-07-20, Attuale)
+
+Seconda fase della V2 (piano in `V2_PLAN.md`). Tutto additivo, planner intatto.
+
+- **Three.js r147 vendored** (`vendor/three/three.min.js` + LICENSE MIT) — ultima build UMD ufficiale, compatibile col repo IIFE no-bundler, offline (niente CDN). **Lazy**: caricata via `loadScript` solo alla prima apertura del creator, zero costo sull'avvio app.
+- **`scripts/generate-voxel-parts.mjs` (nuovo)** — generatore procedurale del set base: **54 parti, 9 slot × 6 opzioni** (corpo/viso/capelli/sopra/sotto/scarpe/cappello/accessorio/zaino, set con pezzi giapponesi: kimono, hakama, geta, kasa, randoseru). Output: `assets/game/voxel/parts/<slot>/<id>.json` (formato spec del prompt: size/voxels/palette/anchor/meta con name_i18n it-en-ja, rarity, price_koban, earnable, `effect:'cosmetic'`) + `parts-catalog.json` bundle unico per il runtime (1 fetch, cacheato dal SW network-first). `palette[0]` ricolorabile via `avatar.colors[slot]` → i colori moltiplicano i cosmetici a costo zero.
+- **`js/game/avatar-parts.js` (nuovo)** — catalogo + composizione: le parti sovrascrivono le celle per coordinate in ordine fisso (body→bottom→top→shoes→face→hair→hat→accessory→backpack) → niente z-fighting, un solo InstancedMesh. Random avatar, default, nomi i18n.
+- **`js/game/avatar-renderer.js` (nuovo)** — scena Three unica riusabile (creator/profilo/classifica): InstancedMesh (1 draw call), luce fissa stilizzata senza ombre (style-bible), rotazione col dito (pointer events, niente OrbitControls), idle spin, contatore fps integrato. **Misurato: 124fps con 1305 celle** su desktop (viewport mobile); gate 60fps su device reale in F7.
+- **`js/game/avatar-creator.js` (nuovo)** — character creator full-screen: al **primo avvio** (gioco ON, onboarding fatto, nessun avatar) si apre da solo, skippabile con avatar random; poi dal menu ☰ «🧊 Il mio avatar». Tab per slot, chip item, swatch colori (8 toni pelle, 12 colori), 🎲 random, anteprima live. Salvataggio: `state.game.avatar` (JSON compatto, già nel backup F1) + evento ledger `avatar.saved` + broadcast MQTT `avatar_update` se in gruppo. z-index 10000 (sopra il widget meteo 9999 — bucava l'overlay, visto in browser reale).
+- **`js/mqtt-transport.js`** — 1 modifica chirurgica: il `default:` dello switch messaggi ora rilancia i tipi sconosciuti come CustomEvent `mqtt_message` → i moduli di gioco (avatar ora, group-game in F5) si agganciano senza più toccare il transport. Ricezione avatar: `state.game.groupAvatars[from]` con guard sul payload.
+- **Gate F2 verificati**: creator auto-open al primo avvio + salvataggio + persistenza verificati live in browser; **2 client Puppeteer separati su broker MQTT reale** (`verify-game-f2-tmp.mjs`, convenzione repo): alice salva l'avatar → bob lo riceve (E2EE stanza inclusa) e lo compone (1793 celle) → pronto per il rendering in classifica (F5). `node --check` su tutti i file, `npm run smoke` exit 0 ×2, `lint:i18n` 0 errori.
+
+## v3.59 — V2 «Voxel Quest» F1: bus eventi gioco + ledger + toggle (2026-07-20)
 
 Prima fase della V2 gamificata (piano completo in `V2_PLAN.md`, approvato). Il gioco è un layer **additivo**: zero modifiche alla logica V1.
 

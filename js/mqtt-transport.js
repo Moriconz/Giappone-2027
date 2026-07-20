@@ -547,6 +547,10 @@ console.log('[MQTT] Loading MQTT transport...');
         break;
 
       default:
+        // Estensione generica: i tipi non gestiti qui vengono rilanciati come
+        // CustomEvent — i moduli di gioco (avatar F2, group-game F5) ascoltano
+        // 'mqtt_message' senza aggiungere altri case a questo switch.
+        document.dispatchEvent(new CustomEvent('mqtt_message', { detail: data, bubbles: true }));
         break;
     }
   }

@@ -1,7 +1,13 @@
-# HANDOFF — Tabi (Giappone 2027) · 2026-07-20 (fine sessione, v3.59 — V2 «Voxel Quest» F1)
+# HANDOFF — Tabi (Giappone 2027) · 2026-07-20 (fine sessione, v3.60 — V2 «Voxel Quest» F1+F2)
 
 Prompt di ripartenza per nuova chat:
-> Continua la V2 «Voxel Quest» di Tabi. Leggi V2_PLAN.md e HANDOFF.md nella root del repo. F1 è completata (v3.59): riparti da F2 (avatar voxel — Three.js vendored, formato parti, creator UI). Attiva /fable-5.
+> Continua la V2 «Voxel Quest» di Tabi. Leggi V2_PLAN.md e HANDOFF.md nella root del repo. F1 e F2 sono completate (v3.59, v3.60): riparti da F3 (core loop — xp-engine, check-in foto+GPS con coda offline, badge, souvenir, passi via native-bridge solo Health). Attiva /fable-5.
+
+## ⚡ Sessione 2026-07-20 (parte 2) — V2 F2 completata
+- **v3.60**: avatar voxel completo. Three r147 UMD vendored lazy; generatore 54 parti (9 slot × 6, `scripts/generate-voxel-parts.mjs` — i JSON generati NON si editano a mano, si rigenera); composizione per celle (niente z-fight, 1 InstancedMesh); creator full-screen con first-run auto + menu «Il mio avatar»; MQTT `avatar_update` via nuovo CustomEvent `mqtt_message` dal case default del transport (estensione generica: F5 non toccherà più lo switch).
+- **Gate F2**: 124fps/1305 celle desktop-viewport-mobile (60fps device reale rimandato a F7, onesto); 2 client Puppeteer + broker reale: avatar di alice ricevuto e componibile da bob (1793 celle). Smoke ×2 exit 0, lint verde.
+- **Voxel-editor dev-only** (prompt §creator punto 6): NON fatto — il generatore procedurale copre il set base; l'editor serve per i pack premium da concept Higgsfield → farlo in F6 assieme alla pipeline asset.
+- **Prossimo step V2**: F3. Nota: i concept sheet PG Higgsfield (24 cr circa, saldo 53.5) servono solo per i pack premium/varianti — il set base è già procedurale; generarli in F6.
 
 ## ⚡ Sessione 2026-07-20 — V2 F1 completata (leggere prima del resto)
 - **Fase 0 + F1 della V2 gamificata fatte e pushate** (`1d1abe1` v3.58 pendente della sessione precedente committata separatamente, `01d27fe` v3.59 F1). Piano completo approvato dall'utente in `V2_PLAN.md` (architettura, hook map con file:riga, plugin Capacitor verificati 2026, rischi, preventivo Higgsfield misurato con get_cost).

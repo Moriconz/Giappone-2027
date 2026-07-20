@@ -294,8 +294,13 @@
 <script defer src="./js/app-navigation.js"></script>
 <script defer src="./js/gesture-detector.js"></script>
 <script defer src="./js/app-startup.js"></script>
-<!-- Layer gioco V2 «Voxel Quest» — ultimo: wrappa API globali già definite -->
+<!-- Layer gioco V2 «Voxel Quest» — ultimo: wrappa API globali già definite.
+     Three.js NON è qui: vendor/three/three.min.js è lazy (loadScript alla
+     prima apertura del creator), zero costo sull'avvio. -->
 <script defer src="./js/game/game-events.js"></script>
+<script defer src="./js/game/avatar-parts.js"></script>
+<script defer src="./js/game/avatar-renderer.js"></script>
+<script defer src="./js/game/avatar-creator.js"></script>
 <!-- Lazy-loaded on demand: itinerary-version-history.js (via ⏮ Storico button) -->
 
 <!-- Vercel Web Analytics + Speed Insights — sito statico senza bundler, quindi

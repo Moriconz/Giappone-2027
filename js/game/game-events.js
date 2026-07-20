@@ -29,6 +29,7 @@
     if (!g.stamps || typeof g.stamps !== 'object') g.stamps = {};
     if (!g.words || typeof g.words !== 'object') g.words = { byLang: {}, lastShownDay: null };
     if (!g.quests || typeof g.quests !== 'object') g.quests = { daily: [], trip: [], coop: [], completed: [] };
+    if (!g.groupAvatars || typeof g.groupAvatars !== 'object') g.groupAvatars = {};
     if (!Array.isArray(g.ledger)) g.ledger = [];
     return g;
   }
