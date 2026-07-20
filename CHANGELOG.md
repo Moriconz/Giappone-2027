@@ -1,6 +1,17 @@
 # 📋 CHANGELOG — Giappone 2027
 
-## v3.58 — Fix Vercel Analytics/Speed Insights mai collegati (2026-07-16, Attuale)
+## v3.59 — V2 «Voxel Quest» F1: bus eventi gioco + ledger + toggle (2026-07-20, Attuale)
+
+Prima fase della V2 gamificata (piano completo in `V2_PLAN.md`, approvato). Il gioco è un layer **additivo**: zero modifiche alla logica V1.
+
+- **`js/game/game-events.js` (nuovo)** — bus eventi del layer gioco. Ledger event-sourced append-only in `state.game.ledger` (fonte di verità: XP/badge/quest delle fasi successive si derivano da qui). Aggancio tramite wrapper post-load sulle API globali — stesso pattern collaudato di `itinerary-undo-redo.js` — su: metodi `window.ITINERARY` (tappe aggiunte/rimosse/spostate/editate/riordinate/visitate), `GroupExpenses.add` (evento per l'ATTO di registrare, mai importo nel meta — regola anti-distorsione), `ITINERARY_TICKETS.addTicket`, `analyzeGlutenFreeStatus` (solo contatore, GF fuori dalle meccaniche), + listener su `itinerary_updated` (throttle 60s) e nuovo evento `photo_added`. Cap ledger 5000 (compattazione vera in F5). Wrapper async-aware: emette a promise risolta.
+- **Schema `state.game.*`** — inizializzato lazy da `ensureGame()` (riempie i buchi, mai sovrascrive): avatar, profile, steps, streaks, badges, souvenirs, checkins, stamps, words, quests, ledger. Persistito nel blob state esistente, nessuna migrazione invasiva.
+- **Toggle «🎮 Modalità gioco»** nel menu ☰ (pattern identico a Risparmio batteria): OFF = nessun evento emesso, planner V1 identico. Default ON. i18n it/en/ja.
+- **Backup**: `game` aggiunto a `BACKUP_FIELDS` (cambio telefono). Deliberatamente NON in `EXTRA_FIELDS` degli snapshot: ripristinare un vecchio itinerario non deve mai fare rollback dei progressi di gioco (ledger append-only, merge per unione in F5) — commento nel codice.
+- **`js/views/gallery-view.js`**: 1 riga — `CustomEvent('photo_added')` al salvataggio foto in IndexedDB.
+- **Gate F1 verificato**: `verify-game-f1-tmp.mjs` (Puppeteer, browser reale) — 10 tipi evento loggati nel ledger, toggle OFF blocca l'emissione, shape entry `{ts,event,xp,koban,meta}` corretta. `node --check` su tutti i file toccati, `npm run smoke` exit 0, `lint:i18n` 0 errori (449 chiavi ×3 lingue), toggle verificato live in browser (menu → toast → persistenza → riattivazione).
+
+## v3.58 — Fix Vercel Analytics/Speed Insights mai collegati (2026-07-16)
 
 `index.html` aveva già un tentativo di collegare Vercel Analytics, ma con l'URL legacy cross-origin `https://vercel-analytics.com/script.js` (dominio deprecato) — probabilmente per questo la dashboard Analytics dell'utente risultava ancora sulla schermata "Get Started" senza dati. Il progetto è statico senza bundler, quindi niente pacchetto npm + `import` (l'opzione "Other" del pannello Vercel, l'unica disponibile per questo progetto — "HTML" non è nel suo selettore framework): sostituito con il metodo ufficiale "HTML" documentato su vercel.com/docs (verificato via web, non assunto — Vercel ha spostato più volte questa UI) — 2 script tag same-origin (`/_vercel/insights/script.js`, `/_vercel/speed-insights/script.js`) con il pattern queue standard (`window.va`/`window.si`), stesso stile `<script defer>` già usato in tutto il progetto. Rimossi anche i 2 domini esterni ormai inutili dalla Content-Security-Policy (`vercel-analytics.com`, `va.vercel-scripts.com`, in `index.html` e `vercel.json`) — same-origin è già coperto da `'self'`, allowlist più stretta.
 

@@ -29,6 +29,7 @@ const BACKUP_FIELDS = [
   'itinerarySharing',
   'userCategoryOverrides',
   'group',
+  'game',
   '_schemaVersion',
 ];
 
@@ -136,6 +137,10 @@ function importBackup() {
       groupExpenses: window.state?.groupExpenses,
       itinerarySharing: window.state?.itinerarySharing,
       userCategoryOverrides: window.state?.userCategoryOverrides
+      // game NON incluso deliberatamente: restore() degli snapshot applica solo
+      // EXTRA_FIELDS, e game non deve mai fare rollback con l'itinerario
+      // (ledger append-only; merge per unione in F5). Il backup completo
+      // (BACKUP_FIELDS) invece lo include: caso d'uso cambio telefono.
     });
 
     // Apply backup

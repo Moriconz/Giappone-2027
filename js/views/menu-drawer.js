@@ -30,6 +30,7 @@
       { label: T('menu.suggestGaps', 'Suggerimenti tempo libero'), icon: '✨', view: 'itin-suggest' },
       { label: T('menu.search', 'Cerca ovunque'), icon: '🔍', view: 'global-search' },
       { label: T('menu.battery', 'Risparmio batteria') + (window.BatterySaver?.isOn?.() ? ' ✓' : ''), icon: '🔋', view: 'battery-saver' },
+      { label: T('menu.gameMode', 'Modalità gioco') + (window.GameEvents?.isOn?.() ? ' ✓' : ''), icon: '🎮', view: 'game-mode' },
       { label: T('menu.reminders', 'Promemoria Tappe'), icon: '🔔', view: 'reminders' },
       // Plugin destinazione: JR Pass e calendario festività hanno senso solo
       // per un viaggio in Giappone. Nessun campo "destinazione" esplicito in
@@ -172,6 +173,7 @@
             else if (view === 'itin-suggest') { window.loadScript('./js/itinerary-suggest.js').then(() => window.openItinerarySuggest?.()); }
             else if (view === 'global-search') { window.loadScript('./js/global-search.js').then(() => window.openGlobalSearch?.()); }
             else if (view === 'battery-saver') { window.BatterySaver?.toggle?.(); }
+            else if (view === 'game-mode') { window.GameEvents?.setOn?.(!window.GameEvents?.isOn?.()); window.toast?.(window.GameEvents?.isOn?.() ? T('game.on', '🎮 Modalità gioco attiva') : T('game.off', 'Modalità gioco disattivata')); }
             else if (view === 'gf-toggle') { window.setGFEnabled?.(!window.isGFEnabled?.()); window.toast?.(window.isGFEnabled?.() ? '🌾 Guida Gluten-Free attiva' : 'Guida Gluten-Free nascosta'); }
             else if (view === 'reminders') { window.loadScript('./js/itinerary-reminders.js').then(() => window.openItineraryReminders?.()); }
             else if (view === 'jr-pass') { window.loadScript('./js/jr-pass-calculator.js').then(() => window.openJRPassPanel?.()); }

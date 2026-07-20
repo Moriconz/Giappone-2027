@@ -53,7 +53,7 @@
     return new Promise((resolve, reject) => {
       const req = db.transaction(IDB_STORE, 'readwrite')
                     .objectStore(IDB_STORE).put(photo);
-      req.onsuccess = () => resolve();
+      req.onsuccess = () => { document.dispatchEvent(new CustomEvent('photo_added', { detail: { id: photo?.id }, bubbles: true })); resolve(); };
       req.onerror   = () => reject(req.error);
     });
   }
